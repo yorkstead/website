@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Github, MoveUpRight } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import { CommandCenterButton } from "@/components/command-center-button";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { WorkPortfolio } from "@/components/work-portfolio";
@@ -39,7 +38,6 @@ export default function WorkPage() {
             Contact
           </Link>
           <ThemeToggle />
-          <CommandCenterButton />
         </nav>
       </header>
 

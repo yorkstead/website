@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ShieldAlert } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import { CommandCenterButton } from "@/components/command-center-button";
 import { LabExperimentCard } from "@/components/lab-experiment-card";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -43,7 +42,6 @@ export default function LabsPage() {
             Contact
           </Link>
           <ThemeToggle />
-          <CommandCenterButton />
         </nav>
       </header>
 
