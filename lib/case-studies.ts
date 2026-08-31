@@ -177,44 +177,215 @@ export const caseStudies: CaseStudy[] = [
     cta: { label: "Discuss production release control", href: "/#contact" },
   },
   {
-    slug: "work-control",
-    number: "02",
-    status: "Live system",
-    title: "WORK//CTRL",
-    kicker: "Personal operations platform",
-    summary: "A live operations command center pattern for owner-led companies and delivery teams that need projects, tasks, client follow-up, system health, and next actions in one daily view.",
-    signal: "One adaptable control surface for work that currently lives across tools",
-    icon: "gauge",
-    industries: ["Owner-led businesses", "Professional services", "Software teams", "Fabrication and CNC", "Field service"],
-    applications: [
-      { title: "Owner command center", description: "Combine priorities, commitments, follow-ups, and operating signals so the owner can decide what needs attention without reconstructing the business from several tools." },
-      { title: "Project and delivery portfolio", description: "Track active initiatives, next actions, blockers, notes, and external system health across a small delivery team or technical operation." },
-      { title: "Client work and follow-up", description: "Connect inquiries, consultations, promised actions, and delivery work so opportunities do not disappear between sales and execution." },
-      { title: "Shop and technical operations", description: "Adapt the same control-surface pattern to jobs, maintenance, production exceptions, repositories, deployments, or other domain-specific signals." },
+    "slug": "work-control",
+    "number": "02",
+    "status": "Working prototype",
+    "title": "Yorkstead Operations",
+    "kicker": "Operations",
+    "summary": "A modular operations platform for manufacturing, fabrication, and service teams. Follow the records, responsibilities, and handoffs from quoting through execution and delivery.",
+    "signal": "Shared records. Clear handoffs. Visible next steps.",
+    "icon": "gauge",
+    "industries": [
+      "Manufacturing",
+      "Fabrication",
+      "Facility services",
+      "Sign production and installation",
+      "Mobile service businesses"
     ],
-    paths: [
-      { label: "Workflow automation", description: "Connect the useful tools already in place and remove repeated status reconstruction.", href: "/services/workflow-automation" },
-      { label: "Manufacturing software", description: "Apply the command-center pattern to production, inventory, scheduling, or shop exceptions.", href: "/services/manufacturing-software" },
-      { label: "Discuss a custom operations system", description: "Scope a tailored internal system when several workflows need to operate together.", href: "/?service=workflow-automation&engagement=custom-operations-system#contact" },
+    "applications": [
+      {
+        "title": "Quote-to-ship manufacturing",
+        "description": "Follow commercial scope through routed production, inspection, packaging, and delivery in a synthetic manufacturing example."
+      },
+      {
+        "title": "Recurring facility services",
+        "description": "Keep sites, work-order checklists, consumables, proof-of-work summaries, and client signoff in context."
+      },
+      {
+        "title": "Sign fabrication and installation",
+        "description": "Carry approved artwork and revision context through shop stages and the final field installation handoff."
+      },
+      {
+        "title": "Mobile service delivery",
+        "description": "Connect customer and technician context with repeatable checklists, scope approvals, and service closeout."
+      }
     ],
-    intendedFor: "Owner-led companies, professional-service teams, technical operators, and small delivery organizations whose projects, client commitments, and system signals are distributed across several useful but disconnected tools.",
-    problem: "Operational context becomes fragmented across project tools, inboxes, repositories, deployments, notes, calendars, and memory. The work exists, but there is no shared place to see commitments, exceptions, and the next decision together.",
-    previousWorkflow: "Open each tool separately, reconstruct project status, update parallel notes, and rely on manual review to catch stale work, overdue tasks, deployment issues, or follow-ups.",
-    solution: "A configurable operations command center that combines the records and signals relevant to a specific business—projects, jobs, tasks, client follow-up, system status, reminders, or exceptions—without pretending every industry needs the same dashboard.",
-    capabilities: ["Unified project and task workspace", "GitHub and Vercel status signals", "Focus planning and pressure mapping", "Notes, snapshots, reminders, and push notifications", "Passkey-protected owner access", "Client inquiry and follow-up pipeline"],
-    technologies: ["Next.js App Router", "TypeScript", "Neon Postgres", "Better Auth passkeys", "Vercel", "Bun"],
-    outcomeLabel: "Operational outcome",
-    outcome: "The live system provides one daily control surface for reviewing active work and deciding what to move next. The value is qualitative: less context reconstruction and a clearer operating picture, not a verified claim of time or cost savings.",
-    limitations: "This is an owner-operated system, not a validated multi-tenant product. Integrations depend on configured service credentials, and several planning signals are intentionally lightweight rather than predictive analytics.",
-    media: [
-      { id: "command-center-overview", type: "screenshot", label: "Daily command center", description: "The live WORK//CTRL dashboard combining portfolio totals, priority work, pressure signals, and the project journal.", caption: "The daily control surface brings project counts, open tasks, focus work, operating pressure, and durable notes into one review.", alt: "Dark WORK//CTRL dashboard with project, task, signal, focus, pressure, and project-journal cards", desktop: { src: "/media/projects/work-control/work-control-dashboard-desktop.png", width: 3263, height: 1911 }, expandable: true, featured: true },
-      { id: "project-portfolio", type: "screenshot", label: "Project portfolio", description: "The live project grid with operating category, stack, status, momentum, next action, repository activity, and deployment health.", caption: "Each project record keeps its operating purpose, next action, technical context, and connected-system status together.", alt: "WORK//CTRL project grid showing four project cards with status, momentum, next actions, repositories, and deployments", desktop: { src: "/media/projects/work-control/work-control-projects-desktop.png", width: 3263, height: 1905 }, expandable: true },
-      { id: "task-activity", type: "screenshot", label: "Tasks and activity", description: "The live task, quick-launch, capture-inbox, and activity areas used to move work and retain an operating trail.", caption: "Concrete next actions sit beside quick-launch tools, loose-idea capture, and an automatic history of meaningful workspace changes.", alt: "WORK//CTRL task view with priority tasks, quick-launch actions, capture inbox, and recent activity", desktop: { src: "/media/projects/work-control/work-control-tasks-desktop.png", width: 3264, height: 1899 }, expandable: true },
-      { id: "secure-mobile-access", type: "screenshot", label: "Secure mobile access", description: "The mobile Command Center sign-in screen with passkey authentication and recovery access.", caption: "Passkeys provide the primary owner sign-in path, with a separately presented recovery option when needed.", alt: "Mobile Command Center sign-in screen offering passkey and recovery access", desktop: { src: "/media/projects/work-control/work-control-command-mobile.png", width: 1272, height: 2599 }, expandable: true, layout: "phone" },
-      { id: "mobile-operating-analytics", type: "screenshot", label: "Mobile operating analytics", description: "The mobile operating-analytics view with throughput, completion, cycle-time, daily-completion, and priority signals.", caption: "A narrow-screen analytics view keeps throughput, completion, cycle time, and open-priority signals readable away from the desktop.", alt: "Mobile WORK//CTRL operating analytics with throughput, completion, cycle time, daily bars, and priority levels", desktop: { src: "/media/projects/work-control/work-control-analytics-mobile.png", width: 1272, height: 2611 }, expandable: true, layout: "phone" },
+    "paths": [
+      {
+        "label": "Explore the Operations demo",
+        "description": "Walk through four publicly available synthetic workflow scenarios.",
+        "href": "https://ops.yorkstead.com/demo",
+        "external": true
+      },
+      {
+        "label": "Read the Operations showcase PDF",
+        "description": "Open the supplied nine-page booklet covering workflows and demonstration boundaries.",
+        "href": "/media/yorkstead-ops/yorkstead-operations-showcase.pdf"
+      },
+      {
+        "label": "Packages, process & pricing",
+        "description": "Compare a Workflow Sprint, Department System, and Operations System for your business.",
+        "href": "/packages#operations"
+      },
+      {
+        "label": "Workflow automation",
+        "description": "Simplify the handoffs and connect useful tools around the way your team works.",
+        "href": "/services/workflow-automation"
+      }
     ],
-    previewMediaId: "command-center-overview",
-    cta: { label: "Discuss an internal command center", href: "/#contact" },
+    "intendedFor": "Manufacturing, fabrication, facility-service, sign-production, and mobile-service teams whose work moves between several people, records, and approval points.",
+    "problem": "Quotes, job instructions, material needs, production status, quality decisions, and delivery details can become disconnected as work changes hands.",
+    "previousWorkflow": "Reconstruct status from spreadsheets, paper travelers, inboxes, and separate systems; manually pass revisions, approvals, and completion details to the next person.",
+    "solution": "Organize the operation around shared job records and explicit handoffs. The showcased modules cover quoting, shopfloor work, materials, quality, maintenance, packaging, shipping, documents, and operational activity.",
+    "capabilities": [
+      "QuoteFlow and job records",
+      "Digital travelers and shopfloor checkpoints",
+      "Inventory and purchasing module overview",
+      "Quality, maintenance, packaging, and shipping module overview",
+      "Job packets, File Vault, and KnowHow module overview",
+      "Four synthetic public workflow scenarios"
+    ],
+    "technologies": [
+      "Web-based operational workspace",
+      "Modular workflow architecture"
+    ],
+    "outcomeLabel": "Intended outcome",
+    "outcome": "The intended outcome is a clearer shared view of the job, its blockers, and the owner of the next step. The supplied booklet illustrates this approach; it does not establish measured customer savings or completed real-world transactions.",
+    "limitations": "This prototype showcase uses synthetic demo scenarios and simulated payments. The supplied PDF records public demo inspection on August 31, 2026; authenticated transactions, integrations, storage readiness, production isolation, and reset behavior were not verified. Operations is a separate application from the website and its private Command Center.",
+    "media": [
+      {
+        "id": "operations-overview",
+        "type": "screenshot",
+        "label": "Yorkstead Operations",
+        "description": "PDF showcase page 1. A modular operations platform connecting work from the first quote to the final handoff.",
+        "caption": "A modular operations platform connecting work from the first quote to the final handoff. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Yorkstead Operations page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-1.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true,
+        "featured": true
+      },
+      {
+        "id": "operations-platform",
+        "type": "screenshot",
+        "label": "Platform overview",
+        "description": "PDF showcase page 2. Jobs, travelers, inventory, quality, shipping, and supporting records share an operational context.",
+        "caption": "Jobs, travelers, inventory, quality, shipping, and supporting records share an operational context. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Platform overview page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-2.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true
+      },
+      {
+        "id": "operations-manufacturing",
+        "type": "screenshot",
+        "label": "Manufacturing walkthrough",
+        "description": "PDF showcase page 3. A synthetic manufacturing scenario follows commercial scope, production routing, inspection, and shipping.",
+        "caption": "A synthetic manufacturing scenario follows commercial scope, production routing, inspection, and shipping. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Manufacturing walkthrough page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-3.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true
+      },
+      {
+        "id": "operations-facility-service",
+        "type": "screenshot",
+        "label": "Facility service walkthrough",
+        "description": "PDF showcase page 4. A synthetic facility-service scenario connects site checklists, evidence summaries, consumables, and client signoff.",
+        "caption": "A synthetic facility-service scenario connects site checklists, evidence summaries, consumables, and client signoff. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Facility service walkthrough page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-4.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true
+      },
+      {
+        "id": "operations-sign-fabrication",
+        "type": "screenshot",
+        "label": "Sign fabrication walkthrough",
+        "description": "PDF showcase page 5. A synthetic sign-fabrication scenario carries artwork revision context through fabrication and installation.",
+        "caption": "A synthetic sign-fabrication scenario carries artwork revision context through fabrication and installation. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Sign fabrication walkthrough page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-5.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true
+      },
+      {
+        "id": "operations-mobile-service",
+        "type": "screenshot",
+        "label": "Mobile service walkthrough",
+        "description": "PDF showcase page 6. A synthetic mobile-service scenario shows technician checklists, approved add-ons, and simulated payment.",
+        "caption": "A synthetic mobile-service scenario shows technician checklists, approved add-ons, and simulated payment. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Mobile service walkthrough page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-6.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true
+      },
+      {
+        "id": "operations-documents",
+        "type": "screenshot",
+        "label": "Documents and knowledge",
+        "description": "PDF showcase page 7. The module overview explains job packets, controlled files, and procedures alongside the work.",
+        "caption": "The module overview explains job packets, controlled files, and procedures alongside the work. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Documents and knowledge page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-7.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true
+      },
+      {
+        "id": "operations-demo-boundaries",
+        "type": "screenshot",
+        "label": "Demo and production boundaries",
+        "description": "PDF showcase page 8. The booklet separates public synthetic scenarios from authenticated production paths that were not verified.",
+        "caption": "The booklet separates public synthetic scenarios from authenticated production paths that were not verified. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Demo and production boundaries page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-8.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true
+      },
+      {
+        "id": "operations-explore",
+        "type": "screenshot",
+        "label": "Explore the workflows",
+        "description": "PDF showcase page 9. Explore the public demonstration and discuss the workflows relevant to your own operation.",
+        "caption": "Explore the public demonstration and discuss the workflows relevant to your own operation. Rendered from the supplied Operations showcase PDF.",
+        "alt": "Explore the workflows page from the Yorkstead Operations showcase PDF",
+        "desktop": {
+          "src": "/media/yorkstead-ops/pages/operations-9.png",
+          "width": 1600,
+          "height": 1001
+        },
+        "expandable": true
+      }
+    ],
+    "previewMediaId": "operations-overview",
+    "cta": {
+      "label": "Discuss your operational workflow",
+      "href": "/#contact"
+    }
   },
   {
     slug: "jwld-store",
