@@ -183,6 +183,9 @@ export default function PlatformPage() {
             Book a workflow audit to map your physical shopfloor handoffs into a unified operational software architecture.
           </p>
           <div className="mt-6">
+            <Link href="/packages#operations" className="mb-4 inline-flex min-h-11 items-center gap-2 rounded-lg border border-primary/30 px-6 text-sm font-medium text-primary sm:mb-0 sm:mr-4">
+              Compare packages & planning prices<ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
             <Link
               href="/workflow-audit"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
