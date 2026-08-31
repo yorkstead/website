@@ -21,7 +21,7 @@ When you select **Continue with a passkey** on the login page:
 
 ### Option A: Install as Dedicated Desktop App (Recommended)
 1. Open Microsoft Edge or Google Chrome.
-2. Navigate directly to `https://www.4twenty.dev/dashboard` (or `http://localhost:3000/dashboard` for local development).
+2. Navigate directly to `https://www.yorkstead.com/dashboard` (or `http://localhost:3000/dashboard` for local development).
 3. In Edge: Click the **App available** icon in the address bar (or click `...` -> **Apps** -> **Install WORK//CTRL**).
    In Chrome: Click `⋮` -> **Cast, save, and share** -> **Install page as app**.
 4. Check **Pin to taskbar** and **Pin to Start**.
@@ -31,7 +31,7 @@ When you select **Continue with a passkey** on the login page:
 You can create a custom Windows shortcut pointing directly to the app window:
 - **Production Target**:
   ```cmd
-  "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --app=https://www.4twenty.dev/dashboard
+  "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --app=https://www.yorkstead.com/dashboard
   ```
 - **Local Dev Target**:
   ```cmd
@@ -40,8 +40,8 @@ You can create a custom Windows shortcut pointing directly to the app window:
 
 ### Option C: Direct Quick URL Aliases
 Type either alias into your browser address bar:
-- `4twenty.dev/cmd`
-- `4twenty.dev/ctrl`
+- `yorkstead.com/cmd`
+- `yorkstead.com/ctrl`
 
 ---
 
@@ -49,7 +49,7 @@ Type either alias into your browser address bar:
 
 ### Option A: Install Progressive Web App (PWA) to Home Screen
 1. Open Google Chrome, Brave, or Edge on your OnePlus phone.
-2. Navigate to `https://www.4twenty.dev/dashboard` (or `https://www.4twenty.dev/cmd`).
+2. Navigate to `https://www.yorkstead.com/dashboard` (or `https://www.yorkstead.com/cmd`).
 3. Tap the browser menu (`⋮`) in the top right.
 4. Select **Add to Home screen** or **Install app**.
 5. Tap **Add** / **Install**.

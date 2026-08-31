@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "test": "bun test",
     "test:e2e": "playwright test",
-    "auth:migrate": "bun x @better-auth/cli@1.4.21 migrate --yes",
+    "auth:migrate": "bun x @better-auth/cli@1.7.1 migrate --yes",
     "db:migrate": "bun scripts/migrate.ts",
     "db:migrate:check": "bun scripts/migrate.ts --check"
   },
