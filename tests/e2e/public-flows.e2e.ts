@@ -42,12 +42,12 @@ test("workflow audit form exposes native required-field validation", async ({ pa
   assertNoErrors();
 });
 
-test("mobile layout keeps the primary owner entry point and audit navigation usable", async ({ page }) => {
+test("mobile layout keeps audit navigation usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const assertNoErrors = failOnBrowserErrors(page);
   await page.goto("/");
   await expectNoHorizontalDocumentOverflow(page);
-  await expect(page.getByRole("link", { name: "Command Center" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Command Center" })).toBeHidden();
   await expect(page.getByRole("link", { name: "Contact", exact: true })).toBeHidden();
   await page.getByRole("link", { name: "Book a workflow audit" }).first().click();
   await expect(page).toHaveURL(/\/workflow-audit$/);
