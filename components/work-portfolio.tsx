@@ -19,7 +19,7 @@ export function WorkPortfolio() {
 
   const filteredStudies = caseStudies.filter((study) => {
     if (activeCategory === "all") return true;
-    if (activeCategory === "client") return ["elward-flow", "acm-weekly"].includes(study.slug);
+    if (activeCategory === "client") return ["ellwood-flow", "acm-weekly"].includes(study.slug);
     if (activeCategory === "platform") return ["work-control", "jwld-store", "employee-barcodes"].includes(study.slug);
     if (activeCategory === "labs") return ["shop-inventory", "sic-pizza-pos"].includes(study.slug);
     return true;
