@@ -56,7 +56,7 @@ describe("case study data", () => {
 
   test("uses honest placeholders until verified media is supplied", () => {
     const placeholders = caseStudies.flatMap((study) => study.media).filter((item) => item.type === "placeholder");
-    expect(placeholders).toHaveLength(5);
+    expect(placeholders).toHaveLength(4);
     expect(placeholders.every((item) => item.caption.toLowerCase().match(/not been supplied|no interface/))).toBeTrue();
   });
 
@@ -74,6 +74,15 @@ describe("case study data", () => {
     expect(screenshots).toHaveLength(5);
     expect(screenshots.every((item) => item.desktop.src.startsWith("/media/projects/work-control/") && item.desktop.width > 1000 && item.desktop.height > 1000)).toBeTrue();
     expect(screenshots.filter((item) => item.layout === "phone")).toHaveLength(2);
+    expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
+  });
+
+  test("publishes verified SIC Pizza POS screenshots with intrinsic dimensions", () => {
+    const media = getCaseStudy("sic-pizza-pos")?.media ?? [];
+    const screenshots = media.filter((item) => item.type === "screenshot");
+    expect(screenshots).toHaveLength(11);
+    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/projects/sic-pizza/") && item.desktop.width > 800 && item.desktop.height > 2000)).toBeTrue();
+    expect(screenshots.filter((item) => item.layout === "phone")).toHaveLength(1);
     expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
   });
 
