@@ -6,7 +6,9 @@ WORK//CTRL provides direct, zero-friction operator access to the private Command
 
 ## 1. Instant Passkey Biometrics Flow
 
-When you click the **Command Center** button anywhere on the site:
+Public page headers no longer show the owner Command Center button. Demo navigation and Operations demo links remain available. For owner access, open `https://www.yorkstead.com/login` directly.
+
+When you select **Continue with a passkey** on the login page:
 - The system immediately triggers the native WebAuthn biometric challenge with zero extra clicks.
 - **On ThinkPad**: Windows Hello immediately prompts for your fingerprint / PIN.
 - **On OnePlus**: Android biometrics immediately prompts for your fingerprint.

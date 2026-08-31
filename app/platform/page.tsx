@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Layers, GitMerge, CheckCircle2, Lock } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import { CommandCenterButton } from "@/components/command-center-button";
 import { PlatformRoleViewer } from "@/components/platform-role-viewer";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -45,7 +44,6 @@ export default function PlatformPage() {
             Contact
           </Link>
           <ThemeToggle />
-          <CommandCenterButton />
         </nav>
       </header>
 

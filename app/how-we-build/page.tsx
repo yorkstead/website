@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ShieldCheck, Wrench, Terminal, Cpu, Layers, GitBranch, Search, Zap } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import { CommandCenterButton } from "@/components/command-center-button";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Card, CardContent } from "@/components/ui/card";
@@ -109,7 +108,6 @@ export default function HowWeBuildPage() {
             Contact
           </Link>
           <ThemeToggle />
-          <CommandCenterButton />
         </nav>
       </header>
 

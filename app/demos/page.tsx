@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Terminal, RefreshCcw } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import { CommandCenterButton } from "@/components/command-center-button";
 import { DemoCard } from "@/components/demo-card";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -40,7 +39,6 @@ export default function DemosPage() {
             Contact
           </Link>
           <ThemeToggle />
-          <CommandCenterButton />
         </nav>
       </header>
 
