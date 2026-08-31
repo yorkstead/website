@@ -47,6 +47,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     paths: [
       { label: "Open Ellwood Flow", description: "Visit the live release-intake and document-control system.", href: "https://ellwood-flow.4twenty.dev", external: true },
+      { label: "Packages, process & pricing", description: "Compare three ways to scope a manufacturing workflow, with planning prices and delivery expectations.", href: "/packages#manufacturing" },
       { label: "Manufacturing software", description: "Explore tailored systems for release control, production visibility, inventory, scheduling, and shop-floor handoffs.", href: "/services/manufacturing-software" },
       { label: "Audit a production workflow", description: "Map the current intake, review, document, and release path before selecting the first implementation milestone.", href: "/workflow-audit#audit-intake" },
     ],
@@ -301,6 +302,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     paths: [
       { label: "Open the interactive prototype", description: "Use the current browser-runnable vertical slice to explore employee access, floor, ordering, kitchen, guest, payment, and history views.", href: "https://sic-pizza.vercel.app", external: true },
+      { label: "Packages, process & pricing", description: "See what an audit, focused restaurant workflow, or connected system could include and cost.", href: "/packages#restaurant" },
       { label: "Workflow automation", description: "Explore how ordering, approvals, kitchen transitions, notifications, and exception handling can become one controlled operating flow.", href: "/services/workflow-automation" },
       { label: "Review the source and architecture", description: "Inspect the public repository, domain rules, persistence schema, implementation boundaries, and phased production backlog.", href: "https://github.com/4twentydev/sic-pizza", external: true },
     ],
