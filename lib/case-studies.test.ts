@@ -56,7 +56,7 @@ describe("case study data", () => {
 
   test("uses honest placeholders until verified media is supplied", () => {
     const placeholders = caseStudies.flatMap((study) => study.media).filter((item) => item.type === "placeholder");
-    expect(placeholders).toHaveLength(4);
+    expect(placeholders).toHaveLength(3);
     expect(placeholders.every((item) => item.caption.toLowerCase().match(/not been supplied|no interface/))).toBeTrue();
   });
 
@@ -77,6 +77,16 @@ describe("case study data", () => {
     expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
   });
 
+  test("publishes verified jwld.store screenshots with intrinsic dimensions", () => {
+    const media = getCaseStudy("jwld-store")?.media ?? [];
+    const screenshots = media.filter((item) => item.type === "screenshot");
+    expect(screenshots).toHaveLength(6);
+    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/jwld/screenshots/") && item.desktop.width >= 1234 && item.desktop.height >= 712)).toBeTrue();
+    expect(screenshots.filter((item) => item.layout === "phone")).toHaveLength(0);
+    expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
+    expect(screenshots.every((item) => item.expandable)).toBeTrue();
+  });
+
   test("publishes verified SIC Pizza POS screenshots with intrinsic dimensions", () => {
     const media = getCaseStudy("sic-pizza-pos")?.media ?? [];
     const screenshots = media.filter((item) => item.type === "screenshot");
@@ -89,10 +99,16 @@ describe("case study data", () => {
   test("positions jwld.store honestly as live commerce and a marketplace foundation", () => {
     const study = getCaseStudy("jwld-store");
     expect(study?.status).toBe("Live system");
+    expect(study?.kicker).toBe("Commerce");
     expect(study?.paths.some(({ href }) => href === "https://jwld.store")).toBeTrue();
+    expect(study?.paths.some(({ href }) => href === "/media/jwld/jwld-store-showcase.pdf")).toBeTrue();
     expect(study?.paths.some(({ href }) => href === "/services/small-business-websites")).toBeTrue();
-    expect(study?.capabilities).toContain("Inventory-aware product availability");
-    expect(study?.limitations.toLowerCase()).toContain("not a live multi-vendor marketplace");
+    expect(study?.paths.some(({ href }) => href === "/packages")).toBeTrue();
+    expect(study?.capabilities).toContain("Inventory-aware product details and stock status");
+    expect(study?.limitations.toLowerCase()).toContain("single-brand storefront");
+    expect(study?.limitations.toLowerCase()).toContain("not a functioning multi-vendor marketplace");
+    expect(study?.cta.label).toBe("Discuss your commerce workflow");
+    expect(study?.cta.href).toBe("/#contact");
   });
 
   test("positions SIC Pizza as a working POS prototype without production claims", () => {

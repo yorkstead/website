@@ -1,0 +1,38 @@
+{
+  "captured": "2026-08-31",
+  "source_commit": "d502851",
+  "source_repository": "4twentydev/jeweled-store",
+  "verification": "Public UI inspected. No checkout, payment, commission submission, or authenticated admin transaction performed.",
+  "screenshots": [
+    {
+      "file": "public/media/jwld/screenshots/bag.png",
+      "width": 1248,
+      "height": 720
+    },
+    {
+      "file": "public/media/jwld/screenshots/catalog.png",
+      "width": 1234,
+      "height": 712
+    },
+    {
+      "file": "public/media/jwld/screenshots/custom-form.png",
+      "width": 1234,
+      "height": 712
+    },
+    {
+      "file": "public/media/jwld/screenshots/custom.png",
+      "width": 1234,
+      "height": 712
+    },
+    {
+      "file": "public/media/jwld/screenshots/home.png",
+      "width": 1234,
+      "height": 712
+    },
+    {
+      "file": "public/media/jwld/screenshots/product.png",
+      "width": 1234,
+      "height": 712
+    }
+  ]
+}
