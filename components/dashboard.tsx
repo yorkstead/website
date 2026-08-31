@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Activity, AlertCircle, Archive, ArrowRightCircle, CalendarDays, CheckCircle2, CircleDot, Clock3, Command,
-  DatabaseBackup, Download, ExternalLink, Flame, Inbox, KeyRound, CornerDownLeft, Github, Grid2X2, Keyboard, LayoutDashboard,
+  DatabaseBackup, Download, Flame, Inbox, KeyRound, CornerDownLeft, Grid2X2, Keyboard, LayoutDashboard,
   Lightbulb, ListChecks, ListFilter, Pencil, BookOpenCheck, ClipboardCheck, DownloadCloud, Gauge, Megaphone, Plus,
-  RefreshCw, Rocket, RotateCcw, RotateCw, Search, Settings, Sparkles, Square, Target, TerminalSquare, Trash2, Upload, X,
+  RefreshCw, RotateCcw, RotateCw, Search, Settings, Sparkles, Square, Target, TerminalSquare, Trash2, Upload, X,
 } from "lucide-react";
 import type { Project, ProjectKind } from "@/lib/projects";
 import { defaultWorkspaceSettings, emptyWorkspace, workspaceStorageKey, type InboxItem, type ProjectNote, type Task, type WeeklyReview, type Workspace, type WorkspaceSettings } from "@/lib/workspace";
@@ -50,8 +50,6 @@ export function Dashboard() {
   const router = useRouter();
   const [workspace, setWorkspace] = useState<Workspace>(emptyWorkspace);
   const [history, setHistory] = useState<WorkspaceHistoryState>(() => createHistoryState(emptyWorkspace));
-  const historyRef = useRef<WorkspaceHistoryState>(history);
-  historyRef.current = history;
   const [undoToast, setUndoToast] = useState<UndoToast | null>(null);
   const [ready, setReady] = useState(false);
   const [query, setQuery] = useState("");
@@ -120,12 +118,10 @@ export function Dashboard() {
           const normalized = normalizeWorkspace(payload.workspace);
           setWorkspace(normalized);
           setHistory(createHistoryState(normalized));
-          historyRef.current = createHistoryState(normalized);
           localStorage.setItem(workspaceStorageKey, JSON.stringify(normalized));
         } else {
           setWorkspace(localWorkspace);
           setHistory(createHistoryState(localWorkspace));
-          historyRef.current = createHistoryState(localWorkspace);
           if (localWorkspace.projects.length || localWorkspace.tasks.length || localWorkspace.activity.length) {
             const migrationResponse = await fetch("/api/workspace", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(localWorkspace) });
             if (!migrationResponse.ok) throw new Error("Cloud migration failed");
@@ -140,7 +136,6 @@ export function Dashboard() {
         if (cancelled) return;
         setWorkspace(localWorkspace);
         setHistory(createHistoryState(localWorkspace));
-        historyRef.current = createHistoryState(localWorkspace);
         setSyncState("offline");
       } finally {
         if (!cancelled) setReady(true);
@@ -200,9 +195,7 @@ export function Dashboard() {
   const updateWorkspace = useCallback((label: string, updater: (current: Workspace) => Workspace) => {
     setWorkspace((current) => {
       const next = updater(current);
-      const nextHistory = pushHistory(historyRef.current, label, next);
-      historyRef.current = nextHistory;
-      setHistory(nextHistory);
+      setHistory((prevHistory) => pushHistory(prevHistory, label, next));
       setUndoToast({
         label,
         canUndo: true,
@@ -214,41 +207,45 @@ export function Dashboard() {
   }, []);
 
   const performUndo = useCallback(() => {
-    const currentHistory = historyRef.current;
-    if (currentHistory.past.length === 0) return false;
-    const result = undoHistory(currentHistory);
-    if (result.undoneEntry) {
-      historyRef.current = result.state;
-      setHistory(result.state);
-      setWorkspace(result.state.present);
-      setUndoToast({
-        label: `Undid "${result.undoneEntry.label}"`,
-        canUndo: result.state.past.length > 0,
-        canRedo: result.state.future.length > 0,
-        actionType: "undo",
-      });
-      return true;
-    }
-    return false;
+    let undone = false;
+    setHistory((currentHistory) => {
+      if (currentHistory.past.length === 0) return currentHistory;
+      const result = undoHistory(currentHistory);
+      if (result.undoneEntry) {
+        undone = true;
+        setWorkspace(result.state.present);
+        setUndoToast({
+          label: `Undid "${result.undoneEntry.label}"`,
+          canUndo: result.state.past.length > 0,
+          canRedo: result.state.future.length > 0,
+          actionType: "undo",
+        });
+        return result.state;
+      }
+      return currentHistory;
+    });
+    return undone;
   }, []);
 
   const performRedo = useCallback(() => {
-    const currentHistory = historyRef.current;
-    if (currentHistory.future.length === 0) return false;
-    const result = redoHistory(currentHistory);
-    if (result.redoneEntry) {
-      historyRef.current = result.state;
-      setHistory(result.state);
-      setWorkspace(result.state.present);
-      setUndoToast({
-        label: `Redid "${result.redoneEntry.label}"`,
-        canUndo: result.state.past.length > 0,
-        canRedo: result.state.future.length > 0,
-        actionType: "redo",
-      });
-      return true;
-    }
-    return false;
+    let redone = false;
+    setHistory((currentHistory) => {
+      if (currentHistory.future.length === 0) return currentHistory;
+      const result = redoHistory(currentHistory);
+      if (result.redoneEntry) {
+        redone = true;
+        setWorkspace(result.state.present);
+        setUndoToast({
+          label: `Redid "${result.redoneEntry.label}"`,
+          canUndo: result.state.past.length > 0,
+          canRedo: result.state.future.length > 0,
+          actionType: "redo",
+        });
+        return result.state;
+      }
+      return currentHistory;
+    });
+    return redone;
   }, []);
 
   useEffect(() => {
@@ -404,15 +401,18 @@ export function Dashboard() {
     });
   }
 
-  function downloadWorkspace(value: Workspace, filename = `work-ctrl-backup-${today}.json`) {
+  const downloadWorkspace = useCallback((value: Workspace, filename?: string) => {
+    const timeZone = normalizeTimeZone(workspace.settings?.timezone);
+    const today = dateKeyInTimeZone(new Date(), timeZone);
+    const resolvedFilename = filename ?? `work-ctrl-backup-${today}.json`;
     const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), workspace: value }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
-    anchor.href = url; anchor.download = filename; anchor.click();
+    anchor.href = url; anchor.download = resolvedFilename; anchor.click();
     URL.revokeObjectURL(url);
-  }
+  }, [workspace.settings?.timezone]);
 
-  function exportWorkspace() { downloadWorkspace(workspace); }
+  const exportWorkspace = useCallback(() => { downloadWorkspace(workspace); }, [downloadWorkspace, workspace]);
 
   function useCloudConflict() {
     if (!conflict?.cloud) return;
@@ -468,7 +468,7 @@ export function Dashboard() {
     if (importInputRef.current) importInputRef.current.value = "";
   }
 
-  async function createSnapshot() {
+  const createSnapshot = useCallback(async () => {
     setSnapshotting(true);
     setSnapshotNotice(null);
     try {
@@ -491,7 +491,7 @@ export function Dashboard() {
     } finally {
       setSnapshotting(false);
     }
-  }
+  }, [requestSnapshot]);
 
   async function restoreSnapshot(snapshot: SnapshotHistoryItem) {
     setRestoringSnapshotId(snapshot.id);
@@ -642,62 +642,61 @@ export function Dashboard() {
     window.setTimeout(() => void createSnapshot(), 900);
   }
 
-  const commandActions = [
-    ...(history.past.length > 0
-      ? [
-          {
-            id: "undo-last-action",
-            section: "Actions",
-            label: `Undo: ${history.past[history.past.length - 1].label}`,
-            hint: "Ctrl + Z",
-            icon: <RotateCcw />,
-            run: () => {
-              setCommandOpen(false);
-              performUndo();
-            },
-          },
-        ]
-      : []),
-    ...(history.future.length > 0
-      ? [
-          {
-            id: "redo-last-action",
-            section: "Actions",
-            label: `Redo: ${history.future[0].label}`,
-            hint: "Ctrl + Y",
-            icon: <RotateCw />,
-            run: () => {
-              setCommandOpen(false);
-              performRedo();
-            },
-          },
-        ]
-      : []),
-    { id: "new-project", section: "Create", label: "New project", hint: "Create a workspace project", icon: <Grid2X2 />, run: () => setComposer("project") },
-    { id: "new-task", section: "Create", label: "New task", hint: "Alt + N", icon: <ListChecks />, run: () => setComposer("task") },
-    { id: "capture-idea", section: "Create", label: "Capture idea", hint: "Alt + I", icon: <Lightbulb />, run: () => setComposer("idea") },
-    { id: "projects", section: "Navigate", label: "Go to projects", hint: "Project grid", icon: <Grid2X2 />, run: () => document.querySelector("#projects")?.scrollIntoView() },
-    { id: "tasks", section: "Navigate", label: "Go to tasks", hint: "Daily actions", icon: <ListChecks />, run: () => document.querySelector("#tasks")?.scrollIntoView() },
-    { id: "activity", section: "Navigate", label: "Go to activity", hint: "Workspace history", icon: <Activity />, run: () => document.querySelector("#activity")?.scrollIntoView() },
-    { id: "leads", section: "Navigate", label: "Client leads", hint: "Lead pipeline & inquiries", icon: <Inbox />, run: () => router.push("/dashboard/leads") },
-    { id: "marketing", section: "Navigate", label: "Marketing operations", hint: "Acquisition engine", icon: <Megaphone />, run: () => router.push("/dashboard/marketing") },
-    { id: "consultations", section: "Navigate", label: "Consultation playbooks", hint: "Discovery playbooks", icon: <ClipboardCheck />, run: () => router.push("/dashboard/consultations") },
-    { id: "account", section: "Workspace", label: "Account and passkeys", hint: "Owner credentials", icon: <KeyRound />, run: () => router.push("/account") },
-    { id: "refresh", section: "Workspace", label: "Refresh live status", hint: "GitHub + Vercel", icon: <RefreshCw />, run: () => void refreshIntelligence() },
-    { id: "snapshot", section: "Workspace", label: "Create cloud snapshot", hint: "Neon backup", icon: <DatabaseBackup />, run: () => void createSnapshot() },
-    { id: "export", section: "Workspace", label: "Export workspace", hint: "Download JSON", icon: <Download />, run: exportWorkspace },
-    { id: "import-projects", section: "Workspace", label: "Import connected projects", hint: "GitHub + Vercel", icon: <DownloadCloud />, run: () => setImportOpen(true) },
-    { id: "weekly-review", section: "Workspace", label: "Start weekly review", hint: "Wins + blockers + priorities", icon: <BookOpenCheck />, run: () => setReviewOpen(true) },
-    { id: "settings", section: "Workspace", label: "Workspace settings", hint: "Identity + defaults", icon: <Settings />, run: () => setSettingsOpen(true) },
-    ...workspace.projects.map((project) => ({ id: `project-${project.id}`, section: "Projects", label: project.name, hint: `Edit · ${project.status}`, icon: <CircleDot />, run: () => setEditingProject(project) })),
-    ...workspace.tasks.map((task) => ({ id: `task-${task.id}`, section: "Tasks", label: task.title, hint: `${task.done ? "Completed" : task.priority ?? "Medium"}${task.dueDate ? ` · ${task.dueDate}` : ""}`, icon: task.done ? <CheckCircle2 /> : <ListChecks />, run: () => setEditingTask(task) })),
-  ];
-
   const filteredCommands = useMemo(() => {
-    if (!commandQuery.trim()) return commandActions;
+    const actions = [
+      ...(history.past.length > 0
+        ? [
+            {
+              id: "undo-last-action",
+              section: "Actions",
+              label: `Undo: ${history.past[history.past.length - 1].label}`,
+              hint: "Ctrl + Z",
+              icon: <RotateCcw />,
+              run: () => {
+                setCommandOpen(false);
+                performUndo();
+              },
+            },
+          ]
+        : []),
+      ...(history.future.length > 0
+        ? [
+            {
+              id: "redo-last-action",
+              section: "Actions",
+              label: `Redo: ${history.future[0].label}`,
+              hint: "Ctrl + Y",
+              icon: <RotateCw />,
+              run: () => {
+                setCommandOpen(false);
+                performRedo();
+              },
+            },
+          ]
+        : []),
+      { id: "new-project", section: "Create", label: "New project", hint: "Create a workspace project", icon: <Grid2X2 />, run: () => setComposer("project") },
+      { id: "new-task", section: "Create", label: "New task", hint: "Alt + N", icon: <ListChecks />, run: () => setComposer("task") },
+      { id: "capture-idea", section: "Create", label: "Capture idea", hint: "Alt + I", icon: <Lightbulb />, run: () => setComposer("idea") },
+      { id: "projects", section: "Navigate", label: "Go to projects", hint: "Project grid", icon: <Grid2X2 />, run: () => document.querySelector("#projects")?.scrollIntoView() },
+      { id: "tasks", section: "Navigate", label: "Go to tasks", hint: "Daily actions", icon: <ListChecks />, run: () => document.querySelector("#tasks")?.scrollIntoView() },
+      { id: "activity", section: "Navigate", label: "Go to activity", hint: "Workspace history", icon: <Activity />, run: () => document.querySelector("#activity")?.scrollIntoView() },
+      { id: "leads", section: "Navigate", label: "Client leads", hint: "Lead pipeline & inquiries", icon: <Inbox />, run: () => router.push("/dashboard/leads") },
+      { id: "marketing", section: "Navigate", label: "Marketing operations", hint: "Acquisition engine", icon: <Megaphone />, run: () => router.push("/dashboard/marketing") },
+      { id: "consultations", section: "Navigate", label: "Consultation playbooks", hint: "Discovery playbooks", icon: <ClipboardCheck />, run: () => router.push("/dashboard/consultations") },
+      { id: "account", section: "Workspace", label: "Account and passkeys", hint: "Owner credentials", icon: <KeyRound />, run: () => router.push("/account") },
+      { id: "refresh", section: "Workspace", label: "Refresh live status", hint: "GitHub + Vercel", icon: <RefreshCw />, run: () => void refreshIntelligence() },
+      { id: "snapshot", section: "Workspace", label: "Create cloud snapshot", hint: "Neon backup", icon: <DatabaseBackup />, run: () => void createSnapshot() },
+      { id: "export", section: "Workspace", label: "Export workspace", hint: "Download JSON", icon: <Download />, run: exportWorkspace },
+      { id: "import-projects", section: "Workspace", label: "Import connected projects", hint: "GitHub + Vercel", icon: <DownloadCloud />, run: () => setImportOpen(true) },
+      { id: "weekly-review", section: "Workspace", label: "Start weekly review", hint: "Wins + blockers + priorities", icon: <BookOpenCheck />, run: () => setReviewOpen(true) },
+      { id: "settings", section: "Workspace", label: "Workspace settings", hint: "Identity + defaults", icon: <Settings />, run: () => setSettingsOpen(true) },
+      ...workspace.projects.map((project) => ({ id: `project-${project.id}`, section: "Projects", label: project.name, hint: `Edit · ${project.status}`, icon: <CircleDot />, run: () => setEditingProject(project) })),
+      ...workspace.tasks.map((task) => ({ id: `task-${task.id}`, section: "Tasks", label: task.title, hint: `${task.done ? "Completed" : task.priority ?? "Medium"}${task.dueDate ? ` · ${task.dueDate}` : ""}`, icon: task.done ? <CheckCircle2 /> : <ListChecks />, run: () => setEditingTask(task) })),
+    ];
+    if (!commandQuery.trim()) return actions;
     const query = commandQuery.toLowerCase();
-    return commandActions.filter((action) => action.label.toLowerCase().includes(query) || action.hint.toLowerCase().includes(query) || action.section.toLowerCase().includes(query));
-  }, [commandActions, commandQuery]);
+    return actions.filter((action) => action.label.toLowerCase().includes(query) || action.hint.toLowerCase().includes(query) || action.section.toLowerCase().includes(query));
+  }, [commandQuery, createSnapshot, exportWorkspace, history.future, history.past, performRedo, performUndo, refreshIntelligence, router, workspace]);
 
   const commandSections = useMemo(() => Array.from(new Set(filteredCommands.map((action) => action.section))), [filteredCommands]);
 
