@@ -11,7 +11,7 @@ describe("case study data", () => {
   test("assigns an explicit, supported status to every current project", () => {
     expect(Object.fromEntries(caseStudies.map((study) => [study.title, study.status]))).toEqual({
       "Ellwood Flow": "Live system",
-      "WORK//CTRL": "Live system",
+      "Yorkstead Operations": "Working prototype",
       "jwld.store": "Live system",
       "Shop Inventory": "Working prototype",
       "SIC Pizza POS": "Working prototype",
@@ -68,12 +68,12 @@ describe("case study data", () => {
     expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
   });
 
-  test("publishes verified WORK//CTRL screenshots with intrinsic dimensions", () => {
+  test("publishes Operations PDF pages with intrinsic dimensions", () => {
     const media = getCaseStudy("work-control")?.media ?? [];
     const screenshots = media.filter((item) => item.type === "screenshot");
-    expect(screenshots).toHaveLength(5);
-    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/projects/work-control/") && item.desktop.width > 1000 && item.desktop.height > 1000)).toBeTrue();
-    expect(screenshots.filter((item) => item.layout === "phone")).toHaveLength(2);
+    expect(screenshots).toHaveLength(9);
+    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/yorkstead-ops/pages/") && item.desktop.width > 1000 && item.desktop.height > 1000)).toBeTrue();
+    expect(screenshots.filter((item) => item.layout === "phone")).toHaveLength(0);
     expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
   });
 
