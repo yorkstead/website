@@ -68,7 +68,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live Ellwood Flow active-release workspace showing header metadata, panel marks, drawing review, and revision controls.",
         caption: "The active release view keeps release context, panel schedules, and controlled drawing reviews together in one operational surface.",
         alt: "Ellwood Flow active release dashboard displaying order context, panel schedule, and drawing review status",
-        desktop: { src: "/media/projects/ellwood-flow/active-release.png", width: 1916, height: 1077 },
+        desktop: { src: "/media/ellwood/active-release.png", width: 1916, height: 1077 },
         expandable: true,
         featured: true,
       },
@@ -79,7 +79,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live release catalog showing status filters, search, job associations, and revision tracking.",
         caption: "Releases are tracked across their entire lifecycle with clear revision status and intake validation.",
         alt: "Ellwood Flow release management screen with search filters, job numbers, and release statuses",
-        desktop: { src: "/media/projects/ellwood-flow/releases.png", width: 1918, height: 1074 },
+        desktop: { src: "/media/ellwood/releases.png", width: 1918, height: 1074 },
         expandable: true,
       },
       {
@@ -89,7 +89,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live production queue with step-by-step station routing, work orders, and panel completion status.",
         caption: "Station queues guide operators through allowed step transitions from cutting through fabrication.",
         alt: "Ellwood Flow production dispatch interface with panel marks, routing steps, and station queues",
-        desktop: { src: "/media/projects/ellwood-flow/production.png", width: 1905, height: 1067 },
+        desktop: { src: "/media/ellwood/production.png", width: 1905, height: 1067 },
         expandable: true,
       },
       {
@@ -99,7 +99,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live material inventory view distinguishing on-hand, committed, and allocated sheet goods.",
         caption: "Material allocations prevent stock contention by reserving sheet goods for active release jobs.",
         alt: "Ellwood Flow inventory management view detailing material stock levels, allocations, and sheet goods",
-        desktop: { src: "/media/projects/ellwood-flow/inventory.png", width: 1913, height: 1071 },
+        desktop: { src: "/media/ellwood/inventory.png", width: 1913, height: 1071 },
         expandable: true,
       },
       {
@@ -109,7 +109,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live QC station recording pass, rework, remake, scrap decisions, and reason codes.",
         caption: "Quality inspections capture non-conformance reasons and generate compensating remake actions.",
         alt: "Ellwood Flow quality control dashboard with inspection results, pass rates, and rework tracking",
-        desktop: { src: "/media/projects/ellwood-flow/QC.png", width: 1906, height: 1062 },
+        desktop: { src: "/media/ellwood/QC.png", width: 1906, height: 1062 },
         expandable: true,
       },
       {
@@ -119,7 +119,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live pallet planner optimizing stacking rules, height restrictions, and weight constraints.",
         caption: "Configurable pallet rules enforce elevation grouping, height limits, and weight tolerances.",
         alt: "Ellwood Flow pallet planning view displaying panel grouping, weight calculations, and container limits",
-        desktop: { src: "/media/projects/ellwood-flow/pallets.png", width: 1915, height: 1071 },
+        desktop: { src: "/media/ellwood/pallets.png", width: 1915, height: 1071 },
         expandable: true,
       },
       {
@@ -129,7 +129,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live shipping staging surface managing bills of lading, pallet assignments, and carrier handoffs.",
         caption: "Pallet staging ensures complete order verification prior to generating the bill of lading.",
         alt: "Ellwood Flow shipping dashboard with pallet staging, bill of lading generation, and carrier details",
-        desktop: { src: "/media/projects/ellwood-flow/shipping.png", width: 1911, height: 1071 },
+        desktop: { src: "/media/ellwood/shipping.png", width: 1911, height: 1071 },
         expandable: true,
       },
       {
@@ -139,7 +139,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live scan station providing fast barcode scanning, station progression, and obsolete revision alerts.",
         caption: "Barcode scanning enables rapid tap-and-scan shop actions while blocking superseded revisions.",
         alt: "Ellwood Flow scan station interface with barcode input field and station action buttons",
-        desktop: { src: "/media/projects/ellwood-flow/scan-station.png", width: 1907, height: 1065 },
+        desktop: { src: "/media/ellwood/scan-station.png", width: 1907, height: 1065 },
         expandable: true,
       },
       {
@@ -149,7 +149,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live global lookup tool for tracing any job, release, panel mark, or barcode history.",
         caption: "Search provides instant lineage across jobs, releases, panel marks, and audit logs.",
         alt: "Ellwood Flow global search view with query input and structured search results",
-        desktop: { src: "/media/projects/ellwood-flow/search.png", width: 1904, height: 1066 },
+        desktop: { src: "/media/ellwood/search.png", width: 1904, height: 1066 },
         expandable: true,
       },
       {
@@ -159,7 +159,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live administration dashboard with user roles, permissions, and immutable audit logs.",
         caption: "Append-only audit events capture actor, timestamp, workstation, and prior/new state for every action.",
         alt: "Ellwood Flow administration view showing user roles and system audit event logs",
-        desktop: { src: "/media/projects/ellwood-flow/admin.png", width: 1905, height: 1069 },
+        desktop: { src: "/media/ellwood/admin.png", width: 1905, height: 1069 },
         expandable: true,
       },
       {
@@ -169,7 +169,7 @@ export const caseStudies: CaseStudy[] = [
         description: "The live operational reports view providing throughput, scrap rate, and release cycle time analytics.",
         caption: "Structured operational reporting highlights plant throughput and process bottlenecks.",
         alt: "Ellwood Flow reports screen with production metrics and export options",
-        desktop: { src: "/media/projects/ellwood-flow/reports.png", width: 1911, height: 1065 },
+        desktop: { src: "/media/ellwood/reports.png", width: 1911, height: 1065 },
         expandable: true,
       },
     ],

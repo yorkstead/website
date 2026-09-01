@@ -62,7 +62,7 @@ describe("case study data", () => {
     const media = getCaseStudy("ellwood-flow")?.media ?? [];
     const screenshots = media.filter((item) => item.type === "screenshot");
     expect(screenshots).toHaveLength(11);
-    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/projects/ellwood-flow/") && item.desktop.width > 1000 && item.desktop.height > 900)).toBeTrue();
+    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/ellwood/") && item.desktop.width > 1000 && item.desktop.height > 900)).toBeTrue();
     expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
   });
 
