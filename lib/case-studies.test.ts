@@ -4,7 +4,7 @@ import { projectStatusDefinitions, projectStatuses } from "@/lib/project-status"
 
 describe("case study data", () => {
   test("defines the initial selected-work routes", () => {
-    expect(caseStudies.map((study) => study.slug)).toEqual(["ellwood-flow", "work-control", "jwld-store", "shop-inventory", "sic-pizza-pos", "employee-barcodes", "acm-weekly"]);
+    expect(caseStudies.map((study) => study.slug)).toEqual(["ellwood-flow", "work-control", "jwld-store", "sic-pizza-pos", "employee-barcodes"]);
     expect(caseStudies.every((study) => Boolean(getCaseStudy(study.slug)))).toBeTrue();
   });
 
@@ -13,10 +13,8 @@ describe("case study data", () => {
       "Ellwood Flow": "Live system",
       "Yorkstead Operations": "Working prototype",
       "jwld.store": "Live system",
-      "Shop Inventory": "Working prototype",
       "SIC Pizza POS": "Working prototype",
       "Employee Barcodes": "Live system",
-      "ACM Weekly": "Live system",
     });
     expect(projectStatuses).toEqual(["Live system", "Working prototype", "Active concept", "Case study"]);
     expect(caseStudies.every((study) => Boolean(projectStatusDefinitions[study.status]))).toBeTrue();
@@ -56,7 +54,7 @@ describe("case study data", () => {
 
   test("uses honest placeholders until verified media is supplied", () => {
     const placeholders = caseStudies.flatMap((study) => study.media).filter((item) => item.type === "placeholder");
-    expect(placeholders).toHaveLength(3);
+    expect(placeholders).toHaveLength(1);
     expect(placeholders.every((item) => item.caption.toLowerCase().match(/not been supplied|no interface/))).toBeTrue();
   });
 
@@ -128,17 +126,6 @@ describe("case study data", () => {
     expect(study?.capabilities).toContain("Shareable PNG label output");
     expect(study?.limitations.toLowerCase()).toContain("does not itself record scanner events");
     expect(study?.limitations.toLowerCase()).toContain("does not demonstrate login");
-  });
-
-  test("positions ACM Weekly as a live authenticated production dashboard without unsupported results", () => {
-    const study = getCaseStudy("acm-weekly");
-    expect(study?.status).toBe("Live system");
-    expect(study?.paths.some(({ href }) => href === "https://acmweekly.com")).toBeTrue();
-    expect(study?.paths.some(({ href }) => href === "/services/manufacturing-software")).toBeTrue();
-    expect(study?.capabilities).toContain("User-logon protected dashboard access");
-    expect(study?.capabilities).toContain("ACM and Seal & Stack throughput views");
-    expect(study?.limitations.toLowerCase()).toContain("protected views are not publicly inspectable");
-    expect(study?.outcome.toLowerCase()).toContain("no throughput improvement");
   });
 
   test("labels non-live results as intended outcomes", () => {

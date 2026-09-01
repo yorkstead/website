@@ -2,8 +2,8 @@ import { describe, expect, it } from "bun:test";
 import { caseStudies } from "./case-studies";
 
 describe("Public /work Case Studies Catalog & Review Rules", () => {
-  it("defines all seven verified case studies with complete sections", () => {
-    expect(caseStudies.length).toBe(7);
+  it("defines all five verified case studies with complete sections", () => {
+    expect(caseStudies.length).toBe(5);
 
     for (const study of caseStudies) {
       expect(study.title.length).toBeGreaterThan(3);
@@ -21,7 +21,7 @@ describe("Public /work Case Studies Catalog & Review Rules", () => {
     const liveSystems = caseStudies.filter((s) => s.status === "Live system");
     const prototypes = caseStudies.filter((s) => s.status === "Working prototype");
 
-    expect(liveSystems.length).toBe(5);
+    expect(liveSystems.length).toBe(3);
     expect(prototypes.length).toBe(2);
 
     for (const live of liveSystems) {

@@ -12,16 +12,16 @@ export function WorkPortfolio() {
 
   const categories = [
     { id: "all", label: "All Systems & Profiles", count: caseStudies.length },
-    { id: "client", label: "Client Engagements", count: 2 },
+    { id: "client", label: "Client Engagements", count: 1 },
     { id: "platform", label: "Platforms & Internal Tools", count: 3 },
-    { id: "labs", label: "Labs & Prototypes", count: 2 },
+    { id: "labs", label: "Labs & Prototypes", count: 1 },
   ] as const;
 
   const filteredStudies = caseStudies.filter((study) => {
     if (activeCategory === "all") return true;
-    if (activeCategory === "client") return ["ellwood-flow", "acm-weekly"].includes(study.slug);
+    if (activeCategory === "client") return ["ellwood-flow"].includes(study.slug);
     if (activeCategory === "platform") return ["work-control", "jwld-store", "employee-barcodes"].includes(study.slug);
-    if (activeCategory === "labs") return ["shop-inventory", "sic-pizza-pos"].includes(study.slug);
+    if (activeCategory === "labs") return ["sic-pizza-pos"].includes(study.slug);
     return true;
   });
 
