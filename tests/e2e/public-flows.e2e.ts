@@ -58,11 +58,12 @@ test("mobile layout keeps audit navigation usable", async ({ page }) => {
 
 test("service FAQ disclosure remains keyboard operable", async ({ page }) => {
   const assertNoErrors = failOnBrowserErrors(page);
-  await page.goto("/services/workflow-automation");
-  const firstDisclosure = page.locator("details").first();
-  await firstDisclosure.locator("summary").focus();
+  await page.goto("/services/workflow-automation", { waitUntil: "domcontentloaded" });
+  const summary = page.locator("details summary").first();
+  await summary.waitFor({ state: "visible" });
+  await summary.focus();
   await page.keyboard.press("Enter");
-  await expect(firstDisclosure).toHaveAttribute("open", "");
+  await expect(page.locator("details").first()).toHaveAttribute("open", "");
   assertNoErrors();
 });
 
@@ -85,11 +86,11 @@ test("project profiles connect industries and uses to relevant service paths", a
     if (profile.slug === "employee-barcodes") await expect(page.locator('a[href="https://barcodes.4twenty.dev"]')).toHaveAttribute("target", "_blank");
     await expect(page.locator("article article").first()).toBeVisible();
     if (profile.slug === "work-control") {
-      const featuredImage = page.getByAltText("Dark WORK//CTRL dashboard with project, task, signal, focus, pressure, and project-journal cards").first();
+      const featuredImage = page.getByAltText("Yorkstead Operations page from the Yorkstead Operations showcase PDF").first();
       await featuredImage.scrollIntoViewIfNeeded();
       await expect(featuredImage).toBeVisible();
       await expect.poll(() => featuredImage.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
-      await expect(page.locator('img[src*="work-control-"]:visible')).toHaveCount(5);
+      await expect(page.locator('img[src*="operations-"]:visible')).toHaveCount(9);
     }
     await expectNoHorizontalDocumentOverflow(page);
     assertNoErrors();

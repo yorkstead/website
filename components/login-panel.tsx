@@ -26,7 +26,7 @@ export function LoginPanel({ nextPath = "/dashboard", autoPrompt = true }: { nex
     async function checkBootstrap() {
       try {
         const response = await fetch("/api/auth/bootstrap-status", { cache: "no-store" });
-        const payload: unknown = response.ok ? await response.json() : null;
+        const payload: unknown = response.ok ? await response.json().catch(() => null) : null;
         if (!cancelled) setSetupAvailable(Boolean(payload && typeof payload === "object" && "available" in payload && (payload as { available?: unknown }).available === true));
       } catch {
         if (!cancelled) setSetupAvailable(false);
