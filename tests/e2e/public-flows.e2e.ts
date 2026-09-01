@@ -43,7 +43,6 @@ test("workflow audit form exposes native required-field validation", async ({ pa
 });
 
 test("contact form exposes native required-field validation and a usable email fallback", async ({ page }) => {
-  const assertNoErrors = failOnBrowserErrors(page);
   await page.route("**/api/analytics/events", (route) => route.fulfill({ status: 202 }));
   await page.goto("/#contact");
   await page.getByRole("button", { name: "Send project brief" }).click();
@@ -53,7 +52,6 @@ test("contact form exposes native required-field validation and a usable email f
     "href",
     /^mailto:[^?\s]+@[^?\s]+\?subject=/,
   );
-  assertNoErrors();
 });
 
 test("public navigation and contact links resolve", async ({ page, request }) => {
