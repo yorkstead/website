@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowRight, Factory, Gauge, GitBranch, Github, Globe2, Mail, MoveUpRight, Phone, ScanLine, ShieldCheck } from "lucide-react";
-import { BrandMark } from "@/components/brand-mark";
 import { CaseStudyCard } from "@/components/case-study-card";
 import { ContactForm } from "@/components/contact-form";
 import { TrackedLink } from "@/components/conversion-tracker";
@@ -9,8 +8,8 @@ import { EngagementPricing } from "@/components/engagement-pricing";
 import { FounderIntroduction } from "@/components/founder-introduction";
 import { ProjectStatusLegend } from "@/components/project-status-legend";
 import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { brand, brandMailto } from "@/lib/brand";
 import { caseStudies } from "@/lib/case-studies";
 import { organizationStructuredData } from "@/lib/founder";
@@ -37,27 +36,7 @@ const operatingExperience = ["Production management", "CNC fabrication", "Invent
 
 export default function Home() {
   return <main className="min-h-screen overflow-hidden"><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData).replace(/</g, "\\u003c") }} /><div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_0%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_38%)]" />
-    <header className="relative mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
-      <BrandMark />
-      <nav aria-label="Primary" className="flex items-center gap-1 sm:gap-2">
-        <Link href="/solutions" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">Solutions</Link>
-        <Link href="/platform" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground md:block">Platform</Link>
-        <Link href="/demos" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">Demos</Link>
-        <Link href="/work" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">Work</Link>
-        <Link href="/how-we-build" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground lg:block">How We Build</Link>
-        <Link href="/about" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground xl:block">About</Link>
-        <Link href="#contact" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">Contact</Link>
-        <a
-          href="https://ops.yorkstead.com/demo"
-          className="ml-1 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition hover:border-primary/60 hover:bg-primary/20"
-        >
-          <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-          <span>Operations Demo</span>
-          <MoveUpRight className="size-3" />
-        </a>
-        <ThemeToggle />
-      </nav>
-    </header>
+    <SiteHeader />
     <section className="relative mx-auto grid min-h-[72vh] max-w-7xl items-center gap-14 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.15fr_.85fr]"><div><div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-primary"><span className="size-1.5 animate-pulse rounded-full bg-primary" />{brand.descriptor}</div><h1 className="max-w-4xl text-5xl font-semibold leading-[.95] tracking-[-0.055em] sm:text-7xl">Software and automation for businesses where <span className="text-primary">the work is real.</span></h1><p className="mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">Practical systems for small manufacturers, CNC and sign shops, contractors, and owner-led businesses—reducing duplicate entry, clarifying production, and connecting scattered tools.</p><p className="mt-5 font-mono text-[9px] uppercase tracking-[0.18em] text-foreground/60">Independent builder · Denver, Colorado</p><div className="mt-9 flex flex-wrap gap-3"><a href="https://ops.yorkstead.com/demo" className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90">Explore Yorkstead Operations <MoveUpRight className="size-4" /></a><Link href="#work" className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-5 text-sm font-medium transition hover:border-primary/40">See selected work</Link><Link href="#contact" className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card/60 px-5 text-sm font-medium text-muted-foreground transition hover:text-foreground">Start a conversation <ArrowRight className="size-4" /></Link></div></div>
       <div className="relative"><div className="absolute -inset-10 bg-primary/10 blur-3xl" /><Card className="relative overflow-hidden bg-card/85 shadow-2xl backdrop-blur"><CardContent className="p-5"><div className="mb-5 flex items-center justify-between border-b border-border pb-4"><div><div className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary">Industrial systems</div><div className="mt-1 text-sm font-medium">Software // automation // fabrication</div></div><Gauge className="size-5 text-primary" aria-hidden="true" /></div>{["Software that fits the operation", "Automation without the busywork", "Production-minded design", "Direct access to the builder"].map((item, index) => <div key={item} className="flex items-center gap-3 border-b border-border/60 py-4 last:border-0"><span className="font-mono text-[9px] text-muted-foreground">0{index + 1}</span><span className="flex-1 text-sm">{item}</span><span className="size-1.5 rounded-full bg-emerald-400" /></div>)}</CardContent></Card></div></section>
 
