@@ -248,7 +248,8 @@ export const caseStudies: CaseStudy[] = [
     "technologies": [
       "Web-based operational workspace",
       "Modular workflow architecture",
-      "Interactive demonstration"
+      "Deterministic operational sandboxes",
+      "PostgreSQL schema"
     ],
     "outcomeLabel": "Intended outcome",
     "outcome": "The intended outcome is a clearer shared view of the job, its blockers, and the owner of the next step. The supplied booklet illustrates this approach; it does not establish measured customer savings or completed real-world transactions.",
