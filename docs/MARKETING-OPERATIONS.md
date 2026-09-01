@@ -30,7 +30,7 @@ The private `/dashboard/marketing` workspace implements the approved 90-day, fou
 - **Contacted:** a personal outreach attempt has occurred.
 - **Conversation:** a decision-maker or relevant operator engaged.
 - **Fit call:** the free 20-minute qualification conversation occurred or is scheduled.
-- **Audit proposed / paid:** the $350 Workflow Audit was offered or purchased.
+- **Audit proposed / paid:** the $750–$1,500 Workflow Diagnostic was offered or purchased.
 - **Build proposed:** an audit supports a bounded Sprint or System proposal.
 - **Won / Lost / Nurture:** work is booked, definitively declined, or intentionally deferred.
 

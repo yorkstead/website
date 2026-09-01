@@ -60,7 +60,7 @@ export const publicServices = [
       { slug: "work-control", relevance: "A live system showing how scattered operating signals can become one daily control surface; it is owner-operated, not a manufacturing deployment." },
       { slug: "employee-barcodes", relevance: "A live employee-label tool showing how standardized operator identifiers can support downstream production, quality, packing, and completion scans." },
     ],
-    typicalEngagement: { label: "Typically $1,500–$3,500 for one focused workflow; connected systems typically start at $5,000", note: "Planning range only. Integrations, migration, hardware, support, and the number of workflows materially affect scope." },
+    typicalEngagement: { label: "Typically $3,500–$7,500 for a focused sprint; department systems $8K–$20K; connected company operations $25,000–$75,000+", note: "Planning range only. Integrations, migration, hardware, support, and the number of workflows materially affect scope." },
     faqs: [
       { question: "Do you replace an ERP or accounting system?", answer: "Usually not as a first move. The better starting point is often the workflow around an existing system: capturing missing information, reducing duplicate entry, or giving the floor a clearer operating view." },
       { question: "Can the software work with spreadsheets we already use?", answer: "Often, yes. A spreadsheet can be a migration source, an export target, or a temporary bridge. The specific approach depends on who owns the data and how reliably it is maintained." },
@@ -103,7 +103,7 @@ export const publicServices = [
       { slug: "sic-pizza-pos", relevance: "A working restaurant POS prototype connecting tables, configured orders, guest approvals, kitchen states, mocked split payments, and an auditable event trail." },
       { slug: "employee-barcodes", relevance: "A live identity-label workflow that makes employee barcodes searchable, printable, and shareable before a separate production system captures scan events." },
     ],
-    typicalEngagement: { label: "Typically $1,500–$3,500 for one tightly scoped automation", note: "Planning range only. Vendor APIs, data cleanup, approval rules, reliability requirements, and ongoing support can change the implementation range." },
+    typicalEngagement: { label: "Typically $3,500–$7,500 for one tightly scoped automation sprint; operations automation consulting $2,500–$10,000", note: "Planning range only. Vendor APIs, data cleanup, approval rules, reliability requirements, and ongoing support can change the implementation range." },
     faqs: [
       { question: "What should be automated first?", answer: "A frequent, rule-driven handoff with a clear input and output—not necessarily the workflow people complain about most. A workflow audit can identify the smallest useful starting point." },
       { question: "Will automation remove the human review step?", answer: "Only where the rule is safe and explicit. Pricing judgment, unusual jobs, customer commitments, and failed handoffs often need a visible approval or exception queue." },
@@ -145,7 +145,7 @@ export const publicServices = [
       { slug: "work-control", relevance: "This live Yorkstead Systems system includes the public site, private owner access, inquiry capture, lead follow-up, and service attribution; it is an internal system rather than a client result." },
       { slug: "jwld-store", relevance: "A live specialty-goods storefront demonstrating branded discovery, product records, inventory-aware merchandising, cart interaction, and a custom-commission path." },
     ],
-    typicalEngagement: { label: "Typically $1,500–$3,500 for a focused site; commerce and marketplace systems typically start at $5,000", note: "Planning range only. Catalog size, seller roles, payments, migration, fulfillment rules, approved assets, integrations, and ongoing support determine final scope." },
+    typicalEngagement: { label: "Typically $3,500–$7,500 for a focused site sprint; commerce and marketplace systems typically $8,000–$20,000+", note: "Planning range only. Catalog size, seller roles, payments, migration, fulfillment rules, approved assets, integrations, and ongoing support determine final scope." },
     faqs: [
       { question: "Do you build simple brochure websites?", answer: "A concise informational site can be appropriate, but it still needs a job: generate a call, booking, quote request, order, or another useful next step. The content and structure are built around that action." },
       { question: "Can you build an online marketplace?", answer: "Yes, when the operating model is defined. A single-brand storefront, curated catalog, and multi-vendor marketplace have different needs. Seller onboarding, product approval, commissions, split payments, payouts, moderation, disputes, tax, and fulfillment ownership are scoped explicitly rather than assumed." },
@@ -187,7 +187,7 @@ export const publicServices = [
       { slug: "ellwood-flow", relevance: "A live production-release system connecting drawing revisions, CNC file handoffs, customer approvals, and shop-floor readiness in custom manufacturing." },
       { slug: "employee-barcodes", relevance: "A live employee-label workflow that provides standardized operator barcodes for downstream fabrication, routing, quality, and packaging scans." },
     ],
-    typicalEngagement: { label: "Typically $1,500–$3,500 for one quoting, intake, or production workflow; connected shop systems typically start at $5,000", note: "Planning range only. Product rules, machine or design-file integration, hardware, material logic, migration, and floor support affect scope." },
+    typicalEngagement: { label: "Typically $3,500–$7,500 for one quoting, intake, or production sprint; connected department and shop systems $8,000–$20,000+", note: "Planning range only. Product rules, machine or design-file integration, hardware, material logic, migration, and floor support affect scope." },
     faqs: [
       { question: "Do you generate CNC toolpaths or machine code?", answer: "Not by default. A system can organize job inputs, files, readiness, and handoffs, but post-processors, toolpaths, machine control, and safety-critical output require equipment-specific validation and clearly defined responsibility." },
       { question: "Can quoting account for material and production options?", answer: "Yes, when the shop can define and validate its rules. The tool should expose exceptions and judgment calls rather than pretend every custom job is fully formulaic." },
