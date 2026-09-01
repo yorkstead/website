@@ -56,10 +56,9 @@ export const publicServices = [
       { title: "Roll out in controlled stages", description: "Document ownership, migration, support, and the next integration only after the first workflow is stable." },
     ],
     caseStudyLinks: [
-      { slug: "shop-inventory", relevance: "A working prototype exploring practical on-hand, committed, receiving, and reorder visibility for a small shop." },
+      { slug: "ellwood-flow", relevance: "A live release-intake and document-control system keeping manufactured orders, approvals, drawings, files, and shop-floor handoffs connected." },
       { slug: "work-control", relevance: "A live system showing how scattered operating signals can become one daily control surface; it is owner-operated, not a manufacturing deployment." },
       { slug: "employee-barcodes", relevance: "A live employee-label tool showing how standardized operator identifiers can support downstream production, quality, packing, and completion scans." },
-      { slug: "acm-weekly", relevance: "A live authenticated analytics portal showing how throughput, crew mix, and operator-review signals can support a recurring production review." },
     ],
     typicalEngagement: { label: "Typically $1,500–$3,500 for one focused workflow; connected systems typically start at $5,000", note: "Planning range only. Integrations, migration, hardware, support, and the number of workflows materially affect scope." },
     faqs: [
@@ -99,11 +98,10 @@ export const publicServices = [
       { title: "Measure whether the handoff improved", description: "Review completion, exception, and follow-up behavior qualitatively or with agreed metrics when reliable data exists." },
     ],
     caseStudyLinks: [
+      { slug: "ellwood-flow", relevance: "A live release-intake and document-control system showing how multi-stage review checkpoints, document validation, and shop handoffs can be automated." },
       { slug: "work-control", relevance: "A live owner-operated system combining project, deployment, reminder, and lead-follow-up signals in one place." },
-      { slug: "shop-inventory", relevance: "A working prototype showing how simple records and exception-focused views can replace repeated stock checks." },
       { slug: "sic-pizza-pos", relevance: "A working restaurant POS prototype connecting tables, configured orders, guest approvals, kitchen states, mocked split payments, and an auditable event trail." },
       { slug: "employee-barcodes", relevance: "A live identity-label workflow that makes employee barcodes searchable, printable, and shareable before a separate production system captures scan events." },
-      { slug: "acm-weekly", relevance: "A live weekly-reporting destination that brings recurring production calculations and review context into a controlled dashboard instead of another static report." },
     ],
     typicalEngagement: { label: "Typically $1,500–$3,500 for one tightly scoped automation", note: "Planning range only. Vendor APIs, data cleanup, approval rules, reliability requirements, and ongoing support can change the implementation range." },
     faqs: [
@@ -186,7 +184,8 @@ export const publicServices = [
       { title: "Introduce floor interaction carefully", description: "Keep data entry short, readable, and recoverable around gloves, dust, shared devices, and interrupted work." },
     ],
     caseStudyLinks: [
-      { slug: "shop-inventory", relevance: "A working inventory prototype relevant to stock, commitments, receiving, and reorder attention in a fabrication environment." },
+      { slug: "ellwood-flow", relevance: "A live production-release system connecting drawing revisions, CNC file handoffs, customer approvals, and shop-floor readiness in custom manufacturing." },
+      { slug: "employee-barcodes", relevance: "A live employee-label workflow that provides standardized operator barcodes for downstream fabrication, routing, quality, and packaging scans." },
     ],
     typicalEngagement: { label: "Typically $1,500–$3,500 for one quoting, intake, or production workflow; connected shop systems typically start at $5,000", note: "Planning range only. Product rules, machine or design-file integration, hardware, material logic, migration, and floor support affect scope." },
     faqs: [
