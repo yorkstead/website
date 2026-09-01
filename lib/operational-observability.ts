@@ -38,6 +38,7 @@ export function sanitizedErrorCode(error: unknown) {
   const code = error && typeof error === "object" && "code" in error ? String((error as { code?: unknown }).code ?? "") : "";
   if (["ABORT_ERR", "ETIMEDOUT"].includes(code)) return "timeout";
   if (["ECONNRESET", "ECONNREFUSED", "EHOSTUNREACH", "ENETUNREACH", "ENOTFOUND"].includes(code)) return "network_error";
+  if (/^RESEND_[A-Z0-9_]{1,80}$/.test(code)) return code.toLowerCase();
   if (/^[0-9A-Z]{5}$/.test(code)) return "database_error";
   const statusCode = error && typeof error === "object" && "statusCode" in error ? Number((error as { statusCode?: unknown }).statusCode) : NaN;
   if (Number.isInteger(statusCode)) return "upstream_rejected";
