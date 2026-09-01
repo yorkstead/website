@@ -42,6 +42,57 @@ test("workflow audit form exposes native required-field validation", async ({ pa
   assertNoErrors();
 });
 
+test("contact form exposes native required-field validation and a usable email fallback", async ({ page }) => {
+  const assertNoErrors = failOnBrowserErrors(page);
+  await page.route("**/api/analytics/events", (route) => route.fulfill({ status: 202 }));
+  await page.goto("/#contact");
+  await page.getByRole("button", { name: "Send project brief" }).click();
+  await expect(page.locator("#name")).toBeFocused();
+  await expect(page.locator("#name")).toHaveJSProperty("validity.valueMissing", true);
+  await expect(page.locator('#contact a[href^="mailto:"]')).toHaveAttribute(
+    "href",
+    /^mailto:[^?\s]+@[^?\s]+\?subject=/,
+  );
+  assertNoErrors();
+});
+
+test("public navigation and contact links resolve", async ({ page, request }) => {
+  const visited = new Set<string>();
+  const pending = ["/"];
+
+  while (pending.length) {
+    const path = pending.shift()!;
+    if (visited.has(path)) continue;
+    visited.add(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+
+    const hrefs = await page.locator("a[href]").evaluateAll((links) =>
+      links.map((link) => link.getAttribute("href")).filter((href): href is string => Boolean(href)),
+    );
+    for (const href of hrefs) {
+      if (href.startsWith("mailto:")) {
+        expect(href, `email link on ${path}`).toMatch(/^mailto:[^?\s]+@[^?\s]+(?:\?.*)?$/);
+        continue;
+      }
+      if (!href.startsWith("/") || href.startsWith("//")) continue;
+      const destination = new URL(href, "http://site.test");
+      const normalized = `${destination.pathname}${destination.search}`;
+      if (
+        !destination.pathname.split("/").at(-1)?.includes(".") &&
+        !visited.has(normalized) &&
+        !normalized.startsWith("/dashboard") &&
+        !normalized.startsWith("/account") &&
+        !normalized.startsWith("/login")
+      ) pending.push(normalized);
+    }
+  }
+
+  for (const path of visited) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBeLessThan(400);
+  }
+});
+
 test("mobile layout keeps audit navigation usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const assertNoErrors = failOnBrowserErrors(page);

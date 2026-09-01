@@ -26,6 +26,10 @@ export async function sendLeadNotification(lead: LeadNotification) {
   if (error) {
     const failure = new Error("Email provider rejected the notification");
     failure.name = "UpstreamError";
+    Object.assign(failure, {
+      code: `RESEND_${String(error.name ?? "unknown").toUpperCase().replace(/[^A-Z0-9_]/g, "_")}`,
+      statusCode: "statusCode" in error ? error.statusCode : undefined,
+    });
     throw failure;
   }
   return { sent: true as const, id: data?.id ?? null };

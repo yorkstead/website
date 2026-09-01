@@ -46,5 +46,6 @@ describe("operational observability", () => {
     await expect(withOperationTimeout(new Promise(() => undefined), 5)).rejects.toThrow("Operation timed out");
     expect(sanitizedErrorCode(new DOMException("timed out", "TimeoutError"))).toBe("timeout");
     expect(sanitizedErrorCode({ code: "ECONNRESET", message: "credential" })).toBe("network_error");
+    expect(sanitizedErrorCode({ code: "RESEND_INVALID_API_KEY", message: "credential" })).toBe("resend_invalid_api_key");
   });
 });
