@@ -1,0 +1,95 @@
+{"kind":"deck","id":"pr/elbskw","name":"Deck"}
+{"kind":"layout","layoutId":"6d6635ef-b89c-45e0-903e-52d81e78cc34","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"9dc47579-0da3-4b58-a7eb-3a7fb4453681","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/pognui","slide":1,"title":"YORKSTEAD SYSTEMS","textShapes":6}
+{"kind":"shape","id":"sh/sf6t4j6p","slide":1,"name":"accent-field","bbox":[802,0,478,720]}
+{"kind":"textbox","id":"sh/rexcbep4","slide":1,"name":"brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,38,400,26]}
+{"kind":"textbox","id":"sh/qdob29oj","slide":1,"name":"sector","text":"BUSINESS WEBSITES","textPreview":"BUSINESS WEBSITES","textChars":17,"textLines":1,"bbox":[42,126,480,32]}
+{"kind":"textbox","id":"sh/5cfu947y","slide":1,"name":"deck-title","text":"Your website should help a buyer decide—and help you act.","textPreview":"Your website should help a buyer decide—and help you act.","textChars":57,"textLines":1,"bbox":[42,174,700,240]}
+{"kind":"textbox","id":"sh/4b6t0z6d","slide":1,"name":"deck-subtitle","text":"Clear positioning, credible proof, useful intake, and a direct path from interest to qualified work.","textPreview":"Clear positioning, credible proof, useful intake, and a direct path from interest to qualified work.","textChars":100,"textLines":1,"bbox":[42,446,690,108]}
+{"kind":"textbox","id":"sh/3axs7ups","slide":1,"name":"contact","text":"Brandon York  •  hello@yorkstead.com  •  yorkstead.com","textPreview":"Brandon York  •  hello@yorkstead.com  •  yorkstead.com","textChars":54,"textLines":1,"bbox":[42,642,700,24]}
+{"kind":"textbox","id":"sh/i9obypo7","slide":1,"name":"accent-copy","text":"SOFTWARE THAT\nKEEPS REAL-WORLD\nWORK MOVING.","textPreview":"SOFTWARE THAT | KEEPS REAL-WORLD | WORK MOVING.","textChars":43,"textLines":3,"bbox":[842,410,360,180]}
+{"kind":"notes","id":"nt/pognui","slide":1,"text":"[Sources]\n- Yorkstead Systems brand positioning: repository lib/brand.ts\n[/Sources]"}
+{"kind":"slide","id":"sl/zknovr","slide":2,"title":"BUSINESS WEBSITES","textShapes":10}
+{"kind":"textbox","id":"sh/ydw32lgn","slide":2,"name":"eyebrow","text":"BUSINESS WEBSITES","textPreview":"BUSINESS WEBSITES","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/l072xgfy","slide":2,"name":"slide-title","text":"The expensive part is the handoff nobody owns.","textPreview":"The expensive part is the handoff nobody owns.","textChars":46,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/0fyl4byt","slide":2,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/ba5kr6xw","slide":2,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/q9wjy1gb","slide":2,"name":"footer-page","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/dcn2tgf2","slide":2,"name":"pain-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[42,184,70,60]}
+{"kind":"textbox","id":"sh/cbel0byh","slide":2,"name":"pain-0","text":"Generic copy makes every business sound interchangeable.","textPreview":"Generic copy makes every business sound interchangeable.","textChars":56,"textLines":1,"bbox":[135,174,1010,82]}
+{"kind":"shape","id":"sh/v6pk3qxg","slide":2,"name":"pain-rule-0","bbox":[135,264,1010,1]}
+{"kind":"textbox","id":"sh/u5g3a5gv","slide":2,"name":"pain-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[42,320,70,60]}
+{"kind":"textbox","id":"sh/wbehc32t","slide":2,"name":"pain-1","text":"Project proof is buried or shown without the operational context buyers need.","textPreview":"Project proof is buried or shown without the operational context buyers need.","textChars":77,"textLines":1,"bbox":[135,310,1010,82]}
+{"kind":"shape","id":"sh/hcniloje","slide":2,"name":"pain-rule-1","bbox":[135,400,1010,1]}
+{"kind":"textbox","id":"sh/upwzatkn","slide":2,"name":"pain-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[42,456,70,60]}
+{"kind":"textbox","id":"sh/vq50jyl8","slide":2,"name":"pain-2","text":"Contact forms collect messages—not enough information to take the next step.","textPreview":"Contact forms collect messages—not enough information to take the next step.","textChars":76,"textLines":1,"bbox":[135,446,1010,82]}
+{"kind":"shape","id":"sh/8neh8j2x","slide":2,"name":"pain-rule-2","bbox":[135,536,1010,1]}
+{"kind":"notes","id":"nt/zknovr","slide":2,"text":"[Sources]\n- Buyer problems synthesized from Yorkstead project workflows; no external quantitative claim.\n[/Sources]"}
+{"kind":"slide","id":"sl/eshtyp","slide":3,"title":"BUSINESS WEBSITES","textShapes":6}
+{"kind":"textbox","id":"sh/58zm9sja","slide":3,"name":"eyebrow","text":"BUSINESS WEBSITES","textPreview":"BUSINESS WEBSITES","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/i583ex0z","slide":3,"name":"promise","text":"A customer journey that explains the work, proves capability, and creates a useful handoff.","textPreview":"A customer journey that explains the work, proves capability, and creates a useful handoff.","textChars":91,"textLines":1,"bbox":[42,110,760,170]}
+{"kind":"textbox","id":"sh/j6h4721k","slide":3,"name":"body","text":"The useful system is not the one with the most features. It is the one that keeps context attached as work moves between people, decisions, and tools.","textPreview":"The useful system is not the one with the most features. It is the one that keeps context attached as work moves between people, decision...","textChars":150,"textLines":1,"bbox":[42,334,690,130]}
+{"kind":"shape","id":"sh/wj6lcnit","slide":3,"name":"signal","bbox":[850,122,330,330]}
+{"kind":"textbox","id":"sh/h4zm5sje","slide":3,"name":"signal-copy","text":"SHARED\nCONTEXT\n→\nCLEAR\nNEXT STEP","textPreview":"SHARED | CONTEXT | → | CLEAR | NEXT STEP","textChars":32,"textLines":5,"bbox":[890,154,250,270]}
+{"kind":"shape","id":"sh/uho3ad0n","slide":3,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/vix43i18","slide":3,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/gfa5orix","slide":3,"name":"footer-page","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"notes","id":"nt/eshtyp","slide":3,"text":"[Sources]\n- Yorkstead Systems positioning and repository case-study narratives.\n[/Sources]"}
+{"kind":"slide","id":"sl/zsa2as","slide":4,"title":"BUSINESS WEBSITES","textShapes":6}
+{"kind":"textbox","id":"sh/elkbupwz","slide":4,"name":"eyebrow","text":"BUSINESS WEBSITES","textPreview":"BUSINESS WEBSITES","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/1ovap4fq","slide":4,"name":"slide-title","text":"Yorkstead.com is built as a working sales and operations surface.","textPreview":"Yorkstead.com is built as a working sales and operations surface.","textChars":65,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/0n2twze5","slide":4,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/nqdsrexg","slide":4,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/2p4by9wb","slide":4,"name":"footer-page","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/psvat4fm","slide":4,"name":"proof-body","text":"The public site connects positioning, services, project evidence, workflow audits, consultation paths, and an owner Command Center. Its case studies use authentic system screens and explicit limitations instead of inflated results.","textPreview":"The public site connects positioning, services, project evidence, workflow audits, consultation paths, and an owner Command Center. Its c...","textChars":231,"textLines":1,"bbox":[42,168,410,330]}
+{"kind":"shape","id":"sh/3u9sfaxc","slide":4,"name":"image-caption-bg","bbox":[506,530,690,46]}
+{"kind":"textbox","id":"sh/it0rm5wr","slide":4,"name":"image-caption","text":"Operational product story","textPreview":"Operational product story","textChars":25,"textLines":1,"bbox":[526,538,650,28]}
+{"kind":"image","id":"im/dcfyt43q","slide":4,"name":"","geometry":"rect","alt":"Operational product story","bbox":[506,168,690,388]}
+{"kind":"notes","id":"nt/zsa2as","slide":4,"text":"[Sources]\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\yorkstead-ops\\pages\\operations-1.png\n- Repository project documentation and case-study limitations.\n[/Sources]"}
+{"kind":"slide","id":"sl/drmfkl","slide":5,"title":"BUSINESS WEBSITES","textShapes":8}
+{"kind":"textbox","id":"sh/8nm1k321","slide":5,"name":"eyebrow","text":"BUSINESS WEBSITES","textPreview":"BUSINESS WEBSITES","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/nmd0ry1g","slide":5,"name":"slide-title","text":"Proof you can point to—not promises you have to explain.","textPreview":"Proof you can point to—not promises you have to explain.","textChars":56,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/ml4zitkv","slide":5,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/xsfix8ji","slide":5,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/wr61o32x","slide":5,"name":"footer-page","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/ap4jmtkr","slide":5,"name":"cap-0","text":"Operational product story","textPreview":"Operational product story","textChars":25,"textLines":1,"bbox":[42,436,354,35]}
+{"kind":"textbox","id":"sh/kf61sn29","slide":5,"name":"cap-1","text":"Distinctive customer experience","textPreview":"Distinctive customer experience","textChars":31,"textLines":1,"bbox":[440,436,354,35]}
+{"kind":"textbox","id":"sh/fupcb2h4","slide":5,"name":"cap-2","text":"Proof from the working system","textPreview":"Proof from the working system","textChars":29,"textLines":1,"bbox":[838,436,354,35]}
+{"kind":"textbox","id":"sh/0vytknyp","slide":5,"name":"proof-note","text":"These are working interfaces and documented prototypes. Where outcomes have not been measured, the deck says so.","textPreview":"These are working interfaces and documented prototypes. Where outcomes have not been measured, the deck says so.","textChars":112,"textLines":1,"bbox":[42,530,1100,62]}
+{"kind":"image","id":"im/21wry5kn","slide":5,"name":"","geometry":"rect","alt":"Operational product story","bbox":[42,170,354,250]}
+{"kind":"image","id":"im/8zytcz2d","slide":5,"name":"","geometry":"rect","alt":"Distinctive customer experience","bbox":[440,170,354,250]}
+{"kind":"image","id":"im/hcni94va","slide":5,"name":"","geometry":"rect","alt":"Proof from the working system","bbox":[838,170,354,250]}
+{"kind":"notes","id":"nt/drmfkl","slide":5,"text":"[Sources]\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\yorkstead-ops\\pages\\operations-1.png\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\jwld\\screenshots\\home.png\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\ellwood\\active-release.png\n[/Sources]"}
+{"kind":"slide","id":"sl/pkmt3y","slide":6,"title":"BUSINESS WEBSITES","textShapes":16}
+{"kind":"textbox","id":"sh/etc7qxo3","slide":6,"name":"eyebrow","text":"BUSINESS WEBSITES","textPreview":"BUSINESS WEBSITES","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/1w36lcnu","slide":6,"name":"slide-title","text":"A focused first engagement creates momentum without a blank check.","textPreview":"A focused first engagement creates momentum without a blank check.","textChars":66,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/gvups769","slide":6,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/3i5onm50","slide":6,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/2xc7uhof","slide":6,"name":"footer-page","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/pknqpcnq","slide":6,"name":"first","text":"Pick one buyer and one decision. Build the shortest credible path from their problem to a qualified conversation.","textPreview":"Pick one buyer and one decision. Build the shortest credible path from their problem to a qualified conversation.","textChars":113,"textLines":1,"bbox":[42,168,760,108]}
+{"kind":"shape","id":"sh/ojepwr6l","slide":6,"name":"opp-rule-0","bbox":[42,322,850,1]}
+{"kind":"textbox","id":"sh/j21obi5g","slide":6,"name":"opp-0","text":"Positioning & information design","textPreview":"Positioning & information design","textChars":32,"textLines":1,"bbox":[42,332,780,38]}
+{"kind":"textbox","id":"sh/i1s7idob","slide":6,"name":"opp-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[930,332,80,38]}
+{"kind":"shape","id":"sh/8belsrmt","slide":6,"name":"opp-rule-1","bbox":[42,376,850,1]}
+{"kind":"textbox","id":"sh/9wn2lwny","slide":6,"name":"opp-1","text":"Conversion-focused build","textPreview":"Conversion-focused build","textChars":24,"textLines":1,"bbox":[42,386,780,38]}
+{"kind":"textbox","id":"sh/m9w3qh4n","slide":6,"name":"opp-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[930,386,80,38]}
+{"kind":"shape","id":"sh/7a5kjm58","slide":6,"name":"opp-rule-2","bbox":[42,430,850,1]}
+{"kind":"textbox","id":"sh/wzylwrmp","slide":6,"name":"opp-2","text":"Case studies & proof","textPreview":"Case studies & proof","textChars":20,"textLines":1,"bbox":[42,440,780,38]}
+{"kind":"textbox","id":"sh/h072pw3a","slide":6,"name":"opp-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[930,440,80,38]}
+{"kind":"shape","id":"sh/uxg3u14j","slide":6,"name":"opp-rule-3","bbox":[42,484,850,1]}
+{"kind":"textbox","id":"sh/vypknm54","slide":6,"name":"opp-3","text":"Qualified intake","textPreview":"Qualified intake","textChars":16,"textLines":1,"bbox":[42,494,780,38]}
+{"kind":"textbox","id":"sh/c3u1k7ml","slide":6,"name":"opp-num-3","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[930,494,80,38]}
+{"kind":"shape","id":"sh/x432dcn6","slide":6,"name":"opp-rule-4","bbox":[42,538,850,1]}
+{"kind":"textbox","id":"sh/dova14bi","slide":6,"name":"opp-4","text":"Measurement & iteration","textPreview":"Measurement & iteration","textChars":23,"textLines":1,"bbox":[42,548,780,38]}
+{"kind":"textbox","id":"sh/sn29szax","slide":6,"name":"opp-num-4","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[930,548,80,38]}
+{"kind":"shape","id":"sh/rmt8zutc","slide":6,"name":"engagement","bbox":[1040,168,158,388]}
+{"kind":"textbox","id":"sh/6lkrqps7","slide":6,"name":"engagement-copy","text":"AUDIT\n\nPRIORITIZE\n\nBUILD\n\nVERIFY\n\nHAND OFF","textPreview":"AUDIT |  | PRIORITIZE |  | BUILD |  | VERIFY |  | HAND OFF","textChars":42,"textLines":9,"bbox":[1062,188,114,350]}
+{"kind":"notes","id":"nt/pkmt3y","slide":6,"text":"[Sources]\n- Engagement framing from yorkstead.com services, packages, and workflow-audit content.\n[/Sources]"}
+{"kind":"slide","id":"sl/oih8vj","slide":7,"title":"YORKSTEAD SYSTEMS","textShapes":4}
+{"kind":"textbox","id":"sh/ypcr2pwz","slide":7,"name":"brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,38,400,26]}
+{"kind":"textbox","id":"sh/lsnqxkvq","slide":7,"name":"close","text":"Do not launch another brochure.\nBuild the beginning of the sales process.","textPreview":"Do not launch another brochure. | Build the beginning of the sales process.","textChars":73,"textLines":2,"bbox":[42,158,1050,230]}
+{"kind":"textbox","id":"sh/kru94fe5","slide":7,"name":"ask","text":"Bring one broken workflow. We’ll identify the first useful system and the shortest path to shipping it.","textPreview":"Bring one broken workflow. We’ll identify the first useful system and the shortest path to shipping it.","textChars":103,"textLines":1,"bbox":[42,458,820,90]}
+{"kind":"textbox","id":"sh/bml8rado","slide":7,"name":"contact","text":"hello@yorkstead.com  •  yorkstead.com","textPreview":"hello@yorkstead.com  •  yorkstead.com","textChars":37,"textLines":1,"bbox":[42,620,650,30]}
+{"kind":"shape","id":"sh/alcry5w3","slide":7,"name":"accent-block","bbox":[1040,0,240,720]}
+{"kind":"notes","id":"nt/oih8vj","slide":7,"text":"[Sources]\n- Yorkstead Systems contact and engagement positioning.\n[/Sources]"}

@@ -1,0 +1,95 @@
+{"kind":"deck","id":"pr/yrb5sm","name":"Deck"}
+{"kind":"layout","layoutId":"17750b45-1307-48b6-8b46-7830413c8502","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"f8bb2d1e-39bc-451c-9046-e0003f1ca9e5","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/fmct0r","slide":1,"title":"YORKSTEAD SYSTEMS","textShapes":6}
+{"kind":"shape","id":"sh/i5cfytc7","slide":1,"name":"accent-field","bbox":[802,0,478,720]}
+{"kind":"textbox","id":"sh/5snetoby","slide":1,"name":"brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,38,400,26]}
+{"kind":"textbox","id":"sh/4rex03ud","slide":1,"name":"sector","text":"WORKFLOW + DATA","textPreview":"WORKFLOW + DATA","textChars":15,"textLines":1,"bbox":[42,126,480,32]}
+{"kind":"textbox","id":"sh/v2lwnetw","slide":1,"name":"deck-title","text":"Turn scattered activity into visible, actionable work.","textPreview":"Turn scattered activity into visible, actionable work.","textChars":54,"textLines":1,"bbox":[42,174,700,240]}
+{"kind":"textbox","id":"sh/u1cvu9cb","slide":1,"name":"deck-subtitle","text":"Workflow automation, operational dashboards, and focused internal tools for owner-led teams.","textPreview":"Workflow automation, operational dashboards, and focused internal tools for owner-led teams.","textChars":92,"textLines":1,"bbox":[42,446,690,108]}
+{"kind":"textbox","id":"sh/h43epob2","slide":1,"name":"contact","text":"Brandon York  •  hello@yorkstead.com  •  yorkstead.com","textPreview":"Brandon York  •  hello@yorkstead.com  •  yorkstead.com","textChars":54,"textLines":1,"bbox":[42,642,700,24]}
+{"kind":"textbox","id":"sh/g3udwjuh","slide":1,"name":"accent-copy","text":"SOFTWARE THAT\nKEEPS REAL-WORLD\nWORK MOVING.","textPreview":"SOFTWARE THAT | KEEPS REAL-WORLD | WORK MOVING.","textChars":43,"textLines":3,"bbox":[842,410,360,180]}
+{"kind":"notes","id":"nt/fmct0r","slide":1,"text":"[Sources]\n- Yorkstead Systems brand positioning: repository lib/brand.ts\n[/Sources]"}
+{"kind":"slide","id":"sl/ca4szg","slide":2,"title":"WORKFLOW + DATA","textShapes":10}
+{"kind":"textbox","id":"sh/472h8fyp","slide":2,"name":"eyebrow","text":"WORKFLOW + DATA","textPreview":"WORKFLOW + DATA","textChars":15,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/36tgzah4","slide":2,"name":"slide-title","text":"The expensive part is the handoff nobody owns.","textPreview":"The expensive part is the handoff nobody owns.","textChars":46,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/25kf65gj","slide":2,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/dwvy5kz6","slide":2,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/cb2hczy1","slide":2,"name":"footer-page","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/ratg3uhg","slide":2,"name":"pain-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[42,184,70,60]}
+{"kind":"textbox","id":"sh/q9kzapgv","slide":2,"name":"pain-0","text":"People re-enter the same information across forms, spreadsheets, inboxes, and systems.","textPreview":"People re-enter the same information across forms, spreadsheets, inboxes, and systems.","textChars":86,"textLines":1,"bbox":[135,174,1010,82]}
+{"kind":"shape","id":"sh/10vy94zi","slide":2,"name":"pain-rule-0","bbox":[135,264,1010,1]}
+{"kind":"textbox","id":"sh/0zmhgzyx","slide":2,"name":"pain-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[42,320,70,60]}
+{"kind":"textbox","id":"sh/itg3ydkr","slide":2,"name":"pain-1","text":"Dashboards report history but do not show the next action or owner.","textPreview":"Dashboards report history but do not show the next action or owner.","textChars":67,"textLines":1,"bbox":[135,310,1010,82]}
+{"kind":"shape","id":"sh/3up4ri1c","slide":2,"name":"pain-rule-1","bbox":[135,400,1010,1]}
+{"kind":"textbox","id":"sh/4vyl0n2h","slide":2,"name":"pain-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[42,456,70,60]}
+{"kind":"textbox","id":"sh/5w7mt8j2","slide":2,"name":"pain-2","text":"Automation fails when it ignores exceptions, approvals, and human judgment.","textPreview":"Automation fails when it ignores exceptions, approvals, and human judgment.","textChars":75,"textLines":1,"bbox":[135,446,1010,82]}
+{"kind":"shape","id":"sh/qxg32dkn","slide":2,"name":"pain-rule-2","bbox":[135,536,1010,1]}
+{"kind":"notes","id":"nt/ca4szg","slide":2,"text":"[Sources]\n- Buyer problems synthesized from Yorkstead project workflows; no external quantitative claim.\n[/Sources]"}
+{"kind":"slide","id":"sl/ibsr5g","slide":3,"title":"WORKFLOW + DATA","textShapes":6}
+{"kind":"textbox","id":"sh/czqtonmd","slide":3,"name":"eyebrow","text":"WORKFLOW + DATA","textPreview":"WORKFLOW + DATA","textChars":15,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/ryhsfils","slide":3,"name":"promise","text":"Connect the handoff, preserve the decision, and surface what needs attention now.","textPreview":"Connect the handoff, preserve the decision, and surface what needs attention now.","textChars":81,"textLines":1,"bbox":[42,110,760,170]}
+{"kind":"textbox","id":"sh/qx8bmd47","slide":3,"name":"body","text":"The useful system is not the one with the most features. It is the one that keeps context attached as work moves between people, decisions, and tools.","textPreview":"The useful system is not the one with the most features. It is the one that keeps context attached as work moves between people, decision...","textChars":150,"textLines":1,"bbox":[42,334,690,130]}
+{"kind":"shape","id":"sh/pwzads3m","slide":3,"name":"signal","bbox":[850,122,330,330]}
+{"kind":"textbox","id":"sh/4vqtknm1","slide":3,"name":"signal-copy","text":"SHARED\nCONTEXT\n→\nCLEAR\nNEXT STEP","textPreview":"SHARED | CONTEXT | → | CLEAR | NEXT STEP","textChars":32,"textLines":5,"bbox":[890,154,250,270]}
+{"kind":"shape","id":"sh/3ahsbilg","slide":3,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/29obid4b","slide":3,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/h8fa983q","slide":3,"name":"footer-page","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"notes","id":"nt/ibsr5g","slide":3,"text":"[Sources]\n- Yorkstead Systems positioning and repository case-study narratives.\n[/Sources]"}
+{"kind":"slide","id":"sl/qzkwcd","slide":4,"title":"WORKFLOW + DATA","textShapes":6}
+{"kind":"textbox","id":"sh/g3ip8bi5","slide":4,"name":"eyebrow","text":"WORKFLOW + DATA","textPreview":"WORKFLOW + DATA","textChars":15,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/f29oz6hk","slide":4,"name":"slide-title","text":"The work spans intake, execution, exceptions, and measurement.","textPreview":"The work spans intake, execution, exceptions, and measurement.","textChars":62,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/uh07610z","slide":4,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/tg76xwze","slide":4,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/sfyp4rit","slide":4,"name":"footer-page","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/7epov618","slide":4,"name":"proof-body","text":"Yorkstead systems combine structured intake, shared records, explicit workflow state, dashboards, audit trails, and operational reporting. The implementation can sit beside existing tools or become a focused system where spreadsheets have reached their limit.","textPreview":"Yorkstead systems combine structured intake, shared records, explicit workflow state, dashboards, audit trails, and operational reporting...","textChars":259,"textLines":1,"bbox":[42,168,410,330]}
+{"kind":"shape","id":"sh/5c76twji","slide":4,"name":"image-caption-bg","bbox":[506,530,690,46]}
+{"kind":"textbox","id":"sh/kby50rix","slide":4,"name":"image-caption","text":"Connected records and handoffs","textPreview":"Connected records and handoffs","textChars":30,"textLines":1,"bbox":[526,538,650,28]}
+{"kind":"image","id":"im/vq187uxw","slide":4,"name":"","geometry":"rect","alt":"Connected records and handoffs","bbox":[506,168,690,388]}
+{"kind":"notes","id":"nt/qzkwcd","slide":4,"text":"[Sources]\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\yorkstead-ops\\pages\\operations-7.png\n- Repository project documentation and case-study limitations.\n[/Sources]"}
+{"kind":"slide","id":"sl/jxzusp","slide":5,"title":"WORKFLOW + DATA","textShapes":8}
+{"kind":"textbox","id":"sh/q18r6po7","slide":5,"name":"eyebrow","text":"WORKFLOW + DATA","textPreview":"WORKFLOW + DATA","textChars":15,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/d4za147y","slide":5,"name":"slide-title","text":"Proof you can point to—not promises you have to explain.","textPreview":"Proof you can point to—not promises you have to explain.","textChars":56,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/s3q98z6d","slide":5,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/3yxsvupw","slide":5,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/ixor2pob","slide":5,"name":"footer-page","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/4z694z6h","slide":5,"name":"cap-0","text":"Connected records and handoffs","textPreview":"Connected records and handoffs","textChars":30,"textLines":1,"bbox":[42,436,354,35]}
+{"kind":"textbox","id":"sh/u94ry5of","slide":5,"name":"cap-1","text":"Manufacturing metrics","textPreview":"Manufacturing metrics","textChars":21,"textLines":1,"bbox":[440,436,354,35]}
+{"kind":"textbox","id":"sh/p4bux4n2","slide":5,"name":"cap-2","text":"Service telemetry","textPreview":"Service telemetry","textChars":17,"textLines":1,"bbox":[838,436,354,35]}
+{"kind":"textbox","id":"sh/21kvmp4b","slide":5,"name":"proof-note","text":"These are working interfaces and documented prototypes. Where outcomes have not been measured, the deck says so.","textPreview":"These are working interfaces and documented prototypes. Where outcomes have not been measured, the deck says so.","textChars":112,"textLines":1,"bbox":[42,530,1100,62]}
+{"kind":"image","id":"im/4fq18325","slide":5,"name":"","geometry":"rect","alt":"Connected records and handoffs","bbox":[42,170,354,250]}
+{"kind":"image","id":"im/u9oj2tk3","slide":5,"name":"","geometry":"rect","alt":"Manufacturing metrics","bbox":[440,170,354,250]}
+{"kind":"image","id":"im/r6lgjq9o","slide":5,"name":"","geometry":"rect","alt":"Service telemetry","bbox":[838,170,354,250]}
+{"kind":"notes","id":"nt/jxzusp","slide":5,"text":"[Sources]\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\yorkstead-ops\\pages\\operations-7.png\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\ellwood\\reports.png\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\sic\\analytics.png\n[/Sources]"}
+{"kind":"slide","id":"sl/mw4v9p","slide":6,"title":"WORKFLOW + DATA","textShapes":16}
+{"kind":"textbox","id":"sh/j290fi18","slide":6,"name":"eyebrow","text":"WORKFLOW + DATA","textPreview":"WORKFLOW + DATA","textChars":15,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/k3i18nit","slide":6,"name":"slide-title","text":"A focused first engagement creates momentum without a blank check.","textPreview":"A focused first engagement creates momentum without a blank check.","textChars":66,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/54r2hsje","slide":6,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/650jax0z","slide":6,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/769kj214","slide":6,"name":"footer-page","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/s721cnip","slide":6,"name":"first","text":"Begin with the repeated handoff that consumes attention every week. Make it visible, measurable, and easier to complete.","textPreview":"Begin with the repeated handoff that consumes attention every week. Make it visible, measurable, and easier to complete.","textChars":120,"textLines":1,"bbox":[42,168,760,108]}
+{"kind":"shape","id":"sh/t8b2lsja","slide":6,"name":"opp-rule-0","bbox":[42,322,850,1]}
+{"kind":"textbox","id":"sh/u9kjex0v","slide":6,"name":"opp-0","text":"Workflow audit","textPreview":"Workflow audit","textChars":14,"textLines":1,"bbox":[42,332,780,38]}
+{"kind":"textbox","id":"sh/futkn21g","slide":6,"name":"opp-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[930,332,80,38]}
+{"kind":"shape","id":"sh/3algnil4","slide":6,"name":"opp-rule-1","bbox":[42,376,850,1]}
+{"kind":"textbox","id":"sh/29cfed4j","slide":6,"name":"opp-1","text":"Forms & intake automation","textPreview":"Forms & intake automation","textChars":25,"textLines":1,"bbox":[42,386,780,38]}
+{"kind":"textbox","id":"sh/pcnyp83a","slide":6,"name":"opp-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[930,386,80,38]}
+{"kind":"shape","id":"sh/obuxg3mp","slide":6,"name":"opp-rule-2","bbox":[42,430,850,1]}
+{"kind":"textbox","id":"sh/fmlwjyls","slide":6,"name":"opp-2","text":"Operations dashboards","textPreview":"Operations dashboards","textChars":21,"textLines":1,"bbox":[42,440,780,38]}
+{"kind":"textbox","id":"sh/elcfat4n","slide":6,"name":"opp-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[930,440,80,38]}
+{"kind":"shape","id":"sh/183el83y","slide":6,"name":"opp-rule-3","bbox":[42,484,850,1]}
+{"kind":"textbox","id":"sh/g7uxc3md","slide":6,"name":"opp-3","text":"Approvals & exception handling","textPreview":"Approvals & exception handling","textChars":30,"textLines":1,"bbox":[42,494,780,38]}
+{"kind":"textbox","id":"sh/zi5gv2lc","slide":6,"name":"opp-num-3","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[930,494,80,38]}
+{"kind":"shape","id":"sh/yhwfmx4r","slide":6,"name":"opp-rule-4","bbox":[42,538,850,1]}
+{"kind":"textbox","id":"sh/ax0ju1oz","slide":6,"name":"opp-4","text":"System integration","textPreview":"System integration","textChars":18,"textLines":1,"bbox":[42,548,780,38]}
+{"kind":"textbox","id":"sh/vy90nm5k","slide":6,"name":"opp-num-4","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[930,548,80,38]}
+{"kind":"shape","id":"sh/wzi1wr65","slide":6,"name":"engagement","bbox":[1040,168,158,388]}
+{"kind":"textbox","id":"sh/x0ripwnq","slide":6,"name":"engagement-copy","text":"AUDIT\n\nPRIORITIZE\n\nBUILD\n\nVERIFY\n\nHAND OFF","textPreview":"AUDIT |  | PRIORITIZE |  | BUILD |  | VERIFY |  | HAND OFF","textChars":42,"textLines":9,"bbox":[1062,188,114,350]}
+{"kind":"notes","id":"nt/mw4v9p","slide":6,"text":"[Sources]\n- Engagement framing from yorkstead.com services, packages, and workflow-audit content.\n[/Sources]"}
+{"kind":"slide","id":"sl/5497sv","slide":7,"title":"YORKSTEAD SYSTEMS","textShapes":4}
+{"kind":"textbox","id":"sh/2xcvy10v","slide":7,"name":"brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,38,400,26]}
+{"kind":"textbox","id":"sh/p03e9wjm","slide":7,"name":"close","text":"The goal is not more automation.\nThe goal is less operational drag.","textPreview":"The goal is not more automation. | The goal is less operational drag.","textChars":67,"textLines":2,"bbox":[42,158,1050,230]}
+{"kind":"textbox","id":"sh/ozud0bi1","slide":7,"name":"ask","text":"Bring one broken workflow. We’ll identify the first useful system and the shortest path to shipping it.","textPreview":"Bring one broken workflow. We’ll identify the first useful system and the shortest path to shipping it.","textChars":103,"textLines":1,"bbox":[42,458,820,90]}
+{"kind":"textbox","id":"sh/falw3m1k","slide":7,"name":"contact","text":"hello@yorkstead.com  •  yorkstead.com","textPreview":"hello@yorkstead.com  •  yorkstead.com","textChars":37,"textLines":1,"bbox":[42,620,650,30]}
+{"kind":"shape","id":"sh/e9svuhkz","slide":7,"name":"accent-block","bbox":[1040,0,240,720]}
+{"kind":"notes","id":"nt/5497sv","slide":7,"text":"[Sources]\n- Yorkstead Systems contact and engagement positioning.\n[/Sources]"}

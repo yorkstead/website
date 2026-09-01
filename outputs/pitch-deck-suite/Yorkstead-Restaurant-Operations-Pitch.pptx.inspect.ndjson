@@ -1,0 +1,95 @@
+{"kind":"deck","id":"pr/7fczny","name":"Deck"}
+{"kind":"layout","layoutId":"92ec6d0a-cefb-4cd0-afb1-48bf8f911d7e","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"89085c95-36c0-4d65-a30b-2b43eca983c5","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/llllbz","slide":1,"title":"YORKSTEAD SYSTEMS","textShapes":6}
+{"kind":"shape","id":"sh/2hsfih83","slide":1,"name":"accent-field","bbox":[802,0,478,720]}
+{"kind":"textbox","id":"sh/p4jytw7u","slide":1,"name":"brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,38,400,26]}
+{"kind":"textbox","id":"sh/43axkrq9","slide":1,"name":"sector","text":"RESTAURANTS + POS","textPreview":"RESTAURANTS + POS","textChars":17,"textLines":1,"bbox":[42,126,480,32]}
+{"kind":"textbox","id":"sh/fehgnmpc","slide":1,"name":"deck-title","text":"One live table. Everyone sees what they need.","textPreview":"One live table. Everyone sees what they need.","textChars":45,"textLines":1,"bbox":[42,174,700,240]}
+{"kind":"textbox","id":"sh/ud8feh87","slide":1,"name":"deck-subtitle","text":"A restaurant operating system concept that connects guests, servers, kitchen stations, expo, managers, and service analytics.","textPreview":"A restaurant operating system concept that connects guests, servers, kitchen stations, expo, managers, and service analytics.","textChars":125,"textLines":1,"bbox":[42,446,690,108]}
+{"kind":"textbox","id":"sh/hgjypw7i","slide":1,"name":"contact","text":"Brandon York  •  hello@yorkstead.com  •  yorkstead.com","textPreview":"Brandon York  •  hello@yorkstead.com  •  yorkstead.com","textChars":54,"textLines":1,"bbox":[42,642,700,24]}
+{"kind":"textbox","id":"sh/gfaxgrqx","slide":1,"name":"accent-copy","text":"SOFTWARE THAT\nKEEPS REAL-WORLD\nWORK MOVING.","textPreview":"SOFTWARE THAT | KEEPS REAL-WORLD | WORK MOVING.","textChars":43,"textLines":3,"bbox":[842,410,360,180]}
+{"kind":"notes","id":"nt/llllbz","slide":1,"text":"[Sources]\n- Yorkstead Systems brand positioning: repository lib/brand.ts\n[/Sources]"}
+{"kind":"slide","id":"sl/9v620r","slide":2,"title":"RESTAURANTS + POS","textShapes":10}
+{"kind":"textbox","id":"sh/dkzmd4vi","slide":2,"name":"eyebrow","text":"RESTAURANTS + POS","textPreview":"RESTAURANTS + POS","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/qh83ipcr","slide":2,"name":"slide-title","text":"The expensive part is the handoff nobody owns.","textPreview":"The expensive part is the handoff nobody owns.","textChars":46,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/rih4budc","slide":2,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/4v6lgzul","slide":2,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/pwfm9kv6","slide":2,"name":"footer-page","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/ito3epcv","slide":2,"name":"pain-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[42,184,70,60]}
+{"kind":"textbox","id":"sh/3ux47udg","slide":2,"name":"pain-0","text":"Servers carry requests, coursing, handoffs, and split checks in their heads.","textPreview":"Servers carry requests, coursing, handoffs, and split checks in their heads.","textChars":76,"textLines":1,"bbox":[135,174,1010,82]}
+{"kind":"shape","id":"sh/ora5sju5","slide":2,"name":"pain-rule-0","bbox":[135,264,1010,1]}
+{"kind":"textbox","id":"sh/9sjmlovq","slide":2,"name":"pain-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[42,320,70,60]}
+{"kind":"textbox","id":"sh/l8fqd0zy","slide":2,"name":"pain-1","text":"Guest, kitchen, and manager tools see fragments of the same meal.","textPreview":"Guest, kitchen, and manager tools see fragments of the same meal.","textChars":65,"textLines":1,"bbox":[135,310,1010,82]}
+{"kind":"shape","id":"sh/k76p4vid","slide":2,"name":"pain-rule-1","bbox":[135,400,1010,1]}
+{"kind":"textbox","id":"sh/zmx8bahs","slide":2,"name":"pain-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[42,456,70,60]}
+{"kind":"textbox","id":"sh/ylo7250n","slide":2,"name":"pain-2","text":"Operators learn why service slipped only after the shift.","textPreview":"Operators learn why service slipped only after the shift.","textChars":57,"textLines":1,"bbox":[135,446,1010,82]}
+{"kind":"shape","id":"sh/xkfq90z2","slide":2,"name":"pain-rule-2","bbox":[135,536,1010,1]}
+{"kind":"notes","id":"nt/9v620r","slide":2,"text":"[Sources]\n- Buyer problems synthesized from Yorkstead project workflows; no external quantitative claim.\n[/Sources]"}
+{"kind":"slide","id":"sl/cy0uwa","slide":3,"title":"RESTAURANTS + POS","textShapes":6}
+{"kind":"textbox","id":"sh/3yhgvqho","slide":3,"name":"eyebrow","text":"RESTAURANTS + POS","textPreview":"RESTAURANTS + POS","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/4zqhoby9","slide":3,"name":"promise","text":"A shared table session becomes the source of truth for the entire service.","textPreview":"A shared table session becomes the source of truth for the entire service.","textChars":74,"textLines":1,"bbox":[42,110,760,170]}
+{"kind":"textbox","id":"sh/p0zyxgzu","slide":3,"name":"body","text":"The useful system is not the one with the most features. It is the one that keeps context attached as work moves between people, decisions, and tools.","textPreview":"The useful system is not the one with the most features. It is the one that keeps context attached as work moves between people, decision...","textChars":150,"textLines":1,"bbox":[42,334,690,130]}
+{"kind":"shape","id":"sh/u9ozi107","slide":3,"name":"signal","bbox":[850,122,330,330]}
+{"kind":"textbox","id":"sh/fuxgr6hs","slide":3,"name":"signal-copy","text":"SHARED\nCONTEXT\n→\nCLEAR\nNEXT STEP","textPreview":"SHARED | CONTEXT | → | CLEAR | NEXT STEP","textChars":32,"textLines":5,"bbox":[890,154,250,270]}
+{"kind":"shape","id":"sh/gv6hkbid","slide":3,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/hwfytgzi","slide":3,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/e5szu5gb","slide":3,"name":"footer-page","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"notes","id":"nt/cy0uwa","slide":3,"text":"[Sources]\n- Yorkstead Systems positioning and repository case-study narratives.\n[/Sources]"}
+{"kind":"slide","id":"sl/untuoh","slide":4,"title":"RESTAURANTS + POS","textShapes":6}
+{"kind":"textbox","id":"sh/7adgrm50","slide":4,"name":"eyebrow","text":"RESTAURANTS + POS","textPreview":"RESTAURANTS + POS","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/8bmh0rml","slide":4,"name":"slide-title","text":"Designed around hospitality roles, not a single checkout screen.","textPreview":"Designed around hospitality roles, not a single checkout screen.","textChars":64,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/tcvytwn6","slide":4,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/ud4z214r","slide":4,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/vedgv65c","slide":4,"name":"footer-page","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/gf6h4rmx","slide":4,"name":"proof-body","text":"SIC Pizza demonstrates phone-first floor management, guest QR participation, station-specific kitchen queues, handoffs, manager interventions, and service analytics. Payment and production integrations remain implementation work—not simulated success claims.","textPreview":"SIC Pizza demonstrates phone-first floor management, guest QR participation, station-specific kitchen queues, handoffs, manager intervent...","textChars":258,"textLines":1,"bbox":[42,168,410,330]}
+{"kind":"shape","id":"sh/ahkfqx4n","slide":4,"name":"image-caption-bg","bbox":[506,530,690,46]}
+{"kind":"textbox","id":"sh/bitgz258","slide":4,"name":"image-caption","text":"Live dining room","textPreview":"Live dining room","textChars":16,"textLines":1,"bbox":[526,538,650,28]}
+{"kind":"image","id":"im/w76t0ne5","slide":4,"name":"","geometry":"rect","alt":"Live dining room","bbox":[506,168,690,388]}
+{"kind":"notes","id":"nt/untuoh","slide":4,"text":"[Sources]\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\sic\\floor.png\n- Repository project documentation and case-study limitations.\n[/Sources]"}
+{"kind":"slide","id":"sl/eb2o2b","slide":5,"title":"RESTAURANTS + POS","textShapes":8}
+{"kind":"textbox","id":"sh/6hg3qhcn","slide":5,"name":"eyebrow","text":"RESTAURANTS + POS","textPreview":"RESTAURANTS + POS","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/tkrmlwby","slide":5,"name":"slide-title","text":"Proof you can point to—not promises you have to explain.","textPreview":"Proof you can point to—not promises you have to explain.","textChars":56,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/8jilsrut","slide":5,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/jupkfmtw","slide":5,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/ytg3mhcb","slide":5,"name":"footer-page","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/kvylo7uh","slide":5,"name":"cap-0","text":"Live dining room","textPreview":"Live dining room","textChars":16,"textLines":1,"bbox":[42,436,354,35]}
+{"kind":"textbox","id":"sh/apw3ixcf","slide":5,"name":"cap-1","text":"Multi-station KDS","textPreview":"Multi-station KDS","textChars":17,"textLines":1,"bbox":[440,436,354,35]}
+{"kind":"textbox","id":"sh/lcvixc7i","slide":5,"name":"cap-2","text":"Service analytics","textPreview":"Service analytics","textChars":17,"textLines":1,"bbox":[838,436,354,35]}
+{"kind":"textbox","id":"sh/y9kz2ho7","slide":5,"name":"proof-note","text":"These are working interfaces and documented prototypes. Where outcomes have not been measured, the deck says so.","textPreview":"These are working interfaces and documented prototypes. Where outcomes have not been measured, the deck says so.","textChars":112,"textLines":1,"bbox":[42,530,1100,62]}
+{"kind":"image","id":"im/436p8fep","slide":5,"name":"","geometry":"rect","alt":"Live dining room","bbox":[42,170,354,250]}
+{"kind":"image","id":"im/65o7apwv","slide":5,"name":"","geometry":"rect","alt":"Multi-station KDS","bbox":[440,170,354,250]}
+{"kind":"image","id":"im/7ipo7it0","slide":5,"name":"","geometry":"rect","alt":"Service analytics","bbox":[838,170,354,250]}
+{"kind":"notes","id":"nt/eb2o2b","slide":5,"text":"[Sources]\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\sic\\floor.png\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\sic\\kitchen.png\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\sic\\analytics.png\n[/Sources]"}
+{"kind":"slide","id":"sl/fankw3","slide":6,"title":"RESTAURANTS + POS","textShapes":16}
+{"kind":"textbox","id":"sh/qlwv6hwn","slide":6,"name":"eyebrow","text":"RESTAURANTS + POS","textPreview":"RESTAURANTS + POS","textChars":17,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/done1wfe","slide":6,"name":"slide-title","text":"A focused first engagement creates momentum without a blank check.","textPreview":"A focused first engagement creates momentum without a blank check.","textChars":66,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/cned8ret","slide":6,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/3ylcvmxw","slide":6,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/2xcv2hwr","slide":6,"name":"footer-page","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/p0nexcf2","slide":6,"name":"first","text":"Choose one service bottleneck—requests, kitchen flow, split checks, or handoff—and prove the workflow before replacing everything.","textPreview":"Choose one service bottleneck—requests, kitchen flow, split checks, or handoff—and prove the workflow before replacing everything.","textChars":130,"textLines":1,"bbox":[42,168,760,108]}
+{"kind":"shape","id":"sh/ozed47eh","slide":6,"name":"opp-rule-0","bbox":[42,322,850,1]}
+{"kind":"textbox","id":"sh/nupw76dg","slide":6,"name":"opp-0","text":"Mobile server workflow","textPreview":"Mobile server workflow","textChars":22,"textLines":1,"bbox":[42,332,780,38]}
+{"kind":"textbox","id":"sh/mtgve1wv","slide":6,"name":"opp-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[930,332,80,38]}
+{"kind":"shape","id":"sh/cratgvy5","slide":6,"name":"opp-rule-1","bbox":[42,376,850,1]}
+{"kind":"textbox","id":"sh/xsjup0fq","slide":6,"name":"opp-1","text":"Guest QR ordering","textPreview":"Guest QR ordering","textChars":17,"textLines":1,"bbox":[42,386,780,38]}
+{"kind":"textbox","id":"sh/ap8belgz","slide":6,"name":"opp-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[930,386,80,38]}
+{"kind":"shape","id":"sh/bq1cnqxk","slide":6,"name":"opp-rule-2","bbox":[42,430,850,1]}
+{"kind":"textbox","id":"sh/o3qtcvyt","slide":6,"name":"opp-2","text":"Kitchen display systems","textPreview":"Kitchen display systems","textChars":23,"textLines":1,"bbox":[42,440,780,38]}
+{"kind":"textbox","id":"sh/p4zulgfe","slide":6,"name":"opp-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[930,440,80,38]}
+{"kind":"shape","id":"sh/218balg3","slide":6,"name":"opp-rule-3","bbox":[42,484,850,1]}
+{"kind":"textbox","id":"sh/n2hcjqxo","slide":6,"name":"opp-3","text":"Shift handoffs","textPreview":"Shift handoffs","textChars":14,"textLines":1,"bbox":[42,494,780,38]}
+{"kind":"textbox","id":"sh/0zqt8byx","slide":6,"name":"opp-num-3","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[930,494,80,38]}
+{"kind":"shape","id":"sh/10zuhgzi","slide":6,"name":"opp-rule-4","bbox":[42,538,850,1]}
+{"kind":"textbox","id":"sh/hk7ip8nu","slide":6,"name":"opp-4","text":"Service metrics","textPreview":"Service metrics","textChars":15,"textLines":1,"bbox":[42,548,780,38]}
+{"kind":"textbox","id":"sh/gjy1w3mp","slide":6,"name":"opp-num-4","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[930,548,80,38]}
+{"kind":"shape","id":"sh/vip03y54","slide":6,"name":"engagement","bbox":[1040,168,158,388]}
+{"kind":"textbox","id":"sh/uhgjut4j","slide":6,"name":"engagement-copy","text":"AUDIT\n\nPRIORITIZE\n\nBUILD\n\nVERIFY\n\nHAND OFF","textPreview":"AUDIT |  | PRIORITIZE |  | BUILD |  | VERIFY |  | HAND OFF","textChars":42,"textLines":9,"bbox":[1062,188,114,350]}
+{"kind":"notes","id":"nt/fankw3","slide":6,"text":"[Sources]\n- Engagement framing from yorkstead.com services, packages, and workflow-audit content.\n[/Sources]"}
+{"kind":"slide","id":"sl/rdhdg7","slide":7,"title":"YORKSTEAD SYSTEMS","textShapes":4}
+{"kind":"textbox","id":"sh/ip0zel4f","slide":7,"name":"brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,38,400,26]}
+{"kind":"textbox","id":"sh/5sry90n6","slide":7,"name":"close","text":"Do not add another screen to the restaurant.\nConnect the service.","textPreview":"Do not add another screen to the restaurant. | Connect the service.","textChars":65,"textLines":2,"bbox":[42,158,1050,230]}
+{"kind":"textbox","id":"sh/4rihgvml","slide":7,"name":"ask","text":"Bring one broken workflow. We’ll identify the first useful system and the shortest path to shipping it.","textPreview":"Bring one broken workflow. We’ll identify the first useful system and the shortest path to shipping it.","textChars":103,"textLines":1,"bbox":[42,458,820,90]}
+{"kind":"textbox","id":"sh/rutgba5c","slide":7,"name":"contact","text":"hello@yorkstead.com  •  yorkstead.com","textPreview":"hello@yorkstead.com  •  yorkstead.com","textChars":37,"textLines":1,"bbox":[42,620,650,30]}
+{"kind":"shape","id":"sh/6t0zi54r","slide":7,"name":"accent-block","bbox":[1040,0,240,720]}
+{"kind":"notes","id":"nt/rdhdg7","slide":7,"text":"[Sources]\n- Yorkstead Systems contact and engagement positioning.\n[/Sources]"}

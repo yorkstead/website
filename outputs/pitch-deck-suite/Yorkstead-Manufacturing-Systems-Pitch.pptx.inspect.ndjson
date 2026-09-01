@@ -1,0 +1,95 @@
+{"kind":"deck","id":"pr/ai21x3","name":"Deck"}
+{"kind":"layout","layoutId":"5cf20090-3d4a-41e3-8166-19a2e07a4444","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"ad6bf780-6976-450b-a0cd-c1f6fb153171","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/lecmhh","slide":1,"title":"YORKSTEAD SYSTEMS","textShapes":6}
+{"kind":"shape","id":"sh/rqdcv65k","slide":1,"name":"accent-field","bbox":[802,0,478,720]}
+{"kind":"textbox","id":"sh/srmd4bm5","slide":1,"name":"brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,38,400,26]}
+{"kind":"textbox","id":"sh/dsvuxgnq","slide":1,"name":"sector","text":"MANUFACTURING","textPreview":"MANUFACTURING","textChars":13,"textLines":1,"bbox":[42,126,480,32]}
+{"kind":"textbox","id":"sh/et4v6l4v","slide":1,"name":"deck-title","text":"Keep production moving when the work changes.","textPreview":"Keep production moving when the work changes.","textChars":45,"textLines":1,"bbox":[42,174,700,240]}
+{"kind":"textbox","id":"sh/zudcz65g","slide":1,"name":"deck-subtitle","text":"Practical software for release control, shop-floor execution, inventory, quality, and the handoffs between them.","textPreview":"Practical software for release control, shop-floor execution, inventory, quality, and the handoffs between them.","textChars":112,"textLines":1,"bbox":[42,446,690,108]}
+{"kind":"textbox","id":"sh/0v6d8bm1","slide":1,"name":"contact","text":"Brandon York  •  hello@yorkstead.com  •  yorkstead.com","textPreview":"Brandon York  •  hello@yorkstead.com  •  yorkstead.com","textChars":54,"textLines":1,"bbox":[42,642,700,24]}
+{"kind":"textbox","id":"sh/1wfu1gnm","slide":1,"name":"accent-copy","text":"SOFTWARE THAT\nKEEPS REAL-WORLD\nWORK MOVING.","textPreview":"SOFTWARE THAT | KEEPS REAL-WORLD | WORK MOVING.","textChars":43,"textLines":3,"bbox":[842,410,360,180]}
+{"kind":"notes","id":"nt/lecmhh","slide":1,"text":"[Sources]\n- Yorkstead Systems brand positioning: repository lib/brand.ts\n[/Sources]"}
+{"kind":"slide","id":"sl/h5m6wz","slide":2,"title":"MANUFACTURING","textShapes":10}
+{"kind":"textbox","id":"sh/tcnm1sna","slide":2,"name":"eyebrow","text":"MANUFACTURING","textPreview":"MANUFACTURING","textChars":13,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/6pwn6d4j","slide":2,"name":"slide-title","text":"The expensive part is the handoff nobody owns.","textPreview":"The expensive part is the handoff nobody owns.","textChars":46,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/7a54zi54","slide":2,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/gfy5cnml","slide":2,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/hg7m5sn6","slide":2,"name":"footer-page","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/udwnax4v","slide":2,"name":"pain-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[42,184,70,60]}
+{"kind":"textbox","id":"sh/fep43i5g","slide":2,"name":"pain-0","text":"Critical context lives across inboxes, folders, spreadsheets, and paper travelers.","textPreview":"Critical context lives across inboxes, folders, spreadsheets, and paper travelers.","textChars":82,"textLines":1,"bbox":[135,174,1010,82]}
+{"kind":"shape","id":"sh/4jy5g7mx","slide":2,"name":"pain-rule-0","bbox":[135,264,1010,1]}
+{"kind":"textbox","id":"sh/pk769cni","slide":2,"name":"pain-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[42,320,70,60]}
+{"kind":"textbox","id":"sh/hwj2lo7a","slide":2,"name":"pain-1","text":"Revision changes reach the floor late—or without a clear owner.","textPreview":"Revision changes reach the floor late—or without a clear owner.","textChars":63,"textLines":1,"bbox":[135,310,1010,82]}
+{"kind":"shape","id":"sh/gva1cj6p","slide":2,"name":"pain-rule-1","bbox":[135,400,1010,1]}
+{"kind":"textbox","id":"sh/fa1kjep4","slide":2,"name":"pain-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[42,456,70,60]}
+{"kind":"textbox","id":"sh/u9sjatoj","slide":2,"name":"pain-2","text":"Managers reconstruct status after the delay has already cost time.","textPreview":"Managers reconstruct status after the delay has already cost time.","textChars":66,"textLines":1,"bbox":[135,446,1010,82]}
+{"kind":"shape","id":"sh/p032p876","slide":2,"name":"pain-rule-2","bbox":[135,536,1010,1]}
+{"kind":"notes","id":"nt/h5m6wz","slide":2,"text":"[Sources]\n- Buyer problems synthesized from Yorkstead project workflows; no external quantitative claim.\n[/Sources]"}
+{"kind":"slide","id":"sl/h215fk","slide":3,"title":"MANUFACTURING","textShapes":6}
+{"kind":"textbox","id":"sh/fe1c3atk","slide":3,"name":"eyebrow","text":"MANUFACTURING","textPreview":"MANUFACTURING","textChars":13,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/0fatwvu5","slide":3,"name":"promise","text":"One controlled operating path from release intake to shipment.","textPreview":"One controlled operating path from release intake to shipment.","textChars":62,"textLines":1,"bbox":[42,110,760,170]}
+{"kind":"textbox","id":"sh/1g3u50bq","slide":3,"name":"body","text":"The useful system is not the one with the most features. It is the one that keeps context attached as work moves between people, decisions, and tools.","textPreview":"The useful system is not the one with the most features. It is the one that keeps context attached as work moves between people, decision...","textChars":150,"textLines":1,"bbox":[42,334,690,130]}
+{"kind":"shape","id":"sh/q9sbqlcn","slide":3,"name":"signal","bbox":[850,122,330,330]}
+{"kind":"textbox","id":"sh/ra1szqt8","slide":3,"name":"signal-copy","text":"SHARED\nCONTEXT\n→\nCLEAR\nNEXT STEP","textPreview":"SHARED | CONTEXT | → | CLEAR | NEXT STEP","textChars":32,"textLines":5,"bbox":[890,154,250,270]}
+{"kind":"shape","id":"sh/sbatsvut","slide":3,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/dcju10be","slide":3,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/il8bmlcr","slide":3,"name":"footer-page","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"notes","id":"nt/h215fk","slide":3,"text":"[Sources]\n- Yorkstead Systems positioning and repository case-study narratives.\n[/Sources]"}
+{"kind":"slide","id":"sl/2rz68w","slide":4,"title":"MANUFACTURING","textShapes":6}
+{"kind":"textbox","id":"sh/xo3id8j2","slide":4,"name":"eyebrow","text":"MANUFACTURING","textPreview":"MANUFACTURING","textChars":13,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/alsz2tkr","slide":4,"name":"slide-title","text":"Built around real manufacturing work—not generic task management.","textPreview":"Built around real manufacturing work—not generic task management.","textChars":65,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/bm10by1w","slide":4,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/ojah032l","slide":4,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/9kji9oj6","slide":4,"name":"footer-page","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/mhszytkf","slide":4,"name":"proof-body","text":"Ellwood Flow connects release intake, controlled documents, production dispatch, inventory, QC, palletization, shipping, reports, and audit history. Yorkstead Operations shows how the same thinking adapts across manufacturing and fabrication workflows.","textPreview":"Ellwood Flow connects release intake, controlled documents, production dispatch, inventory, QC, palletization, shipping, reports, and aud...","textChars":252,"textLines":1,"bbox":[42,168,410,330]}
+{"kind":"shape","id":"sh/8fe1cnip","slide":4,"name":"image-caption-bg","bbox":[506,530,690,46]}
+{"kind":"textbox","id":"sh/tgnilsja","slide":4,"name":"image-caption","text":"Active release workspace","textPreview":"Active release workspace","textChars":24,"textLines":1,"bbox":[526,538,650,28]}
+{"kind":"image","id":"im/udwrad8z","slide":4,"name":"","geometry":"rect","alt":"Active release workspace","bbox":[506,168,690,388]}
+{"kind":"notes","id":"nt/2rz68w","slide":4,"text":"[Sources]\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\ellwood\\active-release.png\n- Repository project documentation and case-study limitations.\n[/Sources]"}
+{"kind":"slide","id":"sl/6oc0xx","slide":5,"title":"MANUFACTURING","textShapes":8}
+{"kind":"textbox","id":"sh/qpgfqhcj","slide":5,"name":"eyebrow","text":"MANUFACTURING","textPreview":"MANUFACTURING","textChars":13,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/dsrelcba","slide":5,"name":"slide-title","text":"Proof you can point to—not promises you have to explain.","textPreview":"Proof you can point to—not promises you have to explain.","textChars":56,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/srixs7up","slide":5,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/3mpwf2t8","slide":5,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/ilgvmxcn","slide":5,"name":"footer-page","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/4nydo7ut","slide":5,"name":"cap-0","text":"Active release workspace","textPreview":"Active release workspace","textChars":24,"textLines":1,"bbox":[42,436,354,35]}
+{"kind":"textbox","id":"sh/mh0fy1cr","slide":5,"name":"cap-1","text":"Production dispatch","textPreview":"Production dispatch","textChars":19,"textLines":1,"bbox":[440,436,354,35]}
+{"kind":"textbox","id":"sh/tsvq9wvq","slide":5,"name":"cap-2","text":"Operational reporting","textPreview":"Operational reporting","textChars":21,"textLines":1,"bbox":[838,436,354,35]}
+{"kind":"textbox","id":"sh/6p47y1cz","slide":5,"name":"proof-note","text":"These are working interfaces and documented prototypes. Where outcomes have not been measured, the deck says so.","textPreview":"These are working interfaces and documented prototypes. Where outcomes have not been measured, the deck says so.","textChars":112,"textLines":1,"bbox":[42,530,1100,62]}
+{"kind":"image","id":"im/4zqpkzmx","slide":5,"name":"","geometry":"rect","alt":"Active release workspace","bbox":[42,170,354,250]}
+{"kind":"image","id":"im/y14765on","slide":5,"name":"","geometry":"rect","alt":"Production dispatch","bbox":[440,170,354,250]}
+{"kind":"image","id":"im/ry9gfup8","slide":5,"name":"","geometry":"rect","alt":"Operational reporting","bbox":[838,170,354,250]}
+{"kind":"notes","id":"nt/6oc0xx","slide":5,"text":"[Sources]\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\ellwood\\active-release.png\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\ellwood\\production.png\n- C:\\Users\\4twen\\dev\\yorkstead-website\\public\\media\\ellwood\\reports.png\n[/Sources]"}
+{"kind":"slide","id":"sl/c2mi7f","slide":6,"title":"MANUFACTURING","textShapes":16}
+{"kind":"textbox","id":"sh/czy5cjyp","slide":6,"name":"eyebrow","text":"MANUFACTURING","textPreview":"MANUFACTURING","textChars":13,"textLines":1,"bbox":[42,34,500,24]}
+{"kind":"textbox","id":"sh/bep4jeh4","slide":6,"name":"slide-title","text":"A focused first engagement creates momentum without a blank check.","textPreview":"A focused first engagement creates momentum without a blank check.","textChars":66,"textLines":1,"bbox":[42,68,1160,76]}
+{"kind":"shape","id":"sh/adg3a9gz","slide":6,"name":"footer-rule","bbox":[42,676,1196,2]}
+{"kind":"textbox","id":"sh/pcnmhoze","slide":6,"name":"footer-brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,684,240,18]}
+{"kind":"textbox","id":"sh/obel8jyt","slide":6,"name":"footer-page","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1185,684,53,18]}
+{"kind":"textbox","id":"sh/na54feh8","slide":6,"name":"first","text":"Start with one costly handoff: map it, measure it, and ship a focused working system.","textPreview":"Start with one costly handoff: map it, measure it, and ship a focused working system.","textChars":85,"textLines":1,"bbox":[42,168,760,108]}
+{"kind":"shape","id":"sh/29w369gn","slide":6,"name":"opp-rule-0","bbox":[42,322,850,1]}
+{"kind":"textbox","id":"sh/98rmt8fi","slide":6,"name":"opp-0","text":"Release & document control","textPreview":"Release & document control","textChars":26,"textLines":1,"bbox":[42,332,780,38]}
+{"kind":"textbox","id":"sh/87i5k3yx","slide":6,"name":"opp-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[930,332,80,38]}
+{"kind":"shape","id":"sh/mlw3e1sr","slide":6,"name":"opp-rule-1","bbox":[42,376,850,1]}
+{"kind":"textbox","id":"sh/7m54n69c","slide":6,"name":"opp-1","text":"Digital travelers & scanning","textPreview":"Digital travelers & scanning","textChars":28,"textLines":1,"bbox":[42,386,780,38]}
+{"kind":"textbox","id":"sh/8nelgbax","slide":6,"name":"opp-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[930,386,80,38]}
+{"kind":"shape","id":"sh/tonmpgri","slide":6,"name":"opp-rule-2","bbox":[42,430,850,1]}
+{"kind":"textbox","id":"sh/yhc3ahsv","slide":6,"name":"opp-2","text":"Inventory & purchasing","textPreview":"Inventory & purchasing","textChars":22,"textLines":1,"bbox":[42,440,780,38]}
+{"kind":"textbox","id":"sh/zil4jm9g","slide":6,"name":"opp-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[930,440,80,38]}
+{"kind":"shape","id":"sh/kjulcral","slide":6,"name":"opp-rule-3","bbox":[42,484,850,1]}
+{"kind":"textbox","id":"sh/lknmlwr6","slide":6,"name":"opp-3","text":"Quality & traceability","textPreview":"Quality & traceability","textChars":22,"textLines":1,"bbox":[42,494,780,38]}
+{"kind":"textbox","id":"sh/idgnmlsz","slide":6,"name":"opp-num-3","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[930,494,80,38]}
+{"kind":"shape","id":"sh/3ep4vq9k","slide":6,"name":"opp-rule-4","bbox":[42,538,850,1]}
+{"kind":"textbox","id":"sh/fmxsrelk","slide":6,"name":"opp-4","text":"Production dashboards","textPreview":"Production dashboards","textChars":21,"textLines":1,"bbox":[42,548,780,38]}
+{"kind":"textbox","id":"sh/elory94f","slide":6,"name":"opp-num-4","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[930,548,80,38]}
+{"kind":"shape","id":"sh/1ozato3q","slide":6,"name":"engagement","bbox":[1040,168,158,388]}
+{"kind":"textbox","id":"sh/gn690jm5","slide":6,"name":"engagement-copy","text":"AUDIT\n\nPRIORITIZE\n\nBUILD\n\nVERIFY\n\nHAND OFF","textPreview":"AUDIT |  | PRIORITIZE |  | BUILD |  | VERIFY |  | HAND OFF","textChars":42,"textLines":9,"bbox":[1062,188,114,350]}
+{"kind":"notes","id":"nt/c2mi7f","slide":6,"text":"[Sources]\n- Engagement framing from yorkstead.com services, packages, and workflow-audit content.\n[/Sources]"}
+{"kind":"slide","id":"sl/hyrxft","slide":7,"title":"YORKSTEAD SYSTEMS","textShapes":4}
+{"kind":"textbox","id":"sh/fadsf6h8","slide":7,"name":"brand","text":"YORKSTEAD SYSTEMS","textPreview":"YORKSTEAD SYSTEMS","textChars":17,"textLines":1,"bbox":[42,38,400,26]}
+{"kind":"textbox","id":"sh/0bm9obyt","slide":7,"name":"close","text":"Your operation does not need more software.\nIt needs fewer broken handoffs.","textPreview":"Your operation does not need more software. | It needs fewer broken handoffs.","textChars":75,"textLines":2,"bbox":[42,158,1050,230]}
+{"kind":"textbox","id":"sh/1cvahgze","slide":7,"name":"ask","text":"Bring one broken workflow. We’ll identify the first useful system and the shortest path to shipping it.","textPreview":"Bring one broken workflow. We’ll identify the first useful system and the shortest path to shipping it.","textChars":103,"textLines":1,"bbox":[42,458,820,90]}
+{"kind":"textbox","id":"sh/q5krihgr","slide":7,"name":"contact","text":"hello@yorkstead.com  •  yorkstead.com","textPreview":"hello@yorkstead.com  •  yorkstead.com","textChars":37,"textLines":1,"bbox":[42,620,650,30]}
+{"kind":"shape","id":"sh/r6t8bmhc","slide":7,"name":"accent-block","bbox":[1040,0,240,720]}
+{"kind":"notes","id":"nt/hyrxft","slide":7,"text":"[Sources]\n- Yorkstead Systems contact and engagement positioning.\n[/Sources]"}
