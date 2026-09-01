@@ -182,8 +182,8 @@ export const caseStudies: CaseStudy[] = [
     "status": "Working prototype",
     "title": "Yorkstead Operations",
     "kicker": "Operations",
-    "summary": "A modular operations platform for manufacturing, fabrication, and service teams. Follow the records, responsibilities, and handoffs from quoting through execution and delivery.",
-    "signal": "Shared records. Clear handoffs. Visible next steps.",
+    "summary": "An owner-operated command center and modular operations platform connecting client delivery, industrial workflows, infrastructure, and evidence-backed improvement work in one system.",
+    "signal": "One operating picture. Clear ownership. Work that moves.",
     "icon": "gauge",
     "industries": [
       "Manufacturing",
@@ -233,17 +233,19 @@ export const caseStudies: CaseStudy[] = [
         "href": "/services/workflow-automation"
       }
     ],
-    "intendedFor": "Manufacturing, fabrication, facility-service, sign-production, and mobile-service teams whose work moves between several people, records, and approval points.",
-    "problem": "Quotes, job instructions, material needs, production status, quality decisions, and delivery details can become disconnected as work changes hands.",
-    "previousWorkflow": "Reconstruct status from spreadsheets, paper travelers, inboxes, and separate systems; manually pass revisions, approvals, and completion details to the next person.",
-    "solution": "Organize the operation around shared job records and explicit handoffs. The showcased modules cover quoting, shopfloor work, materials, quality, maintenance, packaging, shipping, documents, and operational activity.",
+    "intendedFor": "Owner-led software, manufacturing, fabrication, facility-service, sign-production, and mobile-service operations whose work crosses commercial, delivery, production, and infrastructure boundaries.",
+    "problem": "Client commitments, project milestones, job instructions, material needs, production status, quality decisions, files, and deployment signals can become disconnected as work changes hands.",
+    "previousWorkflow": "Reconstruct priorities from separate project tools, spreadsheets, paper travelers, inboxes, cloud consoles, and informal handoffs; manually carry context and approvals into the next stage.",
+    "solution": "Bring client delivery and operational execution into a shared control plane. The current system connects an executive cockpit, projects, engagements, quoting, shopfloor work, materials, quality, logistics, documents, infrastructure, audit evidence, and isolated demonstrations.",
     "capabilities": [
-      "QuoteFlow and job records",
+      "Executive cockpit, project delivery, and client engagements",
+      "QuoteFlow and canonical job records",
       "Digital travelers and shopfloor checkpoints",
       "Inventory and purchasing module overview",
       "Quality, maintenance, packaging, and shipping module overview",
       "Job packets, File Vault, and KnowHow module overview",
-      "Four synthetic public workflow scenarios"
+      "Infrastructure, private files, audit logs, and organization controls",
+      "Four isolated synthetic workflow scenarios"
     ],
     "technologies": [
       "Web-based operational workspace",
@@ -252,138 +254,36 @@ export const caseStudies: CaseStudy[] = [
       "PostgreSQL schema"
     ],
     "outcomeLabel": "Intended outcome",
-    "outcome": "The intended outcome is a clearer shared view of the job, its blockers, and the owner of the next step. The supplied booklet illustrates this approach; it does not establish measured customer savings or completed real-world transactions.",
-    "limitations": "This prototype showcase uses synthetic demo scenarios and simulated payments. The supplied PDF records public demo inspection on August 31, 2026; authenticated transactions, integrations, storage readiness, production isolation, and reset behavior were not verified. Operations is a separate application from the website and its private Command Center.",
+    "outcome": "The intended outcome is a clearer operating picture across client commitments, delivery milestones, production work, blockers, infrastructure, and the owner of the next step. The screenshots show the implemented interface; they do not establish measured customer savings or completed real-world transactions.",
+    "limitations": "Yorkstead Operations is an owner-operated working prototype. The gallery includes internal views and explicitly synthetic demo records; displayed project values, operational metrics, clients, and workflow evidence should not be interpreted as customer results. Simulated payments and demonstration flows do not establish production transaction readiness.",
     "media": [
-      {
-        "id": "operations-overview",
-        "type": "screenshot",
-        "label": "Yorkstead Operations",
-        "description": "PDF showcase page 1. A modular operations platform connecting work from the first quote to the final handoff.",
-        "caption": "A modular operations platform connecting work from the first quote to the final handoff. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Yorkstead Operations page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-1.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true,
-        "featured": true
-      },
-      {
-        "id": "operations-platform",
-        "type": "screenshot",
-        "label": "Platform overview",
-        "description": "PDF showcase page 2. Jobs, travelers, inventory, quality, shipping, and supporting records share an operational context.",
-        "caption": "Jobs, travelers, inventory, quality, shipping, and supporting records share an operational context. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Platform overview page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-2.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true
-      },
-      {
-        "id": "operations-manufacturing",
-        "type": "screenshot",
-        "label": "Manufacturing walkthrough",
-        "description": "PDF showcase page 3. A synthetic manufacturing scenario follows commercial scope, production routing, inspection, and shipping.",
-        "caption": "A synthetic manufacturing scenario follows commercial scope, production routing, inspection, and shipping. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Manufacturing walkthrough page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-3.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true
-      },
-      {
-        "id": "operations-facility-service",
-        "type": "screenshot",
-        "label": "Facility service walkthrough",
-        "description": "PDF showcase page 4. A synthetic facility-service scenario connects site checklists, evidence summaries, consumables, and client signoff.",
-        "caption": "A synthetic facility-service scenario connects site checklists, evidence summaries, consumables, and client signoff. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Facility service walkthrough page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-4.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true
-      },
-      {
-        "id": "operations-sign-fabrication",
-        "type": "screenshot",
-        "label": "Sign fabrication walkthrough",
-        "description": "PDF showcase page 5. A synthetic sign-fabrication scenario carries artwork revision context through fabrication and installation.",
-        "caption": "A synthetic sign-fabrication scenario carries artwork revision context through fabrication and installation. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Sign fabrication walkthrough page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-5.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true
-      },
-      {
-        "id": "operations-mobile-service",
-        "type": "screenshot",
-        "label": "Mobile service walkthrough",
-        "description": "PDF showcase page 6. A synthetic mobile-service scenario shows technician checklists, approved add-ons, and simulated payment.",
-        "caption": "A synthetic mobile-service scenario shows technician checklists, approved add-ons, and simulated payment. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Mobile service walkthrough page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-6.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true
-      },
-      {
-        "id": "operations-documents",
-        "type": "screenshot",
-        "label": "Documents and knowledge",
-        "description": "PDF showcase page 7. The module overview explains job packets, controlled files, and procedures alongside the work.",
-        "caption": "The module overview explains job packets, controlled files, and procedures alongside the work. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Documents and knowledge page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-7.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true
-      },
-      {
-        "id": "operations-demo-boundaries",
-        "type": "screenshot",
-        "label": "Demo and production boundaries",
-        "description": "PDF showcase page 8. The booklet separates public synthetic scenarios from authenticated production paths that were not verified.",
-        "caption": "The booklet separates public synthetic scenarios from authenticated production paths that were not verified. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Demo and production boundaries page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-8.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true
-      },
-      {
-        "id": "operations-explore",
-        "type": "screenshot",
-        "label": "Explore the workflows",
-        "description": "PDF showcase page 9. Explore the public demonstration and discuss the workflows relevant to your own operation.",
-        "caption": "Explore the public demonstration and discuss the workflows relevant to your own operation. Rendered from the supplied Operations showcase PDF.",
-        "alt": "Explore the workflows page from the Yorkstead Operations showcase PDF",
-        "desktop": {
-          "src": "/media/yorkstead-ops/pages/operations-9.png",
-          "width": 1600,
-          "height": 1001
-        },
-        "expandable": true
-      }
+      { id: "operations-cockpit", type: "screenshot", label: "Executive cockpit", description: "The owner cockpit brings active delivery, workload, schedules, quicklinks, and infrastructure status into one operating view.", caption: "A unified owner view for priorities, delivery pressure, scheduled work, and the systems supporting it.", alt: "Yorkstead Operations executive cockpit with delivery tasks, calendar, module quicklinks, and infrastructure status", desktop: { src: "/media/yorkstead-ops/screenshots/002-executive-cockpit.png", width: 3266, height: 5791 }, expandable: true, featured: true },
+      { id: "operations-projects", type: "screenshot", label: "Projects and delivery", description: "The delivery command center connects project health, contract value, staging links, milestones, and launch readiness.", caption: "Project commitments stay connected to milestone execution, deployment context, and delivery health.", alt: "Projects and Delivery Command Center showing four software projects and milestone execution", desktop: { src: "/media/yorkstead-ops/screenshots/003-projects-command-center.png", width: 3266, height: 2207 }, expandable: true },
+      { id: "operations-engagements", type: "screenshot", label: "Client engagements", description: "Engagement records keep commercial scope, stakeholders, delivery state, and project context together.", caption: "Client work moves from agreement into an accountable delivery workspace without losing its commercial context.", alt: "Yorkstead Operations client engagements workspace", desktop: { src: "/media/yorkstead-ops/screenshots/004-client-engagements.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-jobs", type: "screenshot", label: "Jobs and work orders", description: "Canonical work orders carry customer, revision, priority, due date, and release status into execution.", caption: "A shared job record makes revision state, urgency, ownership, and the next workflow transition visible.", alt: "Jobs and Workflow Operations list with manufacturing work orders", desktop: { src: "/media/yorkstead-ops/screenshots/005-jobs-work-orders.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-shopfloor", type: "screenshot", label: "Shopfloor execution", description: "Digital travelers sequence station work, capture progress, and surface blockers at the point of execution.", caption: "Operators can follow the released route, record progress, and escalate a blocker from the same traveler.", alt: "Shopfloor execution digital traveler with completed and running production sequences", desktop: { src: "/media/yorkstead-ops/screenshots/006-shopfloor-traveler.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-inventory-ledger", type: "screenshot", label: "Inventory ledger", description: "The material ledger records controlled stock movement against operational demand and accountable transactions.", caption: "Inventory becomes a traceable operational record instead of a disconnected quantity on a spreadsheet.", alt: "Inventory and material ledger in Yorkstead Operations", desktop: { src: "/media/yorkstead-ops/screenshots/007-inventory-ledger.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-inventory-planning", type: "screenshot", label: "Material planning", description: "Material availability, reorder signals, and job demand are presented together for purchasing and production planning.", caption: "Planners can see what is available, what is committed, and which material needs attention next.", alt: "Inventory planning view with material availability and reorder information", desktop: { src: "/media/yorkstead-ops/screenshots/008-inventory-planning.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-job-packets", type: "screenshot", label: "Job packet intelligence", description: "Job packets keep released drawings, revisions, work instructions, and supporting records attached to execution.", caption: "Production context stays with the job so the floor can work from the intended revision and instructions.", alt: "Job packet intelligence workspace with controlled manufacturing documents", desktop: { src: "/media/yorkstead-ops/screenshots/009-job-packet-intelligence.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-maintenance", type: "screenshot", label: "Maintenance and downtime", description: "Equipment records connect service intervals, preventive work, downtime signals, and maintenance history.", caption: "Maintenance activity and equipment health become part of the same operational planning surface.", alt: "Equipment maintenance and downtime management screen", desktop: { src: "/media/yorkstead-ops/screenshots/010-maintenance-downtime.png", width: 3266, height: 3066 }, expandable: true },
+      { id: "operations-packaging", type: "screenshot", label: "Packaging and palletization", description: "Packaging records organize pack plans, pallet contents, weights, and readiness before freight handoff.", caption: "The final physical handoff is prepared with structured pallet and packaging information.", alt: "Packaging and palletization workflow in Yorkstead Operations", desktop: { src: "/media/yorkstead-ops/screenshots/011-packaging-palletization.png", width: 3266, height: 3043 }, expandable: true },
+      { id: "operations-shipping", type: "screenshot", label: "Shipping and load building", description: "The load builder connects prepared freight, manifests, carrier context, and dispatch readiness.", caption: "Shipping teams can assemble the load and verify dispatch details from the operational record.", alt: "Shipping and load builder with freight and dispatch information", desktop: { src: "/media/yorkstead-ops/screenshots/012-shipping-load-builder.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-quoteflow", type: "screenshot", label: "QuoteFlow and estimating", description: "Proposal records combine scoped deliverables, cost modeling, margin guardrails, and handoff into delivery.", caption: "Commercial decisions are structured so an accepted scope can move cleanly into accountable work.", alt: "QuoteFlow proposals and cost modeling workspace", desktop: { src: "/media/yorkstead-ops/screenshots/013-quoteflow-estimating.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-purchasing", type: "screenshot", label: "Purchasing and sourcing", description: "Purchasing connects vendor decisions, open requirements, lead times, and receiving context to material demand.", caption: "Sourcing activity stays tied to the work that created the requirement and its timing risk.", alt: "Purchasing and material sourcing module", desktop: { src: "/media/yorkstead-ops/screenshots/014-purchasing-sourcing.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-quality", type: "screenshot", label: "Quality and NCR", description: "Quality records support inspection, nonconformance containment, disposition, and accountable follow-through.", caption: "Inspection results and exceptions become visible workflow records rather than isolated paperwork.", alt: "Quality assurance and nonconformance record workspace", desktop: { src: "/media/yorkstead-ops/screenshots/015-quality-ncr.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-knowhow", type: "screenshot", label: "KnowHow and procedures", description: "Controlled procedures and operating knowledge remain available beside the modules and work they support.", caption: "Teams can reach standard procedures from the operational context where the guidance is needed.", alt: "KnowHow standard procedures library", desktop: { src: "/media/yorkstead-ops/screenshots/016-knowhow-procedures.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-directory", type: "screenshot", label: "Customers, vendors, and facilities", description: "The shared directory organizes the organizations, contacts, vendors, and facilities participating in the work.", caption: "Operational records reference a consistent directory instead of duplicating counterpart details across tools.", alt: "Customers vendors and facilities directory", desktop: { src: "/media/yorkstead-ops/screenshots/017-directory-facilities.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-analytics", type: "screenshot", label: "Analytics and planning", description: "Operational analytics summarize throughput, workload, exceptions, and planning signals across the system.", caption: "Planning views turn connected records into an evidence surface for the next operating decision.", alt: "Analytics and operational planning dashboard", desktop: { src: "/media/yorkstead-ops/screenshots/018-analytics-planning.png", width: 3266, height: 2139 }, expandable: true },
+      { id: "operations-cloud", type: "screenshot", label: "Infrastructure and cloud operations", description: "The internal cloud hub records the compute, data, storage, delivery, network, and communications services supporting Yorkstead.", caption: "Operational software and the infrastructure behind it are visible from one owner control plane.", alt: "Infrastructure and cloud operations hub with service status cards", desktop: { src: "/media/yorkstead-ops/screenshots/019-cloud-devops.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-audit", type: "screenshot", label: "Workflow audit diagnostic", description: "The audit engine structures observed friction, evidence classification, opportunity ranking, and bounded recommendations.", caption: "A workflow diagnostic separates measured facts, operator estimates, and unknowns before shaping a release.", alt: "Workflow audit diagnostic with evidence classifications and opportunity rankings", desktop: { src: "/media/yorkstead-ops/screenshots/020-workflow-audit-diagnostic.png", width: 3266, height: 6683 }, expandable: true },
+      { id: "operations-files", type: "screenshot", label: "Private file storage", description: "The file vault keeps private deliverables and operational artifacts addressable inside the authenticated workspace.", caption: "Controlled files remain connected to the operating system instead of living in an ambiguous shared folder.", alt: "Private file storage vault in Yorkstead Operations", desktop: { src: "/media/yorkstead-ops/screenshots/021-private-file-storage.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-activity", type: "screenshot", label: "Activity and audit logs", description: "The activity stream records important system events so changes can be traced across people and modules.", caption: "An accountable event history makes operational changes easier to review and investigate.", alt: "Activity and audit log records", desktop: { src: "/media/yorkstead-ops/screenshots/022-activity-audit-logs.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-demos", type: "screenshot", label: "Deterministic demo environments", description: "Isolated synthetic sandboxes present repeatable industry workflows with explicit guardrails and reset behavior.", caption: "Public demonstrations are identified as synthetic and separated from authenticated operating records.", alt: "Deterministic demo hub with four synthetic workflow scenarios", desktop: { src: "/media/yorkstead-ops/screenshots/023-demo-environments.png", width: 3266, height: 3169 }, expandable: true },
+      { id: "operations-engagement-workspace", type: "screenshot", label: "Engagement workspace", description: "The engagement workspace carries scoped delivery through milestones, decisions, deliverables, and client-facing progress.", caption: "Commercial intent becomes a visible delivery plan with accountable checkpoints and artifacts.", alt: "Client engagement workspace with milestones and deliverables", desktop: { src: "/media/yorkstead-ops/screenshots/024-engagement-workspace.png", width: 3266, height: 1887 }, expandable: true },
+      { id: "operations-briefing", type: "screenshot", label: "Evidence-backed client briefing", description: "The client deliverable translates audit evidence into ranked opportunities, a bounded first release, milestones, and next steps.", caption: "The system produces a decision-ready briefing that keeps facts, estimates, assumptions, scope, and pricing boundaries visible.", alt: "Evidence-backed workflow audit client briefing for a synthetic manufacturer", desktop: { src: "/media/yorkstead-ops/screenshots/025-client-briefing.png", width: 3266, height: 4720 }, expandable: true },
+      { id: "operations-organization", type: "screenshot", label: "Organization and memberships", description: "Organization settings expose membership, roles, and tenant administration for the authenticated workspace.", caption: "Workspace access and organizational boundaries are managed explicitly alongside the operating modules.", alt: "Organization and membership administration screen", desktop: { src: "/media/yorkstead-ops/screenshots/026-organization-memberships.png", width: 3266, height: 1887 }, expandable: true }
     ],
-    "previewMediaId": "operations-overview",
+    "previewMediaId": "operations-projects",
     "cta": {
       "label": "Discuss your operational workflow",
       "href": "/#contact"

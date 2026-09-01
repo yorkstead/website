@@ -66,11 +66,11 @@ describe("case study data", () => {
     expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
   });
 
-  test("publishes Operations PDF pages with intrinsic dimensions", () => {
+  test("publishes current Operations product screenshots with intrinsic dimensions", () => {
     const media = getCaseStudy("work-control")?.media ?? [];
     const screenshots = media.filter((item) => item.type === "screenshot");
-    expect(screenshots).toHaveLength(9);
-    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/yorkstead-ops/pages/") && item.desktop.width > 1000 && item.desktop.height > 1000)).toBeTrue();
+    expect(screenshots).toHaveLength(25);
+    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/yorkstead-ops/screenshots/") && item.desktop.width === 3266 && item.desktop.height > 1800)).toBeTrue();
     expect(screenshots.filter((item) => item.layout === "phone")).toHaveLength(0);
     expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
   });
