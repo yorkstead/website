@@ -16,5 +16,5 @@ export function configureWebPush() {
 }
 
 export async function sendPush(subscription: StoredPushSubscription, payload: { title: string; body: string; url?: string }) {
-  return configureWebPush().sendNotification(subscription, JSON.stringify({ icon: "/icon", badge: "/icon", url: payload.url ?? "/#tasks", ...payload }), { timeout: outboundRequestTimeoutMs });
+  return configureWebPush().sendNotification(subscription, JSON.stringify({ icon: "/brand/logo/yorkstead-dark.png", badge: "/brand/logo/yorkstead-dark.png", url: payload.url ?? "/#tasks", ...payload }), { timeout: outboundRequestTimeoutMs });
 }
