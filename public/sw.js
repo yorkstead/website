@@ -1,5 +1,6 @@
 const CACHE_NAME = "work-ctrl-public-shell-v2";
-const SHELL = ["/", "/manifest.webmanifest", "/icon"];
+const BRAND_ICON = "/brand/logo/yorkstead-dark.png";
+const SHELL = ["/", "/manifest.webmanifest", BRAND_ICON];
 const PUBLIC_NAVIGATION_PATHS = new Set(["/", "/about", "/privacy", "/workflow-audit"]);
 
 function isPublicNavigation(url) {
@@ -35,8 +36,8 @@ self.addEventListener("push", (event) => {
   const data = event.data.json();
   event.waitUntil(self.registration.showNotification(data.title || "WORK//CTRL", {
     body: data.body,
-    icon: data.icon || "/icon",
-    badge: data.badge || "/icon",
+    icon: data.icon || BRAND_ICON,
+    badge: data.badge || BRAND_ICON,
     tag: "work-ctrl-daily-reminder",
     renotify: true,
     data: { url: data.url || "/#tasks" },
