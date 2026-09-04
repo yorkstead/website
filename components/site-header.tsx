@@ -5,7 +5,6 @@ import { ChevronRight, Menu, MoveUpRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandMark } from "@/components/brand-mark";
-import { CommandCenterButton } from "@/components/command-center-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +36,6 @@ export function SiteHeader() {
             <MoveUpRight className="size-3.5" aria-hidden="true" />
           </a>
           <ThemeToggle />
-          <CommandCenterButton className="hidden h-9 sm:inline-flex" />
 
           <DropdownMenu.Root key={pathname} modal={false}>
             <DropdownMenu.Trigger
@@ -81,7 +79,6 @@ export function SiteHeader() {
                     <MoveUpRight className="size-3.5" aria-hidden="true" />
                   </a>
                 </DropdownMenu.Item>
-                <CommandCenterButton className="min-h-11 w-full justify-between border-0 bg-transparent px-3 shadow-none sm:hidden" />
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
