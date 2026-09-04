@@ -1,6 +1,6 @@
 # Marketing operations
 
-The private `/dashboard/marketing` workspace implements the approved 90-day, founder-led launch plan for 4TWENTY.DEV. It is an operating surface—not an automated outreach or publishing system.
+The private `/dashboard/marketing` workspace implements the approved 90-day, founder-led launch plan for Yorkstead Systems. It is an operating surface—not an automated outreach or publishing system.
 
 ## What it manages
 
@@ -50,4 +50,4 @@ Open `/dashboard/marketing/one-sheet` and use **Print or save PDF**. The print s
 2. clearly fictional sample audit briefing; and
 3. four QR business cards.
 
-The QR code is generated locally by the application and points directly to `https://www.4twenty.dev/workflow-audit`; it does not use an external tracking or QR service.
+The QR code is generated locally by the application and points directly to `https://yorkstead.com/workflow-audit`; it does not use an external tracking or QR service.

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- ImageResponse/Satori requires standard img elements with data URIs */
 import { ImageResponse } from "next/og";
 import { notFound } from "next/navigation";
 import { brand } from "@/lib/brand";
