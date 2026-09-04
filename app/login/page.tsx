@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { MoveUpRight, Sparkles } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { LoginPanel } from "@/components/login-panel";
-import { brand } from "@/lib/brand";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; auto?: string }> }) {
   const params = await searchParams;
