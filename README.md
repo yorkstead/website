@@ -1,13 +1,11 @@
-# 4TWENTY.DEV + WORK//CTRL
+# Yorkstead Systems
 
-[![CI](https://github.com/rivetworks/website/actions/workflows/ci.yml/badge.svg)](https://github.com/rivetworks/website/actions/workflows/ci.yml)
-
-A dark-first public studio site and private home base for software, CNC, business, and experimental projects. Built with Next.js App Router, TypeScript, Tailwind CSS v4, shadcn/ui conventions, Bun, Neon, Better Auth passkeys, and Vercel.
+A dark-first public studio site and private operations platform for industrial software, CNC, and custom workflow automation. Built with Next.js App Router, TypeScript, Tailwind CSS v4, shadcn/ui conventions, Bun, Neon, Better Auth passkeys, and Vercel.
 
 ## Start locally
 
 ```bash
-git clone git@github.com:rivetworks/website.git
+git clone git@github.com:yorkstead/website.git
 cd website
 bun install
 bun run db:migrate
@@ -39,9 +37,9 @@ PASSKEY_RP_ID=localhost
 OWNER_BOOTSTRAP_TOKEN=<one-time random bootstrap token>
 ```
 
-Generate `BETTER_AUTH_SECRET` and the initial `OWNER_BOOTSTRAP_TOKEN` independently with `openssl rand -hex 32`. For production, set `BETTER_AUTH_URL=https://www.4twenty.dev` and `PASSKEY_RP_ID=4twenty.dev`. The setup form appears only while a bootstrap token is configured and the Better Auth user table is empty; creating the owner requires the configured email and token, and all later bootstrap attempts are refused. Remove `OWNER_BOOTSTRAP_TOKEN` after setup.
+Generate `BETTER_AUTH_SECRET` and the initial `OWNER_BOOTSTRAP_TOKEN` independently with `openssl rand -hex 32`. For production, set `BETTER_AUTH_URL=https://yorkstead.com` and `PASSKEY_RP_ID=yorkstead.com`. The setup form appears only while a bootstrap token is configured and the Better Auth user table is empty; creating the owner requires the configured email and token, and all later bootstrap attempts are refused. Remove `OWNER_BOOTSTRAP_TOKEN` after setup.
 
-Production authentication validates its complete runtime configuration when first used: the database must be PostgreSQL, the authentication origin must be an HTTPS origin without credentials or a custom port, `OWNER_EMAIL` must be operationally valid, secrets must meet the high-entropy policy, and the passkey relying-party ID must match the authentication hostname or a parent domain. Runtime validation remains lazy so `next build` can complete without deployment-only secrets. Vercel canonicalizes the apex domain to `www`; the parent-domain relying-party ID keeps credentials scoped to 4TWENTY.DEV. Passkeys are domain-bound, so enroll permanent production passkeys only after the custom domain is serving HTTPS. All workspace, project-intelligence, import, and push-management APIs require the authenticated owner session; cron endpoints retain separate bearer-secret protection.
+Production authentication validates its complete runtime configuration when first used: the database must be PostgreSQL, the authentication origin must be an HTTPS origin without credentials or a custom port, `OWNER_EMAIL` must be operationally valid, secrets must meet the high-entropy policy, and the passkey relying-party ID must match the authentication hostname or a parent domain. Runtime validation remains lazy so `next build` can complete without deployment-only secrets. Vercel canonicalizes the apex domain or serves `yorkstead.com`; the relying-party ID keeps credentials scoped to Yorkstead Systems. Passkeys are domain-bound, so enroll permanent production passkeys only after the custom domain is serving HTTPS. All workspace, project-intelligence, import, and push-management APIs require the authenticated owner session; cron endpoints retain separate bearer-secret protection.
 
 Run `bun run auth:migrate` when Better Auth schema changes are required. The migration CLI is downloaded only for that command and is intentionally excluded from installed application dependencies because its current release bundles an older Better Auth runtime; the deployed application uses the patched runtime declared in `dependencies`.
 
@@ -85,11 +83,11 @@ The project journal preserves cloud-synced updates, decisions, blockers, and not
 
 The command palette provides universal search across projects, tasks, inbox captures, journal entries, and weekly reviews, opening editors or navigating directly to the relevant workspace section.
 
-The public studio site includes clearly staged case studies for WORK//CTRL, jwld.store, SIC Pizza POS, and Employee Barcodes. Its contact form validates on the server, uses a honeypot and hashed-IP rate limit, and stores inquiries in the Neon `contact_inquiries` table without exposing database credentials to the browser.
+The public studio site includes clearly staged case studies for Ellwood Flow, Yorkstead Operations, jwld.store, SIC Pizza POS, and Employee Barcodes. Its contact form validates on the server, uses a honeypot and hashed-IP rate limit, and stores inquiries in the Neon `contact_inquiries` table without exposing database credentials to the browser.
 
 The four public service routes are generated from `lib/services.ts`: `/services/manufacturing-software`, `/services/workflow-automation`, `/services/small-business-websites`, and `/services/cnc-signage-systems`. The website route is publicly positioned as Websites & Online Marketplaces while retaining its stable URL. The same typed catalog drives homepage discovery, page copy, project references, planning ranges, FAQs, metadata, structured data, sitemap entries, and service-attributed contact-form preselection.
 
-Public identity is centralized in `lib/brand.ts`. The primary descriptor is **Industrial software and workflow automation**, supported by **Practical systems for manufacturers, shops, contractors, and small businesses.** That configuration drives the first-screen positioning, navigation wordmark, footer, metadata, manifest, structured data, social preview, and contact-email presentation. For production email, configure `CONTACT_FROM_EMAIL` as a verified sender such as `Brandon York | 4TWENTY.DEV <hello@4twenty.dev>`.
+Public identity is centralized in `lib/brand.ts`. The primary descriptor is **Industrial software and workflow automation**, supported by **Practical systems for manufacturers, shops, contractors, and small businesses.** That configuration drives the first-screen positioning, navigation wordmark, footer, metadata, manifest, structured data, social preview, and contact-email presentation. For production email, configure `CONTACT_FROM_EMAIL` as a verified sender such as `Brandon York | Yorkstead Systems <hello@yorkstead.com>`.
 
 The homepage and `/about` route use the verified founder profile in `lib/founder.ts`. Person and Organization structured data are rendered on the About page without employer names, credentials, or unverified claims. The approved local founder photograph and its replacement requirements are documented in `docs/FOUNDER_PHOTO.md`; `FounderPortrait` retains a neutral fallback if that asset is ever missing.
 
@@ -134,12 +132,11 @@ For private repositories and detailed Vercel deployment state, configure server-
 ## Deploy
 
 ```bash
-vercel link --project 4twentydev
 vercel
 vercel --prod
 ```
 
-The public pages render without external scheduling or payment services, but database-backed forms and private WORK//CTRL features require the environment variables documented above. The current production domain is `https://www.4twenty.dev`. The canonical repository is `rivetworks/website`; hosting migration and the `rivetworks.software` domain cutover are handled separately.
+The public pages render without external scheduling or payment services, but database-backed forms and private dashboard features require the environment variables documented above. The production domain is `https://yorkstead.com`.
 
 ## Structure
 
@@ -152,5 +149,3 @@ components.json      shadcn/ui configuration
 ```
 
 The project intentionally has no `src` directory.
-# 4twentydev
-# 4twentydev

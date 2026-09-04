@@ -100,7 +100,7 @@ test("mobile layout keeps audit navigation usable", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Contact", exact: true })).toBeHidden();
   await page.getByRole("link", { name: "Book a workflow audit" }).first().click();
   await expect(page).toHaveURL(/\/workflow-audit$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("work is getting stuck");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("operations get stuck");
   await expectNoHorizontalDocumentOverflow(page);
   assertNoErrors();
 });
@@ -135,11 +135,12 @@ test("project profiles connect industries and uses to relevant service paths", a
     if (profile.slug === "employee-barcodes") await expect(page.locator('a[href="https://barcodes.4twenty.dev"]')).toHaveAttribute("target", "_blank");
     await expect(page.locator("article article").first()).toBeVisible();
     if (profile.slug === "work-control") {
-      const featuredImage = page.getByAltText("Yorkstead Operations page from the Yorkstead Operations showcase PDF").first();
+      const featuredImage = page.getByAltText("Yorkstead Operations executive cockpit with delivery tasks, calendar, module quicklinks, and infrastructure status").first();
       await featuredImage.scrollIntoViewIfNeeded();
       await expect(featuredImage).toBeVisible();
       await expect.poll(() => featuredImage.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
-      await expect(page.locator('img[src*="operations-"]:visible')).toHaveCount(9);
+      const galleryFigures = page.locator('section[aria-labelledby="project-media-heading"] figure');
+      await expect(galleryFigures).toHaveCount(25);
     }
     await expectNoHorizontalDocumentOverflow(page);
     assertNoErrors();

@@ -35,14 +35,14 @@ Run `bun run db:migrate` in each environment before relying on event or inquiry 
 
 Recommended setup:
 
-1. Add `4twenty.dev` as a **Domain property** in Search Console. Domain properties cover protocols and subdomains and require the DNS record Google supplies.
+1. Add `yorkstead.com` as a **Domain property** in Search Console. Domain properties cover protocols and subdomains and require the DNS record Google supplies.
 2. Keep the DNS verification record after verification succeeds.
 3. As an optional secondary method, copy only the `content` value from Google's HTML verification tag into the production Vercel variable `GOOGLE_SITE_VERIFICATION`, then redeploy. The app renders it as `<meta name="google-site-verification">` in the homepage head.
 4. Confirm these production URLs return `200` without authentication:
-   - `https://www.4twenty.dev/robots.txt`
-   - `https://www.4twenty.dev/sitemap.xml`
-5. Submit `https://www.4twenty.dev/sitemap.xml` in Search Console's Sitemaps report.
-6. Use URL Inspection for the homepage, the four service pages, `/about`, `/workflow-audit`, and the three project profiles. Request indexing after the deployment is live.
+   - `https://yorkstead.com/robots.txt`
+   - `https://yorkstead.com/sitemap.xml`
+5. Submit `https://yorkstead.com/sitemap.xml` in Search Console's Sitemaps report.
+6. Use URL Inspection for the homepage, the four service pages, `/about`, `/workflow-audit`, and the project profiles. Request indexing after the deployment is live.
 7. Review Page indexing, Core Web Vitals, queries, impressions, and clicks after Google has had time to crawl the site.
 
 Official references: [verify site ownership](https://support.google.com/webmasters/answer/9008080), [add a Search Console property](https://support.google.com/webmasters/answer/34592), and [submit and monitor a sitemap](https://support.google.com/webmasters/answer/7451001).
@@ -51,12 +51,12 @@ Official references: [verify site ownership](https://support.google.com/webmaste
 
 Do not create a profile until the business is eligible. Google currently describes Business Profiles as intended for businesses that meet customers in person at a storefront or travel to customers; online-only businesses are not eligible.
 
-If 4TWENTY.DEV qualifies:
+If Yorkstead Systems qualifies:
 
-1. Search Google and Maps for an existing `4TWENTY.DEV` profile before adding one. Claim an existing accurate profile instead of creating a duplicate.
+1. Search Google and Maps for an existing `Yorkstead Systems` profile before adding one. Claim an existing accurate profile instead of creating a duplicate.
 2. Use the real public business name exactly as represented on the website and business materials. Do not add keywords to the name.
 3. Choose the closest accurate primary category based on the services actually sold. Do not select a category solely for ranking.
-4. Use `https://www.4twenty.dev` as the website and a business-controlled phone number if one is approved.
+4. Use `https://yorkstead.com` as the website and a business-controlled phone number if one is approved.
 5. If customers are not served at the business address, hide the address. Add only accurate service areas where in-person service is actually delivered. Never publish a residential address merely to obtain local visibility.
 6. Complete only the verification methods Google offers for the profile; the application cannot choose or complete those methods.
 7. Add an approved logo, founder/business photos, service descriptions, hours, and booking link only after each item reflects the real operation.
@@ -94,5 +94,5 @@ After changing production metadata or environment variables:
 3. Inspect page source—not only the rendered DOM—for the canonical, description, Open Graph tags, and optional verification tag.
 4. Validate JSON-LD with Google's Rich Results Test and Schema.org's validator. FAQ rich-result display is not guaranteed.
 5. Test the social card at `/opengraph-image` and each project-specific social-card route.
-6. Confirm the Vercel production domain redirects consistently to `https://www.4twenty.dev` so duplicate hosts do not compete in search.
+6. Confirm the Vercel production domain redirects consistently to `https://yorkstead.com` so duplicate hosts do not compete in search.
 7. Review real-user Core Web Vitals in Search Console. Vercel Speed Insights can be enabled later if Brandon wants route-level production telemetry; it is not required for the current cookieless conversion store.

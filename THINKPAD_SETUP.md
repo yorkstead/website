@@ -46,8 +46,7 @@ Select Git Bash as the default Windows Terminal profile if desired. In VSCodium,
 git init
 git add .
 git commit -m "Initial project command center"
-gh repo create rivetworks/website --private --source=. --remote=origin --push
-vercel link --project 4twentydev
+gh repo create yorkstead/website --private --source=. --remote=origin --push
 vercel
 ```
 
@@ -63,7 +62,7 @@ Keep active source repositories in the Windows development folder when primarily
 
 To launch the Command Center directly without navigating through the public site:
 
-1. **Install as Windows App**: Navigate to `http://localhost:3000/dashboard` or `https://www.4twenty.dev/dashboard` in Edge/Chrome -> click **Install App** -> **Pin to taskbar**.
-2. **Instant Biometrics**: Clicking the taskbar icon or the top-nav **Command Center** button immediately triggers the native Windows Hello fingerprint prompt with zero intermediate clicks.
+1. **Install as Windows App**: Navigate to `http://localhost:3000/dashboard` or `https://yorkstead.com/dashboard` in Edge/Chrome -> click **Install App** -> **Pin to taskbar**.
+2. **Instant Biometrics**: Clicking the taskbar icon immediately triggers the native Windows Hello fingerprint prompt with zero intermediate clicks.
 3. For full ThinkPad and OnePlus quick-launcher instructions, see [`docs/OPERATOR_ACCESS.md`](docs/OPERATOR_ACCESS.md).
 
