@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowRight, CheckCircle2, Clock, FileSpreadsheet, FileText, HeartPulse, Lock, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, CheckCircle2, Clock, ExternalLink, FileSpreadsheet, FileText, HeartPulse, Lock, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -175,39 +175,75 @@ export default function CaseManagementPage() {
         <Card className="bg-card/80 border-border overflow-hidden">
           <CardContent className="p-8 sm:p-12">
             <div className="max-w-2xl">
-              <div className="font-mono text-xs text-primary uppercase tracking-widest mb-3">Quick Start</div>
-              <h2 className="text-2xl sm:text-3xl font-semibold mb-6">How to Open in Obsidian (30 Seconds)</h2>
+              <div className="font-mono text-xs text-primary uppercase tracking-widest mb-3">Onboarding Guide</div>
+              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Get Up and Running in 3 Minutes</h2>
+              <p className="text-sm text-muted-foreground mb-8">
+                Obsidian is a free, lightweight, privacy-first markdown app that keeps 100% of your notes on your computer without monthly subscription lock-in.
+              </p>
               
-              <div className="space-y-4 text-sm text-muted-foreground">
-                <div className="flex items-start gap-3">
-                  <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 font-mono text-xs font-bold mt-0.5">1</div>
-                  <div>
-                    <p className="font-medium text-foreground">Download the archive</p>
-                    <p className="mt-1">Click the download button above or grab <a href="/downloads/case-management-system.zip" download className="text-primary underline">case-management-system.zip</a> (~45 KB).</p>
+              <div className="space-y-6 text-sm text-muted-foreground">
+                {/* Step 1: Install Obsidian */}
+                <div className="flex items-start gap-4 rounded-lg border border-border bg-card/50 p-4">
+                  <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-mono text-xs font-bold mt-0.5">1</div>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-semibold text-foreground text-base">Install Obsidian (Free)</p>
+                      <a
+                        href="https://obsidian.md/download"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 transition"
+                      >
+                        <span>Download Obsidian</span>
+                        <ExternalLink className="size-3.5" />
+                      </a>
+                    </div>
+                    <p className="mt-1 text-xs leading-relaxed">
+                      Download the installer for Windows or Mac from <a href="https://obsidian.md/download" target="_blank" rel="noopener noreferrer" className="text-primary underline">obsidian.md/download</a>. Run the installer (takes ~15 seconds, zero account or credit card required).
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 font-mono text-xs font-bold mt-0.5">2</div>
-                  <div>
-                    <p className="font-medium text-foreground">Extract the ZIP file</p>
-                    <p className="mt-1">Right-click the zip file in Windows Explorer and select <strong>&quot;Extract All...&quot;</strong> to your documents, Dropbox, or Google Drive folder.</p>
+                {/* Step 2: Download the Vault */}
+                <div className="flex items-start gap-4 rounded-lg border border-border bg-card/50 p-4">
+                  <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-mono text-xs font-bold mt-0.5">2</div>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-semibold text-foreground text-base">Download the Case Management OS</p>
+                      <a
+                        href="/downloads/case-management-system.zip"
+                        download="case-management-system.zip"
+                        className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition"
+                      >
+                        <ArrowDownToLine className="size-3.5" />
+                        <span>case-management-system.zip (~45 KB)</span>
+                      </a>
+                    </div>
+                    <p className="mt-1 text-xs leading-relaxed">
+                      Save the archive to your computer, right-click the file, and choose <strong>&quot;Extract All...&quot;</strong> to your Documents, Google Drive, or Dropbox folder.
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 font-mono text-xs font-bold mt-0.5">3</div>
-                  <div>
-                    <p className="font-medium text-foreground">Open as a Vault in Obsidian</p>
-                    <p className="mt-1">In Obsidian, click the vault icon (bottom left) $\rightarrow$ select <strong>&quot;Open folder as vault&quot;</strong> $\rightarrow$ choose the extracted <code>case-management</code> folder.</p>
+                {/* Step 3: Open Vault */}
+                <div className="flex items-start gap-4 rounded-lg border border-border bg-card/50 p-4">
+                  <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-mono text-xs font-bold mt-0.5">3</div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground text-base">Open as a Vault in Obsidian</p>
+                    <p className="mt-1 text-xs leading-relaxed">
+                      Launch Obsidian. On the welcome screen (or from the vault switcher icon in the bottom-left), click <strong>&quot;Open folder as vault&quot;</strong> $\rightarrow$ select the extracted <code>case-management</code> directory.
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 font-mono text-xs font-bold mt-0.5">4</div>
-                  <div>
-                    <p className="font-medium text-foreground">Start with the Quick-Start Guide</p>
-                    <p className="mt-1">Open <code>START HERE - Quick-Start Guide for Case Managers.md</code> or <code>00 - Dashboard.md</code> to begin your workday.</p>
+                {/* Step 4: Ready to Go */}
+                <div className="flex items-start gap-4 rounded-lg border border-border bg-card/50 p-4">
+                  <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-mono text-xs font-bold mt-0.5">4</div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground text-base">Start with the Quick-Start Guide</p>
+                    <p className="mt-1 text-xs leading-relaxed">
+                      Click <strong><code>START HERE - Quick-Start Guide for Case Managers.md</code></strong> or <strong><code>00 - Dashboard.md</code></strong> in the left sidebar to start organizing clients, reviews, and rides!
+                    </p>
                   </div>
                 </div>
               </div>
@@ -220,6 +256,15 @@ export default function CaseManagementPage() {
                 >
                   <ArrowDownToLine className="size-4" />
                   <span>Download case-management-system.zip</span>
+                </a>
+                <a
+                  href="https://obsidian.md/download"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-5 text-sm font-medium transition hover:border-primary/40"
+                >
+                  <span>Get Obsidian (Free)</span>
+                  <ExternalLink className="size-4" />
                 </a>
               </div>
             </div>
