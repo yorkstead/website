@@ -1,0 +1,13 @@
+BEGIN:VCARD
+VERSION:3.0
+N:York;Brandon;;;
+FN:Brandon York
+ORG:Yorkstead Systems
+TITLE:Founder & Principal Systems Architect
+EMAIL;TYPE=INTERNET,WORK:brandon@yorkstead.com
+EMAIL;TYPE=INTERNET,OFFICE:hello@yorkstead.com
+URL;TYPE=WORK:https://yorkstead.com
+URL;TYPE=PORTAL:https://yorkstead.com/connect
+URL;TYPE=OPERATIONS:https://ops.yorkstead.com
+NOTE:Industrial Software & Workflow Automation for Manufacturing, Logistics, and Hospitality.
+END:VCARD
