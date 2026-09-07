@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowRight, CheckCircle2, Clock, ExternalLink, FileSpreadsheet, FileText, HeartPulse, Lock, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, CheckCircle2, Clock, Coins, ExternalLink, FileCheck, FileSpreadsheet, FileText, HeartPulse, Lock, ShieldCheck, Sparkles, TrendingUp, Truck } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -84,6 +84,58 @@ export default function CaseManagementPage() {
             <span>Zero SaaS subscription</span>
             <span>•</span>
             <span>Includes 1-Click Local OCR Scripts</span>
+          </div>
+        </div>
+      </section>
+
+      {/* The Business Case & Measurable ROI Section */}
+      <section className="relative mx-auto max-w-7xl px-5 pb-20 sm:px-8">
+        <div className="rounded-2xl border border-primary/20 bg-primary/[0.03] p-8 sm:p-12">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
+              <TrendingUp className="size-3" />
+              Measurable ROI // The Business Case
+            </div>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-4xl">
+              Why this system makes the switch <span className="text-primary">100% worth it.</span>
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Case managers don&apos;t burn out from caring for clients—they burn out from administrative friction, constant fire-fighting, and the fear of missing an audit deadline. Here is the tangible impact on time, compliance, and clinical capacity:
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-border bg-card/80 p-5">
+              <div className="font-mono text-2xl font-bold text-primary sm:text-3xl">10–13 hrs</div>
+              <div className="mt-1 font-semibold text-sm">Saved Every Week</div>
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                Reclaimed from manual documentation, blank-page treatment plans, transit phone tag, and retyping handwritten intakes.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card/80 p-5">
+              <div className="font-mono text-2xl font-bold text-emerald-400 sm:text-3xl">100%</div>
+              <div className="mt-1 font-semibold text-sm">On-Time Compliance</div>
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                7-day deadline radar eliminates the risk of Medicaid or commercial payer clawbacks on 30/60/90-day reviews.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card/80 p-5">
+              <div className="font-mono text-2xl font-bold text-amber-400 sm:text-3xl">85% Fewer</div>
+              <div className="mt-1 font-semibold text-sm">Transit Delays</div>
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                Batching weekly Medi-Drive bookings on Thursdays plus direct escalation phone scripts stops Monday morning attendance panics.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card/80 p-5">
+              <div className="font-mono text-2xl font-bold text-sky-400 sm:text-3xl">$0 / mo</div>
+              <div className="mt-1 font-semibold text-sm">Software Expense</div>
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                No $150–$300/user/mo EHR add-on fees. Completely private local markdown files that your organization owns forever.
+              </p>
+            </div>
           </div>
         </div>
       </section>
