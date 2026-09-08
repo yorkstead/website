@@ -1,10 +1,12 @@
 import type { ProjectStatus } from "@/lib/project-status";
 import type { ProjectMedia } from "@/lib/project-media";
 import { brand } from "@/lib/brand";
+import { ellwoodStory } from "./ellwood-story";
 import { reworkCaseStudy } from "./rework-case-study";
 
 export type CaseStudy = {
   workflowStory?: {
+    demoUrl?: string;
     observation: string;
     handoffs: { role: string; before: string; after: string }[];
     scenarios: { id: string; title: string; description: string }[];
@@ -40,10 +42,11 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: "ellwood-flow",
     number: "01",
+    workflowStory: ellwoodStory,
     status: "Concept prototype",
     title: "Ellwood Flow",
-    kicker: "Production release control",
-    summary: "A manufacturing workflow concept based on experience at a previous job, built to keep release intake and document control connected. The prototype connects manufactured orders, approvals, drawings, files, and shop-floor handoffs.",
+    kicker: "A manufacturing workflow concept",
+    summary: "A revised drawing arrives after work is released. Ellwood Flow explores how to review affected work, make the current revision unmistakable, and carry the decision into the shop-floor handoff.",
     signal: "One controlled path from release intake to production-ready work",
     icon: "layers",
     industries: ["Architectural panel manufacturing", "Manufacturing and fabrication", "CNC production", "Building products", "Production management", "Document-controlled operations"],
@@ -54,10 +57,9 @@ export const caseStudies: CaseStudy[] = [
       { title: "Manufacturing approval workflow", description: "Turn missing information, review decisions, and release blockers into explicit actions instead of relying on email chains and verbal follow-up." },
     ],
     paths: [
-      { label: "Open Ellwood Flow", description: "Explore the release-intake and document-control prototype.", href: "https://ellwood-flow.4twenty.dev", external: true },
-      { label: "Packages, process & pricing", description: "Compare three ways to scope a manufacturing workflow, with planning prices and delivery expectations.", href: "/packages#manufacturing" },
-      { label: "Manufacturing software", description: "Explore tailored systems for release control, production visibility, inventory, scheduling, and shop-floor handoffs.", href: "/services/manufacturing-software" },
-      { label: "Audit a production workflow", description: "Map the current intake, review, document, and release path before selecting the first implementation milestone.", href: "/workflow-audit#audit-intake" },
+      { label: "Guided Walkthrough", description: "Follow a drawing revision from review to the shop-floor handoff.", href: "https://ops.yorkstead.com/ellwood?mode=guided", external: true },
+      { label: "Open Sandbox", description: "Explore four fictional release and revision scenarios.", href: "https://ops.yorkstead.com/ellwood", external: true },
+      { label: "Architecture", description: "Separate source behavior from proposed demo extensions.", href: "/work/ellwood-flow#architecture" },
     ],
     intendedFor: "Manufacturers and fabrication teams that need office decisions, controlled documents, and production handoffs to remain attached to the same release.",
     problem: "Release information can arrive through several channels while drawings, approvals, finish schedules, takeoffs, and production files change at different speeds. The shop needs a trustworthy answer to what is ready and what is still blocked.",
@@ -182,7 +184,7 @@ export const caseStudies: CaseStudy[] = [
       },
     ],
     previewMediaId: "active-release-workspace",
-    cta: { label: "Discuss production release control", href: "/#contact" },
+    cta: { label: "Discuss production release control", href: "/workflow-audit#audit-intake" },
   },
   {
     "slug": "work-control",
