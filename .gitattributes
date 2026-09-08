@@ -1,1 +1,4 @@
 migrations/*.sql text eol=lf
+
+# Illustrator masters must remain byte-exact binary files.
+*.ai binary
