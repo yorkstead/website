@@ -15,8 +15,8 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "any",
     categories: ["productivity", "business", "utilities"],
     icons: [
-      { src: "/brand/logo/1x/logo-dark.png", sizes: "1001x1001", type: "image/png", purpose: "any" },
-      { src: "/brand/logo/1x/logo-dark.png", sizes: "1001x1001", type: "image/png", purpose: "maskable" },
+      { src: "/brand/logo/1x/logo-light.png", sizes: "1001x1001", type: "image/png", purpose: "any" },
+      { src: "/brand/logo/1x/logo-light.png", sizes: "1001x1001", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
       {
@@ -24,21 +24,21 @@ export default function manifest(): MetadataRoute.Manifest {
         short_name: "Command Center",
         description: "Launch the owner command center",
         url: "/dashboard",
-        icons: [{ src: "/brand/logo/1x/logo-dark.png", sizes: "1001x1001" }],
+        icons: [{ src: "/brand/logo/1x/logo-light.png", sizes: "1001x1001" }],
       },
       {
         name: "Client Leads",
         short_name: "Leads",
         description: "Open client lead pipeline",
         url: "/dashboard/leads",
-        icons: [{ src: "/brand/logo/1x/logo-dark.png", sizes: "1001x1001" }],
+        icons: [{ src: "/brand/logo/1x/logo-light.png", sizes: "1001x1001" }],
       },
       {
         name: "Consultations",
         short_name: "Consultations",
         description: "Open consultation discovery playbooks",
         url: "/dashboard/consultations",
-        icons: [{ src: "/brand/logo/1x/logo-dark.png", sizes: "1001x1001" }],
+        icons: [{ src: "/brand/logo/1x/logo-light.png", sizes: "1001x1001" }],
       },
     ],
   };

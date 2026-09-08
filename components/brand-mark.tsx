@@ -6,8 +6,7 @@ import { cn } from "@/lib/utils";
 export function BrandLogo({ className, size = 22 }: { className?: string; size?: number }) {
   return (
     <span className={cn("relative inline-block shrink-0", className)} style={{ width: size, height: size }} aria-hidden="true">
-      <Image src="/brand/logo/1x/logo-dark-transparent.png" alt="" width={size} height={size} className="size-full object-contain dark:hidden" priority />
-      <Image src="/brand/logo/1x/logo-light-transparent.png" alt="" width={size} height={size} className="hidden size-full object-contain dark:block" priority />
+      <Image src="/brand/logo/1x/logo-light.png" alt="" width={size} height={size} className="size-full object-contain" priority />
     </span>
   );
 }
