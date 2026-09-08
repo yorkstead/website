@@ -53,7 +53,7 @@ export default function WorkPage() {
               Systems with an <span className="text-primary">operating point of view.</span>
             </h1>
             <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
-              Five live systems and two working prototypes spanning release control, internal operations, online commerce, inventory visibility, tableside POS, and production analytics.
+              Explore live systems and working prototypes spanning release control, freight handoffs, internal operations, online commerce, tableside POS, and production analytics.
             </p>
           </div>
 

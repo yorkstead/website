@@ -76,6 +76,7 @@ export default function DemosPage() {
       {/* Demos Showcase Grid */}
       <section className="relative mx-auto max-w-7xl px-5 pb-24 sm:px-8">
         <div className="space-y-8">
+          <Link href="/work/rework-flow" className="block rounded-xl border border-primary/30 bg-card p-7"><span className="font-mono text-xs uppercase tracking-widest text-primary">Flagship workflow case study</span><h2 className="mt-3 text-2xl font-semibold">Rework Flow: from arrival to an explainable invoice</h2><p className="mt-3 max-w-3xl text-muted-foreground">Explore six fictional freight scenarios, a guided walkthrough, and a resettable browser sandbox.</p><span className="mt-5 inline-flex items-center gap-2 text-primary">Explore the case study <ArrowRight className="size-4" /></span></Link>
           {publicDemos.map((demo) => (
             <DemoCard key={demo.slug} demo={demo} />
           ))}

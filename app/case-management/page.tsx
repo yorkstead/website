@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowRight, CheckCircle2, Clock, Coins, ExternalLink, FileCheck, FileSpreadsheet, FileText, HeartPulse, Lock, ShieldCheck, Sparkles, TrendingUp, Truck } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, Clock, ExternalLink, FileSpreadsheet, FileText, HeartPulse, ShieldCheck, Sparkles, TrendingUp, Truck } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";

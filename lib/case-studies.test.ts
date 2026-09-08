@@ -4,12 +4,13 @@ import { projectStatusDefinitions, projectStatuses } from "@/lib/project-status"
 
 describe("case study data", () => {
   test("defines the initial selected-work routes", () => {
-    expect(caseStudies.map((study) => study.slug)).toEqual(["ellwood-flow", "work-control", "jwld-store", "sic-pizza-pos", "employee-barcodes"]);
+    expect(caseStudies.map((study) => study.slug)).toEqual(["rework-flow", "ellwood-flow", "work-control", "jwld-store", "sic-pizza-pos", "employee-barcodes"]);
     expect(caseStudies.every((study) => Boolean(getCaseStudy(study.slug)))).toBeTrue();
   });
 
   test("assigns an explicit, supported status to every current project", () => {
     expect(Object.fromEntries(caseStudies.map((study) => [study.title, study.status]))).toEqual({
+      "Rework Flow": "Working prototype",
       "Ellwood Flow": "Live system",
       "Yorkstead Operations": "Working prototype",
       "jwld.store": "Live system",
@@ -36,10 +37,13 @@ describe("case study data", () => {
       expect(study.paths.every((item) => item.label.length > 4 && item.description.length > 30 && (item.href.startsWith("/") || item.href.startsWith("https://")))).toBeTrue();
       expect(study.outcome.length).toBeGreaterThan(20);
       expect(study.limitations.length).toBeGreaterThan(20);
-      expect(study.media.length).toBeGreaterThan(0);
+      if (study.workflowStory) {
+        expect(study.workflowStory.handoffs.length).toBeGreaterThan(2);
+        expect(study.workflowStory.scenarios.length).toBeGreaterThan(0);
+      } else expect(study.media.length).toBeGreaterThan(0);
       expect(study.media.every((item) => item.caption.length > 20 && item.description.length > 20)).toBeTrue();
       expect(study.previewMediaId ? study.media.some((item) => item.id === study.previewMediaId) : true).toBeTrue();
-      expect(study.cta.href).toBe("/#contact");
+      expect(study.cta.href).toBe(study.workflowStory ? "/workflow-audit#audit-intake" : "/#contact");
     }
   });
 
@@ -48,7 +52,10 @@ describe("case study data", () => {
       expect(new Set(study.industries).size).toBe(study.industries.length);
       expect(new Set(study.applications.map(({ title }) => title)).size).toBe(study.applications.length);
       expect(new Set(study.paths.map(({ href }) => href)).size).toBe(study.paths.length);
-      expect(study.paths.some(({ href }) => href.startsWith("/services/"))).toBeTrue();
+      if (study.workflowStory) {
+        expect(study.paths.some(({ href }) => href === `/work/${study.slug}#architecture`)).toBeTrue();
+        expect(study.paths.some(({ href }) => href.startsWith("https://ops.yorkstead.com/"))).toBeTrue();
+      } else expect(study.paths.some(({ href }) => href.startsWith("/services/"))).toBeTrue();
     }
   });
 
