@@ -1,7 +1,7 @@
 import type { CaseStudy } from "./case-studies";
 
 export const reworkCaseStudy: CaseStudy = {
-  slug: "rework-flow", number: "06", status: "Working prototype", title: "Rework Flow",
+  slug: "rework-flow", number: "06", status: "In development", title: "Rework Flow",
   kicker: "Flagship workflow case study", icon: "layers",
   summary: "A freight exception should not become an office mystery. Rework Flow connects the arrival promise, dock work, evidence, and invoice through one load record.",
   signal: "The next person receives the work and the reason behind it.",
