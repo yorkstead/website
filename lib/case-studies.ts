@@ -1,8 +1,15 @@
 import type { ProjectStatus } from "@/lib/project-status";
 import type { ProjectMedia } from "@/lib/project-media";
 import { brand } from "@/lib/brand";
+import { reworkCaseStudy } from "./rework-case-study";
 
 export type CaseStudy = {
+  workflowStory?: {
+    observation: string;
+    handoffs: { role: string; before: string; after: string }[];
+    scenarios: { id: string; title: string; description: string }[];
+    architecture: { title: string; description: string }[];
+  };
   slug: string;
   number: string;
   status: ProjectStatus;
@@ -29,6 +36,7 @@ export type CaseStudy = {
 };
 
 export const caseStudies: CaseStudy[] = [
+  reworkCaseStudy,
   {
     slug: "ellwood-flow",
     number: "01",

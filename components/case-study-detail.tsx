@@ -7,6 +7,7 @@ import { ProjectStatusBadge } from "@/components/project-status-badge";
 import { ProjectMediaGallery } from "@/components/project-media";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { WorkflowCaseStudy } from "@/components/workflow-case-study";
 
 const icons = { gauge: Gauge, "scan-line": ScanLine, layers: Layers3 };
 
@@ -29,6 +30,7 @@ function ProjectFit({ study }: { study: CaseStudy }) {
 }
 
 export function CaseStudyDetail({ study, previous, next }: { study: CaseStudy; previous: CaseStudy; next: CaseStudy }) {
+  if (study.workflowStory) return <WorkflowCaseStudy study={study} />;
   const Icon = icons[study.icon];
   return <main className="min-h-screen overflow-hidden"><div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_0%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_38%)]" /><header className="relative mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8"><BrandMark /><div className="flex items-center gap-2"><ThemeToggle /><Link href="/#work" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition hover:text-foreground"><ArrowLeft className="size-3.5" />Selected work</Link></div></header>
     <article className="relative mx-auto max-w-7xl px-5 pb-24 pt-14 sm:px-8 sm:pt-20"><header className="grid gap-12 border-b border-border pb-16 lg:grid-cols-[1fr_320px] lg:items-end"><div><div className="flex flex-wrap items-center gap-3"><ProjectStatusBadge status={study.status} /><span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">Project profile {study.number} · {study.kicker}</span></div><h1 className="mt-7 max-w-4xl text-5xl font-semibold leading-[.95] tracking-[-0.055em] sm:text-7xl">{study.title}</h1><p className="mt-7 max-w-3xl text-base leading-7 text-muted-foreground sm:text-lg">{study.summary}</p></div><div className="border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0"><div className="grid size-12 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary"><Icon className="size-5" /></div><div className="mt-6 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">Operating signal</div><p className="mt-3 text-sm font-medium leading-6">{study.signal}</p></div></header>
