@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: none;
+        stroke: #0a7ba3;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-3 {
+        fill: #38bcf7;
+      }
+
+      .cls-4 {
+        fill: #c4c4c4;
+      }
+
+      .cls-5 {
+        fill: #0a0a0a;
+      }
+    </style>
+  </defs>
+  <line class="cls-2" x1="237.9" y1="261.37" x2="265.61" y2="233.66"/>
+  <g>
+    <rect class="cls-5" x="337.2" y="203.33" width="78.46" height="353.08" transform="translate(-158.36 377.44) rotate(-45)"/>
+    <circle class="cls-5" cx="251.64" cy="255.01" r="39.18"/>
+  </g>
+  <g>
+    <rect class="cls-3" x="592.82" y="200.9" width="79.88" height="359.46" transform="translate(811.0405 1097.2051) rotate(-135)"/>
+    <circle class="cls-3" cx="757.28" cy="256.11" r="39.89"/>
+  </g>
+  <g>
+    <rect class="cls-5" x="467.32" y="549.41" width="78.46" height="203.98"/>
+    <ellipse class="cls-5" cx="506.55" cy="750.22" rx="39.18" ry="33.95"/>
+  </g>
+  <circle class="cls-3" cx="506.55" cy="505.94" r="60.66"/>
+  <circle class="cls-4" cx="506.55" cy="505.94" r="8.21"/>
+  <circle class="cls-1" cx="506.55" cy="505.94" r="7.82"/>
+</svg>

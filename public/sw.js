@@ -1,5 +1,5 @@
-const CACHE_NAME = "work-ctrl-public-shell-v2";
-const BRAND_ICON = "/brand/logo/yorkstead-dark.png";
+const CACHE_NAME = "work-ctrl-public-shell-v3";
+const BRAND_ICON = "/brand/logo/1x/logo-dark.png";
 const SHELL = ["/", "/manifest.webmanifest", BRAND_ICON];
 const PUBLIC_NAVIGATION_PATHS = new Set(["/", "/about", "/privacy", "/workflow-audit"]);
 
