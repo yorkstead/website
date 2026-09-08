@@ -10,16 +10,16 @@ describe("case study data", () => {
 
   test("assigns an explicit, supported status to every current project", () => {
     expect(Object.fromEntries(caseStudies.map((study) => [study.title, study.status]))).toEqual({
-      "Rework Flow": "Working prototype",
-      "Ellwood Flow": "Live system",
-      "Yorkstead Operations": "Working prototype",
+      "Rework Flow": "In development",
+      "Ellwood Flow": "Concept prototype",
+      "Yorkstead Operations": "In development",
       "jwld.store": "Live system",
-      "SIC Pizza POS": "Working prototype",
-      "Employee Barcodes": "Live system",
+      "SIC Pizza POS": "Concept prototype",
+      "Employee Barcodes": "Previously used",
     });
-    expect(projectStatuses).toEqual(["Live system", "Working prototype", "Active concept", "Case study"]);
+    expect(projectStatuses).toEqual(["Live system", "In development", "Concept prototype", "Previously used"]);
     expect(caseStudies.every((study) => Boolean(projectStatusDefinitions[study.status]))).toBeTrue();
-    expect(caseStudies.some((study) => study.status === "Case study")).toBeFalse();
+    expect(caseStudies.filter((study) => study.status === "Live system").map((study) => study.slug)).toEqual(["jwld-store"]);
   });
 
   test("provides every required case-study section", () => {
@@ -118,16 +118,16 @@ describe("case study data", () => {
 
   test("positions SIC Pizza as a working POS prototype without production claims", () => {
     const study = getCaseStudy("sic-pizza-pos");
-    expect(study?.status).toBe("Working prototype");
+    expect(study?.status).toBe("Concept prototype");
     expect(study?.paths.some(({ href }) => href === "https://sic-pizza.vercel.app")).toBeTrue();
     expect(study?.paths.some(({ href }) => href === "https://github.com/4twentydev/sic-pizza")).toBeTrue();
     expect(study?.capabilities).toContain("Kitchen display lifecycle");
     expect(study?.limitations.toLowerCase()).toContain("mocked card authorization");
   });
 
-  test("positions employee barcodes as a live identity-label tool with explicit scan boundaries", () => {
+  test("positions employee barcodes as a previously used identity-label tool with explicit scan boundaries", () => {
     const study = getCaseStudy("employee-barcodes");
-    expect(study?.status).toBe("Live system");
+    expect(study?.status).toBe("Previously used");
     expect(study?.paths.some(({ href }) => href === "https://barcodes.4twenty.dev")).toBeTrue();
     expect(study?.paths.some(({ href }) => href === "/services/manufacturing-software")).toBeTrue();
     expect(study?.capabilities).toContain("Shareable PNG label output");
@@ -136,7 +136,7 @@ describe("case study data", () => {
   });
 
   test("labels non-live results as intended outcomes", () => {
-    for (const study of caseStudies.filter((item) => item.status !== "Live system")) {
+    for (const study of caseStudies.filter((item) => item.status !== "Live system" && item.status !== "Previously used")) {
       expect(study.outcomeLabel).toBe("Intended outcome");
       expect(study.outcome.toLowerCase()).toContain("intended outcome");
       expect(study.limitations.toLowerCase()).toMatch(/prototype|concept/);

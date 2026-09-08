@@ -3,10 +3,10 @@ import { projectStatusDefinitions } from "@/lib/project-status";
 
 describe("public project statuses", () => {
   test("uses the approved definitions", () => {
-    expect(projectStatusDefinitions["Live system"].description).toBe("Implemented and currently operational");
-    expect(projectStatusDefinitions["Working prototype"].description).toBe("Functional enough to demonstrate or test");
-    expect(projectStatusDefinitions["Active concept"].description).toBe("Defined product or workflow still under development");
-    expect(projectStatusDefinitions["Case study"].description).toBe("Completed work supported by real evidence");
+    expect(projectStatusDefinitions["Live system"].description).toBe("Currently used to run a real business");
+    expect(projectStatusDefinitions["In development"].description).toBe("Being built and refined; may already be online");
+    expect(projectStatusDefinitions["Concept prototype"].description).toBe("A working exploration of an idea, not a customer deployment");
+    expect(projectStatusDefinitions["Previously used"].description).toBe("Used in a real workplace in the past; not currently in active use");
   });
 
   test("gives every status a distinct visual treatment", () => {

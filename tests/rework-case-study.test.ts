@@ -4,7 +4,7 @@ import { caseStudies, getCaseStudy, getCaseStudyStructuredData } from "@/lib/cas
 test("flagship Rework profile has discoverable, consistent demo paths and honest evidence boundaries", () => {
   const study = getCaseStudy("rework-flow")!;
   expect(caseStudies[0]).toBe(study);
-  expect(study.status).toBe("Working prototype");
+  expect(study.status).toBe("In development");
   expect(study.workflowStory?.handoffs).toHaveLength(4);
   expect(study.workflowStory?.scenarios).toHaveLength(6);
   expect(study.paths.map((path) => path.label)).toEqual(["Guided Walkthrough", "Open Sandbox", "Architecture"]);

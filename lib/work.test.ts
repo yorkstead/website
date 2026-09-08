@@ -19,10 +19,10 @@ describe("Public /work Case Studies Catalog & Review Rules", () => {
 
   it("distinguishes live systems from working prototypes with honest outcome labels", () => {
     const liveSystems = caseStudies.filter((s) => s.status === "Live system");
-    const prototypes = caseStudies.filter((s) => s.status === "Working prototype");
+    const prototypes = caseStudies.filter((s) => s.status === "In development" || s.status === "Concept prototype");
 
-    expect(liveSystems.length).toBe(3);
-    expect(prototypes.length).toBe(3);
+    expect(liveSystems.length).toBe(1);
+    expect(prototypes.length).toBe(4);
 
     for (const live of liveSystems) {
       expect(live.outcomeLabel).toBe("Operational outcome");
