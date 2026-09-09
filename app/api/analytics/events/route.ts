@@ -3,7 +3,7 @@ import { hashedRequestAddress } from "@/lib/request-privacy";
 
 export const runtime = "nodejs";
 
-const metadataKeys = new Set(["field", "fields", "service", "caseStudy", "placement", "destination", "projectType"]);
+const metadataKeys = new Set(["field", "fields", "service", "caseStudy", "placement", "destination", "projectType", "page", "source", "campaign", "problemAreas", "status", "content_name"]);
 const privatePaths = ["/api", "/account", "/dashboard", "/login"];
 
 function safePath(value: unknown) {

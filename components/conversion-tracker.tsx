@@ -9,6 +9,22 @@ type EventMetadata = Record<string, string | number | boolean | string[]>;
 
 export function trackConversionEvent(event: ConversionEventName, metadata: EventMetadata | string = {}) {
   const body = JSON.stringify({ event, path: window.location.pathname, metadata: typeof metadata === "string" ? { field: metadata } : metadata });
+  if (typeof window !== "undefined" && typeof (window as { fbq?: (...args: unknown[]) => void }).fbq === "function") {
+    const mappedEvent = (() => {
+      switch (event) {
+        case "page_view": return "PageView";
+        case "view_content": return "ViewContent";
+        case "demo_view": return "ViewContent";
+        case "lead": return "Lead";
+        case "schedule_start": return "ScheduleStart";
+        case "schedule_complete": return "ScheduleComplete";
+        case "qualified_lead": return "Lead";
+        default: return event.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+      }
+    })();
+    const normalized = typeof metadata === "string" ? { content_name: metadata } : metadata;
+    (window as { fbq?: (...args: unknown[]) => void }).fbq!("track", mappedEvent, normalized);
+  }
   if (navigator.sendBeacon) {
     navigator.sendBeacon("/api/analytics/events", new Blob([body], { type: "application/json" }));
     return;
