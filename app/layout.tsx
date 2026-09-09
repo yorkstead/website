@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { MetaPixel } from "@/components/meta-pixel";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { brand } from "@/lib/brand";
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geist.variable} ${geistMono.variable}`}>
-      <body className="antialiased"><ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="work-ctrl-theme">{children}<ServiceWorkerRegister /></ThemeProvider></body>
+      <body className="antialiased"><ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme disableTransitionOnChange storageKey="yorkstead-theme">{children}<MetaPixel /><ServiceWorkerRegister /></ThemeProvider></body>
     </html>
   );
 }
