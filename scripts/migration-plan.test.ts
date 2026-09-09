@@ -9,7 +9,7 @@ describe("application migration plan", () => {
   test("loads ordered, unique, nonempty migrations", async () => {
     const fileNames = (await readdir(migrationsDirectory)).filter((fileName) => fileName.endsWith(".sql")).sort();
     const migrations = await Promise.all(fileNames.map(async (fileName) => parseMigration(fileName, await readFile(resolve(migrationsDirectory, fileName), "utf8"))));
-    expect(migrations.map((migration) => migration.version)).toEqual(["0001", "0002", "0003"]);
+    expect(migrations.map((migration) => migration.version)).toEqual(["0001", "0002", "0003", "0004"]);
     expect(new Set(migrations.map((migration) => migration.version)).size).toBe(migrations.length);
     expect(migrations.every((migration) => migration.statements.length > 0)).toBeTrue();
     expect(migrations.every((migration) => /^[0-9a-f]{64}$/.test(migration.checksum))).toBeTrue();
