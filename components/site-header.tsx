@@ -12,6 +12,7 @@ const navigation = [
   { href: "/solutions", label: "Solutions" },
   { href: "/platform", label: "Platform" },
   { href: "/demos", label: "Demos" },
+  { href: "/workflow", label: "Workflow" },
   { href: "/work", label: "Selected work" },
   { href: "/how-we-build", label: "How we build" },
   { href: "/about", label: "About" },

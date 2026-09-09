@@ -16,10 +16,26 @@ export type ContactInquiry = {
   name: string;
   email: string;
   company: string | null;
+  phone: string | null;
   projectType: string | null;
   budget: string | null;
   message: string;
+  description: string | null;
+  problemAreas: string[];
+  source: string | null;
+  medium: string | null;
+  campaign: string | null;
+  content: string | null;
+  term: string | null;
+  landingPage: string | null;
+  referrer: string | null;
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  utmContent: string | null;
+  utmTerm: string | null;
   status: LeadStatus;
+  qualificationStatus: string | null;
   notes: string;
   followUpAt: string | null;
   convertedProjectId: string | null;
@@ -96,12 +112,35 @@ function normalizeCount(value: unknown) {
 }
 
 function mapInquiry(row: Record<string, unknown>): ContactInquiry {
+  const problemAreas = Array.isArray(row.problem_areas)
+    ? row.problem_areas.filter((item): item is string => typeof item === "string")
+    : typeof row.problem_areas === "string"
+      ? row.problem_areas.split(",").map((item) => item.trim()).filter(Boolean)
+      : [];
+
   return {
     id: Number(row.id), name: String(row.name), email: String(row.email),
     company: row.company ? String(row.company) : null,
+    phone: row.phone ? String(row.phone) : null,
     projectType: row.project_type ? String(row.project_type) : null,
     budget: row.budget ? String(row.budget) : null,
-    message: String(row.message), status: row.status as LeadStatus,
+    message: String(row.message ?? ""),
+    description: row.description ? String(row.description) : null,
+    problemAreas,
+    source: row.source ? String(row.source) : null,
+    medium: row.medium ? String(row.medium) : null,
+    campaign: row.campaign ? String(row.campaign) : null,
+    content: row.content ? String(row.content) : null,
+    term: row.term ? String(row.term) : null,
+    landingPage: row.landing_page ? String(row.landing_page) : null,
+    referrer: row.referrer ? String(row.referrer) : null,
+    utmSource: row.utm_source ? String(row.utm_source) : null,
+    utmMedium: row.utm_medium ? String(row.utm_medium) : null,
+    utmCampaign: row.utm_campaign ? String(row.utm_campaign) : null,
+    utmContent: row.utm_content ? String(row.utm_content) : null,
+    utmTerm: row.utm_term ? String(row.utm_term) : null,
+    status: row.status as LeadStatus,
+    qualificationStatus: row.qualification_status ? String(row.qualification_status) : null,
     notes: String(row.notes ?? ""),
     followUpAt: row.follow_up_at ? new Date(String(row.follow_up_at)).toISOString() : null,
     convertedProjectId: row.converted_project_id ? String(row.converted_project_id) : null,

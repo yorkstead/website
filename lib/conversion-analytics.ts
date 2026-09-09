@@ -3,6 +3,13 @@ import { contactDatabase } from "@/lib/contact-inquiries";
 export const conversionEventNames = [
   "service_page_view",
   "case_study_view",
+  "page_view",
+  "view_content",
+  "demo_view",
+  "lead",
+  "schedule_start",
+  "schedule_complete",
+  "qualified_lead",
   "workflow_audit_cta_click",
   "contact_form_start",
   "contact_form_submission",
