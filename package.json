@@ -4,7 +4,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rivetworks/yorkstead-website.git"
+    "url": "git+https://github.com/yorkstead/website.git"
   },
   "homepage": "https://yorkstead.com",
   "packageManager": "bun@1.3.14",
