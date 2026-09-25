@@ -63,6 +63,8 @@ export type RestaurantTrialValues = {
 export type RestaurantTrialPayload = RestaurantTrialValues & { website: string };
 
 export type RestaurantTrialIntake = {
+  restaurantName: string;
+  contactName: string;
   cityState: string;
   approximateSeats: string;
   posTerminals: string;
@@ -72,10 +74,14 @@ export type RestaurantTrialIntake = {
   biggestPainPoint: string;
   preferredTiming: string;
   notes: string;
+  offer: "14-day-on-site-trial";
+  submittedAt: string;
 };
 
 export function restaurantTrialIntake(values: RestaurantTrialValues): RestaurantTrialIntake {
   return {
+    restaurantName: values.restaurantName,
+    contactName: values.contactName,
     cityState: values.cityState,
     approximateSeats: values.approximateSeats,
     posTerminals: values.posTerminals,
@@ -85,6 +91,8 @@ export function restaurantTrialIntake(values: RestaurantTrialValues): Restaurant
     biggestPainPoint: values.biggestPainPoint,
     preferredTiming: values.preferredTiming,
     notes: values.notes,
+    offer: "14-day-on-site-trial",
+    submittedAt: new Date().toISOString(),
   };
 }
 
