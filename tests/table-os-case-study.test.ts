@@ -59,5 +59,17 @@ test("Restaurant 14-Day Trial intake validates required restaurant qualification
   });
   const validErrors = validateRestaurantTrial(validPayload);
   expect(Object.keys(validErrors)).toHaveLength(0);
+
+  const { restaurantTrialIntake } = await import("@/lib/restaurant-trial-intake");
+  const intake = restaurantTrialIntake(validPayload);
+  expect(intake.restaurantName).toBe("Union Cellar & Hearth");
+  expect(intake.contactName).toBe("Michael Thorne");
+  expect(intake.offer).toBe("14-day-on-site-trial");
+  expect(intake.approximateSeats).toBe("101–200 seats");
+  expect(intake.posTerminals).toBe("3–4 terminals");
+  expect(intake.currentPos).toBe("Toast");
+  expect(intake.kitchenSetup).toBe("Kitchen Display Screens (KDS)");
+  expect(intake.hasPrivateDining).toBe("Yes");
+  expect(intake.submittedAt).toBeDefined();
 });
 
