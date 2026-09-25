@@ -14,6 +14,7 @@ import {
   Sparkles,
   Cpu,
   Split,
+  ArrowRight,
 } from "lucide-react";
 
 interface SlideData {
@@ -137,21 +138,56 @@ export function RestaurantHeroSlideshow() {
           <Sparkles className="size-3.5 text-primary" />
           <span>Interactive System Showcase · 240 Union Concept</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <a
-            href="#workflow"
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1 font-mono text-xs font-semibold text-muted-foreground shadow-sm transition hover:text-foreground"
+            href="#trial-intake"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1 font-mono text-xs font-semibold text-primary-foreground shadow transition hover:opacity-90"
           >
-            <span>See How It Works</span>
+            <span>Start a 14-Day Trial</span>
+            <ArrowRight className="size-3" />
           </a>
           <a
             href="https://240.yorkstead.com"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1 font-mono text-xs font-semibold text-primary-foreground shadow transition hover:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1 font-mono text-xs font-semibold text-foreground shadow-sm transition hover:text-primary"
           >
-            <span>Launch Restaurant Demo</span>
+            <span>Launch Interactive Demo</span>
             <ExternalLink className="size-3" />
+          </a>
+          <a
+            href="#workflow"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1 font-mono text-xs font-semibold text-muted-foreground shadow-sm transition hover:text-foreground"
+          >
+            <span>See How It Works</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Two-Way Experience Pathway Bar */}
+      <div className="grid border-b border-border bg-background/50 text-xs sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
+        <div className="flex items-center justify-between px-5 py-2.5 sm:px-7">
+          <span className="text-muted-foreground">
+            <strong className="text-foreground">Explore it now:</strong> Launch the online UnionOS simulation.
+          </span>
+          <a
+            href="https://240.yorkstead.com"
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono text-[11px] font-bold text-primary hover:underline shrink-0 ml-3"
+          >
+            Web Simulator ↗
+          </a>
+        </div>
+        <div className="flex items-center justify-between px-5 py-2.5 sm:px-7 bg-primary/[0.03]">
+          <span className="text-muted-foreground">
+            <strong className="text-foreground">Prove it in your restaurant:</strong> Run configured hardware for 14 days.
+          </span>
+          <a
+            href="#trial-intake"
+            className="font-mono text-[11px] font-bold text-primary hover:underline shrink-0 ml-3"
+          >
+            Request Trial ↓
           </a>
         </div>
       </div>

@@ -86,6 +86,11 @@ export const tableOsCaseStudy: CaseStudy = {
   ],
   paths: [
     {
+      label: "Start a 14-Day Trial",
+      description: "Run configured demonstration hardware in your restaurant alongside your current system.",
+      href: "/work/table-os#trial-intake",
+    },
+    {
       label: "Launch Restaurant Demo",
       description: "Explore the live restaurant operating system and POS concept.",
       href: "https://240.yorkstead.com",

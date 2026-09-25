@@ -7,6 +7,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { ProjectStatusBadge } from "./project-status-badge";
 import type { CaseStudy } from "@/lib/case-studies";
 import { RestaurantHeroSlideshow } from "./restaurant-hero-slideshow";
+import { RestaurantTrialSection } from "./restaurant-trial-section";
 
 export function WorkflowCaseStudy({ study }: { study: CaseStudy }) {
   const story = study.workflowStory;
@@ -47,29 +48,48 @@ export function WorkflowCaseStudy({ study }: { study: CaseStudy }) {
       <section aria-labelledby="scenario-heading" className="border-t border-border py-10"><h2 id="scenario-heading" className="text-3xl font-semibold tracking-tight">The happy path is only the beginning.</h2><p className="mt-3 max-w-3xl text-muted-foreground">{story.scenarios.length} deliberate scenarios show where a handoff succeeds, where it stops, and what the next person needs.</p><div className="mt-7 grid gap-3 md:grid-cols-2 lg:grid-cols-3">{story.scenarios.map((scenario) => <a key={scenario.id} href={study.slug === "table-os" ? "https://240.yorkstead.com" : `${story.demoUrl ?? "https://ops.yorkstead.com/rework"}?mode=guided&scenario=${scenario.id}`} {...(study.slug === "table-os" ? { target: "_blank", rel: "noreferrer" } : {})} className="rounded-xl border border-border bg-card p-5 transition hover:border-primary"><h3 className="font-semibold">{scenario.title} <span aria-hidden="true">↗</span></h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{scenario.description}</p></a>)}</div></section>
       <section className="grid gap-8 border-t border-border py-10 md:grid-cols-[220px_1fr]"><h2 className="text-2xl font-semibold">Intended outcomes</h2><div><p className="max-w-3xl text-lg leading-8 text-muted-foreground">{study.outcome}</p><p className="mt-5 border-l-2 border-border pl-5 text-sm leading-7 text-muted-foreground">{study.limitations}</p></div></section>
       <section id="architecture" className="scroll-mt-8 border-t border-border py-10"><div className="font-mono text-xs uppercase tracking-widest text-primary">Architecture</div><h2 className="mt-3 text-3xl font-semibold tracking-tight">A public demo with its own boundary.</h2><div className="mt-7 grid gap-5 md:grid-cols-2">{story.architecture.map((part) => <div key={part.title} className="rounded-xl border border-border p-5"><h3 className="font-semibold">{part.title}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{part.description}</p></div>)}</div></section>
+      {study.slug === "table-os" && <div className="mt-12"><RestaurantTrialSection /></div>}
       <section className="mt-6 rounded-xl border border-border bg-card p-8">
         <h2 className="text-2xl font-semibold">
-          {study.slug === "table-os" ? "Run the restaurant from one connected operating system." : "Where does your team have to reconstruct the work?"}
+          {study.slug === "table-os" ? "Run it in your restaurant for 14 days." : "Where does your team have to reconstruct the work?"}
         </h2>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          {study.slug === "table-os" ? "Explore the live 240 Union-inspired concept POS or schedule a technology and workflow audit for your dining room and kitchen." : "Start with one handoff: the information arriving, the decision being made, and what the next person needs."}
+          {study.slug === "table-os" ? "Real hardware. Real workflows. Your team. Your environment. See how Yorkstead works during actual restaurant operations before committing to a full implementation." : "Start with one handoff: the information arriving, the decision being made, and what the next person needs."}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4">
-          <a
-            href={study.slug === "table-os" ? "https://240.yorkstead.com" : study.cta.href}
-            {...(study.slug === "table-os" ? { target: "_blank", rel: "noreferrer" } : {})}
-            className="inline-flex min-h-11 items-center gap-3 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground transition hover:opacity-90"
-          >
-            {study.slug === "table-os" ? "Launch Restaurant Demo" : study.cta.label}
-            <ArrowRight className="size-4" />
-          </a>
-          {study.slug === "table-os" && (
-            <Link
-              href="/workflow-audit#audit-intake"
-              className="inline-flex min-h-11 items-center gap-3 rounded-lg border border-border bg-background px-5 py-3 font-medium text-foreground transition hover:bg-card"
+          {study.slug === "table-os" ? (
+            <>
+              <a
+                href="#trial-intake"
+                className="inline-flex min-h-11 items-center gap-3 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground transition hover:opacity-90"
+              >
+                <span>Start a 14-Day Restaurant Trial</span>
+                <ArrowRight className="size-4" />
+              </a>
+              <a
+                href="https://240.yorkstead.com"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-background px-5 py-3 font-medium text-foreground transition hover:bg-card"
+              >
+                <span>Launch Interactive Demo</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+              <Link
+                href="/workflow-audit#audit-intake"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg px-4 py-3 font-mono text-xs text-muted-foreground hover:text-foreground underline"
+              >
+                Audit your restaurant technology stack
+              </Link>
+            </>
+          ) : (
+            <a
+              href={study.cta.href}
+              className="inline-flex min-h-11 items-center gap-3 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground transition hover:opacity-90"
             >
-              Audit your restaurant technology stack
-            </Link>
+              {study.cta.label}
+              <ArrowRight className="size-4" />
+            </a>
           )}
         </div>
       </section>
