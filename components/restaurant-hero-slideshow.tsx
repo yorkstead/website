@@ -4,8 +4,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Server,
   DollarSign,
-  UtensilsCrossed,
-  Receipt,
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
@@ -13,13 +11,9 @@ import {
   Pause,
   ExternalLink,
   Flame,
-  ArrowRight,
   Sparkles,
-  Zap,
   Cpu,
   Split,
-  FileSpreadsheet,
-  CheckCircle2,
 } from "lucide-react";
 
 interface SlideData {
@@ -35,16 +29,16 @@ interface SlideData {
 const slides: SlideData[] = [
   {
     id: "hardware",
-    badge: "Rarely Offered Sovereign Architecture",
-    title: "The $160 In-House Appliance",
+    badge: "Connected Operating System",
+    title: "Run the Restaurant from One Connected System",
     subtitle:
-      "No cloud fragility. A fanless Intel N100 mini-PC in your office runs the whole restaurant locally at sub-5ms latency with 100% offline immunity.",
+      "Tables, ordering, coursing, kitchen execution, payments, cellar inventory, shift handoff, and management workflows united in one restaurant-specific operating system.",
     icon: Server,
     highlights: [
-      { label: "Hardware Cost", value: "$160 Mini-PC", detail: "Intel N100, 16GB RAM, dual gigabit LAN" },
-      { label: "Client Markup", value: "0% Direct", detail: "Buy direct on Amazon; 100% tax write-off" },
-      { label: "Response Speed", value: "< 5ms LAN", detail: "Zero spinner lag across all floor terminals" },
-      { label: "Offline Uptime", value: "100% Immune", detail: "Full kitchen & ordering when internet drops" },
+      { label: "Architecture", value: "Local-First LAN", detail: "Sub-5ms terminal response across all stations" },
+      { label: "Outage Resilience", value: "Local Continuity", detail: "Core restaurant operations continue when internet drops" },
+      { label: "Hardware Model", value: "Direct Commercial", detail: "Affordable commercial hardware; no proprietary lock-in" },
+      { label: "Software Cost", value: "$0 SaaS Rent", detail: "No perpetual monthly software subscriptions" },
     ],
     visualType: "hardware",
   },
@@ -53,13 +47,13 @@ const slides: SlideData[] = [
     badge: "High-Volume Lunch Velocity",
     title: "30-Second Speed-Split Check",
     subtitle:
-      "Civic center 8-tops split checks in seconds without manager overrides. Shared starters are fractionally calculated with exact cent rounding.",
+      "Busy 8-tops split checks in seconds without manager overrides. Shared starters are fractionally calculated with exact cent rounding.",
     icon: Split,
     highlights: [
       { label: "Table Resolution", value: "< 30 Seconds", detail: "Split 8+ ways with single-tap seat assignment" },
-      { label: "Fractional Split", value: "Exact Cent", detail: "Crispy Calamari split evenly across seats" },
-      { label: "Card Settlement", value: "Multi-Tender", detail: "Visa, AMEX, Apple Pay tapped simultaneously" },
-      { label: "Auto-Gratuity", value: "8+ Top Rules", detail: "Automatic 20% grat and city tax calculation" },
+      { label: "Fractional Split", value: "Exact Cent", detail: "Shared appetizers divided evenly across seats" },
+      { label: "Card Settlement", value: "Multi-Tender", detail: "Visa, AMEX, Apple Pay settled simultaneously" },
+      { label: "Auto-Gratuity", value: "Configurable", detail: "Automatic large-party grat and local tax calculation" },
     ],
     visualType: "speed-split",
   },
@@ -72,9 +66,9 @@ const slides: SlideData[] = [
     icon: Flame,
     highlights: [
       { label: "State Transitions", value: "HOLD → FIRE", detail: "Visual coursing state machine with audio cues" },
-      { label: "Station Routing", value: "4 Line Passes", detail: "Hearth Grill, Sauté, Wood Oven, Expo Pass" },
+      { label: "Station Routing", value: "Multi-Line Pass", detail: "Hearth Grill, Sauté, Wood Oven, Expo Pass" },
       { label: "Live 86 Sync", value: "Real-Time", detail: "Depleted cellar vintages sync instantly to floor" },
-      { label: "Course Timers", value: "Color-Coded", detail: "Green <10m, Amber 10-18m, Rush 18m+" },
+      { label: "Course Timers", value: "Color-Coded", detail: "Green on pace, amber holding, rush alert" },
     ],
     visualType: "kds",
   },
@@ -83,13 +77,13 @@ const slides: SlideData[] = [
     badge: "Retained Restaurant Wealth",
     title: "5-Year Financial Recovery Audit",
     subtitle:
-      "Why rent a cloud POS for $1,383/month when you can own the sovereign appliance flat? Pay for itself in under 6 months.",
+      "Why rent a cloud POS for $1,383/month when you can run a connected system you control? Modeled payback in under 6 months.",
     icon: DollarSign,
     highlights: [
-      { label: "Toast 5-Yr SaaS", value: "$82,980", detail: "$1,383/month perpetual software extraction" },
-      { label: "TableOS Buyout", value: "$7,500 Flat", detail: "One-time turnkey license & hardware bundle" },
-      { label: "5-Year Savings", value: "+$66,540", detail: "Net cash kept in your operating account" },
-      { label: "Simple Payback", value: "5.42 Months", detail: "Fastest capital recovery in restaurant tech" },
+      { label: "Legacy Cloud SaaS", value: "$82,980", detail: "Typical $1,383/month perpetual software extraction" },
+      { label: "Yorkstead Model", value: "Turnkey Setup", detail: "Workflow engineering & configuration investment" },
+      { label: "5-Year Savings", value: "+$66,540", detail: "Modeled net cash retained in your account" },
+      { label: "Modeled Payback", value: "5.42 Months", detail: "Based on avoided cloud software subscription fees" },
     ],
     visualType: "roi",
   },
@@ -98,13 +92,13 @@ const slides: SlideData[] = [
     badge: "Tamper-Proof Closeout Engine",
     title: "5-Tab Nightly Shift Z-Report",
     subtitle:
-      "Blind safe drop eliminates till skimming. Comps and voids are locked in a cryptographic SHA-256 chain, exported to QuickBooks in 1 tap.",
+      "Blind safe drop eliminates till skimming. Comps and voids are locked in a cryptographic SHA-256 chain, exported to accounting in 1 tap.",
     icon: ShieldCheck,
     highlights: [
       { label: "Blind Safe Drop", value: "Till Security", detail: "Count physical cash before viewing expected total" },
       { label: "Audit Defense", value: "SHA-256", detail: "Immutable chained block of every comp/void PIN" },
-      { label: "Server Tip Pool", value: "Automated", detail: "Bar, runner, and kitchen pool calculations" },
-      { label: "QuickBooks", value: "1-Tap Export", detail: "No nightly 45-minute bookkeeper reconciliation" },
+      { label: "Server Tip Pool", value: "Automated", detail: "Bar, runner, and kitchen pool distributions" },
+      { label: "Bookkeeping", value: "1-Tap Export", detail: "Clean CSV export for nightly reconciliation" },
     ],
     visualType: "closeout",
   },
@@ -132,7 +126,8 @@ export function RestaurantHeroSlideshow() {
   const Icon = slide.icon;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card/90 shadow-xl transition-all">
+    <div className="space-y-3">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card/90 shadow-xl transition-all">
       {/* Decorative top accent glow */}
       <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 size-96 rounded-full bg-primary/10 blur-3xl" />
 
@@ -140,16 +135,22 @@ export function RestaurantHeroSlideshow() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card/60 px-5 py-3 sm:px-7">
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-primary font-bold">
           <Sparkles className="size-3.5 text-primary" />
-          <span>Interactive System Showcase · Copper Pine Tavern & Cellar</span>
+          <span>Interactive System Showcase · 240 Union Concept</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <a
-            href="https://ops.yorkstead.com/restaurant"
+            href="#workflow"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1 font-mono text-xs font-semibold text-muted-foreground shadow-sm transition hover:text-foreground"
+          >
+            <span>See How It Works</span>
+          </a>
+          <a
+            href="https://240.yorkstead.com"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1 font-mono text-xs font-semibold text-primary-foreground shadow transition hover:opacity-90"
           >
-            <span>Launch Live Sandbox</span>
+            <span>Launch Restaurant Demo</span>
             <ExternalLink className="size-3" />
           </a>
         </div>
@@ -202,28 +203,28 @@ export function RestaurantHeroSlideshow() {
                 <div className="flex items-center justify-between border-b border-border pb-3">
                   <div className="flex items-center gap-2 text-primary font-bold">
                     <Cpu className="size-4" />
-                    <span>SOVEREIGN APPLIANCE LAB</span>
+                    <span>LOCAL RESTAURANT ARCHITECTURE</span>
                   </div>
                   <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                    100% LOCAL LAN
+                    LOCAL LAN CONTINUITY
                   </span>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-card">
-                    <span className="text-foreground">Local Server Appliance (Intel N100)</span>
-                    <span className="text-primary font-bold">$160 direct</span>
+                    <span className="text-foreground">Local Operating Layer (Commercial Mini-PC)</span>
+                    <span className="text-primary font-bold">Affordable Direct</span>
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-card">
                     <span className="text-foreground">2x Main Bar Terminals (15.6&quot; Spill-Proof)</span>
-                    <span className="text-primary font-bold">$600 direct</span>
+                    <span className="text-primary font-bold">Direct Commercial</span>
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-card">
                     <span className="text-foreground">2x Dining Room Server Terminals</span>
-                    <span className="text-primary font-bold">$550 direct</span>
+                    <span className="text-primary font-bold">Direct Commercial</span>
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-card">
                     <span className="text-foreground">Kitchen Expo Screen (21.5&quot; Display)</span>
-                    <span className="text-primary font-bold">$260 direct</span>
+                    <span className="text-primary font-bold">Direct Commercial</span>
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-card">
                     <span className="text-foreground">Existing Printers &amp; Drawers Reused</span>
@@ -231,8 +232,8 @@ export function RestaurantHeroSlideshow() {
                   </div>
                 </div>
                 <div className="pt-2 border-t border-border flex items-center justify-between font-bold">
-                  <span>TOTAL HARDWARE (0% MARKUP)</span>
-                  <span className="text-foreground">~$2,110 to Amazon</span>
+                  <span>EQUIPMENT OWNERSHIP</span>
+                  <span className="text-foreground">Restaurant-Owned Hardware</span>
                 </div>
               </div>
             )}
@@ -416,5 +417,9 @@ export function RestaurantHeroSlideshow() {
         </div>
       </div>
     </div>
+    <p className="text-center font-mono text-[11px] text-muted-foreground/70">
+      Independent Yorkstead concept demonstration. Not commissioned by or affiliated with 240 Union.
+    </p>
+  </div>
   );
 }

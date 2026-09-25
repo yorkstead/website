@@ -55,7 +55,11 @@ describe("case study data", () => {
       expect(new Set(study.paths.map(({ href }) => href)).size).toBe(study.paths.length);
       if (study.workflowStory) {
         expect(study.paths.some(({ href }) => href === `/work/${study.slug}#architecture`)).toBeTrue();
-        expect(study.paths.some(({ href }) => href.startsWith("https://ops.yorkstead.com/"))).toBeTrue();
+        if (study.slug === "table-os") {
+          expect(study.paths.some(({ href }) => href === "https://240.yorkstead.com")).toBeTrue();
+        } else {
+          expect(study.paths.some(({ href }) => href.startsWith("https://ops.yorkstead.com/"))).toBeTrue();
+        }
       } else expect(study.paths.some(({ href }) => href.startsWith("/services/"))).toBeTrue();
     }
   });
