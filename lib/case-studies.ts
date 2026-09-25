@@ -3,6 +3,7 @@ import type { ProjectMedia } from "@/lib/project-media";
 import { brand } from "@/lib/brand";
 import { ellwoodStory } from "./ellwood-story";
 import { reworkCaseStudy } from "./rework-case-study";
+import { tableOsCaseStudy } from "./restaurant-case-study";
 
 export type CaseStudy = {
   workflowStory?: {
@@ -39,6 +40,7 @@ export type CaseStudy = {
 
 export const caseStudies: CaseStudy[] = [
   reworkCaseStudy,
+  tableOsCaseStudy,
   {
     slug: "ellwood-flow",
     number: "01",

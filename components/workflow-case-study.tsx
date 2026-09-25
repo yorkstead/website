@@ -6,6 +6,7 @@ import { SiteFooter } from "./site-footer";
 import { ThemeToggle } from "./theme-toggle";
 import { ProjectStatusBadge } from "./project-status-badge";
 import type { CaseStudy } from "@/lib/case-studies";
+import { RestaurantHeroSlideshow } from "./restaurant-hero-slideshow";
 
 export function WorkflowCaseStudy({ study }: { study: CaseStudy }) {
   const story = study.workflowStory;
@@ -13,6 +14,7 @@ export function WorkflowCaseStudy({ study }: { study: CaseStudy }) {
   return <main className="min-h-screen"><header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8"><BrandMark /><nav aria-label="Case study navigation" className="flex items-center gap-4"><Link href="/work" className="text-sm">Selected work</Link><ThemeToggle /></nav></header>
     <article className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
       <header className="grid gap-8 border-b border-border py-14 lg:grid-cols-[1fr_300px] lg:items-end"><div><div className="flex flex-wrap items-center gap-3"><ProjectStatusBadge status={study.status} /><span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{study.kicker}</span></div><h1 className="mt-7 text-5xl font-semibold tracking-tight sm:text-7xl">{study.title}</h1><p className="mt-6 max-w-3xl text-xl leading-8 text-muted-foreground">{study.summary}</p></div><p className="border-l-2 border-primary pl-5 text-lg font-medium leading-7">{study.signal}</p></header>
+      {study.slug === "table-os" && <div className="mt-8"><RestaurantHeroSlideshow /></div>}
       <nav aria-label={`Explore ${study.title}`} className="grid gap-3 py-7 md:grid-cols-3">{study.paths.map((path) => <a key={path.label} href={path.href} className="rounded-xl border border-border bg-card p-5 transition hover:border-primary"><span className="flex items-center justify-between font-semibold">{path.label}<ArrowRight className="size-4 text-primary" /></span><span className="mt-2 block text-sm leading-6 text-muted-foreground">{path.description}</span></a>)}</nav>
       <p className="mb-10 text-sm text-muted-foreground">The public sandbox uses fictional branding, synthetic records, and illustrated evidence. It resets on reload or after 30 minutes.</p>
       <section className="grid gap-8 border-t border-border py-10 md:grid-cols-[220px_1fr]"><h2 className="text-2xl font-semibold">The problem</h2><div><p className="max-w-3xl text-lg leading-8 text-muted-foreground">{study.problem}</p><p className="mt-4 text-sm leading-7 text-muted-foreground">Built for {study.intendedFor.charAt(0).toLowerCase() + study.intendedFor.slice(1)}</p></div></section>

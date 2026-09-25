@@ -4,13 +4,13 @@ import { careTiers, engagementPlanningNote, engagements, getEngagement, mileston
 describe("public engagement offers", () => {
   test("keeps the core service ladder offers in one typed catalog", () => {
     expect(engagements.map(({ id, priceLabel }) => ({ id, priceLabel }))).toEqual([
-      { id: "workflow-diagnostic", priceLabel: "$750–$1,500" },
+      { id: "workflow-diagnostic", priceLabel: "$350" },
       { id: "workflow-sprint", priceLabel: "$3,500–$7,500" },
       { id: "department-system", priceLabel: "$8,000–$20,000" },
       { id: "custom-operations-system", priceLabel: "$25,000–$75,000+" },
     ]);
     expect(engagementPlanningNote).toContain("planning ranges, not automatic quotes");
-    expect(engagementPlanningNote).toContain("credited toward build");
+    expect(engagementPlanningNote).toContain("Start with a $350 workflow audit");
   });
 
   test("connects every offer to the appropriate qualification path", () => {
@@ -29,9 +29,9 @@ describe("public engagement offers", () => {
   });
 
   test("defines recurring care tiers and specialized services", () => {
-    expect(careTiers.map((tier) => tier.name)).toEqual(["Care", "Operations", "Partner"]);
+    expect(careTiers.map((tier) => tier.name)).toEqual(["Optional Concierge"]);
     expect(specializedServices.length).toBe(3);
-    expect(milestoneSchedule.length).toBe(4);
+    expect(milestoneSchedule.length).toBe(2);
   });
 });
 
