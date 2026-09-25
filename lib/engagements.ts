@@ -18,15 +18,15 @@ export type Engagement = {
 export const engagements = [
   {
     id: "workflow-diagnostic",
-    title: "Workflow Diagnostic",
-    priceLabel: "$750–$1,500",
+    title: "Workflow Audit",
+    priceLabel: "$350",
     summary: "Spend a few hours in the business finding where information originates, gets re-entered, stalls, or lives in undocumented spreadsheets.",
-    timing: "Focused investigation and Operations Systems Blueprint",
+    timing: "About 48 hours after agreed observation and required inputs are complete",
     includes: [
       "Uncovers bottlenecks, paper processes, duplicate software, and single-employee silos",
       "Operations Systems Blueprint: current-state map & problems ranked by impact",
-      "Proposed architecture, estimated build cost, and recommended sequence",
-      "100% credited toward your project when hired within 30 days",
+      "Current systems, evidence-backed diagnosis, proposed fix and acceptance requirements",
+      "Written findings and proposed contract; $350 credited against implementation signing payment",
     ],
     cta: { label: "Book a diagnostic", href: "/workflow-audit#audit-intake" },
   },
@@ -35,7 +35,7 @@ export const engagements = [
     title: "Workflow Sprint",
     priceLabel: "$3,500–$7,500",
     summary: "Solve one annoying operational problem completely. Give me one process everybody hates—I'll fix it.",
-    timing: "Approximately 1–2 weeks",
+    timing: "Delivery timing confirmed after the audit",
     includes: [
       "One focused workflow taken from friction to a reliable, usable result",
       "Examples: digital production board, release processor, inventory tracker, barcode/QR flow, shipping dashboard, QC signoff, scheduling system",
@@ -48,7 +48,7 @@ export const engagements = [
     title: "Department System",
     priceLabel: "$8,000–$20,000",
     summary: "Replace an entire functional chunk of your operation with connected records, roles, and status visibility.",
-    timing: "Multi-week staged delivery",
+    timing: "Delivery timing confirmed after the audit",
     includes: [
       "Production Control: quote/release → document generation → scheduling → shop floor → live status",
       "Inventory Control: receiving → locations → consumption → shortages → reorder points → purchasing",
@@ -62,11 +62,11 @@ export const engagements = [
     title: "Company Operations System",
     priceLabel: "$25,000–$75,000+",
     summary: "Your company's modular operating system containing only what your business needs—without ERP bloat or per-seat fees.",
-    timing: "Phased milestone delivery (30/30/30/10)",
+    timing: "50% at signing and 50% after written acceptance and handoff",
     includes: [
       "Modular capabilities: Command Center, Jobs, Production, Inventory, Scheduling, QC, Shipping, Documents, Reporting, Customer Portal",
-      "Protected payment structure: 30% start, 30% prototype, 30% deployment, 10% after acceptance",
-      "Full source code ownership, zero vendor lock-in, and documented architecture",
+      "50% at signing; 50% after agreed acceptance tests and handoff review",
+      "Ownership of agreed custom assets, documented operation and documented handoff with optional client-appointed independent review",
     ],
     cta: { label: "Discuss an operations system", href: "/?engagement=custom-operations-system#contact" },
   },
@@ -81,35 +81,13 @@ export type CareTier = {
 
 export const careTiers = [
   {
-    name: "Care",
-    monthlyPrice: "$350/mo",
-    summary: "Hosting oversight, backups, and security/dependency maintenance.",
+    name: "Optional Concierge",
+    monthlyPrice: "$149/mo optional",
+    summary: "Questions, troubleshooting triage and scheduled health checks. Changes are quoted separately.",
     includes: [
-      "Cloud hosting management & monitoring",
-      "Automated daily backups & restore verification",
-      "Security updates and dependency patching",
-    ],
-  },
-  {
-    name: "Operations",
-    monthlyPrice: "$750/mo",
-    summary: "Care tier plus minor changes, direct team support, and monthly system review.",
-    includes: [
-      "All Care features included",
-      "Direct operator & management support",
-      "Minor workflow adjustments & continuous tweaks",
-      "Monthly system review & health check",
-    ],
-  },
-  {
-    name: "Partner",
-    monthlyPrice: "$1,500–$3,000/mo",
-    summary: "Continuous improvement, automation, reporting, and dedicated development allocation.",
-    includes: [
-      "All Operations features included",
-      "Ongoing feature development & new automations",
-      "Advanced reporting & operational metric dashboards",
-      "Priority roadmap & quarterly architecture reviews",
+      "Support scope, contact hours and response target set in writing",
+      "New development, hardware and provider charges quoted separately",
+      "Self-maintain or choose another provider without losing purchased rights",
     ],
   },
 ] as const satisfies readonly CareTier[];
@@ -143,14 +121,12 @@ export const specializedServices = [
 ] as const satisfies readonly SpecializedService[];
 
 export const milestoneSchedule = [
-  { milestone: "Deposit to start", percentage: "30%", detail: "Architecture alignment, initial environment, and kickoff" },
-  { milestone: "Working prototype", percentage: "30%", detail: "Core workflow interactive demo validated with real data" },
-  { milestone: "Production deployment", percentage: "30%", detail: "Team onboarding, system cutover, and live operations" },
-  { milestone: "Final acceptance", percentage: "10%", detail: "30-day post-launch warranty and signoff" },
+  { milestone: "Signing and kickoff", percentage: "50%", detail: "Agreed scope, price, acceptance tests and ownership schedule" },
+  { milestone: "Acceptance and handoff", percentage: "50%", detail: "Written acceptance, documented operation and documented handoff; independent review is encouraged and client-funded" },
 ] as const;
 
 export const engagementPlanningNote =
-  "These are planning ranges, not automatic quotes. Final scope, price, timing, integrations, migration, and support are confirmed before work begins. Diagnostic fee is credited toward build when hired within 30 days.";
+  "These are planning ranges, not automatic quotes. Final scope, price, timing, integrations, migration, and support are confirmed before work begins. Start with a $350 workflow audit. Implementation uses 50% at signing and 50% after written acceptance and handoff. Custom assets transfer after full payment; provider costs and optional support are separate.";
 
 export const workflowAuditEngagement = engagements[0];
 

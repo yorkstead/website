@@ -12,19 +12,19 @@ import { workflowAuditEngagement } from "@/lib/engagements";
 import { workflowAuditBookingURL } from "@/lib/workflow-audit-config";
 
 export const metadata: Metadata = {
-  title: "Workflow Diagnostic & Operations Systems Blueprint",
-  description: "A focused paid operational diagnostic ($750–$1,500) that uncovers bottlenecks, spreadsheets, and re-entry friction, delivering an Operations Systems Blueprint credited 100% toward your project.",
+  title: "Workflow Audit and Implementation Recommendation",
+  description: "A $350 workflow audit covering current systems, observed problems, recommended fixes and a proposed implementation contract. Target findings in about 48 hours after agreed inputs are complete.",
   alternates: { canonical: "/workflow-audit" },
   openGraph: {
     title: `Workflow Diagnostic · ${brand.name}`,
-    description: "Find where operational work is getting stuck and receive an Operations Systems Blueprint credited toward your build.",
+    description: "Understand your current systems, the problem and a practical fix before buying an implementation.",
     url: "/workflow-audit",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `${brand.name} — ${brand.descriptor}` }],
   },
   twitter: {
     card: "summary_large_image",
     title: `Workflow Diagnostic · ${brand.name}`,
-    description: "Find where operational work is getting stuck and receive an Operations Systems Blueprint credited toward your build.",
+    description: "Understand your current systems, the problem and a practical fix before buying an implementation.",
     images: ["/opengraph-image"],
   },
 };
@@ -45,15 +45,15 @@ const friction = [
 const process = [
   ["01", "Focused intake", "You share the core workflow, handoffs, tools, and immediate pain points without uploading sensitive records."],
   ["02", "Deep investigation", "Brandon spends time in the business tracing where data originates, where it gets re-entered, and where decisions stall."],
-  ["03", "Impact ranking", "Every friction point and failure mode is analyzed and ranked by operational and financial impact on the business."],
-  ["04", "Operations Blueprint", "You receive a complete Operations Systems Blueprint with current-state map, proposed architecture, and sequenced budget."],
+  ["03", "Impact ranking", "Observed friction is ranked by operational impact, with measured facts separated from staff estimates and unknowns."],
+  ["04", "Operations Blueprint", "You receive the systems inventory, findings, recommended fix and a proposed implementation contract. Confirm the delivery date after agreed inputs are complete."],
 ];
 
 const deliverables = [
   [Map, "Current-state workflow map", "A clear visual map of how work actually moves, where data gets re-entered, and where handoffs break."],
-  [FileSearch, "Ranked friction & impact analysis", "Your operational bottlenecks ranked by direct financial cost, labor waste, and delivery risk."],
+  [FileSearch, "Ranked friction & impact analysis", "Observed bottlenecks ranked by impact, with evidence and estimates clearly distinguished."],
   [Wrench, "Proposed architecture & stack", "A modular technical solution designed around your existing strengths (QuickBooks, CAD, etc.)."],
-  [ClipboardCheck, "Sequenced build plan & quote", "A phased implementation roadmap with exact scopes, timelines, and 100% diagnostic fee credit."],
+  [ClipboardCheck, "Sequenced build plan & quote", "A proposed implementation contract with scope, price, acceptance tests and handoff. Implementation is 50% at signing and 50% after written acceptance."],
 ];
 
 export default function WorkflowAuditPage() {
@@ -87,12 +87,12 @@ export default function WorkflowAuditPage() {
             Find where your operations get stuck.
           </h1>
           <p className="mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            A Workflow Diagnostic spends focused hours in your business uncovering the root causes of production bottlenecks, spreadsheets, inventory errors, and re-entry friction.
+            Start with the operational problem that matters most. The $350 audit uses agreed observation, interviews or system review to map your current tools, investigate failures and recommend a practical fix. Our demos show capability; your audit can address a different priority.
           </p>
 
           <div className="mt-6 inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3.5 py-2 text-xs font-medium text-primary">
             <CheckCircle2 className="size-4 shrink-0 text-primary" />
-            <span>100% credited toward your build project when hired within 30 days.</span>
+            <span>Target findings in about 48 hours after agreed observation and inputs are complete.</span>
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -137,6 +137,11 @@ export default function WorkflowAuditPage() {
         </Card>
       </section>
 
+      <section className="relative mx-auto max-w-7xl px-5 pb-12 sm:px-8">
+        <h2 className="text-2xl font-semibold">Own the solution and the ability to run it</h2>
+        <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Buy the agreed custom assets with source, operating instructions, client-controlled accounts and a documented handoff and a strongly recommended review by a developer you choose and pay. Evaluate client-owned hardware and in-house servers where they add value. Final ownership transfer follows payment; third-party licenses and provider costs are identified separately. Optional $149/month concierge covers questions, troubleshooting triage and scheduled health checks, with changes quoted separately, and is not required to keep using the purchased system.</p>
+      </section>
+
       {/* Process */}
       <section className="relative border-y border-border bg-card/35">
         <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
@@ -157,7 +162,7 @@ export default function WorkflowAuditPage() {
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
                 {index === 3 ? (
                   <span className="mt-5 inline-flex items-center gap-2 text-xs text-primary">
-                    <ShieldCheck className="size-3.5" /> 100% credited toward build
+                    <ShieldCheck className="size-3.5" /> Findings and proposed contract
                   </span>
                 ) : null}
               </div>

@@ -4,13 +4,14 @@ import { projectStatusDefinitions, projectStatuses } from "@/lib/project-status"
 
 describe("case study data", () => {
   test("defines the initial selected-work routes", () => {
-    expect(caseStudies.map((study) => study.slug)).toEqual(["rework-flow", "ellwood-flow", "work-control", "jwld-store", "sic-pizza-pos", "employee-barcodes"]);
+    expect(caseStudies.map((study) => study.slug)).toEqual(["rework-flow", "table-os", "ellwood-flow", "work-control", "jwld-store", "sic-pizza-pos", "employee-barcodes"]);
     expect(caseStudies.every((study) => Boolean(getCaseStudy(study.slug)))).toBeTrue();
   });
 
   test("assigns an explicit, supported status to every current project", () => {
     expect(Object.fromEntries(caseStudies.map((study) => [study.title, study.status]))).toEqual({
       "Rework Flow": "In development",
+      "TableOS": "In development",
       "Ellwood Flow": "Concept prototype",
       "Yorkstead Operations": "In development",
       "jwld.store": "Live system",
