@@ -5,41 +5,41 @@ export const tableOsCaseStudy: CaseStudy = {
   number: "07",
   status: "In development",
   title: "TableOS",
-  kicker: "Sovereign restaurant appliance",
+  kicker: "Restaurant Operating System",
   icon: "scan-line",
   summary:
-    "Cloud POS giants extract $1,200–$2,000/month in perpetual software rent while freezing when the internet hiccups. TableOS replaces recurring SaaS with a local Intel N100 mini-PC appliance—delivering sub-5ms LAN speed, 100% offline immunity, direct commercial hardware with 0% markup, and over $66,000 to $158,000 in five-year retained savings.",
-  signal: "In-house LAN appliance, 0% hardware markup, 100% offline immunity, and $0 monthly software rent.",
+    "Run the restaurant from one connected operating system. Tables, ordering, coursing, kitchen execution, payments, cellar inventory, shift handoff, and management workflows united in one restaurant-specific system. Local-first architecture ensures core restaurant operations continue locally even when the internet connection drops, eliminating recurring SaaS rent and proprietary hardware lock-in.",
+  signal: "One connected operating system for floor, kitchen, and management. Local-first resilience and zero recurring SaaS rent.",
   industries: [
     "Independent fine dining",
-    "Upscale taverns and steakhouses",
-    "High-volume dinner bistros",
+    "Upscale taverns and bistros",
+    "High-volume dinner restaurants",
     "Multi-station banquet operations",
     "Wine cellars and craft cocktail bars",
     "Hospitality groups",
   ],
   intendedFor:
-    "Independent restaurant owners, operators, and general managers who are tired of paying endless cloud POS subscriptions, proprietary terminal markups, and payment gateway tolls for systems that freeze during a Friday night dinner rush.",
+    "Independent restaurant owners, operators, and general managers who need unified floor, kitchen, and cellar workflows without recurring cloud SaaS subscriptions, proprietary terminal markups, or systems that freeze during peak dinner rushes.",
   problem:
-    "Modern cloud POS platforms lock hospitality operators into perpetual monthly SaaS subscriptions ($15,000–$24,000+ per year), proprietary locked hardware, and extractive card processing rates. Worse, when the internet connection blips, floor terminals freeze, kitchen printers drop orders, and staff are left scrambling during peak service.",
+    "Modern cloud POS platforms fragment restaurant operations across disconnected tools, lock operators into perpetual monthly SaaS fees ($15,000–$24,000+ per year), and mandate overpriced proprietary hardware. Worse, when the external internet connection blips, floor terminals freeze, kitchen printers drop orders, and staff are left scrambling during peak service.",
   previousWorkflow:
     "Fragile cloud POS terminals dependent on external internet → proprietary locked tablets billed at inflated rates → flat 3%+ payment tolls → manual split-check calculations on 8-tops → paper 86 lists drifting from cellar stock → 45-minute manual nightly drawer reconciliation.",
   solution:
-    "A sovereign local-first appliance: the entire database, state machine, and kitchen routing run on a silent, fanless $160 Intel N100 mini-PC inside the restaurant. Floor terminals, mobile handhelds, and kitchen KDS screens communicate across the local LAN with sub-5ms response time and zero cloud dependencies. Clients purchase commercial hardware directly on their card with 0% markup and 100% Section 179 tax deduction.",
+    "A complete, local-first restaurant operating system: floor ordering, coursing state machines, kitchen KDS routing, cellar stock, and management closeout run on a local operating layer inside the restaurant. Floor terminals, mobile handhelds, and kitchen displays communicate over the local LAN with sub-5ms response time. The system does not require an expensive proprietary server—the local operating layer runs on affordable commercial hardware the restaurant owns, qualifying for applicable business-equipment depreciation.",
   capabilities: [
-    "Silent Intel N100 local LAN server appliance ($160)",
-    "Sub-5ms local ticket firing with 100% offline immunity",
-    "30-second corporate lunch speed-splits with auto-cent rounding",
-    "60-foot open kitchen KDS with visual coursing state machine",
-    "Sommelier cellar stock decrement and instant cross-terminal 86 sync",
+    "Unified table management, ordering, and coursing state machine",
+    "Sub-5ms local ticket firing with offline resilience when internet drops",
+    "60-foot open kitchen KDS with station routing and audio chimes",
+    "30-second speed-splits with automatic cent rounding and multi-tender settlement",
+    "Cellar reserve tracking with instant cross-terminal 86 synchronization",
     "Cryptographic SHA-256 comps and voids audit ledger",
-    "5-tab nightly shift closeout with blind cash safe drop",
+    "5-tab nightly shift closeout with blind cash safe drop calculator",
+    "Affordable commercial hardware running on local LAN with zero proprietary server lock-in",
     "Direct interchange-plus card processing integration",
-    "Direct ESC/POS network thermal printing on standard hardware",
-    "Zero mandatory recurring software fees forever",
+    "Zero mandatory recurring software subscriptions",
   ],
   technologies: [
-    "Intel N100 Fanless Appliance",
+    "Commercial Fanless Mini-PC Appliance",
     "Local-First LAN Architecture",
     "Next.js App Router",
     "TypeScript",
@@ -49,34 +49,34 @@ export const tableOsCaseStudy: CaseStudy = {
   ],
   outcomeLabel: "Intended outcome",
   outcome:
-    "The intended outcome is full software payback in 5.42 to 6.08 months ($7,500 one-time investment vs. $1,383/month in avoided software rent), producing $66,540 to $75,480 in net five-year software savings. Paired with non-extractive interchange-plus payment processing, modeled five-year retained savings reach $158,700 to $167,640. Financial outcomes reflect structured operating models and unverified customer data.",
+    "The intended outcome is full software payback in 5.42 to 6.08 months ($7,500 one-time investment vs. $1,383/month in avoided software rent), producing $66,540 to $75,480 in net five-year software savings. Paired with non-extractive interchange-plus payment processing, modeled five-year retained savings reach $158,700 to $167,640. Hardware may qualify for applicable business-equipment depreciation or Section 179 treatment depending on the business's circumstances. Financial outcomes reflect structured operating models.",
   limitations:
-    "This interactive public prototype models the fictional Copper Pine Tavern & Cellar using in-memory state, simulated card authorizations, and synthetic tickets. It runs in browser memory at ops.yorkstead.com/restaurant and resets on reload or after 30 minutes. Production deployment requires on-site installation of the Intel N100 appliance, local network Cat6/Wi-Fi configuration, and certified payment terminal pairing.",
+    "Demonstrated through an interactive 240 Union-inspired concept environment at 240.yorkstead.com. Independent Yorkstead concept demonstration. Not commissioned by or affiliated with 240 Union. Production deployment includes workflow engineering, on-site installation, local LAN configuration, staff training, and certified payment terminal pairing.",
   applications: [
     {
-      title: "The Sovereign Local Server ($160)",
+      title: "Connected Operating System & Local Architecture",
       description:
-        "Replace cloud fragility with an in-house Intel N100 fanless mini-PC. The entire restaurant database and state machine run locally at sub-5ms latency. If the internet cable is cut, service continues uninterrupted.",
+        "The system does not require an expensive proprietary server. The local operating layer runs on affordable commercial hardware the restaurant owns, executing ordering, coursing, and kitchen routing locally at sub-5ms latency. Core restaurant operations continue locally even when the internet connection drops.",
     },
     {
-      title: "0% Hardware Markup & 100% Tax Write-Off",
+      title: "Restaurant-Owned Commercial Hardware",
       description:
-        "The restaurant purchases commercial terminals directly from Amazon or CDW (~$2,110 total) with 0% markup from Yorkstead. The business retains 100% equipment title, factory warranties, and an immediate IRS Section 179 deduction.",
+        "The restaurant purchases commercial terminals directly from standard suppliers with 0% markup from Yorkstead. The business retains 100% equipment title and factory warranties. Hardware may qualify for applicable business-equipment depreciation or Section 179 treatment depending on the business's circumstances.",
     },
     {
       title: "30-Second Speed-Split Checks",
       description:
-        "Resolve 8-to-12-top corporate lunch checks in seconds. One-tap split by seat, automatic fractional division for shared appetizers with exact cent rounding, and individual guest card settlements.",
+        "Resolve 8-to-12-top business lunch checks in seconds. One-tap split by seat, automatic fractional division for shared appetizers with exact cent rounding, and individual guest card settlements.",
     },
     {
       title: "60-Foot Open Kitchen Coursing Pass",
       description:
-        "Visual coursing state machine (HOLD → PREP → FIRE → PLATED) with station-specific line filtering (Hearth Grill, Sauté, Wood Oven, Raw Bar, Expo Pass) and crisp auditory chimes.",
+        "Visual coursing state machine (HOLD → PREP → FIRE → PLATED) with station-specific line filtering (Hearth Grill, Sauté, Wood Oven, Raw Bar, Expo Pass) and crisp auditory cues.",
     },
     {
       title: "Cellar Reserve & Live 86 Sync",
       description:
-        "Allocate reserve vintages with live bin numbers and bottle counters. When the last bottle of an allocated Cabernet sells, every terminal's 86 board updates instantly.",
+        "Allocate reserve vintages with live bin numbers and bottle counters. When the last bottle of an allocated vintage sells, every terminal's 86 board updates instantly.",
     },
     {
       title: "5-Tab Nightly Shift Closeout Z-Report",
@@ -86,20 +86,19 @@ export const tableOsCaseStudy: CaseStudy = {
   ],
   paths: [
     {
-      label: "Guided Walkthrough",
-      description: "Follow peak dinner coursing, speed-splits, and shift closeout.",
-      href: "https://ops.yorkstead.com/restaurant?mode=guided",
+      label: "Launch Restaurant Demo",
+      description: "Explore the live restaurant operating system and POS concept.",
+      href: "https://240.yorkstead.com",
       external: true,
     },
     {
-      label: "Open Interactive Sandbox",
-      description: "Explore the live POS, floor layout, kitchen KDS, and savings calculator.",
-      href: "https://ops.yorkstead.com/restaurant",
-      external: true,
+      label: "See How It Works",
+      description: "Follow the connected workflows: tables, kitchen coursing, split checks, and closeout.",
+      href: "/work/table-os#workflow",
     },
     {
       label: "Architecture & Hardware",
-      description: "Inspect the $160 local server appliance, bill of materials, and offline LAN model.",
+      description: "Review the local-first LAN architecture, commercial hardware model, and offline resilience.",
       href: "/work/table-os#architecture",
     },
   ],
@@ -109,9 +108,9 @@ export const tableOsCaseStudy: CaseStudy = {
     href: "/workflow-audit#audit-intake",
   },
   workflowStory: {
-    demoUrl: "https://ops.yorkstead.com/restaurant",
+    demoUrl: "https://240.yorkstead.com",
     observation:
-      "A restaurant's core operations—seating, ordering, kitchen firing, split checks, and cash reconciliation—belong to the physical dining room and kitchen, not an external cloud server. By housing the system on an in-house appliance, the restaurant regains speed, offline immunity, data sovereignty, and thousands of dollars in retained monthly cash.",
+      "A restaurant's core operations—seating, ordering, kitchen firing, split checks, and cash reconciliation—belong to the physical dining room and kitchen, not an external cloud server. By running on a local operating layer inside the restaurant, the business gains sub-5ms speed, resilience during internet outages, data ownership, and substantial retained cash flow.",
     handoffs: [
       {
         role: "Host → Server",
@@ -152,8 +151,8 @@ export const tableOsCaseStudy: CaseStudy = {
       },
       {
         id: "offline-resilience",
-        title: "Internet Outage Simulation",
-        description: "External internet drops during peak rush: local Intel N100 appliance keeps firing tickets and printing without a hiccup.",
+        title: "Internet Outage Resilience",
+        description: "External internet drops during peak rush: core restaurant operations continue locally across the local LAN without interruption.",
       },
       {
         id: "manager-comp-void",
@@ -168,25 +167,26 @@ export const tableOsCaseStudy: CaseStudy = {
     ],
     architecture: [
       {
-        title: "The In-House Appliance ($160 Local Server)",
+        title: "Local Operating Layer & LAN Architecture",
         description:
-          "Runs on an Intel N100 fanless mini-PC in the restaurant's back office. The entire application server, state machine, and SQLite/PostgreSQL database execute locally with sub-5ms latency, completely immune to ISP outages.",
+          "The system does not require an expensive proprietary server. The local operating layer runs on affordable commercial hardware inside the restaurant. The database, state machine, and kitchen routing execute locally with sub-5ms latency, keeping core operations running during internet outages.",
       },
       {
-        title: "0% Hardware Markup (Direct Client Purchase)",
+        title: "Restaurant-Owned Commercial Hardware",
         description:
-          "The restaurant purchases commercial terminals, rugged handhelds, and stands directly from Amazon/CDW (~$2,110). Client retains 100% equipment title, manufacturer warranties, and an immediate IRS Section 179 tax write-off.",
+          "The restaurant purchases commercial touchscreen terminals, kitchen displays, and handhelds directly from standard suppliers with 0% markup. Hardware may qualify for applicable business-equipment depreciation or Section 179 treatment depending on the business's circumstances.",
       },
       {
-        title: "Interchange-Plus Payment Processing",
+        title: "Direct Interchange-Plus Payment Processing",
         description:
-          "Connects directly to transparent merchant processors at wholesale interchange-plus rates. Eliminates the 3%+ flat tolls extracted by cloud POS vendors, saving $15,000–$18,000+ per year on card volume.",
+          "Connects directly to transparent merchant processors at wholesale interchange-plus rates, eliminating flat vendor tolls and saving $15,000–$18,000+ per year on card volume.",
       },
       {
-        title: "Isolated Browser Sandbox",
+        title: "Concept Demonstration Environment",
         description:
-          "The public demonstration at ops.yorkstead.com/restaurant models Copper Pine Tavern & Cellar in browser memory. Reload, scenario selection, or the 30-minute timer restores synthetic fixtures without connecting to live customer databases.",
+          "Demonstrated through an interactive 240 Union-inspired concept environment at 240.yorkstead.com. Independent Yorkstead concept demonstration. Not commissioned by or affiliated with 240 Union.",
       },
     ],
   },
 };
+
