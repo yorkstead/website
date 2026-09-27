@@ -4,6 +4,7 @@ import { outboundRequestTimeoutMs, withOperationTimeout } from "@/lib/operationa
 
 type LeadNotification = {
   id: number;
+  idempotencyKey?: string;
   name: string;
   email: string;
   company: string;
@@ -35,7 +36,7 @@ export async function sendLeadNotification(lead: LeadNotification) {
     replyTo: lead.email,
     subject: `[${brand.name}] New ${lead.projectType || "project"} inquiry · ${lead.name}`,
     html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#171717"><div style="border-bottom:3px solid #0891b2;padding-bottom:16px"><p style="margin:0;font-size:15px;font-weight:700;letter-spacing:.12em">${brand.name}</p><p style="margin:6px 0 0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#52606d">${brand.descriptor}</p></div><p style="margin-top:24px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#0891b2">New project inquiry</p><h1 style="font-size:26px;margin:12px 0">${escapeHTML(lead.name)}</h1><p><strong>Email:</strong> <a href="mailto:${escapeHTML(lead.email)}">${escapeHTML(lead.email)}</a><br><strong>Company:</strong> ${escapeHTML(lead.company || "Not provided")}<br><strong>Project:</strong> ${escapeHTML(lead.projectType || "Not selected")}<br><strong>Budget:</strong> ${escapeHTML(lead.budget || "Not selected")}</p><div style="margin:24px 0;padding:18px;background:#f4f4f5;border-radius:10px;white-space:pre-wrap;line-height:1.6">${escapeHTML(lead.message)}</div>${auditDetails}<p><a href="${brand.siteURL}/dashboard/leads">Open Client Leads</a></p><p style="margin-top:28px;border-top:1px solid #e4e4e7;padding-top:14px;font-size:11px;color:#71717a">${brand.emailFromName}<br>${brand.descriptor} · <a href="mailto:${brand.email}">${brand.email}</a></p></div>`,
-  }, { headers: { "Idempotency-Key": `contact-inquiry-${lead.id}` } }), outboundRequestTimeoutMs);
+  }, { headers: { "Idempotency-Key": lead.idempotencyKey ?? `contact-inquiry-${lead.id}` } }), outboundRequestTimeoutMs);
   if (error) {
     const failure = new Error("Email provider rejected the notification");
     failure.name = "UpstreamError";
