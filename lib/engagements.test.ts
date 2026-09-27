@@ -54,6 +54,7 @@ describe("public engagement offers and buying model", () => {
     expect(unionOS?.name).toBe("UnionOS");
     expect(unionOS?.priceLabel).toBe("$7,500");
     expect(unionOS?.priceType).toBe("fixed");
+    expect(unionOS?.readinessLabel).toBe("Interactive concept demonstration");
     expect(unionOS?.verifiedScope.length).toBeGreaterThanOrEqual(4);
     expect(unionOS?.boundaries).toContain("Included configuration, implementation, integrations, and handoff are defined in the proposal.");
     expect(unionOS?.boundaries.some((b) => b.includes("cabling"))).toBe(false);
@@ -63,6 +64,7 @@ describe("public engagement offers and buying model", () => {
     expect(reworkFlow?.name).toBe("Rework Flow");
     expect(reworkFlow?.priceLabel).toBe("$7,500");
     expect(reworkFlow?.priceType).toBe("fixed");
+    expect(reworkFlow?.readinessLabel).toBe("Working demonstration");
     expect(reworkFlow?.verifiedScope.length).toBeGreaterThanOrEqual(4);
     expect(reworkFlow?.boundaries).toContain("Included configuration, implementation, integrations, and handoff are defined in the proposal.");
     expect(reworkFlow?.boundaries.some((b) => b.includes("deep ERP"))).toBe(false);
@@ -72,7 +74,8 @@ describe("public engagement offers and buying model", () => {
     expect(warehousing?.name).toBe("Expanded Warehousing Systems");
     expect(warehousing?.priceLabel).toBe("Scoped proposal");
     expect(warehousing?.priceType).toBe("scoped");
-    expect(warehousing?.boundaries.some((b) => b.includes("no approved fixed price exists"))).toBe(true);
+    expect(warehousing?.readinessLabel).toBe("Demonstration prototype");
+    expect(warehousing?.boundaries.some((b) => b.includes("Request a proposal tailored to your operation"))).toBe(true);
 
     // Privacy invariant: Adorned private ecommerce proposal ($3,000–$4,000) must NEVER appear in public named systems
     const serializedCatalog = JSON.stringify({ confirmedNamedSystems, engagements, specializedServices });

@@ -24,7 +24,7 @@ interface SlideData {
   subtitle: string;
   icon: React.ElementType;
   highlights: { label: string; value: string; detail: string }[];
-  visualType: "hardware" | "speed-split" | "kds" | "roi" | "closeout";
+  visualType: "hardware" | "speed-split" | "kds" | "purchase-model" | "closeout";
 }
 
 const slides: SlideData[] = [
@@ -36,7 +36,7 @@ const slides: SlideData[] = [
       "Tables, ordering, coursing, kitchen execution, payments, cellar inventory, shift handoff, and management workflows united in one restaurant-specific operating system.",
     icon: Server,
     highlights: [
-      { label: "Architecture", value: "Local-First LAN", detail: "Sub-5ms terminal response across all stations" },
+      { label: "Architecture", value: "Local-First LAN", detail: "Fast local network response across all stations" },
       { label: "Outage Resilience", value: "Local Continuity", detail: "Core restaurant operations continue when internet drops" },
       { label: "Hardware Model", value: "Direct Commercial", detail: "Affordable commercial hardware; no proprietary lock-in" },
       { label: "Software Cost", value: "$0 SaaS Rent", detail: "No perpetual monthly software subscriptions" },
@@ -74,30 +74,30 @@ const slides: SlideData[] = [
     visualType: "kds",
   },
   {
-    id: "roi",
-    badge: "Retained Restaurant Wealth",
-    title: "5-Year Financial Recovery Audit",
+    id: "purchase-model",
+    badge: "Transparent Buying Model",
+    title: "Purchased System with No Mandatory Subscription",
     subtitle:
-      "Why rent a cloud POS for $1,383/month when you can run a connected system you control? Modeled payback in under 6 months.",
+      "A tailored restaurant operating system you buy outright. You can continue running your system without a mandatory Yorkstead support subscription.",
     icon: DollarSign,
     highlights: [
-      { label: "Legacy Cloud SaaS", value: "$82,980", detail: "Typical $1,383/month perpetual software extraction" },
-      { label: "Yorkstead Model", value: "Turnkey Setup", detail: "Workflow engineering & configuration investment" },
-      { label: "5-Year Savings", value: "+$66,540", detail: "Modeled net cash retained in your account" },
-      { label: "Modeled Payback", value: "5.42 Months", detail: "Based on avoided cloud software subscription fees" },
+      { label: "System Price", value: "$7,500", detail: "Purchase price for core system" },
+      { label: "Implementation", value: "Agreed Scope", detail: "Configuration, setup, and handoff defined in proposal" },
+      { label: "Ongoing Support", value: "Optional", detail: "No mandatory Yorkstead support subscription required" },
+      { label: "Third-Party Costs", value: "Identified", detail: "Hosting and external services disclosed separately" },
     ],
-    visualType: "roi",
+    visualType: "purchase-model",
   },
   {
     id: "closeout",
     badge: "Tamper-Proof Closeout Engine",
     title: "5-Tab Nightly Shift Z-Report",
     subtitle:
-      "Blind safe drop eliminates till skimming. Comps and voids are locked in a cryptographic SHA-256 chain, exported to accounting in 1 tap.",
+      "Blind safe drop eliminates till skimming. Comps and voids require manager PIN authorization and are logged in an auditable ledger exported to accounting in 1 tap.",
     icon: ShieldCheck,
     highlights: [
       { label: "Blind Safe Drop", value: "Till Security", detail: "Count physical cash before viewing expected total" },
-      { label: "Audit Defense", value: "SHA-256", detail: "Immutable chained block of every comp/void PIN" },
+      { label: "Audit Defense", value: "Manager PIN", detail: "Auditable transaction ledger of every comp and void" },
       { label: "Server Tip Pool", value: "Automated", detail: "Bar, runner, and kitchen pool distributions" },
       { label: "Bookkeeping", value: "1-Tap Export", detail: "Clean CSV export for nightly reconciliation" },
     ],
@@ -337,28 +337,28 @@ export function RestaurantHeroSlideshow() {
               </div>
             )}
 
-            {slide.visualType === "roi" && (
+            {slide.visualType === "purchase-model" && (
               <div className="space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between border-b border-border pb-2.5">
-                  <span className="font-bold text-primary">5-YEAR RECOVERY MODEL</span>
-                  <span className="text-muted-foreground">INDEPENDENT DINING</span>
+                  <span className="font-bold text-primary">COMMERCIAL TERMS</span>
+                  <span className="text-muted-foreground">PURCHASED SYSTEM</span>
                 </div>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 rounded bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400">
-                    <span>5-Yr Toast SaaS Rent ($1,383/mo)</span>
-                    <span className="font-bold">-$82,980</span>
+                  <div className="flex items-center justify-between p-2 rounded bg-card border border-border">
+                    <span className="text-muted-foreground">System Purchase Price</span>
+                    <span className="font-bold text-primary">$7,500</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400">
-                    <span>TableOS One-Time Turnkey Buyout</span>
-                    <span className="font-bold">-$7,500</span>
+                  <div className="flex items-center justify-between p-2 rounded bg-card border border-border">
+                    <span className="text-muted-foreground">Mandatory Support Subscription</span>
+                    <span className="font-bold text-foreground">None required</span>
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-primary/10 border border-primary/30 font-bold text-foreground">
-                    <span>5-YEAR NET RETAINED CASH</span>
-                    <span className="text-primary text-sm">+$75,480</span>
+                  <div className="flex items-center justify-between p-2 rounded bg-card border border-border">
+                    <span className="text-muted-foreground">Configuration &amp; Handoff</span>
+                    <span className="text-foreground">Defined in proposal</span>
                   </div>
                 </div>
                 <div className="text-[10px] text-muted-foreground text-center">
-                  Simple Payback: 5.42 Months · $0 Mandatory Monthly Fees
+                  Hosting and third-party services identified separately before implementation
                 </div>
               </div>
             )}

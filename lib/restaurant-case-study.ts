@@ -5,7 +5,7 @@ export const tableOsCaseStudy: CaseStudy = {
   number: "07",
   status: "In development",
   title: "TableOS",
-  kicker: "Restaurant Operating System · Confirmed $7,500 System",
+  kicker: "Restaurant Operating System · $7,500 System",
   icon: "scan-line",
   summary:
     "Run the restaurant from one connected operating system. Tables, handheld ordering, visual coursing, kitchen execution, cellar inventory, shift handoff, and management workflows united in one restaurant-specific system. Local-first architecture ensures core restaurant operations continue locally even when the internet connection drops, eliminating recurring SaaS rent and proprietary hardware lock-in.",
@@ -49,9 +49,9 @@ export const tableOsCaseStudy: CaseStudy = {
   ],
   outcomeLabel: "Intended outcome",
   outcome:
-    "The intended outcome is full software payback in 5.42 to 6.08 months ($7,500 one-time investment vs. $1,383/month in avoided software rent), producing modeled software savings. Paired with non-extractive interchange-plus payment processing, modeled retained savings increase further. Hardware may qualify for applicable business-equipment depreciation or Section 179 treatment depending on the business's circumstances. Financial outcomes reflect structured operating models.",
+    "The intended outcome is unified floor, kitchen, and cellar workflows operating locally without recurring software rent, terminal freezes during internet drops, or proprietary hardware lock-in.",
   limitations:
-    "Demonstrated through an interactive 240 Union-inspired concept environment at 240.yorkstead.com. Independent Yorkstead concept demonstration. Not commissioned by or affiliated with 240 Union. Available as a confirmed purchased system for $7,500. Included configuration, implementation, integrations, and handoff are defined in the proposal. Continued use of the purchased system does not require a Yorkstead support subscription. Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.",
+    "Demonstrated through an interactive 240 Union-inspired concept environment at 240.yorkstead.com. Independent Yorkstead concept demonstration. Not commissioned by or affiliated with 240 Union. Available as a purchased system for $7,500. Included configuration, implementation, integrations, and handoff are defined in the proposal. Continued use of the purchased system does not require a Yorkstead support subscription. Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.",
   applications: [
     {
       title: "Connected Operating System & Local Architecture",
