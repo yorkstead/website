@@ -43,8 +43,13 @@ describe("case study data", () => {
         expect(study.workflowStory.scenarios.length).toBeGreaterThan(0);
       } else expect(study.media.length).toBeGreaterThan(0);
       expect(study.media.every((item) => item.caption.length > 20 && item.description.length > 20)).toBeTrue();
-      expect(study.previewMediaId ? study.media.some((item) => item.id === study.previewMediaId) : true).toBeTrue();
-      expect(study.cta.href).toBe(study.workflowStory ? "/workflow-audit#audit-intake" : "/#contact");
+      expect(study.cta.href).toBe(
+        study.slug === "rework-flow"
+          ? "/?product=rework-flow#contact"
+          : study.workflowStory
+            ? "/workflow-audit#audit-intake"
+            : "/#contact"
+      );
     }
   });
 

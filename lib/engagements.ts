@@ -137,7 +137,7 @@ export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
       "Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.",
     ],
     caseStudyHref: "/work/rework-flow",
-    cta: { label: "Inquire about Rework Flow", href: "/workflow-audit#audit-intake" },
+    cta: { label: "Inquire about Rework Flow", href: "/?product=rework-flow#contact" },
   },
   {
     id: "expanded-warehousing",
