@@ -127,7 +127,7 @@ const sectors: SectorData[] = [
     solutionHeadline: "What We Engineer",
     solutionPoints: [
       "Bespoke modular monolith software built around your exact workflow",
-      "Full ownership with zero per-seat licensing penalties",
+      "Purchased software where continued use does not require a Yorkstead support subscription",
       "Direct API integrations with existing QuickBooks, CRM, and hardware",
       "Fast, dense, operator-first user interfaces built to last decades",
     ],

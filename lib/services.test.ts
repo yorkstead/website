@@ -24,9 +24,9 @@ describe("public service pages", () => {
       expect(service.problems.length).toBeGreaterThanOrEqual(4);
       expect(service.deliverables.length).toBeGreaterThanOrEqual(6);
       expect(service.process.length).toBeGreaterThanOrEqual(5);
-      expect(service.faqs.length).toBeGreaterThanOrEqual(4);
-      expect(service.typicalEngagement.label).toContain("$");
-      expect(service.typicalEngagement.note).toContain("Planning range only");
+      expect(service.typicalEngagement.label).toContain("Scoped proposal");
+      expect(service.typicalEngagement.label).not.toContain("$");
+      expect(service.typicalEngagement.note).toContain("Every deployment is tailored");
       expect(service.futureCaseStudies.length).toBeGreaterThanOrEqual(3);
     }
   });
@@ -42,13 +42,20 @@ describe("public service pages", () => {
     }
   });
 
-  test("attributes every contact path to a service and engagement", () => {
+  test("attributes every contact path to a service while preventing automatic enterprise preselection on manufacturing", () => {
     expect(new Set(publicServices.map(({ contactProjectType }) => contactProjectType)).size).toBe(4);
     for (const service of publicServices) {
       expect(String(service.cta.href)).toBe(getServiceContactHref(service));
       expect(service.cta.href).toContain(`service=${service.slug}`);
-      expect(service.cta.href).toContain(`engagement=${service.defaultEngagementId}`);
+      if (service.defaultEngagementId) {
+        expect(service.cta.href).toContain(`engagement=${service.defaultEngagementId}`);
+      } else {
+        expect(service.cta.href).not.toContain("custom-operations-system");
+      }
     }
+    const manufacturing = getPublicService("manufacturing-software");
+    expect(manufacturing?.cta.href).toBe("/?service=manufacturing-software#contact");
+    expect(manufacturing?.defaultEngagementId).toBeUndefined();
   });
 
   test("builds canonical Service, FAQ, and breadcrumb structured data", () => {

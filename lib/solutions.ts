@@ -21,7 +21,7 @@ export const publicSolutions: SolutionOutcome[] = [
     kicker: "Estimating & Commercial Governance",
     coreProblem: "Requests wait days for pricing while estimators guess machine setup times and raw material markups.",
     operationalBottleneck: "Underpriced complex jobs eat shop margin, while slow turnaround causes winnable bids to go cold.",
-    howWeSolveIt: "Structured integer-cents quoting with automated machine-rate calculation, material cost yield factors, margin guardrail warnings, and 1-click idempotent conversion to live shop jobs.",
+    howWeSolveIt: "Structured quoting with automated machine-rate calculation, material cost yield factors, margin guardrail warnings, and 1-click conversion from approved quote to active shop job.",
     composableCapabilities: [
       "Dynamic material & machine runtime pricing tables",
       "Executive margin threshold approval alerts",

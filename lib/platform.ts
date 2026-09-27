@@ -20,11 +20,11 @@ export type RolePerspective = {
 export const platformModules: PlatformModule[] = [
   {
     id: "identity_and_tenancy",
-    name: "Tenant Isolation & Identity Governance",
+    name: "Data Boundaries & Identity Governance",
     category: "core_foundation",
-    summary: "Enforces strict organizational boundaries, role-based capabilities, and tamper-evident audit logging on every database transaction.",
+    summary: "Enforces strict organizational data boundaries, role-based capabilities, and tamper-evident audit logging on key workflow transactions.",
     roleBeneficiaries: ["Owners", "System Administrators"],
-    keyCapabilities: ["Multi-tenant boundary enforcement", "Granular capability matrix", "Append-only security audit log"],
+    keyCapabilities: ["Organizational boundary enforcement", "Granular capability matrix", "Append-only security audit log"],
   },
   {
     id: "master_data_vault",
@@ -38,7 +38,7 @@ export const platformModules: PlatformModule[] = [
     id: "quoting_and_margin",
     name: "QuoteFlow & Margin Estimating",
     category: "operational_module",
-    summary: "Integer-cents cost breakdown engine calculating machine setup, raw material yield, and executive margin approval guardrails.",
+    summary: "Precise cost breakdown engine calculating machine setup, raw material yield, and executive margin approval guardrails without rounding drift.",
     roleBeneficiaries: ["Estimators", "Sales Leads", "Owners"],
     keyCapabilities: ["Real-time margin guardrails", "1-click live job conversion", "Material rate sheets"],
   },
@@ -92,7 +92,7 @@ export const rolePerspectives: RolePerspective[] = [
     operatingFocus: "Capacity signals, margin preservation, WIP value, and fleet health.",
     interfaceView: "Executive control pulse with aggregate WIP valuation, machine downtime alerts, and margin exception reviews.",
     whatTheySee: [
-      "Real-time shop WIP valuation in integer cents",
+      "Real-time shop WIP valuation and operational status",
       "Low-margin quote alerts requiring executive signoff",
       "Overall on-time delivery and first-pass yield metrics",
       "Comprehensive system audit logs and member roles",

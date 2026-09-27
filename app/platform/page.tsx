@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Platform Architecture & Operational Model",
-  description: "Learn how Yorkstead Operations combines a single data model, strict tenant isolation, and composable modules into tailored interfaces.",
+  description: "Learn how Yorkstead Systems combines an owned single data model, modular building blocks, and tailored role views to deliver software you own without recurring subscriptions.",
   alternates: { canonical: "/platform" },
 };
 
@@ -33,6 +33,9 @@ export default function PlatformPage() {
           </Link>
           <Link href="/demos" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
             Demos
+          </Link>
+          <Link href="/packages" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground md:block">
+            Pricing & Model
           </Link>
           <Link href="/work" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
             Work
@@ -58,7 +61,7 @@ export default function PlatformPage() {
             One shared data model. <span className="text-primary">Tailored role views.</span>
           </h1>
           <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
-            Instead of stitching together five disconnected SaaS apps or maintaining a brittle custom code fork, Yorkstead Operations delivers a productized modular monolith. You get the stability of an enterprise platform with the exact workflow configuration your shop requires.
+            Instead of stitching together disconnected SaaS subscriptions or writing code from scratch, Yorkstead builds tailored business software from reusable foundations. You get existing modules tailored to the agreed workflow with the specific configuration your business requires—delivered as a purchased system.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4 font-mono text-xs">
@@ -95,10 +98,10 @@ export default function PlatformPage() {
           <Card className="bg-card/75 border-border p-5 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold">
               <Lock className="size-4" />
-              <span>2. STRICT TENANT ISOLATION</span>
+              <span>2. CLEAR DATA BOUNDARIES & OWNERSHIP</span>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              Every organization is hard-isolated at the database and API query layer. Demo sandboxes run in strict sandbox isolation with zero external side effects.
+              Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation. Operational data, customer records, and transaction history remain strictly bounded and protected without vendor lock-in.
             </p>
           </Card>
 

@@ -4,7 +4,7 @@ describe("Public How We Build Methodology Contract", () => {
   it("confirms 4-step engineering method integrity", () => {
     const steps = [
       "The Diagnostic First Step (Workflow Audit)",
-      "Single Truth Schema & Tenant Isolation",
+      "Single Truth Schema & Clear Data Boundaries",
       "Role-Scoped Vertical Slice Delivery",
       "Production Verification & Iterative Polish",
     ];

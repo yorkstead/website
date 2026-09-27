@@ -13,7 +13,7 @@ import { workflowAuditBookingURL } from "@/lib/workflow-audit-config";
 
 export const metadata: Metadata = {
   title: "Workflow Audit and Implementation Recommendation",
-  description: "A $350 workflow audit covering current systems, observed problems, recommended fixes and a proposed implementation contract. Target findings in about 48 hours after agreed inputs are complete.",
+  description: "A workflow audit covering current systems, observed problems, recommended fixes and a proposed implementation contract. Scope, deliverables, and timeline confirmed in the proposal.",
   alternates: { canonical: "/workflow-audit" },
   openGraph: {
     title: `Workflow Diagnostic · ${brand.name}`,
@@ -53,7 +53,7 @@ const deliverables = [
   [Map, "Current-state workflow map", "A clear visual map of how work actually moves, where data gets re-entered, and where handoffs break."],
   [FileSearch, "Ranked friction & impact analysis", "Observed bottlenecks ranked by impact, with evidence and estimates clearly distinguished."],
   [Wrench, "Proposed architecture & stack", "A modular technical solution designed around your existing strengths (QuickBooks, CAD, etc.)."],
-  [ClipboardCheck, "Sequenced build plan & quote", "A proposed implementation contract with scope, price, acceptance tests and handoff. Implementation is 50% at signing and 50% after written acceptance."],
+  [ClipboardCheck, "Sequenced build plan & quote", "A proposed implementation contract with scope, price, acceptance criteria and handoff. Implementation uses structured milestone payments confirmed in writing."],
 ];
 
 export default function WorkflowAuditPage() {
@@ -67,6 +67,12 @@ export default function WorkflowAuditPage() {
         <BrandMark />
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Link
+            href="/packages"
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition hover:text-foreground"
+          >
+            Pricing & Model
+          </Link>
           <Link
             href="/"
             className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition hover:text-foreground"
@@ -87,7 +93,7 @@ export default function WorkflowAuditPage() {
             Find where your operations get stuck.
           </h1>
           <p className="mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Start with the operational problem that matters most. The $350 audit uses agreed observation, interviews or system review to map your current tools, investigate failures and recommend a practical fix. Our demos show capability; your audit can address a different priority.
+            Start with the operational problem that matters most. The audit uses agreed observation, interviews or system review to map your current tools, investigate failures and recommend a practical fix. Our demos show capability; your audit can address a different priority.
           </p>
 
           <div className="mt-6 inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3.5 py-2 text-xs font-medium text-primary">
@@ -139,7 +145,7 @@ export default function WorkflowAuditPage() {
 
       <section className="relative mx-auto max-w-7xl px-5 pb-12 sm:px-8">
         <h2 className="text-2xl font-semibold">Own the solution and the ability to run it</h2>
-        <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Buy the agreed custom assets with source, operating instructions, client-controlled accounts and a documented handoff and a strongly recommended review by a developer you choose and pay. Evaluate client-owned hardware and in-house servers where they add value. Final ownership transfer follows payment; third-party licenses and provider costs are identified separately. Optional $149/month concierge covers questions, troubleshooting triage and scheduled health checks, with changes quoted separately, and is not required to keep using the purchased system.</p>
+        <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Buy the agreed custom assets with source, operating instructions, and a documented handoff, with a strongly recommended review by a developer you choose and pay. Evaluate client-owned hardware and in-house servers where they add value. Final ownership transfer follows payment. Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation. Optional support retainers cover questions, troubleshooting triage, and scheduled health checks, with scope and terms agreed in the proposal, and are not required to keep using the purchased system.</p>
       </section>
 
       {/* Process */}

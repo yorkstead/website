@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Factory, Gauge, GitBranch, ShieldCheck } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import { MetaPixel } from "@/components/meta-pixel";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { WorkflowLeadForm } from "@/components/workflow-lead-form";
@@ -74,13 +73,15 @@ const projectExamples = [
 export default function WorkflowPage() {
   return (
     <main className="min-h-screen overflow-hidden">
-      <MetaPixel />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_70%_0%,color-mix(in_oklab,var(--primary)_16%,transparent),transparent_38%)]" />
 
       <header className="relative mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <BrandMark />
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Link href="/packages" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition hover:text-foreground">
+            Pricing & Model
+          </Link>
           <Link href="/" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition hover:text-foreground">
             Home
           </Link>
@@ -97,7 +98,7 @@ export default function WorkflowPage() {
             It needs the right system.
           </h2>
           <p className="mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Yorkstead identifies operational bottlenecks and builds focused workflows that remove wasted work, lost information, duplicate entry, and unnecessary complexity.
+            Yorkstead Systems builds software around how your business actually operates. Own your system, reduce dependence on recurring software subscriptions, and give your team tools that eliminate duplicate entry and fit the work.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href="#workflow-form" className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground">

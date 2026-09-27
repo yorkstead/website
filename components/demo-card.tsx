@@ -59,7 +59,7 @@ export function DemoCard({ demo }: { demo: PublicDemo }) {
           <div className="space-y-4">
             <div>
               <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground block mb-2">
-                Operational Benchmark Signals
+                Simulated Scenario Parameters
               </span>
               <div className="grid grid-cols-3 gap-2">
                 {demo.metrics.map((m) => (

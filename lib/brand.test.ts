@@ -6,10 +6,10 @@ import { getServiceStructuredData, publicServices } from "@/lib/services";
 
 describe("public brand positioning", () => {
   test("makes the software and automation category explicit", () => {
-    expect(brand.descriptor).toBe("Industrial software and workflow automation");
+    expect(brand.descriptor).toBe("Tailored business software and workflow systems");
     expect(brand.positioning.toLowerCase()).toContain("software");
     expect(brand.positioning.toLowerCase()).toContain("automation");
-    expect(brand.audienceLine.toLowerCase()).toContain("manufacturers");
+    expect(brand.audienceLine.toLowerCase()).toContain("manufactur");
     expect(brand.socialTitle.startsWith(brand.name)).toBe(true);
   });
 
