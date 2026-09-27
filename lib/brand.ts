@@ -5,14 +5,14 @@ export const brand = {
   siteURL: "https://yorkstead.com",
   email: "hello@yorkstead.com",
   founder: "Brandon York",
-  descriptor: "Industrial software and workflow automation",
-  audienceLine: "Practical systems for manufacturers, shops, contractors, and small businesses.",
-  positioning: "Industrial software and workflow automation for small manufacturers, fabrication shops, contractors, and owner-led businesses.",
-  promise: "Software that keeps real-world work moving.",
-  socialTitle: "Yorkstead Systems | Industrial software and workflow automation",
-  socialDescription: "Practical systems for quoting, inventory, production, scheduling, customer intake, and the handoffs between them.",
+  descriptor: "Tailored business software and workflow systems",
+  audienceLine: "Tailored business software for manufacturing, logistics, warehousing, restaurants, ecommerce, and owner-led operations.",
+  positioning: "Tailored business software and workflow automation for manufacturing, logistics, warehousing, restaurants, ecommerce, and owner-led businesses. Own your system without mandatory subscriptions.",
+  promise: "Software suited to your actual operation, clear control over your system and data, and more time to run your business.",
+  socialTitle: "Yorkstead Systems | Your business. Your workflow. Your software.",
+  socialDescription: "Yorkstead Systems builds software around how your business actually operates. Own your system, reduce dependence on recurring software subscriptions, and give your team tools that fit the work.",
   emailFromName: "Brandon York | Yorkstead Systems",
-  serviceSignals: ["Quoting", "Inventory", "Production", "Scheduling"],
+  serviceSignals: ["Operations", "Workflows", "Inventory", "Scheduling", "Logistics"],
 } as const;
 
 export const brandMailto = `mailto:${brand.email}?subject=${encodeURIComponent("Project inquiry | Yorkstead Systems")}`;

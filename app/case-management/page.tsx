@@ -55,7 +55,7 @@ export default function CaseManagementPage() {
             The Behavioral Health <span className="text-primary">Case Management OS.</span>
           </h1>
           <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
-            A battle-tested, audit-proof operating system for case managers juggling Intakes, PHP/IOP coordination, Medi-Drive transit, Methadone/MAT dosing, Utilization Reviews, and 30/60/90-day Treatment Plans.
+            A structured, audit-ready operating framework for case managers juggling Intakes, PHP/IOP coordination, Medi-Drive transit, Methadone/MAT dosing, Utilization Reviews, and 30/60/90-day Treatment Plans.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">

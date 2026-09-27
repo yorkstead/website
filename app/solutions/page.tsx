@@ -9,7 +9,7 @@ import { publicSolutions } from "@/lib/solutions";
 
 export const metadata: Metadata = {
   title: "Operational Solutions & Capabilities",
-  description: "Problem-led operational software solutions for manufacturers, custom fabrication shops, and field service contractors.",
+  description: "Tailored operational software solutions for manufacturing, logistics, warehousing, restaurants, ecommerce, and owner-led businesses. Own your system without recurring subscription lock-in.",
   alternates: { canonical: "/solutions" },
 };
 
@@ -26,8 +26,14 @@ export default function SolutionsPage() {
           <Link href="/solutions" className="px-3 py-2 text-xs text-foreground font-semibold border-b-2 border-primary">
             Solutions
           </Link>
+          <Link href="/platform" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground md:block">
+            Platform
+          </Link>
           <Link href="/demos" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
             Demos
+          </Link>
+          <Link href="/packages" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground md:block">
+            Pricing & Model
           </Link>
           <Link href="/#work" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
             Work
@@ -50,10 +56,10 @@ export default function SolutionsPage() {
             Outcome-Led Engineering // Composable Systems
           </div>
           <h1 className="text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-foreground sm:text-6xl">
-            From stubborn friction to <span className="text-primary">working operating systems.</span>
+            From operational friction to <span className="text-primary">an owned software system.</span>
           </h1>
           <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
-            We don&apos;t build bloated feature dumps. We target the exact points where quotes stall, drawings get scrapped, inventory drifts, and field crews lose paperwork.
+            Yorkstead Systems builds software around how your business actually operates. Target the exact points where quotes stall, inventory drifts, handoffs fail, and disconnected SaaS subscriptions drain your team&apos;s time.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -93,7 +99,7 @@ export default function SolutionsPage() {
             Not sure which bottleneck is costing you the most?
           </h2>
           <p className="mt-3 text-sm text-muted-foreground max-w-xl mx-auto">
-            Our 90-minute Workflow Audit dissects your current paper, spreadsheet, and software handoffs to deliver a concrete engineering plan with zero sales fluff.
+            Our Workflow Audit dissects your current paper, spreadsheet, and software handoffs to deliver an Operations Systems Blueprint, with scope and terms agreed in the proposal.
           </p>
           <div className="mt-6">
             <Link

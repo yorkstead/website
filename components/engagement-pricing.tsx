@@ -9,12 +9,12 @@ export function EngagementPricing() {
       <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div className="max-w-2xl">
-            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Service Ladder & Offers</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Service Ladder & Model</div>
             <h2 id="pricing-heading" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Start at the size of the problem.
+              Buy the system. Choose the support.
             </h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              A structured ladder from problem discovery to a company operating system—with full source code ownership and optional monthly care.
+              A structured ladder from initial workflow audit to a tailored company operating system. You purchase the software; continued use does not depend on a mandatory Yorkstead subscription.
             </p>
           </div>
           <div className="space-y-3">

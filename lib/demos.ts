@@ -24,7 +24,7 @@ export const publicDemos: PublicDemo[] = [
     kicker: "High-Mix Shopfloor Execution & Traveler Control",
     summary: "High-mix contract manufacturing with laser cutting, CNC press brake forming, welding, FAI inspection, and palletized logistics.",
     operationalProblem: "Disjointed paper travelers, scrap from unverified CAD drawing revisions, and blind spots on machine downtime.",
-    solutionNarrative: "Digital shopfloor travelers on 6kW laser cells, integer-cents quote margin enforcement, FAI quality signoffs, and gross-weight shipping manifests.",
+    solutionNarrative: "Digital shopfloor travelers on 6kW laser cells, reliable quote margin enforcement, FAI quality signoffs, and gross-weight shipping manifests.",
     workflowsShown: [
       "QuoteFlow Estimating & Margin Policy Guardrails",
       "Digital Traveler Execution on 6kW Laser Cell",

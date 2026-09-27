@@ -31,12 +31,12 @@ const buildSteps = [
   },
   {
     number: "02",
-    title: "Single Truth Schema & Tenant Isolation",
+    title: "Single Truth Schema & Clear Data Boundaries",
     tag: "Core Data Foundation",
     icon: Layers,
     summary: "Every operational system starts with a rigorous domain model. No messy multi-app synchronization hacks or loose JSON blobs.",
     details: [
-      "Integer-cents financial arithmetic for zero rounding drift",
+      "Precise financial and inventory arithmetic without rounding drift",
       "Strict organizational boundary enforcement on every database query",
       "Append-only security audit log recording every state transition",
       "Private file storage with time-limited cryptographic URL signing",
@@ -94,6 +94,9 @@ export default function HowWeBuildPage() {
           </Link>
           <Link href="/demos" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
             Demos
+          </Link>
+          <Link href="/packages" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground md:block">
+            Pricing & Model
           </Link>
           <Link href="/work" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
             Work

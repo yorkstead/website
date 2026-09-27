@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { MetaPixel } from "@/components/meta-pixel";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { brand } from "@/lib/brand";
@@ -20,7 +19,7 @@ export const metadata: Metadata = {
   authors: [{ name: brand.founder, url: "/about" }],
   creator: brand.founder,
   publisher: brand.name,
-  category: "Industrial software and workflow automation",
+  category: brand.descriptor,
   appleWebApp: { capable: true, title: brand.name, statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },
   ...(process.env.GOOGLE_SITE_VERIFICATION?.trim() ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION.trim() } } : {}),
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geist.variable} ${geistMono.variable}`}>
-      <body className="antialiased"><ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme disableTransitionOnChange storageKey="yorkstead-theme">{children}<MetaPixel /><ServiceWorkerRegister /></ThemeProvider></body>
+      <body className="antialiased"><ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme disableTransitionOnChange storageKey="yorkstead-theme">{children}<ServiceWorkerRegister /></ThemeProvider></body>
     </html>
   );
 }

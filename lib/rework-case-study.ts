@@ -2,7 +2,7 @@ import type { CaseStudy } from "./case-studies";
 
 export const reworkCaseStudy: CaseStudy = {
   slug: "rework-flow", number: "06", status: "In development", title: "Rework Flow",
-  kicker: "Flagship workflow case study", icon: "layers",
+  kicker: "Flagship workflow case study · Confirmed $7,500 System", icon: "layers",
   summary: "A freight exception should not become an office mystery. Rework Flow connects the arrival promise, dock work, evidence, and invoice through one load record.",
   signal: "The next person receives the work and the reason behind it.",
   industries: ["Cross-docking", "Freight rework", "Warehousing", "Exception handling"],
@@ -14,7 +14,7 @@ export const reworkCaseStudy: CaseStudy = {
   technologies: ["Next.js", "TypeScript", "Pure workflow model", "Browser-local sandbox"],
   outcomeLabel: "Intended outcome",
   outcome: "Intended outcomes are a clearer arrival promise, visible differences between requested and actual work, and a billing handoff that carries its supporting record. The sandbox demonstrates these behaviors; time saved, dispute reduction, revenue recovery, and customer acceptance have not been measured.",
-  limitations: "This public prototype uses the fictional Juniper Freight Lab, synthetic people and loads, illustrated evidence, and simulated sign-off. It is a focused workflow simulation, not the complete client application. No live payments, accounting transmissions, camera capture, GPS evidence, or multi-user synchronization are connected.",
+  limitations: "This public prototype uses the fictional Juniper Freight Lab, synthetic people and loads, illustrated evidence, and simulated sign-off. It is a focused workflow simulation, not the complete client application. No live payments, accounting transmissions, camera capture, GPS evidence, or multi-user synchronization are connected. Available as a confirmed purchased system for $7,500. Included configuration, implementation, integrations, and handoff are defined in the proposal. Continued use of the purchased system does not require a Yorkstead support subscription. Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.",
   applications: [
     { title: "Dispatch to dock", description: "Carry the arrival promise and expected scope into the operator's job." },
     { title: "Dock to office", description: "Deliver counts, condition evidence, and sign-off with the completed work." },
