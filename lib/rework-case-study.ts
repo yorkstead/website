@@ -25,7 +25,20 @@ export const reworkCaseStudy: CaseStudy = {
     { label: "Open Sandbox", description: "Choose a scenario and change the practice job yourself.", href: "https://ops.yorkstead.com/rework", external: true },
     { label: "Architecture", description: "See the workflow model and public-demo boundary.", href: "/work/rework-flow#architecture" },
   ],
-  media: [],
+  media: [
+    {
+      id: "rework-dispatch-board",
+      type: "screenshot",
+      label: "Live operations and dispatch board",
+      description: "The prototype Rework Flow live operations board showing active bay occupancy, rework billing metrics, driver call intake, and real-time dispatch log records.",
+      caption: "The central office board connects driver intake, bay reservation capacity, rework logging, and billing status in one unified ledger.",
+      alt: "Denver Express Warehousing ReworkFlow live operations board and dispatch log",
+      desktop: { src: "/media/rework-flow/dispatch-board.png", width: 1024, height: 582 },
+      expandable: true,
+      featured: true,
+    },
+  ],
+  previewMediaId: "rework-dispatch-board",
   cta: { label: "Discuss your handoffs", href: "/workflow-audit#audit-intake" },
   workflowStory: {
     observation: "The useful unit is the load, not the screen. The inspected implementation already connected bay reservations, material counts, condition evidence, and billing. The public demo makes those connections—and the exceptions between them—deliberate and explainable.",

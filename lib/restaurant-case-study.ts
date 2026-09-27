@@ -107,7 +107,20 @@ export const tableOsCaseStudy: CaseStudy = {
       href: "/work/table-os#architecture",
     },
   ],
-  media: [],
+  media: [
+    {
+      id: "table-os-floor-operations",
+      type: "screenshot",
+      label: "Host and floor operations",
+      description: "The prototype TableOS host and floor operations interface displaying table seating, active dining room capacity, server section assignments, and coursing statuses.",
+      caption: "Host and floor operations unite real-time table statuses, server assignments, and coursing progression in a local-first interface.",
+      alt: "TableOS 240 Union host and floor operations map showing dining room tables, seating capacity, and real-time service status",
+      desktop: { src: "/media/table-os/floor-operations.png", width: 1024, height: 579 },
+      expandable: true,
+      featured: true,
+    },
+  ],
+  previewMediaId: "table-os-floor-operations",
   cta: {
     label: "Audit your restaurant technology stack",
     href: "/workflow-audit#audit-intake",

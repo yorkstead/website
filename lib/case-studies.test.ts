@@ -70,6 +70,22 @@ describe("case study data", () => {
     expect(placeholders.every((item) => item.caption.toLowerCase().match(/not been supplied|no interface/))).toBeTrue();
   });
 
+  test("publishes verified Rework Flow screenshots with intrinsic dimensions", () => {
+    const media = getCaseStudy("rework-flow")?.media ?? [];
+    const screenshots = media.filter((item) => item.type === "screenshot");
+    expect(screenshots).toHaveLength(1);
+    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/rework-flow/") && item.desktop.width === 1024 && item.desktop.height === 582)).toBeTrue();
+    expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
+  });
+
+  test("publishes verified TableOS screenshots with intrinsic dimensions", () => {
+    const media = getCaseStudy("table-os")?.media ?? [];
+    const screenshots = media.filter((item) => item.type === "screenshot");
+    expect(screenshots).toHaveLength(1);
+    expect(screenshots.every((item) => item.desktop.src.startsWith("/media/table-os/") && item.desktop.width === 1024 && item.desktop.height === 579)).toBeTrue();
+    expect(screenshots.filter((item) => item.featured)).toHaveLength(1);
+  });
+
   test("publishes verified Ellwood Flow screenshots with intrinsic dimensions", () => {
     const media = getCaseStudy("ellwood-flow")?.media ?? [];
     const screenshots = media.filter((item) => item.type === "screenshot");
