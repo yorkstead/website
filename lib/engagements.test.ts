@@ -68,6 +68,7 @@ describe("public engagement offers and buying model", () => {
     expect(reworkFlow?.verifiedScope.length).toBeGreaterThanOrEqual(4);
     expect(reworkFlow?.boundaries).toContain("Included configuration, implementation, integrations, and handoff are defined in the proposal.");
     expect(reworkFlow?.boundaries.some((b) => b.includes("deep ERP"))).toBe(false);
+    expect(reworkFlow?.cta.href).toBe("/?product=rework-flow#contact");
 
     // Expanded Warehousing (scoped proposal, no fixed price)
     const warehousing = confirmedNamedSystems.find((s) => s.id === "expanded-warehousing");

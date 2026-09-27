@@ -8,32 +8,56 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Your business. Your workflow. Your software.");
 
-    // Navigate to pricing & models page
-    await page.goto("/packages");
+    // Customer navigation: Click header navigation link to Pricing & Model
+    const pricingNavLink = page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Pricing & Model" });
+    await expect(pricingNavLink).toBeVisible();
+    await pricingNavLink.click();
+
+    // Verify navigation reached /packages and displays pricing model
+    await expect(page).toHaveURL(/\/packages$/);
     await expect(page.getByRole("heading", { name: "Buy the system. Choose the support.", level: 1 })).toBeVisible();
 
-    // Verify confirmed $7,500 named systems are displayed with proposal scope text
+    // Verify confirmed $7,500 named systems are displayed with proposal scope text and readiness label
     const reworkCard = page.locator("article", { hasText: "Rework Flow" });
     await expect(reworkCard).toBeVisible();
     await expect(reworkCard.getByText("$7,500", { exact: true })).toBeVisible();
     await expect(reworkCard.getByText("Included configuration, implementation, integrations, and handoff are defined in the proposal.")).toBeVisible();
+    await expect(reworkCard.getByText("Working demonstration")).toBeVisible();
 
     const unionCard = page.locator("article", { hasText: "UnionOS" });
     await expect(unionCard).toBeVisible();
     await expect(unionCard.getByText("$7,500", { exact: true })).toBeVisible();
     await expect(unionCard.getByText("Included configuration, implementation, integrations, and handoff are defined in the proposal.")).toBeVisible();
+    await expect(unionCard.getByText("Interactive concept demonstration")).toBeVisible();
 
-    // Navigate to Rework Flow case study
-    await page.goto("/work/rework-flow");
+    // Customer navigation: Click from Rework Flow card directly into the Case Study
+    const caseStudyLink = reworkCard.getByRole("link", { name: "View case study" });
+    await expect(caseStudyLink).toBeVisible();
+    await caseStudyLink.click();
+
+    // Verify navigation reached /work/rework-flow
+    await expect(page).toHaveURL(/\/work\/rework-flow$/);
     await expect(page.getByRole("heading", { name: "Rework Flow", level: 1 })).toBeVisible();
     await expect(page.getByText("Confirmed $7,500 System")).toBeVisible();
 
-    // Follow CTA to inquiry intake
-    const ctaLink = page.getByRole("link", { name: "Discuss your handoffs" });
-    await expect(ctaLink).toBeVisible();
-    await ctaLink.click();
-    await expect(page).toHaveURL(/\/workflow-audit#audit-intake$/);
-    await expect(page.locator("#audit-name")).toBeVisible();
+    // Customer navigation: Follow the dedicated product inquiry CTA
+    const inquiryCta = page.getByRole("link", { name: "Inquire about Rework Flow" });
+    await expect(inquiryCta).toBeVisible();
+    await inquiryCta.click();
+
+    // Verify navigation reached inquiry section with product context preserved in URL
+    await expect(page).toHaveURL(/\/\?product=rework-flow#contact$/);
+
+    // Verify product inquiry context is visibly rendered in the form
+    const contactSection = page.locator("#contact");
+    await expect(contactSection).toBeVisible();
+    await expect(contactSection.getByText("Conversation context")).toBeVisible();
+    await expect(contactSection.getByText("Rework Flow · $7,500")).toBeVisible();
+    await expect(contactSection.getByText("Freight Rework & Exception Management")).toBeVisible();
+
+    // Verify hidden input and project type selection preserve the product
+    await expect(page.locator("#projectType")).toHaveValue("Rework Flow");
+    await expect(page.locator('input[name="productId"]')).toHaveValue("rework-flow");
   });
 
   test("2. Mobile navigation and keyboard accessibility", async ({ page }) => {
@@ -69,12 +93,19 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
     const contactSection = page.locator("#contact");
     await expect(contactSection).toBeVisible();
 
-    // Ensure expensive Company Operations System package is not automatically pre-selected
-    const engagementSelect = page.locator('select[name="engagement"]');
-    if (await engagementSelect.count() > 0) {
-      const selectedValue = await engagementSelect.inputValue();
-      expect(selectedValue).not.toBe("custom-operations-system");
-    }
+    // Mandatory assertion: Conversation context reflects requested service
+    await expect(contactSection.getByText("Conversation context")).toBeVisible();
+    await expect(contactSection.getByRole("paragraph").filter({ hasText: "Manufacturing Software" })).toBeVisible();
+
+    // Mandatory assertion: Conversation context does NOT display Company Operations System
+    const contextBanner = contactSection.locator(".rounded-lg", { hasText: "Conversation context" });
+    await expect(contextBanner).not.toContainText("Company Operations System");
+
+    // Mandatory assertion: projectType selection defaults to the requested service
+    const projectTypeSelect = page.locator("#projectType");
+    await expect(projectTypeSelect).toBeVisible();
+    await expect(projectTypeSelect).toHaveValue("Manufacturing Software");
+    await expect(projectTypeSelect).not.toHaveValue("Company Operations System");
 
     // Verify contact form inputs render with proper labels and keyboard focusability
     const nameInput = page.locator("#name");
@@ -96,27 +127,32 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
     await expect(nameInput).toBeFocused();
     await expect(nameInput).toHaveJSProperty("validity.valueMissing", true);
 
-    // Test restaurant trial intake validation
+    // Test restaurant trial intake validation with mandatory assertions (no silent if)
     await page.goto("/work/table-os#trial-intake");
-    const trialBtn = page.getByRole("button", { name: /Submit Trial Request|Request 14-Day Pilot Hardware/i });
-    if (await trialBtn.count() > 0) {
-      await trialBtn.click();
-      const restaurantInput = page.locator("#trial-restaurantName");
-      if (await restaurantInput.count() > 0) {
-        await expect(restaurantInput).toHaveJSProperty("validity.valueMissing", true);
-      }
-    }
+    const trialBtn = page.getByRole("button", { name: "Request 14-Day Restaurant Trial" });
+    await expect(trialBtn).toBeVisible();
+    await trialBtn.click();
+
+    const alert = page.locator("#trial-intake").getByRole("alert");
+    await expect(alert).toContainText("Check the highlighted fields to submit your evaluation request.");
+    const restaurantInput = page.locator("#trial-restaurant");
+    await expect(restaurantInput).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator("#trial-intake").getByText("Enter your restaurant or hospitality group name.")).toBeVisible();
   });
 
   test("5. First-party analytics: isolated event dispatch without third-party leaks", async ({ page }) => {
-    let firstPartyEventReceived = false;
+    let dispatchedPayload = null;
     let thirdPartyLeakDetected = false;
 
     // Intercept all requests to track first-party events and catch external leaks
     await page.route("**/*", async (route) => {
       const url = route.request().url();
       if (url.includes("/api/analytics/events")) {
-        firstPartyEventReceived = true;
+        try {
+          dispatchedPayload = JSON.parse(route.request().postData() || "{}");
+        } catch {
+          dispatchedPayload = null;
+        }
         await route.fulfill({
           status: 202,
           contentType: "application/json",
@@ -136,10 +172,12 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
     await page.goto("/workflow-audit");
 
     // Wait for the first-party analytics event to fire
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
 
-    // Verify first-party conversion measurement captured the interaction
-    expect(firstPartyEventReceived).toBe(true);
+    // Verify first-party conversion measurement captured the interaction with exact payload
+    expect(Boolean(dispatchedPayload)).toBe(true);
+    expect(dispatchedPayload?.["event"]).toBe("workflow_audit_view");
+    expect(dispatchedPayload?.["path"]).toBe("/workflow-audit");
 
     // Verify zero third-party advertising leaks occurred
     expect(thirdPartyLeakDetected).toBe(false);

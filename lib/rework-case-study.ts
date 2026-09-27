@@ -39,7 +39,7 @@ export const reworkCaseStudy: CaseStudy = {
     },
   ],
   previewMediaId: "rework-dispatch-board",
-  cta: { label: "Discuss your handoffs", href: "/workflow-audit#audit-intake" },
+  cta: { label: "Inquire about Rework Flow", href: "/?product=rework-flow#contact" },
   workflowStory: {
     observation: "The useful unit is the load, not the screen. The inspected implementation already connected bay reservations, material counts, condition evidence, and billing. The public demo makes those connections—and the exceptions between them—deliberate and explainable.",
     handoffs: [

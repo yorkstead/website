@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { createPagination } from "@/lib/pagination";
 import type { WorkflowAuditIntake } from "@/lib/workflow-audit";
+import type { ProductInquiryIntake } from "@/lib/product-inquiry";
 
 export type LeadStatus = "new" | "contacted" | "qualified" | "proposal" | "won" | "lost" | "archived";
 export type NotificationStatus = "not_configured" | "queued" | "sent" | "delivered" | "bounced" | "complained" | "failed";
@@ -10,6 +11,8 @@ export type LeadSummary = {
   due: number;
   won: number;
 };
+
+export type ContactInquiryIntake = Partial<WorkflowAuditIntake> & Partial<ProductInquiryIntake> & Record<string, unknown>;
 
 export type ContactInquiry = {
   id: number;
@@ -41,7 +44,7 @@ export type ContactInquiry = {
   convertedProjectId: string | null;
   notificationId: string | null;
   notificationStatus: NotificationStatus;
-  intake: WorkflowAuditIntake | null;
+  intake: ContactInquiryIntake | null;
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;

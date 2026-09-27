@@ -1,9 +1,17 @@
 import { Resend } from "resend";
-import type { WorkflowAuditIntake } from "@/lib/workflow-audit";
 import { brand } from "@/lib/brand";
 import { outboundRequestTimeoutMs, withOperationTimeout } from "@/lib/operational-observability";
 
-type LeadNotification = { id: number; name: string; email: string; company: string; projectType: string; budget: string; message: string; intake?: WorkflowAuditIntake };
+type LeadNotification = {
+  id: number;
+  name: string;
+  email: string;
+  company: string;
+  projectType: string;
+  budget: string;
+  message: string;
+  intake?: Record<string, unknown>;
+};
 
 function escapeHTML(value: string) {
   return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character] ?? character);
@@ -15,7 +23,12 @@ export async function sendLeadNotification(lead: LeadNotification) {
   if (!apiKey || !recipient) return { sent: false as const, reason: "not-configured" as const };
   const resend = new Resend(apiKey);
   const from = process.env.CONTACT_FROM_EMAIL ?? `${brand.emailFromName} <onboarding@resend.dev>`;
-  const auditDetails = lead.intake ? `<h2 style="font-size:18px;margin:24px 0 8px">Workflow audit intake</h2><p style="line-height:1.7"><strong>Phone:</strong> ${escapeHTML(lead.intake.phone || "Not provided")}<br><strong>Industry:</strong> ${escapeHTML(lead.intake.industry)}<br><strong>Employees:</strong> ${escapeHTML(lead.intake.employees || "Not provided")}<br><strong>Current tools:</strong> ${escapeHTML(lead.intake.currentTools)}<br><strong>Estimated hours lost:</strong> ${escapeHTML(lead.intake.hoursLost || "Not provided")}<br><strong>Preferred contact:</strong> ${escapeHTML(lead.intake.preferredContact)}</p><div style="margin:18px 0;padding:18px;background:#f4f4f5;border-radius:10px;white-space:pre-wrap;line-height:1.6"><strong>Desired outcome</strong><br>${escapeHTML(lead.intake.desiredOutcome)}</div>` : "";
+  const auditDetails =
+    lead.intake && "desiredOutcome" in lead.intake
+      ? `<h2 style="font-size:18px;margin:24px 0 8px">Workflow audit intake</h2><p style="line-height:1.7"><strong>Phone:</strong> ${escapeHTML(String(lead.intake.phone || "Not provided"))}<br><strong>Industry:</strong> ${escapeHTML(String(lead.intake.industry || ""))}<br><strong>Employees:</strong> ${escapeHTML(String(lead.intake.employees || "Not provided"))}<br><strong>Current tools:</strong> ${escapeHTML(String(lead.intake.currentTools || ""))}<br><strong>Estimated hours lost:</strong> ${escapeHTML(String(lead.intake.hoursLost || "Not provided"))}<br><strong>Preferred contact:</strong> ${escapeHTML(String(lead.intake.preferredContact || ""))}</p><div style="margin:18px 0;padding:18px;background:#f4f4f5;border-radius:10px;white-space:pre-wrap;line-height:1.6"><strong>Desired outcome</strong><br>${escapeHTML(String(lead.intake.desiredOutcome || ""))}</div>`
+      : lead.intake && "productId" in lead.intake
+        ? `<h2 style="font-size:18px;margin:24px 0 8px">System inquiry details</h2><p style="line-height:1.7"><strong>System:</strong> ${escapeHTML(String(lead.intake.productName || lead.intake.productId))}<br><strong>Category:</strong> ${escapeHTML(String(lead.intake.productCategory || ""))}<br><strong>Price:</strong> ${escapeHTML(String(lead.intake.productPrice || ""))}</p>`
+        : "";
   const { data, error } = await withOperationTimeout(resend.emails.send({
     from,
     to: recipient,
