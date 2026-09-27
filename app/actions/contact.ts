@@ -9,7 +9,9 @@ import { sendLeadNotification } from "@/lib/lead-notification";
 import { hashedRequestAddress } from "@/lib/request-privacy";
 import { logOperationalError, requestCorrelationId, withOperationTimeout } from "@/lib/operational-observability";
 import {
+  contactSubmissionKey,
   processContactSubmission,
+  validateContactPayload,
   type ContactPayload,
   type ContactValidationErrors,
 } from "@/lib/contact-submission";
@@ -41,6 +43,30 @@ export async function submitContact(_: ContactState, formData: FormData): Promis
   const ipHash = hashedRequestAddress(requestHeaders, "contact");
   const visitorHash = hashedRequestAddress(requestHeaders, "conversion-analytics", true);
 
+  async function emailFallback(): Promise<ContactState> {
+    if (payload.website) return { status: "success", message: "Thanks—your message is in the queue." };
+    const errors = validateContactPayload(payload);
+    if (Object.keys(errors).length) return { status: "error", message: "Check the highlighted fields.", errors };
+    const projectType = payload.projectType?.trim() || "Project";
+    try {
+      const notification = await sendLeadNotification({
+        id: 0,
+        idempotencyKey: `contact-fallback-${contactSubmissionKey(payload.email, payload.productId || projectType)}`,
+        name: payload.name.trim(),
+        email: payload.email.trim(),
+        company: payload.company?.trim() || "",
+        projectType,
+        budget: payload.budget?.trim() || "",
+        message: payload.message.trim(),
+        intake: payload.productId ? { productId: payload.productId } : undefined,
+      });
+      if (notification.sent) return { status: "success", message: "Message received. I’ll review it and get back to you directly." };
+    } catch (error) {
+      logOperationalError("contact_fallback.failed", requestId, error, { dependency: "resend", operation: "contact_notification" });
+    }
+    return { status: "error", message: `The contact channel is temporarily unavailable. Email ${brand.email} instead.` };
+  }
+
   let sql: Awaited<ReturnType<typeof contactDatabase>>;
   try {
     sql = await contactDatabase();
@@ -49,10 +75,7 @@ export async function submitContact(_: ContactState, formData: FormData): Promis
       dependency: "database",
       operation: "initialize_contact_database",
     });
-    return {
-      status: "error",
-      message: `The contact channel is temporarily unavailable. Email ${brand.email} instead.`,
-    };
+    return emailFallback();
   }
 
   const result = await processContactSubmission(payload, {
@@ -94,7 +117,7 @@ export async function submitContact(_: ContactState, formData: FormData): Promis
       dependency: "database",
       operation: "create_contact_inquiry",
     });
-    return { status: "error", message: result.message };
+    return emailFallback();
   }
 
   after(async () => {
