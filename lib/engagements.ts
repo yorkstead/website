@@ -78,12 +78,15 @@ export type ConfirmedNamedSystem = {
   category: string;
   priceLabel: string;
   priceType: "fixed" | "scoped";
+  readinessLabel: string;
   summary: string;
   verifiedScope: readonly string[];
   boundaries: readonly string[];
   caseStudyHref?: string;
   cta: { label: string; href: string };
 };
+
+export type NamedSystem = ConfirmedNamedSystem;
 
 export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
   {
@@ -92,6 +95,7 @@ export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
     category: "Hospitality & Restaurant Operations",
     priceLabel: "$7,500",
     priceType: "fixed",
+    readinessLabel: "Interactive concept demonstration",
     summary: "A local-first restaurant operating system uniting floor tables, handheld tableside ordering, coursing state machine, kitchen KDS station routing, cellar reserve tracking, 86 board synchronization, and shift closeout.",
     verifiedScope: [
       "Table management and floor layout",
@@ -101,7 +105,8 @@ export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
       "Shift closeout summary and cash drawer reconciliation",
     ],
     boundaries: [
-      "Confirmed purchase price: $7,500.",
+      "Purchase price: $7,500.",
+      "Customer production deployment requires agreed facility floor layout, menu structure, and local hardware configuration.",
       "Included configuration, implementation, integrations, and handoff are defined in the proposal.",
       "Continued use of the purchased system does not require a Yorkstead support subscription; optional maintenance is available.",
       "Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.",
@@ -115,6 +120,7 @@ export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
     category: "Freight Rework & Exception Management",
     priceLabel: "$7,500",
     priceType: "fixed",
+    readinessLabel: "Working demonstration",
     summary: "Reservation-to-invoice freight rework operating system connecting arrival promises, dock work, condition evidence, and billing into one unified load record.",
     verifiedScope: [
       "Timed bay reservation intake and appointment tracking",
@@ -124,7 +130,8 @@ export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
       "Itemized billing calculation derived directly from recorded work and materials",
     ],
     boundaries: [
-      "Confirmed purchase price: $7,500.",
+      "Purchase price: $7,500.",
+      "Customer production deployment requires agreed dock layout, itemization rules, and integration handoffs.",
       "Included configuration, implementation, integrations, and handoff are defined in the proposal.",
       "Continued use of the purchased system does not require a Yorkstead support subscription; optional maintenance is available.",
       "Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.",
@@ -138,6 +145,7 @@ export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
     category: "Warehousing & Logistics Operations",
     priceLabel: "Scoped proposal",
     priceType: "scoped",
+    readinessLabel: "Demonstration prototype",
     summary: "Operational warehousing system continuing the rework-flow module into full facility slotting, yard management, freight tracking, and exception governance.",
     verifiedScope: [
       "Facility slotting, high-bay rack storage, rework bays, and floor staging zones (tailored to facility layouts)",
@@ -147,7 +155,8 @@ export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
       "Job lifecycle tracking with 8-point documentation completeness verification",
     ],
     boundaries: [
-      "Scoped proposal; no approved fixed price exists.",
+      "Request a proposal tailored to your operation.",
+      "Customer production deployment requires facility-specific slotting layout, yard configuration, and storage tracking setup.",
       "Warehouse demonstration parameters (such as 60,000 sq ft, 30ft racks, and 6 dock doors) are example facility configurations, not product limits, customer deployment evidence, or standard purchase scope.",
       "Included configuration, implementation, integrations, and handoff are defined in the proposal.",
       "Continued use of the purchased system does not require a Yorkstead support subscription.",

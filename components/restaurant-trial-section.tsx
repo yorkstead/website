@@ -325,7 +325,7 @@ export function RestaurantTrialSection() {
                 <p className="font-mono text-[11px] text-muted-foreground mt-0.5">Commercial Fanless Mini-PC</p>
               </div>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                In-house local database and state machine engine. Sub-5ms response time over LAN; immune to cloud internet outages.
+                In-house local database and state machine engine. Fast local network response over LAN; resilient to external internet outages.
               </p>
               <div className="rounded-lg border border-dashed border-border bg-card/60 p-2.5 text-center font-mono text-[10px] text-muted-foreground/80">
                 [ Hardware Kit Photo Slot · LAN Appliance ]

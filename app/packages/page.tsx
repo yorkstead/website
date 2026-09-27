@@ -16,9 +16,9 @@ import {
 } from "@/lib/engagements";
 
 export const metadata: Metadata = {
-  title: "Service Ladder, Named Systems & Buying Model",
+  title: "Service Ladder, Systems & Buying Model",
   description:
-    "Workflow Audit, Workflow Sprint, Department Systems, and Company Operations Systems, plus confirmed named systems and our transparent buying model.",
+    "Workflow Audit, Workflow Sprint, Department Systems, and Company Operations Systems, plus operational systems and our transparent buying model.",
   alternates: { canonical: "/packages" },
 };
 
@@ -159,7 +159,7 @@ export default function PackagesPage() {
             href="#named-systems"
             className="inline-flex min-h-11 items-center rounded-lg border border-border px-5 text-sm font-medium"
           >
-            Confirmed named systems
+            Systems
           </Link>
           <Link
             href="#buying-model"
@@ -226,15 +226,15 @@ export default function PackagesPage() {
         </div>
       </section>
 
-      {/* Confirmed Named Systems Section */}
+      {/* Systems Section */}
       <section id="named-systems" aria-labelledby="named-systems-heading" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="max-w-3xl">
-          <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Proven Operational Systems</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Systems &amp; Reusable Modules</div>
           <h2 id="named-systems-heading" className="mt-3 text-3xl font-semibold tracking-tight">
-            Confirmed Named Systems
+            Systems
           </h2>
           <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Production-ready software foundations tailored to your operation. Confirmed prices apply to verified system scope and architecture; hardware, external hosting, and third-party provider fees are identified separately.
+            Working software foundations tailored to your operation. Each system builds from demonstrated workflows and reusable modules, with scope, deployment requirements, and third-party services agreed in the proposal.
           </p>
         </div>
 
@@ -258,11 +258,16 @@ export default function PackagesPage() {
               </div>
 
               <h3 className="mt-4 text-2xl font-semibold tracking-tight">{system.name}</h3>
-              <p className="mt-2 font-mono text-xl font-bold text-foreground">{system.priceLabel}</p>
+              <div className="mt-2 flex flex-wrap items-baseline gap-2.5">
+                <span className="font-mono text-xl font-bold text-foreground">{system.priceLabel}</span>
+                <span className="rounded border border-border px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  {system.readinessLabel}
+                </span>
+              </div>
               <p className="mt-3 text-xs leading-5 text-muted-foreground">{system.summary}</p>
 
               <div className="mt-6 border-t border-border pt-4">
-                <h4 className="font-mono text-[10px] uppercase tracking-wider text-primary">Verified Scope</h4>
+                <h4 className="font-mono text-[10px] uppercase tracking-wider text-primary">What it does</h4>
                 <ul className="mt-2.5 space-y-1.5">
                   {system.verifiedScope.map((scopeItem) => (
                     <li key={scopeItem} className="flex items-start gap-2 text-xs text-muted-foreground">
@@ -274,7 +279,7 @@ export default function PackagesPage() {
               </div>
 
               <div className="mt-6 border-t border-border pt-4">
-                <h4 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Operational Boundaries</h4>
+                <h4 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Production deployment &amp; terms</h4>
                 <ul className="mt-2.5 space-y-1.5">
                   {system.boundaries.map((boundary) => (
                     <li key={boundary} className="flex items-start gap-2 text-[11px] leading-4 text-muted-foreground/80">

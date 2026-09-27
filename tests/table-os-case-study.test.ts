@@ -27,7 +27,7 @@ test("TableOS profile is placed directly under Rework Flow with discoverable dem
   expect(tableOs.capabilities.some((c) => c.includes("offline"))).toBeTrue();
   expect(tableOs.limitations).toContain("240 Union");
   expect(tableOs.outcomeLabel).toBe("Intended outcome");
-  expect(tableOs.outcome).toContain("5.42 to 6.08 months");
+  expect(tableOs.outcome).toContain("unified floor, kitchen, and cellar workflows");
   expect(JSON.stringify(getCaseStudyStructuredData(tableOs))).toContain("table-os");
   expect(new Set(caseStudies.map((entry) => entry.slug)).size).toBe(caseStudies.length);
 });
