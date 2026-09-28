@@ -1,4 +1,5 @@
 import { passkey } from "@better-auth/passkey";
+import { sendPasswordResetEmail } from "@/lib/password-reset-email";
 import { brand } from "@/lib/brand";
 import { resolveAuthConfiguration, type AuthConfiguration } from "@/lib/auth-config";
 import { ownerBootstrapAllowed } from "@/lib/owner-bootstrap";
@@ -34,6 +35,11 @@ function createAuth() {
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 12,
+      resetPasswordTokenExpiresIn: 900,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }) => {
+        await sendPasswordResetEmail(user.email, url);
+      },
     },
     databaseHooks: {
       user: {
