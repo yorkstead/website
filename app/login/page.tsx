@@ -7,7 +7,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const requestedPath = params.next;
   const privateDestinations = ["/dashboard", "/dashboard/leads", "/dashboard/consultations", "/dashboard/marketing", "/dashboard/marketing/one-sheet", "/account"] as const;
   const nextPath = privateDestinations.find((path) => path === requestedPath) ?? "/dashboard";
-  const autoPrompt = params.auto !== "0" && params.auto !== "false";
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden px-4 py-16">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,color-mix(in_oklab,var(--primary)_18%,transparent),transparent_42%)]" />
@@ -32,7 +31,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </a>
         </div>
 
-        <LoginPanel nextPath={nextPath} autoPrompt={autoPrompt} />
+        <LoginPanel nextPath={nextPath} />
 
         <p className="mt-6 max-w-sm text-center text-xs leading-5 text-muted-foreground">
           This portal is reserved for private project command and owner administration. Passkeys stay on your device or trusted password manager.
