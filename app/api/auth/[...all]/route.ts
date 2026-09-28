@@ -1,3 +1,4 @@
+import { ownerEmailMatches } from "@/lib/owner-authorization";
 import { toNextJsHandler } from "better-auth/next-js";
 import { authUserExists, getAuth, getAuthConfiguration } from "@/lib/auth";
 import { ownerBootstrapAllowed } from "@/lib/owner-bootstrap";
@@ -11,6 +12,14 @@ function getHandlers() {
 }
 
 export async function GET(request: Request) {
+  if (new URL(request.url).pathname === "/api/auth/owner-session-status") {
+    try {
+      const session = await getAuth().api.getSession({ headers: request.headers });
+      return Response.json({ authenticated: Boolean(session), authorized: Boolean(session && ownerEmailMatches(session.user.email, getAuthConfiguration().ownerEmail)) }, { headers: { "Cache-Control": "no-store" } });
+    } catch {
+      return Response.json({ error: "Session check unavailable" }, { status: 503, headers: { "Cache-Control": "no-store" } });
+    }
+  }
   if (new URL(request.url).pathname === "/api/auth/bootstrap-status") {
     try {
       const configuration = getAuthConfiguration();
