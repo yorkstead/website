@@ -1,0 +1,172 @@
+{
+ "v": 3,
+ "layout": "files",
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-09-30T06:20:00Z"
+ },
+ "title": "Yorkstead Design System",
+ "namespace": "Yorkstead",
+ "libraries": [
+  {
+   "name": "react",
+   "version": "19.2.8",
+   "global": "React",
+   "file": "components/lib/react.production.min.js"
+  },
+  {
+   "name": "react-dom",
+   "version": "19.2.8",
+   "global": "ReactDOM",
+   "file": "components/lib/react-dom.production.min.js"
+  }
+ ],
+ "sections": {},
+ "groups": [
+  "Logos",
+  "Media",
+  "Collateral"
+ ],
+ "assetGroups": {
+  "Logos": {
+   "name": "Logos",
+   "tile": "m",
+   "order": [
+    "logo-light.svg",
+    "logo-dark.svg",
+    "logo-dark-transparent.svg",
+    "logo-light-transparent.svg",
+    "logo-light.png",
+    "logo-dark.png"
+   ],
+   "files": {
+    "logo-light.svg": {
+     "name": "logo-light.svg",
+     "blob": "0d6b1541191ed0e0d40d5c78167e307e",
+     "size": 1179,
+     "type": "image/svg+xml"
+    },
+    "logo-dark.svg": {
+     "name": "logo-dark.svg",
+     "blob": "caf1f10ff48adf1fadb5b7978ce424e5",
+     "size": 1211,
+     "type": "image/svg+xml"
+    },
+    "logo-dark-transparent.svg": {
+     "name": "logo-dark-transparent.svg",
+     "blob": "435d1a23e3447def67219897176f499b",
+     "size": 1046,
+     "type": "image/svg+xml"
+    },
+    "logo-light-transparent.svg": {
+     "name": "logo-light-transparent.svg",
+     "blob": "e18286d1e9672835b50f0fd8b4e837c5",
+     "size": 1070,
+     "type": "image/svg+xml"
+    },
+    "logo-light.png": {
+     "name": "logo-light.png",
+     "blob": "85ecb3e41e3145f615f01c250ba5b6d2",
+     "size": 15016,
+     "type": "image/png"
+    },
+    "logo-dark.png": {
+     "name": "logo-dark.png",
+     "blob": "c24ad4c32152d1f354dc1ad01f3b95b4",
+     "size": 15158,
+     "type": "image/png"
+    }
+   }
+  },
+  "Collateral": {
+   "name": "Collateral",
+   "tile": "l",
+   "order": [
+    "yorkstead_card_front.svg",
+    "yorkstead_card_back.svg"
+   ],
+   "files": {
+    "yorkstead_card_front.svg": {
+     "name": "yorkstead_card_front.svg",
+     "blob": "ba19c2bd04b538f265ec0fd8c384464e",
+     "size": 1422,
+     "type": "image/svg+xml"
+    },
+    "yorkstead_card_back.svg": {
+     "name": "yorkstead_card_back.svg",
+     "blob": "81dfece19f37e7b0737faf4a0163611b",
+     "size": 3465,
+     "type": "image/svg+xml"
+    }
+   }
+  },
+  "Media": {
+   "name": "Media",
+   "tile": "l",
+   "order": [
+    "brandon-york.jpg",
+    "rework-flow-dispatch-board.png",
+    "table-os-floor-operations.png",
+    "ellwood-active-release.png",
+    "yorkstead-ops-projects-command-center.png",
+    "jwld-home.png",
+    "sic-pizza-floor.png"
+   ],
+   "files": {
+    "brandon-york.jpg": {
+     "name": "brandon-york.jpg",
+     "blob": "b5ce0180cc873f1010f06b1323bba9ba",
+     "size": 75112,
+     "type": "image/jpeg"
+    },
+    "rework-flow-dispatch-board.png": {
+     "name": "rework-flow-dispatch-board.png",
+     "blob": "803113c98ea80ae51ca2f460880d860d",
+     "size": 149641,
+     "type": "image/png"
+    },
+    "table-os-floor-operations.png": {
+     "name": "table-os-floor-operations.png",
+     "blob": "e3c5651d93cf692c5f2929bcce81c971",
+     "size": 206699,
+     "type": "image/png"
+    },
+    "ellwood-active-release.png": {
+     "name": "ellwood-active-release.png",
+     "blob": "61fa4dd681c94806605af58af4afe646",
+     "size": 217201,
+     "type": "image/png"
+    },
+    "yorkstead-ops-projects-command-center.png": {
+     "name": "yorkstead-ops-projects-command-center.png",
+     "blob": "392c71424ba27dcfecd1ebfa8a25ff43",
+     "size": 596623,
+     "type": "image/png"
+    },
+    "jwld-home.png": {
+     "name": "jwld-home.png",
+     "blob": "4966ce66918f99f3191cb7eb74e52eb9",
+     "size": 66146,
+     "type": "image/png"
+    },
+    "sic-pizza-floor.png": {
+     "name": "sic-pizza-floor.png",
+     "blob": "7ae9e64cc2fca40ee4a314d6d8660b2a",
+     "size": 628121,
+     "type": "image/png"
+    }
+   }
+  }
+ },
+ "blobs": {},
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "lastChange": {
+  "by": "Claude",
+  "at": "2026-09-30T15:54:19Z",
+  "via": "GitHub · yorkstead/website@fe71072",
+  "note": "Live React 19 bundle of 22 site components (primitives + page sections) and portfolio media"
+ }
+}
