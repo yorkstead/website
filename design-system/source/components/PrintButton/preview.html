@@ -1,0 +1,9 @@
+<!-- @dsCard group="Actions" height=76 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap">
+<style>html,body{margin:0;background:var(--background);color:var(--foreground);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}#root{padding:20px}</style>
+<div id="root"></div>
+<script>
+  var Y = window.Yorkstead, h = React.createElement, F = React.Fragment, I = Y.icons, D = Y.data;
+  function row() { return h.apply(null, ['div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' } }].concat([].slice.call(arguments))); }
+  ReactDOM.createRoot(document.getElementById('root')).render(row(h(Y.PrintButton)));
+</script>
