@@ -83,7 +83,7 @@ const sectors: SectorData[] = [
       "Real-time dock and package staging with automated weight totals",
       "Automated carrier compliance and detention timestamping",
     ],
-    systemsBuilt: "Denver Express Freight Platform & ReworkFlow Dispatch",
+    systemsBuilt: "ReworkFlow dock and dispatch prototype",
     destinationUrl: "/services/scheduling",
     destinationLabel: "Explore Logistics Systems",
   },

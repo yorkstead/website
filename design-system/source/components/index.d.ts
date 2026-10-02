@@ -80,7 +80,7 @@ export interface CaseStudyCardProps { study: CaseStudy }
 export declare function CaseStudyCard(props: CaseStudyCardProps): React.JSX.Element;
 
 /** lib/solutions.ts */
-export interface SolutionOutcome { slug: string; number: string; title: string; kicker: string; coreProblem: string; operationalBottleneck: string; howWeSolveIt: string; composableCapabilities: string[]; demoSlug?: string; demoUrl?: string; status: "Available in live demo" | "Custom engagement capability"; diagnosticFocus: string }
+export interface SolutionOutcome { slug: string; number: string; title: string; kicker: string; coreProblem: string; operationalBottleneck: string; howWeSolveIt: string; composableCapabilities: string[]; demoSlug?: string; demoUrl?: string; status: "Available as interactive demo" | "Custom engagement capability"; diagnosticFocus: string }
 /** components/solution-card.tsx */
 export interface SolutionCardProps { solution: SolutionOutcome }
 export declare function SolutionCard(props: SolutionCardProps): React.JSX.Element;
