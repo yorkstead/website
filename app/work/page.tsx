@@ -8,7 +8,7 @@ import { WorkPortfolio } from "@/components/work-portfolio";
 
 export const metadata: Metadata = {
   title: "Selected Work & Systems Portfolio",
-  description: "Detailed project profiles of live industrial systems, internal platforms, commerce engines, and working operational prototypes.",
+  description: "Detailed project profiles of working prototypes and delivered systems, with each one labeled by how far along it is.",
   alternates: { canonical: "/work" },
 };
 
@@ -53,7 +53,7 @@ export default function WorkPage() {
               Systems with an <span className="text-primary">operating point of view.</span>
             </h1>
             <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
-              Explore live systems and working prototypes spanning release control, freight handoffs, internal operations, online commerce, tableside POS, and production analytics.
+              Explore working prototypes and delivered systems spanning release control, freight handoffs, internal operations, online commerce, tableside POS, and production analytics.
             </p>
           </div>
 

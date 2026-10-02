@@ -9,7 +9,7 @@ export type SolutionOutcome = {
   composableCapabilities: string[];
   demoSlug?: string;
   demoUrl?: string;
-  status: "Available in live demo" | "Custom engagement capability";
+  status: "Available as interactive demo" | "Custom engagement capability";
   diagnosticFocus: string;
 };
 
@@ -30,7 +30,7 @@ export const publicSolutions: SolutionOutcome[] = [
     ],
     demoSlug: "front-range-manufacturing",
     demoUrl: "https://ops.yorkstead.com/demo?scenario=front-range-manufacturing",
-    status: "Available in live demo",
+    status: "Available as interactive demo",
     diagnosticFocus: "Estimating cycle time and margin erosion audits.",
   },
   {
@@ -49,7 +49,7 @@ export const publicSolutions: SolutionOutcome[] = [
     ],
     demoSlug: "mile-high-signworks",
     demoUrl: "https://ops.yorkstead.com/demo?scenario=mile-high-signworks",
-    status: "Available in live demo",
+    status: "Available as interactive demo",
     diagnosticFocus: "Shopfloor traveler friction and revision mismatch audits.",
   },
   {
@@ -68,7 +68,7 @@ export const publicSolutions: SolutionOutcome[] = [
     ],
     demoSlug: "peak-mobile-detail",
     demoUrl: "https://ops.yorkstead.com/demo?scenario=peak-mobile-detail",
-    status: "Available in live demo",
+    status: "Available as interactive demo",
     diagnosticFocus: "Field crew dispatch and proof-of-work handoff audits.",
   },
   {
@@ -87,7 +87,7 @@ export const publicSolutions: SolutionOutcome[] = [
     ],
     demoSlug: "front-range-manufacturing",
     demoUrl: "https://ops.yorkstead.com/demo?scenario=front-range-manufacturing",
-    status: "Available in live demo",
+    status: "Available as interactive demo",
     diagnosticFocus: "Material replenishment and inventory ledger audits.",
   },
   {
@@ -106,7 +106,7 @@ export const publicSolutions: SolutionOutcome[] = [
     ],
     demoSlug: "front-range-manufacturing",
     demoUrl: "https://ops.yorkstead.com/demo?scenario=front-range-manufacturing",
-    status: "Available in live demo",
+    status: "Available as interactive demo",
     diagnosticFocus: "Shipping throughput and dispatch verification audits.",
   },
 ];
