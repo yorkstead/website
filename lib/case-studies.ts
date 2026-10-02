@@ -10,7 +10,7 @@ export type CaseStudy = {
     demoUrl?: string;
     observation: string;
     handoffs: { role: string; before: string; after: string }[];
-    scenarios: { id: string; title: string; description: string }[];
+    scenarios: { id: string; title: string; description: string; href?: string }[];
     architecture: { title: string; description: string }[];
   };
   slug: string;

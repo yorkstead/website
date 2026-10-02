@@ -10,11 +10,11 @@ for (const width of [1440, 390]) {
     await expect(page.getByRole("heading", { name: "Rework Flow", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "The observation", exact: true })).toBeVisible();
     const nav = page.getByRole("navigation", { name: "Explore Rework Flow" });
-    await expect(nav.getByRole("link", { name: /Guided Walkthrough/ })).toHaveAttribute("href", "/demos/rework?mode=guided");
-    await expect(nav.getByRole("link", { name: /Open Sandbox/ })).toHaveAttribute("href", "/demos/rework");
+    await expect(nav.getByRole("link", { name: /Walkthrough/ })).toHaveAttribute("href", "/demos/rework");
+    await expect(nav.getByRole("link", { name: /Open the live app/ })).toHaveAttribute("href", "https://rework.yorkstead.com");
     await nav.getByRole("link", { name: /Architecture/ }).click();
     await expect(page.locator("#architecture")).toBeInViewport();
-    await expect(page.locator('a[href*="&scenario="]')).toHaveCount(6);
+    await expect(page.locator('a[href^="/demos/rework#"]')).toHaveCount(6);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     expect(errors).toEqual([]);
   });
