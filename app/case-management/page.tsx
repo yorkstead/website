@@ -27,7 +27,7 @@ export default function CaseManagementPage() {
             Solutions
           </Link>
           <Link href="/demos" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
-            Demos
+            Walkthroughs
           </Link>
           <Link href="/work" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
             Work

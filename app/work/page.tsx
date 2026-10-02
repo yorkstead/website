@@ -26,7 +26,7 @@ export default function WorkPage() {
             Solutions
           </Link>
           <Link href="/demos" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
-            Demos
+            Walkthroughs
           </Link>
           <Link href="/work" className="px-3 py-2 text-xs text-foreground font-semibold border-b-2 border-primary">
             Work

@@ -6,8 +6,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata: Metadata = {
-  title: "Interactive Demos",
-  description: "Working prototypes you can click through: freight rework, manufacturing release control, and restaurant operations. Made-up data, nothing saved.",
+  title: "Walkthroughs",
+  description: "Step-by-step walkthroughs of our working prototypes: freight rework, manufacturing release control, freight brokerage, restaurant operations and more. Made-up data throughout.",
   alternates: { canonical: "/demos" },
 };
 
@@ -25,7 +25,7 @@ export default function DemosPage() {
             Software + automation
           </Link>
           <Link href="/demos" className="px-3 py-2 text-xs text-foreground font-semibold border-b-2 border-primary">
-            Demos
+            Walkthroughs
           </Link>
           <Link href="/#work" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
             Work
@@ -45,13 +45,13 @@ export default function DemosPage() {
         <div className="max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
             <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-            Interactive Demos // Made-up Data
+            Walkthroughs // Made-up Data
           </div>
           <h1 className="text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-foreground sm:text-6xl">
-            Click through the software. <span className="text-primary">See how it works.</span>
+            Follow the software. <span className="text-primary">See how it works.</span>
           </h1>
           <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
-            Each demo is a working prototype modeled on a real kind of business, filled with made-up data. We built them to show how we work, not as finished products.
+            Each walkthrough follows a working prototype modeled on a real kind of business, screen by screen, with made-up data. We built them to show how we work, not as finished products.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4 text-xs font-mono text-muted-foreground">
@@ -75,13 +75,13 @@ export default function DemosPage() {
       <section className="relative mx-auto max-w-7xl px-5 pb-24 sm:px-8">
         <div className="space-y-8">
           {[
-            { href: "/demos/rework", label: "Flagship demo", title: "Rework Flow: from arrival to an explainable invoice", body: "Follow a freight load from the driver's bay reservation through dock intake, rework and the completion packet, using screens from the real application.", cta: "Open the walkthrough", study: "/work/rework-flow" },
-            { href: "/demos/ellwood", label: "Concept demo", title: "Ellwood Flow: from release to the shop floor", body: "Follow a manufacturing release from its current revision through the production queue, shop-floor scans, inspection and pallet planning, using screens from the prototype. A concept inspired by past workplace experience.", cta: "Open the walkthrough", study: "/work/ellwood-flow" },
-            { href: "https://240.yorkstead.com", label: "Flagship demo", title: "Union OS: restaurant operations", body: "A tableside ordering, kitchen and payments prototype built around a real neighborhood restaurant.", cta: "Open the demo", study: "/work/table-os" },
-            { href: "/demos/freight-flow", label: "Concept demo", title: "FreightFlow: what needs attention, and who acts", body: "Follow a freight brokerage exception from the morning overview to a ranked queue, a load, a customer update and the rules behind it. It sits beside the TMS a brokerage already runs." , cta: "Open the walkthrough" },
-            { href: "/demos/sic-pizza", label: "Concept demo", title: "SIC Pizza: one live table for everyone", body: "A fictional pizza restaurant shows a guest proposal, server approval, kitchen stations, expo and manager views built on one shared table.", cta: "Open the walkthrough", study: "/work/sic-pizza-pos" },
-            { href: "/demos/barcodes", label: "Working tool", title: "Employee barcode labels", body: "Keep an employee directory and print sheets of Code 128 labels for scan-based handoffs. The first tool we built, now shown as a demo.", cta: "Open the walkthrough", study: "/work/employee-barcodes" },
-            { href: "/demos/leads-rescue", label: "Concept demo", title: "Leads Rescue: texting back missed calls", body: "A contractor misses a call from a roof. An automatic text collects the issue and address and offers inspection times. A simulation aimed at contractors.", cta: "Open the walkthrough" },
+            { href: "/demos/rework", label: "Flagship", title: "Rework Flow: from arrival to an explainable invoice", body: "Follow a freight load from the driver's bay reservation through dock intake, rework and the completion packet, using screens from the real application.", cta: "Open the walkthrough", study: "/work/rework-flow" },
+            { href: "/demos/ellwood", label: "Concept", title: "Ellwood Flow: from release to the shop floor", body: "Follow a manufacturing release from its current revision through the production queue, shop-floor scans, inspection and pallet planning, using screens from the prototype. A concept inspired by past workplace experience.", cta: "Open the walkthrough", study: "/work/ellwood-flow" },
+            { href: "https://240.yorkstead.com", label: "Flagship", title: "Union OS: restaurant operations", body: "A tableside ordering, kitchen and payments prototype built around a real neighborhood restaurant.", cta: "Open the live demo", study: "/work/table-os" },
+            { href: "/demos/freight-flow", label: "Concept", title: "FreightFlow: what needs attention, and who acts", body: "Follow a freight brokerage exception from the morning overview to a ranked queue, a load, a customer update and the rules behind it. It sits beside the TMS a brokerage already runs." , cta: "Open the walkthrough" },
+            { href: "/demos/sic-pizza", label: "Concept", title: "SIC Pizza: one live table for everyone", body: "A fictional pizza restaurant shows a guest proposal, server approval, kitchen stations, expo and manager views built on one shared table.", cta: "Open the walkthrough", study: "/work/sic-pizza-pos" },
+            { href: "/demos/barcodes", label: "Working tool", title: "Employee barcode labels", body: "Keep an employee directory and print sheets of Code 128 labels for scan-based handoffs. The first tool we built, now shown as a walkthrough.", cta: "Open the walkthrough", study: "/work/employee-barcodes" },
+            { href: "/demos/leads-rescue", label: "Concept", title: "Leads Rescue: texting back missed calls", body: "A contractor misses a call from a roof. An automatic text collects the issue and address and offers inspection times. A simulation aimed at contractors.", cta: "Open the walkthrough" },
           ].map((demo) => (
             <div key={demo.href} className="rounded-xl border border-border bg-card p-7">
               <span className="font-mono text-xs uppercase tracking-widest text-primary">{demo.label}</span>

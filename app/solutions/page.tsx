@@ -30,7 +30,7 @@ export default function SolutionsPage() {
             Platform
           </Link>
           <Link href="/demos" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
-            Demos
+            Walkthroughs
           </Link>
           <Link href="/packages" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground md:block">
             Pricing & Model
@@ -74,7 +74,7 @@ export default function SolutionsPage() {
               href="/demos"
               className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-5 text-sm font-medium transition hover:border-primary/40"
             >
-              <span>Explore Interactive Demos</span>
+              <span>See the Walkthroughs</span>
             </Link>
           </div>
         </div>

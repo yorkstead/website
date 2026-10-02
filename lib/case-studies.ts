@@ -223,8 +223,8 @@ export const caseStudies: CaseStudy[] = [
     ],
     "paths": [
       {
-        "label": "Try the demos",
-        "description": "Click through working prototypes built on made-up data.",
+        "label": "See the walkthroughs",
+        "description": "Follow working prototypes built on made-up data.",
         "href": "/demos"
       },
       {

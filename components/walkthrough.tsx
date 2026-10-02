@@ -22,7 +22,7 @@ export function Walkthrough({ eyebrow, title, intro, note, steps, cta }: Walkthr
       <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <BrandMark />
         <div className="flex items-center gap-3">
-          <Link href="/demos" className="text-sm text-muted-foreground hover:text-foreground">← All demos</Link>
+          <Link href="/demos" className="text-sm text-muted-foreground hover:text-foreground">← All walkthroughs</Link>
           <ThemeToggle />
         </div>
       </header>

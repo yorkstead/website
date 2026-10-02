@@ -32,7 +32,7 @@ export default function PlatformPage() {
             Platform
           </Link>
           <Link href="/demos" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
-            Demos
+            Walkthroughs
           </Link>
           <Link href="/packages" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground md:block">
             Pricing & Model
@@ -69,7 +69,7 @@ export default function PlatformPage() {
               href="/demos"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
             >
-              <span>Explore Interactive Demos</span>
+              <span>See the Walkthroughs</span>
               <ArrowRight className="size-4" />
             </Link>
             <Link

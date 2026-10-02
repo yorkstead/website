@@ -50,7 +50,7 @@ export function WorkPortfolio() {
           className="inline-flex items-center gap-1.5 font-mono text-xs text-primary hover:underline"
         >
           <Sparkles className="size-3.5" />
-          <span>Explore Interactive Sandboxes</span>
+          <span>See the Walkthroughs</span>
           <ArrowRight className="size-3" />
         </Link>
       </div>

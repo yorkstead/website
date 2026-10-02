@@ -17,7 +17,7 @@ export function SiteFooter({ children }: { children?: ReactNode }) {
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:justify-self-end">
           {children ?? <p>{brand.audienceLine}</p>}
           <Link href="/packages" className="transition hover:text-foreground">Pricing & Model</Link>
-          <a href="/demos" className="transition text-primary/90 hover:text-primary font-medium">Demos</a>
+          <a href="/demos" className="transition text-primary/90 hover:text-primary font-medium">Walkthroughs</a>
           <Link href="/privacy" className="transition hover:text-foreground">Privacy</Link>
         </div>
       </div>
