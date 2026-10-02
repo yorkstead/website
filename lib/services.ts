@@ -56,7 +56,7 @@ export const publicServices = [
       { title: "Roll out in controlled stages", description: "Document ownership, migration, support, and the next integration only after the first workflow is stable." },
     ],
     caseStudyLinks: [
-      { slug: "ellwood-flow", relevance: "A live release-intake and document-control system keeping manufactured orders, approvals, drawings, files, and shop-floor handoffs connected." },
+      { slug: "ellwood-flow", relevance: "A concept prototype of a release-intake and document-control system keeping manufactured orders, approvals, drawings, files, and shop-floor handoffs connected." },
       { slug: "work-control", relevance: "A live system showing how scattered operating signals can become one daily control surface; it is owner-operated, not a manufacturing deployment." },
       { slug: "employee-barcodes", relevance: "A live employee-label tool showing how standardized operator identifiers can support downstream production, quality, packing, and completion scans." },
     ],
@@ -98,7 +98,7 @@ export const publicServices = [
       { title: "Measure whether the handoff improved", description: "Review completion, exception, and follow-up behavior qualitatively or with agreed metrics when reliable data exists." },
     ],
     caseStudyLinks: [
-      { slug: "ellwood-flow", relevance: "A live release-intake and document-control system showing how multi-stage review checkpoints, document validation, and shop handoffs can be automated." },
+      { slug: "ellwood-flow", relevance: "A concept prototype of a release-intake and document-control system showing how multi-stage review checkpoints, document validation, and shop handoffs can be automated." },
       { slug: "work-control", relevance: "A live owner-operated system combining project, deployment, reminder, and lead-follow-up signals in one place." },
       { slug: "sic-pizza-pos", relevance: "A working restaurant POS prototype connecting tables, configured orders, guest approvals, kitchen states, mocked split payments, and an auditable event trail." },
       { slug: "employee-barcodes", relevance: "A live identity-label workflow that makes employee barcodes searchable, printable, and shareable before a separate production system captures scan events." },

@@ -346,7 +346,7 @@ export default function Home() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
                 <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-                Live Platform Showcase // Synthetic Sandboxes
+                Interactive Platform Demo // Synthetic Data
               </div>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
                 Experience Yorkstead Operations in action.
@@ -360,7 +360,7 @@ export default function Home() {
                 href="https://ops.yorkstead.com/demo"
                 className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
               >
-                <span>Launch Live Demo</span>
+                <span>Launch Interactive Demo</span>
                 <MoveUpRight className="size-4" />
               </a>
               <a

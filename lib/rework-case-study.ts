@@ -32,7 +32,7 @@ export const reworkCaseStudy: CaseStudy = {
       label: "Live operations and dispatch board",
       description: "The prototype Rework Flow live operations board showing active bay occupancy, rework billing metrics, driver call intake, and real-time dispatch log records.",
       caption: "The central office board connects driver intake, bay reservation capacity, rework logging, and billing status in one unified ledger.",
-      alt: "Denver Express Warehousing ReworkFlow live operations board and dispatch log",
+      alt: "ReworkFlow prototype operations board and dispatch log",
       desktop: { src: "/media/rework-flow/dispatch-board.png", width: 1024, height: 582 },
       expandable: true,
       featured: true,
