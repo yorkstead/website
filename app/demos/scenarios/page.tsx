@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function ScenariosPage() {
-  return <ScenarioHub />;
+export default async function ScenariosPage({ searchParams }: { searchParams: Promise<{ scenario?: string | string[] }> }) {
+  const query = await searchParams;
+  return <ScenarioHub initialScenario={typeof query.scenario === "string" ? query.scenario : undefined} />;
 }
