@@ -5,9 +5,13 @@ import Link from "next/link";
 import { getAllDemoModules } from "@/lib/public-demo/scenarios/demo-registry";
 import { OperationalScenarioDisplay } from "./scenario-display";
 
-export function ScenarioHub() {
+/** Older shared deep links use these names; only the manufacturing one has a matching walkthrough. */
+const SCENARIO_ALIASES: Record<string, string> = { "front-range-manufacturing": "drawing-revision-barrier" };
+
+export function ScenarioHub({ initialScenario }: { initialScenario?: string }) {
   const modules = getAllDemoModules();
-  const [selectedId, setSelectedId] = useState(modules[0]?.id);
+  const requested = initialScenario ? SCENARIO_ALIASES[initialScenario] ?? initialScenario : undefined;
+  const [selectedId, setSelectedId] = useState(modules.find((m) => m.slug === requested)?.id ?? modules[0]?.id);
 
   const activeModule = modules.find((m) => m.id === selectedId) ?? modules[0];
 

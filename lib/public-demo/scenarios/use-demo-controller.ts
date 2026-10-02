@@ -1,12 +1,18 @@
-// modules/demo/use-demo-controller.ts
 "use client";
 
 import { useState } from "react";
 import { ProblemDemoModule } from "./domain/demo-module-types";
 
+/** State at a given step: the initial state with every step delta up to and including that step applied. */
+export function stateAtStep(demoModule: ProblemDemoModule, stepIndex: number): Record<string, unknown> {
+  return demoModule.walkthroughSteps
+    .slice(0, stepIndex + 1)
+    .reduce<Record<string, unknown>>((state, step) => ({ ...state, ...step.stateDelta }), { ...demoModule.initialState });
+}
+
 export function useDemoController(demoModule: ProblemDemoModule) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [liveState, setLiveState] = useState<Record<string, unknown>>(demoModule.initialState);
+  const [liveState, setLiveState] = useState<Record<string, unknown>>(() => stateAtStep(demoModule, 0));
 
   const currentStep = demoModule.walkthroughSteps[currentStepIndex];
 
@@ -14,10 +20,7 @@ export function useDemoController(demoModule: ProblemDemoModule) {
     if (currentStepIndex < demoModule.walkthroughSteps.length - 1) {
       const nextIdx = currentStepIndex + 1;
       setCurrentStepIndex(nextIdx);
-      setLiveState((prev) => ({
-        ...prev,
-        ...demoModule.walkthroughSteps[nextIdx].stateDelta
-      }));
+      setLiveState(stateAtStep(demoModule, nextIdx));
     }
   }
 
@@ -25,10 +28,7 @@ export function useDemoController(demoModule: ProblemDemoModule) {
     if (currentStepIndex > 0) {
       const prevIdx = currentStepIndex - 1;
       setCurrentStepIndex(prevIdx);
-      setLiveState((prev) => ({
-        ...prev,
-        ...demoModule.walkthroughSteps[prevIdx].stateDelta
-      }));
+      setLiveState(stateAtStep(demoModule, prevIdx));
     }
   }
 
@@ -44,7 +44,7 @@ export function useDemoController(demoModule: ProblemDemoModule) {
 
   function resetDemo() {
     setCurrentStepIndex(0);
-    setLiveState(demoModule.initialState);
+    setLiveState(stateAtStep(demoModule, 0));
   }
 
   return {

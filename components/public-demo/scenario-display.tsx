@@ -24,6 +24,8 @@ export function OperationalScenarioDisplay({ demoModule }: OperationalScenarioDi
 
   const isLocked = Boolean(
     liveState.interlockActive ||
+      liveState.shortageFlagActive ||
+      liveState.stagingStatus === "SHORTAGE_LOCKED" ||
       liveState.posOrderingStatus === "LOCKED_86" ||
       liveState.machineStatus === "LOCKED_OUT"
   );
