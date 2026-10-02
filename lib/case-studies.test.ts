@@ -63,7 +63,7 @@ describe("case study data", () => {
         if (study.slug === "table-os") {
           expect(study.paths.some(({ href }) => href === "https://240.yorkstead.com")).toBeTrue();
         } else {
-          expect(study.paths.some(({ href }) => href.startsWith("https://ops.yorkstead.com/"))).toBeTrue();
+          expect(study.paths.some(({ href }) => href.startsWith("https://ops.yorkstead.com/") || href.startsWith("/demos/"))).toBeTrue();
         }
       } else expect(study.paths.some(({ href }) => href.startsWith("/services/"))).toBeTrue();
     }

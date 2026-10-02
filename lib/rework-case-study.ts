@@ -21,8 +21,8 @@ export const reworkCaseStudy: CaseStudy = {
     { title: "Exception review", description: "Expose expired holds, count differences, damage, and missing sign-off before the next handoff." },
   ],
   paths: [
-    { label: "Guided Walkthrough", description: "Follow the normal load, then explore the exceptions.", href: "https://ops.yorkstead.com/rework?mode=guided", external: true },
-    { label: "Open Sandbox", description: "Choose a scenario and change the practice job yourself.", href: "https://ops.yorkstead.com/rework", external: true },
+    { label: "Guided Walkthrough", description: "Follow the normal load, then explore the exceptions.", href: "/demos/rework?mode=guided" },
+    { label: "Open Sandbox", description: "Choose a scenario and change the practice job yourself.", href: "/demos/rework" },
     { label: "Architecture", description: "See the workflow model and public-demo boundary.", href: "/work/rework-flow#architecture" },
   ],
   media: [
@@ -58,7 +58,7 @@ export const reworkCaseStudy: CaseStudy = {
     ],
     architecture: [
       { title: "Source logic preserved", description: "The client application keeps its branding, routes, storage, and behavior. The demo uses a traceable snapshot of its pure pricing calculation and models its 45-minute bay hold and handoff concepts." },
-      { title: "A separate public environment", description: "Juniper Freight Lab runs in page-local memory at ops.yorkstead.com/rework. Reload, scenario selection, reset, or the 30-minute limit restores synthetic fixtures. No customer database or operational API is connected." },
+      { title: "A separate public environment", description: "Juniper Freight Lab runs in page-local memory at yorkstead.com/demos/rework. Reload, scenario selection, reset, or the 30-minute limit restores synthetic fixtures. No customer database or operational API is connected." },
       { title: "Clear teaching extensions", description: "Quantity review and damage acknowledgment are explicit demo checkpoints. Signature refusal demonstrates a blocked handoff; it does not claim a new client approval policy." },
       { title: "Reusable demo structure", description: "A product manifest supplies fictional branding and scenarios. Shared controls provide the banner, reset, guided entry, and explanations; a future 240 Union demo can supply its own workflow model." },
     ],
