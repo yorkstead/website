@@ -9,7 +9,7 @@ import { publicDemos } from "@/lib/demos";
 
 export const metadata: Metadata = {
   title: "Interactive Operations Sandboxes & Demos",
-  description: "Live, deterministic operations sandboxes running synthetic industrial workflows spanning manufacturing, facility maintenance, signage fabrication, and mobile fleets.",
+  description: "Interactive, deterministic operations demos running synthetic industrial workflows spanning manufacturing, facility maintenance, signage fabrication, and mobile fleets.",
   alternates: { canonical: "/demos" },
 };
 
@@ -47,13 +47,13 @@ export default function DemosPage() {
         <div className="max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
             <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-            Live Sandboxes // Deterministic Operations
+            Interactive Demos // Deterministic Operations
           </div>
           <h1 className="text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-foreground sm:text-6xl">
             Software with an operating point of view. <span className="text-primary">Test the real workflows.</span>
           </h1>
           <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
-            Explore live, interactive sandboxes built on Yorkstead Operations. Each environment demonstrates honest problem-solving across estimating, shopfloor traveler routing, quality containment, and field dispatch.
+            Explore interactive demos built on Yorkstead Operations. Each environment demonstrates honest problem-solving across estimating, shopfloor traveler routing, quality containment, and field dispatch.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4 text-xs font-mono text-muted-foreground">
