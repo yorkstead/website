@@ -59,9 +59,8 @@ export const caseStudies: CaseStudy[] = [
       { title: "Manufacturing approval workflow", description: "Turn missing information, review decisions, and release blockers into explicit actions instead of relying on email chains and verbal follow-up." },
     ],
     paths: [
-      { label: "Guided Walkthrough", description: "Follow a drawing revision from review to the shop-floor handoff.", href: "/demos/ellwood?mode=guided" },
-      { label: "Open Sandbox", description: "Explore four fictional release and revision scenarios.", href: "/demos/ellwood" },
-      { label: "Architecture", description: "Separate source behavior from proposed demo extensions.", href: "/work/ellwood-flow#architecture" },
+      { label: "Walkthrough", description: "Follow a release from controlled revision to shop-floor scan, inspection and pallet plan.", href: "/demos/ellwood" },
+      { label: "Architecture", description: "See what the screens show and where the concept stops.", href: "/work/ellwood-flow#architecture" },
     ],
     intendedFor: "Manufacturers and fabrication teams that need office decisions, controlled documents, and production handoffs to remain attached to the same release.",
     problem: "Release information can arrive through several channels while drawings, approvals, finish schedules, takeoffs, and production files change at different speeds. The shop needs a trustworthy answer to what is ready and what is still blocked.",

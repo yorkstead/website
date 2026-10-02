@@ -76,7 +76,7 @@ export default function DemosPage() {
         <div className="space-y-8">
           {[
             { href: "/demos/rework", label: "Flagship demo", title: "Rework Flow: from arrival to an explainable invoice", body: "Follow a freight load from the driver's bay reservation through dock intake, rework and the completion packet, using screens from the real application.", cta: "Open the walkthrough", study: "/work/rework-flow" },
-            { href: "/demos/ellwood", label: "Concept demo", title: "Ellwood Flow: a drawing revision after release", body: "Review affected work, make the current revision unmistakable, and carry the decision into the shop-floor handoff. A concept inspired by past workplace experience.", cta: "Open the walkthrough", study: "/work/ellwood-flow" },
+            { href: "/demos/ellwood", label: "Concept demo", title: "Ellwood Flow: from release to the shop floor", body: "Follow a manufacturing release from its current revision through the production queue, shop-floor scans, inspection and pallet planning, using screens from the prototype. A concept inspired by past workplace experience.", cta: "Open the walkthrough", study: "/work/ellwood-flow" },
             { href: "https://240.yorkstead.com", label: "Flagship demo", title: "Union OS: restaurant operations", body: "A tableside ordering, kitchen and payments prototype built around a real neighborhood restaurant.", cta: "Open the demo", study: "/work/table-os" },
           ].map((demo) => (
             <div key={demo.href} className="rounded-xl border border-border bg-card p-7">
