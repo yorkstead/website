@@ -9,8 +9,8 @@ export const brand = {
   audienceLine: "Tailored business software for manufacturing, logistics, warehousing, restaurants, ecommerce, and owner-led operations.",
   positioning: "Tailored business software and workflow automation for manufacturing, logistics, warehousing, restaurants, ecommerce, and owner-led businesses. Own your system without mandatory subscriptions.",
   promise: "Software suited to your actual operation, clear control over your system and data, and more time to run your business.",
-  socialTitle: "Yorkstead Systems | Your business. Your workflow. Your software.",
-  socialDescription: "Yorkstead Systems builds software around how your business actually operates. Own your system, reduce dependence on recurring software subscriptions, and give your team tools that fit the work.",
+  socialTitle: "Yorkstead Systems | Software you buy once. Software you own.",
+  socialDescription: "Yorkstead Systems builds focused software around how your business actually operates and sells it as an asset you own, with no monthly fee to keep running.",
   emailFromName: "Brandon York | Yorkstead Systems",
   serviceSignals: ["Operations", "Workflows", "Inventory", "Scheduling", "Logistics"],
 } as const;
