@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
-import type { WalkthroughStep } from "@/lib/rework-walkthrough";
+import type { WalkthroughStep } from "@/lib/walkthrough";
 
 type WalkthroughProps = {
   eyebrow: string;
@@ -12,7 +12,7 @@ type WalkthroughProps = {
   intro: string;
   note: string;
   steps: WalkthroughStep[];
-  cta: { heading: string; body: string; inquiryLabel: string; inquiryHref: string; caseStudyHref: string };
+  cta: { heading: string; body: string; inquiryLabel: string; inquiryHref: string; caseStudyHref: string; caseStudyLabel?: string };
 };
 
 /** The shared layout for every demo walkthrough: hero, jump chips, alternating step sections, closing call to action. */
@@ -81,7 +81,7 @@ export function Walkthrough({ eyebrow, title, intro, note, steps, cta }: Walkthr
             <Link href={cta.inquiryHref} className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90">
               {cta.inquiryLabel} <ArrowRight className="size-4" />
             </Link>
-            <Link href={cta.caseStudyHref} className="text-sm text-muted-foreground hover:text-foreground">Read the case study</Link>
+            <Link href={cta.caseStudyHref} className="text-sm text-muted-foreground hover:text-foreground">{cta.caseStudyLabel ?? "Read the case study"}</Link>
           </div>
         </div>
       </section>

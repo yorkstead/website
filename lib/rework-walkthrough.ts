@@ -1,14 +1,8 @@
+import type { WalkthroughStep } from "./walkthrough";
+
+export type { WalkthroughStep };
+
 /** Screens captured from the running Rework Flow application, with a neutral company name and example data. */
-export type WalkthroughStep = {
-  id: string;
-  device: "phone" | "desktop";
-  who: string;
-  label: string;
-  title: string;
-  body: string;
-  detail?: string;
-  image: { src: string; width: number; height: number; alt: string };
-};
 
 const base = "/media/rework-flow/walkthrough";
 
