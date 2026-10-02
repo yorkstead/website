@@ -6,7 +6,7 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
 
     // Start on homepage
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Your business. Your workflow. Your software.");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Software you buy once. Software you own.");
 
     // Customer navigation: Click header navigation link to Pricing & Model
     const pricingNavLink = page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Pricing & Model" });

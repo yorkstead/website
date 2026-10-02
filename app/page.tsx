@@ -102,10 +102,10 @@ export default function Home() {
             Tailored Business Software // Owned Systems
           </div>
           <h1 className="max-w-4xl text-5xl font-semibold leading-[.95] tracking-[-0.055em] sm:text-7xl">
-            Your business. Your workflow. <span className="text-primary">Your software.</span>
+            Software you buy once. <span className="text-primary">Software you own.</span>
           </h1>
           <p className="mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Yorkstead Systems builds software around how your business actually operates. Own your system, reduce dependence on recurring software subscriptions, and give your team tools that fit the work.
+            We build focused software around how your shop, warehouse, kitchen or field crew actually works, and sell it as an asset you own. No monthly fee just to keep running your own operation.
           </p>
           <p className="mt-5 font-mono text-[9px] uppercase tracking-[0.18em] text-foreground/60">
             Independent builder · Denver, Colorado
@@ -172,6 +172,49 @@ export default function Home() {
               ))}
             </CardContent>
           </Card>
+        </div>
+      </section>
+
+      {/* Why we build this way, with an illustrative cost comparison */}
+      <section id="why" className="relative border-b border-border py-20 sm:py-24">
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-2">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Why we do it this way</div>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">We&apos;ve worked the floor.</h2>
+            <p className="mt-5 text-base leading-7 text-muted-foreground">
+              Yorkstead was started by someone who spent about 15 years in restaurants and then rose to production manager at a manufacturer. We&apos;ve lived with software that charged by the seat and still didn&apos;t fit the way the work moves.
+            </p>
+            <p className="mt-4 text-base leading-7 text-muted-foreground">
+              So we build the other way: focused systems shaped around your operation, handed over as something you own, with support only if you want it.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card/60 p-6 sm:p-8">
+            <div className="font-mono text-[9px] uppercase tracking-wider text-primary">Illustration // Three years of cost</div>
+            <table className="mt-4 w-full text-sm">
+              <caption className="sr-only">Illustrative three-year cost of a monthly subscription compared with a one-time purchase</caption>
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                  <th scope="col" className="py-2 font-medium">Monthly software fees</th>
+                  <th scope="col" className="py-2 text-right font-medium">Over 3 years</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[500, 1000, 1500].map((monthly) => (
+                  <tr key={monthly} className="border-b border-border/60">
+                    <td className="py-3">${monthly.toLocaleString("en-US")} per month</td>
+                    <td className="py-3 text-right font-medium">${(monthly * 36).toLocaleString("en-US")}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td className="py-3 font-medium text-primary">A Yorkstead system</td>
+                  <td className="py-3 text-right font-medium text-primary">$7,500 once</td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="mt-4 text-xs leading-5 text-muted-foreground">
+              Illustration only. Your current fees and scope will differ. The $7,500 price applies to our two named systems, and what&apos;s included is defined in the proposal. Hosting and third-party services are identified separately, and optional support is extra.
+            </p>
+          </div>
         </div>
       </section>
 
