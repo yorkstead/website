@@ -22,7 +22,6 @@ export const reworkCaseStudy: CaseStudy = {
   ],
   paths: [
     { label: "Walkthrough", description: "Follow a job from reservation to a signed completion packet, screen by screen.", href: "/demos/rework" },
-    { label: "Open the live app", description: "Try the working application at rework.yorkstead.com.", href: "https://rework.yorkstead.com", external: true },
     { label: "Architecture", description: "See the workflow model and public-demo boundary.", href: "/work/rework-flow#architecture" },
   ],
   media: [

@@ -82,7 +82,6 @@ export default function ReworkWalkthroughPage() {
             <Link href="/?product=rework-flow#contact" className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90">
               Inquire about Rework Flow <ArrowRight className="size-4" />
             </Link>
-            <a href="https://rework.yorkstead.com" target="_blank" rel="noreferrer" className="text-sm text-muted-foreground hover:text-foreground">Open the live app</a>
             <Link href="/work/rework-flow" className="text-sm text-muted-foreground hover:text-foreground">Read the case study</Link>
           </div>
         </div>
