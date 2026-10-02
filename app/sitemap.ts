@@ -15,7 +15,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteURL}/work`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteURL}/packages`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteURL}/how-we-build`, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${siteURL}/labs`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteURL}/workflow-audit`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteURL}/privacy`, changeFrequency: "yearly", priority: 0.3 },
     ...publicServices.map(({ slug, primary }) => ({ url: `${siteURL}/services/${slug}`, changeFrequency: "monthly" as const, priority: primary ? 0.9 : 0.8 })),

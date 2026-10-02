@@ -18,7 +18,6 @@ export function SiteFooter({ children }: { children?: ReactNode }) {
           {children ?? <p>{brand.audienceLine}</p>}
           <Link href="/packages" className="transition hover:text-foreground">Pricing & Model</Link>
           <a href="https://ops.yorkstead.com/demo" className="transition text-primary/90 hover:text-primary font-medium">Operations Demo</a>
-          <Link href="/case-management" className="transition hover:text-foreground">Case Management OS</Link>
           <Link href="/privacy" className="transition hover:text-foreground">Privacy</Link>
         </div>
       </div>

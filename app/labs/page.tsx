@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Applied R&D, Prototypes & Experiments",
   description: "Yorkstead Labs: Functional prototypes, edge hardware telemetry spikes, and applied industrial R&D explorations.",
   alternates: { canonical: "/labs" },
+  robots: { index: false, follow: true },
 };
 
 export default function LabsPage() {
