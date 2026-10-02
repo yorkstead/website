@@ -1,4 +1,4 @@
-import type { WalkthroughStep } from "./rework-walkthrough";
+import type { WalkthroughStep } from "./walkthrough";
 
 /** Screens captured from the running Ellwood Flow prototype, which uses example jobs and panel marks. */
 const base = "/media/ellwood/walkthrough";

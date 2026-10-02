@@ -1,0 +1,73 @@
+import type { WalkthroughStep } from "./walkthrough";
+
+const base = "/media/sic-pizza/walkthrough";
+
+export const sicPizzaWalkthroughSteps: WalkthroughStep[] = [
+  {
+    id: "guest",
+    label: "Propose",
+    device: "phone",
+    who: "Guest",
+    title: "A guest proposes a pizza",
+    body: "The guest scanned into Table 11 and chose a pizza from the menu. The item shows under pending server review, not yet on the table order. The live table items list stays at zero until the server confirms.",
+    detail: "Guest ordering here is a proposal that the server approves.",
+    image: { src: `${base}/guest.webp`, width: 780, height: 1688, alt: "Phone screen for Table 11 showing a pizza proposed by a guest and listed as pending server review" },
+  },
+  {
+    id: "server",
+    label: "Approve",
+    device: "desktop",
+    who: "Server",
+    title: "The server sees the table",
+    body: "The server's Table 11 view shows the stage, the course pacing for starters and mains, and the guest requests still waiting. A button at the centre approves the pending guest proposal.",
+    detail: "In the demo the server screen runs on its own seeded sample table, so the pending item differs from the guest's.",
+    image: { src: `${base}/server.webp`, width: 1440, height: 900, alt: "Desktop server view of Table 11 with course pacing, unacknowledged guest requests and an approve guest proposal button" },
+  },
+  {
+    id: "split",
+    label: "Split",
+    device: "desktop",
+    who: "Server",
+    title: "Each diner's share is tracked",
+    body: "The Split Bill tab lists the table subtotal, tax and total, then shows a shared starter divided between two diners. Each diner has a balance with the individual items, shared share, tax and tip presets.",
+    detail: "Payments are simulated in this demo; nothing is charged.",
+    image: { src: `${base}/split.webp`, width: 1440, height: 900, alt: "Desktop split bill tab showing table total, a shared starter split between two diners and each diner's balance" },
+  },
+  {
+    id: "kitchen",
+    label: "Kitchen",
+    device: "desktop",
+    who: "Kitchen",
+    title: "Tickets land at their stations",
+    body: "The kitchen display lists one ticket per course for Table 11 and a drinks ticket for Table 12, each tied to a station. The pizza ticket has been accepted and now offers Start Preparation.",
+    image: { src: `${base}/kitchen.webp`, width: 1440, height: 900, alt: "Desktop kitchen display with three station tickets, one pizza ticket accepted and showing a start preparation button" },
+  },
+  {
+    id: "expo",
+    label: "Expo",
+    device: "desktop",
+    who: "Expo",
+    title: "Expo sees every station for a course",
+    body: "The expo hub groups the station tickets for each table course and counts items ready against items in total. The pizza oven shows as accepted while the others are still queued.",
+    detail: "A bump button for each course stays inactive until its items are ready.",
+    image: { src: `${base}/expo.webp`, width: 1440, height: 900, alt: "Desktop expo hub grouping station tickets by table course with items ready counts and bump buttons" },
+  },
+  {
+    id: "manager",
+    label: "Manager",
+    device: "desktop",
+    who: "Manager",
+    title: "The manager sees what needs attention",
+    body: "The manager hub counts active tables, urgent items, kitchen tickets and the unsettled floor total. Below, a food issue on Table 14 and a pending guest proposal on Table 11 are listed with suggested actions.",
+    image: { src: `${base}/manager.webp`, width: 1440, height: 900, alt: "Desktop manager command center with floor health counters and a list of items needing attention" },
+  },
+  {
+    id: "queue",
+    label: "Requests",
+    device: "desktop",
+    who: "Server",
+    title: "Requests have an owner and a clock",
+    body: "The attention queue lists guest requests such as a food issue and a check, each with a role, an owner and a waiting time. Staff can acknowledge, claim or complete a request, and filter by role or priority.",
+    image: { src: `${base}/queue.webp`, width: 1440, height: 900, alt: "Desktop staff attention queue listing guest requests with roles, owners, waiting times and action buttons" },
+  },
+];

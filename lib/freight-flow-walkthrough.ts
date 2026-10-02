@@ -1,0 +1,66 @@
+import type { WalkthroughStep } from "./walkthrough";
+
+const base = "/media/freight-flow/walkthrough";
+
+export const freightFlowWalkthroughSteps: WalkthroughStep[] = [
+  {
+    id: "control-tower",
+    label: "Overview",
+    device: "desktop",
+    who: "Dispatcher",
+    title: "Start from what needs attention",
+    body: "The Control Tower opens with a morning summary for the east desk: 80 active loads, 34 with an exception, and counts for late deliveries, missing proof of delivery and customer updates due. A donut chart groups loads into healthy, watch, action required and critical.",
+    detail: "A banner on every screen says the data is synthetic and that the TMS stays the system of record.",
+    image: { src: `${base}/control-tower.webp`, width: 1440, height: 900, alt: "FreightFlow Control Tower dashboard with summary tiles for active loads, attention, critical exceptions and missing POD, plus an operations health chart." },
+  },
+  {
+    id: "my-queue",
+    label: "Queue",
+    device: "desktop",
+    who: "Dispatcher",
+    title: "Work a ranked queue",
+    body: "My Queue lists the dispatcher's open exceptions in priority order, each with a next action, an owner and a score. The panel on the right explains why the top item ranks first and shows the score breakdown.",
+    detail: "Rankings come from explicit scoring rules, not a free-form task list.",
+    image: { src: `${base}/my-queue.webp`, width: 1440, height: 900, alt: "My Queue screen listing prioritized exceptions with severity labels, next actions and a score breakdown panel for the top-ranked load." },
+  },
+  {
+    id: "load-detail",
+    label: "Load",
+    device: "desktop",
+    who: "Dispatcher",
+    title: "Open the load behind an exception",
+    body: "A load page shows the imported TMS record next to a timeline of tracking, carrier calls and customer notices. A side panel states why the shipment needs attention and recommends one next action.",
+    detail: "Buttons for contacting the carrier, updating the ETA and escalating are part of the page.",
+    image: { src: `${base}/load-detail.webp`, width: 1440, height: 900, alt: "Load detail page for FF-24021 showing carrier, dispatcher, ETA and a timeline, with a panel explaining why the shipment needs attention." },
+  },
+  {
+    id: "customer-updates",
+    label: "Updates",
+    device: "desktop",
+    who: "Broker",
+    title: "Review customer updates before they go",
+    body: "Customer updates lists checkpoints that are due, marking which need approval and which are critical escalations. A preview pane shows the channel, mode and the message the customer would receive.",
+    detail: "Routine updates are described as automatic; exceptions become drafts for a person to review.",
+    image: { src: `${base}/customer-updates.webp`, width: 1440, height: 900, alt: "Customer updates screen with a list of due updates, approval flags and a communication preview with channel and mode selectors." },
+  },
+  {
+    id: "documents",
+    label: "Documents",
+    device: "desktop",
+    who: "Billing",
+    title: "Chase documents before billing",
+    body: "Documents tracks delivered loads through POD pending, documents received and verification, and shows how much value is waiting on missing paperwork. A filterable queue lists each blocking item.",
+    detail: "FreightFlow coordinates the evidence; the TMS and accounting system stay authoritative for invoicing.",
+    image: { src: `${base}/documents.webp`, width: 1440, height: 900, alt: "Documents screen showing a billing handoff pipeline, tiles for revenue blocked and missing POD, and a document queue with filters." },
+  },
+  {
+    id: "automation-rules",
+    label: "Rules",
+    device: "desktop",
+    who: "Operations manager",
+    title: "Inspect the rules behind the work",
+    body: "Automation rules lists the 12 rules in the catalog with their trigger, severity, action and escalation path. Each rule is readable, so a team can see why an item was raised.",
+    detail: "Rules are read-only in this demo.",
+    image: { src: `${base}/automation-rules.webp`, width: 1440, height: 900, alt: "Automation rules catalog showing stale tracking and appointment rules with trigger, severity, action and escalation columns." },
+  },
+];
