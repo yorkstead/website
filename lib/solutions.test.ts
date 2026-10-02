@@ -20,7 +20,7 @@ describe("Public Solutions & Capabilities Catalog", () => {
       expect(sol.composableCapabilities.length).toBeGreaterThanOrEqual(3);
       expect(sol.diagnosticFocus).toContain("audit");
       if (sol.demoUrl) {
-        expect(sol.demoUrl.startsWith("https://ops.yorkstead.com/demo")).toBe(true);
+        expect(sol.demoUrl.startsWith("/demos/scenarios")).toBe(true);
       }
     }
   });

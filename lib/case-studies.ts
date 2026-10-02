@@ -226,8 +226,7 @@ export const caseStudies: CaseStudy[] = [
       {
         "label": "Explore the Operations demo",
         "description": "Walk through four publicly available synthetic workflow scenarios.",
-        "href": "https://ops.yorkstead.com/demo",
-        "external": true
+        "href": "/demos/scenarios"
       },
       {
         "label": "Read the Operations showcase PDF",

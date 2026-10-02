@@ -33,7 +33,7 @@ export const publicDemos: PublicDemo[] = [
     ],
     maturity: "Interactive Production Sandbox",
     dataDisclaimer: "Operates exclusively with synthetic fixtures. Zero customer CAD or real ERP data leakage.",
-    canonicalLaunchUrl: "https://ops.yorkstead.com/demo?scenario=front-range-manufacturing",
+    canonicalLaunchUrl: "/demos/scenarios?scenario=front-range-manufacturing",
     metrics: [
       { label: "WIP Value", value: "$142,500" },
       { label: "On-Time Rate", value: "98.7%" },
@@ -58,7 +58,7 @@ export const publicDemos: PublicDemo[] = [
     ],
     maturity: "Interactive Production Sandbox",
     dataDisclaimer: "All facilities, square footage, and client signatures are synthetic demonstration records.",
-    canonicalLaunchUrl: "https://ops.yorkstead.com/demo?scenario=summit-facility-services",
+    canonicalLaunchUrl: "/demos/scenarios?scenario=summit-facility-services",
     metrics: [
       { label: "Active Facilities", value: "3 Sites" },
       { label: "Audit Quality", value: "99.4%" },
@@ -83,7 +83,7 @@ export const publicDemos: PublicDemo[] = [
     ],
     maturity: "Interactive Production Sandbox",
     dataDisclaimer: "Synthetic architectural drawings and simulated municipal permit records.",
-    canonicalLaunchUrl: "https://ops.yorkstead.com/demo?scenario=mile-high-signworks",
+    canonicalLaunchUrl: "/demos/scenarios?scenario=mile-high-signworks",
     metrics: [
       { label: "On-Time Installs", value: "98.2%" },
       { label: "Permit Pass Rate", value: "100.0%" },
@@ -108,7 +108,7 @@ export const publicDemos: PublicDemo[] = [
     ],
     maturity: "Interactive Production Sandbox",
     dataDisclaimer: "Synthetic credit card checkout in sandbox mode. Zero actual merchant charges.",
-    canonicalLaunchUrl: "https://ops.yorkstead.com/demo?scenario=peak-mobile-detail",
+    canonicalLaunchUrl: "/demos/scenarios?scenario=peak-mobile-detail",
     metrics: [
       { label: "Van Utilization", value: "94.5%" },
       { label: "Avg Ticket", value: "$740.00" },

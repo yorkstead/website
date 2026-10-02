@@ -50,7 +50,7 @@ export const publicLabExperiments: LabExperiment[] = [
     limitations: "In-memory simulation. Hardware barcode laser scanner integration and automated supplier EDI ordering remain future work.",
     dataSource: "Synthetic fabrication sheet metal stock fixtures.",
     interactionType: "Live interactive demo",
-    interactionUrl: "https://ops.yorkstead.com/demo?scenario=front-range-manufacturing",
+    interactionUrl: "/demos/scenarios?scenario=front-range-manufacturing",
     technologies: ["TypeScript Domain Models", "Mobile-First UI Patterns", "Integer Quantity Arithmetic"],
     findings: [
       "Negative stock overdraft prevention must be enforced at the immutable transaction ledger layer.",

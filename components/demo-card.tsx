@@ -85,15 +85,13 @@ export function DemoCard({ demo }: { demo: PublicDemo }) {
           <div className="pt-2">
             <a
               href={demo.canonicalLaunchUrl}
-              target="_blank"
-              rel="noreferrer"
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-mono text-xs font-semibold text-primary-foreground shadow transition hover:bg-primary/90"
             >
               <span>Launch Live Sandbox</span>
               <ArrowRight className="size-4" />
             </a>
             <span className="mt-2 block text-center font-mono text-[9px] text-muted-foreground">
-              Direct handoff to ops.yorkstead.com/demo
+              Opens on yorkstead.com/demos/scenarios
             </span>
           </div>
         </div>
