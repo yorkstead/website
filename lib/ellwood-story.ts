@@ -1,7 +1,7 @@
 import type { CaseStudy } from "./case-studies";
 
 export const ellwoodStory: NonNullable<CaseStudy["workflowStory"]> = {
-  demoUrl: "https://ops.yorkstead.com/ellwood",
+  demoUrl: "/demos/ellwood",
   observation: "Experience at a previous job suggested that the difficult part of a revision is not saving a new drawing. It is knowing which instructions people already hold, what work has started, and what decision must travel to the shop. Ellwood explores that problem as a concept; it was not adopted by that employer.",
   handoffs: [
     { role: "Drawing → Release", before: "A new file arrives beside the old instructions.", after: "A candidate revision is visible alongside the current revision." },
