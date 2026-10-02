@@ -9,13 +9,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { href: "/solutions", label: "Solutions" },
-  { href: "/platform", label: "Platform" },
+  { href: "/work", label: "Work" },
   { href: "/demos", label: "Demos" },
   { href: "/packages", label: "Pricing & Model" },
-  { href: "/workflow", label: "Workflow" },
-  { href: "/work", label: "Selected work" },
-  { href: "/how-we-build", label: "How we build" },
   { href: "/about", label: "About" },
   { href: "/#contact", label: "Contact" },
 ];

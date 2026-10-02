@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Behavioral Health Case Management OS | Free Download",
   description: "A complete, audit-proof Obsidian workspace designed to eliminate administrative burnout for behavioral health case managers, intake coordinators, and IOP/PHP clinical teams.",
   alternates: { canonical: "/case-management" },
+  robots: { index: false, follow: true },
 };
 
 export default function CaseManagementPage() {
