@@ -11,3 +11,8 @@ test-results
 .DS_Store
 tailscale-state/
 /design-system/dist
+
+# Local scratch and generated deliverables (keep out of this public repo)
+/tmp/
+/outputs/
+/work/
