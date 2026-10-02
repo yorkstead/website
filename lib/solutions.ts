@@ -9,7 +9,7 @@ export type SolutionOutcome = {
   composableCapabilities: string[];
   demoSlug?: string;
   demoUrl?: string;
-  status: "Available as interactive demo" | "Custom engagement capability";
+  status: "Custom engagement capability" | "Custom engagement capability";
   diagnosticFocus: string;
 };
 
@@ -28,9 +28,7 @@ export const publicSolutions: SolutionOutcome[] = [
       "Customer revision tracking with change summaries",
       "1-click job packet and digital traveler generation",
     ],
-    demoSlug: "front-range-manufacturing",
-    demoUrl: "/demos/scenarios?scenario=front-range-manufacturing",
-    status: "Available as interactive demo",
+    status: "Custom engagement capability",
     diagnosticFocus: "Estimating cycle time and margin erosion audits.",
   },
   {
@@ -47,9 +45,7 @@ export const publicSolutions: SolutionOutcome[] = [
       "Real-time equipment downtime interval logging",
       "First Article Inspection (FAI) and NCR quarantine",
     ],
-    demoSlug: "mile-high-signworks",
-    demoUrl: "/demos/scenarios?scenario=mile-high-signworks",
-    status: "Available as interactive demo",
+    status: "Custom engagement capability",
     diagnosticFocus: "Shopfloor traveler friction and revision mismatch audits.",
   },
   {
@@ -66,9 +62,7 @@ export const publicSolutions: SolutionOutcome[] = [
       "Timestamped high-resolution photo proof archives",
       "Digital customer signoffs and warranty generation",
     ],
-    demoSlug: "peak-mobile-detail",
-    demoUrl: "/demos/scenarios?scenario=peak-mobile-detail",
-    status: "Available as interactive demo",
+    status: "Custom engagement capability",
     diagnosticFocus: "Field crew dispatch and proof-of-work handoff audits.",
   },
   {
@@ -85,9 +79,7 @@ export const publicSolutions: SolutionOutcome[] = [
       "Purchase order tiered spend authorization limits",
       "Dock receiving inspection and automated restock",
     ],
-    demoSlug: "front-range-manufacturing",
-    demoUrl: "/demos/scenarios?scenario=front-range-manufacturing",
-    status: "Available as interactive demo",
+    status: "Custom engagement capability",
     diagnosticFocus: "Material replenishment and inventory ledger audits.",
   },
   {
@@ -104,9 +96,7 @@ export const publicSolutions: SolutionOutcome[] = [
       "Gross shipping weight automated calculations",
       "Carrier tracking and proof of delivery capture",
     ],
-    demoSlug: "front-range-manufacturing",
-    demoUrl: "/demos/scenarios?scenario=front-range-manufacturing",
-    status: "Available as interactive demo",
+    status: "Custom engagement capability",
     diagnosticFocus: "Shipping throughput and dispatch verification audits.",
   },
 ];

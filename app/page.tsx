@@ -112,10 +112,10 @@ export default function Home() {
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <a
-              href="/demos/scenarios"
+              href="/demos"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
             >
-              Explore Yorkstead Operations <MoveUpRight className="size-4" />
+              Try the demos <MoveUpRight className="size-4" />
             </a>
             <Link
               href="#buying-model"
@@ -382,113 +382,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Prime Spotlight: Yorkstead Operations Showcase Section */}
-      <section id="operations-showcase" className="relative border-b border-border bg-card/40 py-20 sm:py-24">
+      {/* Demos */}
+      <section id="demos" className="relative border-b border-border bg-card/40 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
-                <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-                Interactive Platform Demo // Synthetic Data
-              </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-                Experience Yorkstead Operations in action.
-              </h2>
-              <p className="mt-4 text-base leading-7 text-muted-foreground">
-                Every workflow below is loaded with realistic <strong>synthetic dummy data</strong> to showcase how quotes become shopfloor travelers, inventory gets reserved, and handoffs stay clean. Explore freely with instant reset and zero login required.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <a
-                href="/demos/scenarios"
-                className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
-              >
-                <span>Launch Interactive Demo</span>
-                <MoveUpRight className="size-4" />
-              </a>
-              <a
-                href="/media/yorkstead-ops/yorkstead-operations-showcase.pdf"
-                className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-5 text-sm font-medium transition hover:border-primary/40"
-              >
-                <span>9-Page PDF Showcase</span>
-              </a>
-            </div>
+          <div className="max-w-3xl">
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Try it yourself</div>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+              Click through the software, not a slide deck.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-muted-foreground">
+              Each demo is a working prototype with made-up data. Nothing you do is saved, and it resets on reload. No login required.
+            </p>
           </div>
-
-          {/* 4 Interactive Scenario Cards */}
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
             {[
-              {
-                scenario: "front-range-manufacturing",
-                title: "Manufacturing & CNC",
-                kicker: "Quote-to-Ship Routing",
-                summary: "Laser cutting, press brake forming, sheet goods allocation, digital travelers, and quality signoffs.",
-                tag: "CNC & Fabrication",
-              },
-              {
-                scenario: "summit-facility-services",
-                title: "Facility Services",
-                kicker: "Multi-Site Maintenance",
-                summary: "Multi-site work-order checklists, consumables logging, ATP swab scores, and client signoffs.",
-                tag: "Facility Ops",
-              },
-              {
-                scenario: "mile-high-signworks",
-                title: "Sign Fabrication",
-                kicker: "Proof to Field Rigging",
-                summary: "Vector CAD revision locking, municipal permits, shop routing, and 45ft crane installation proof.",
-                tag: "Sign & Rigging",
-              },
-              {
-                scenario: "peak-mobile-detail",
-                title: "Mobile Fleet Ops",
-                kicker: "Field Checklists & Consent",
-                summary: "Phone-first vehicle intake, paint depth mapping, digital add-on consent, and simulated checkout.",
-                tag: "Mobile Service",
-              },
+              { href: "/demos/rework", title: "Rework Flow", kicker: "Freight rework and warehousing", summary: "Follow a fictional load from bay hold to an evidence-backed invoice across six scenarios." },
+              { href: "/demos/ellwood", title: "Ellwood Flow", kicker: "Manufacturing release control", summary: "A drawing revision arrives after work is released. Review affected work and carry the decision to the shop floor." },
+              { href: "https://240.yorkstead.com", title: "Union OS", kicker: "Restaurant operations", summary: "A tableside ordering, kitchen and payments prototype for a neighborhood restaurant." },
             ].map((item) => (
               <a
-                key={item.scenario}
-                href={`/demos/scenarios?scenario=${item.scenario}`}
-                className="group flex flex-col justify-between rounded-xl border border-border bg-background/80 p-5 transition hover:border-primary/40 hover:bg-card/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                key={item.href}
+                href={item.href}
+                className="group flex flex-col justify-between rounded-xl border border-border bg-background/80 p-6 transition hover:border-primary/40 hover:bg-card/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div>
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-primary">
-                      {item.tag}
-                    </span>
-                    <MoveUpRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
-                  </div>
-                  <h3 className="mt-4 text-base font-semibold text-foreground tracking-tight group-hover:text-primary transition">
-                    {item.title}
-                  </h3>
-                  <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {item.kicker}
-                  </div>
-                  <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                    {item.summary}
-                  </p>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{item.kicker}</div>
+                  <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground transition group-hover:text-primary">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.summary}</p>
                 </div>
                 <div className="mt-5 flex items-center gap-1 text-xs font-medium text-primary">
-                  <span>Launch scenario</span>
+                  <span>Open demo</span>
                   <ArrowRight className="size-3.5 transition group-hover:translate-x-1" />
                 </div>
               </a>
             ))}
           </div>
-
-          {/* Informational Callout Bar */}
-          <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-xl border border-border/80 bg-background/50 p-4 text-xs text-muted-foreground sm:flex-row">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="size-4 text-primary shrink-0" />
-              <span>
-                <strong>Zero Login Required:</strong> Public sandboxes run on synthetic data. Yorkstead login is strictly for private administrative access.
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link href="/demos" className="text-primary hover:underline font-medium">All Demos →</Link>
-              <Link href="/platform" className="hover:text-foreground">Platform Architecture →</Link>
-            </div>
+          <div className="mt-8 text-sm">
+            <Link href="/demos" className="font-medium text-primary hover:underline">All demos →</Link>
           </div>
         </div>
       </section>

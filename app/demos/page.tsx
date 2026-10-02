@@ -2,14 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Terminal, RefreshCcw } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import { DemoCard } from "@/components/demo-card";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { publicDemos } from "@/lib/demos";
 
 export const metadata: Metadata = {
-  title: "Interactive Operations Sandboxes & Demos",
-  description: "Interactive, deterministic operations demos running synthetic industrial workflows spanning manufacturing, facility maintenance, signage fabrication, and mobile fleets.",
+  title: "Interactive Demos",
+  description: "Working prototypes you can click through: freight rework, manufacturing release control, and restaurant operations. Made-up data, nothing saved.",
   alternates: { canonical: "/demos" },
 };
 
@@ -47,27 +45,27 @@ export default function DemosPage() {
         <div className="max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
             <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-            Interactive Demos // Deterministic Operations
+            Interactive Demos // Made-up Data
           </div>
           <h1 className="text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-foreground sm:text-6xl">
-            Software with an operating point of view. <span className="text-primary">Test the real workflows.</span>
+            Click through the software. <span className="text-primary">See how it works.</span>
           </h1>
           <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
-            Explore interactive demos built on Yorkstead Operations. Each environment demonstrates honest problem-solving across estimating, shopfloor traveler routing, quality containment, and field dispatch.
+            Each demo is a working prototype modeled on a real kind of business, filled with made-up data. We built them to show how we work, not as finished products.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4 text-xs font-mono text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="size-4 text-primary" />
-              <span>100% Synthetic Datasets</span>
+              <span>Made-up Data Only</span>
             </div>
             <div className="flex items-center gap-1.5">
               <RefreshCcw className="size-4 text-primary" />
-              <span>Deterministic Instant Reset</span>
+              <span>Resets on Reload</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Terminal className="size-4 text-primary" />
-              <span>Zero Live Gateway Charges</span>
+              <span>No Login, No Charges</span>
             </div>
           </div>
         </div>
@@ -76,9 +74,20 @@ export default function DemosPage() {
       {/* Demos Showcase Grid */}
       <section className="relative mx-auto max-w-7xl px-5 pb-24 sm:px-8">
         <div className="space-y-8">
-          <Link href="/work/rework-flow" className="block rounded-xl border border-primary/30 bg-card p-7"><span className="font-mono text-xs uppercase tracking-widest text-primary">Flagship workflow case study</span><h2 className="mt-3 text-2xl font-semibold">Rework Flow: from arrival to an explainable invoice</h2><p className="mt-3 max-w-3xl text-muted-foreground">Explore six fictional freight scenarios, a guided walkthrough, and a resettable browser sandbox.</p><span className="mt-5 inline-flex items-center gap-2 text-primary">Explore the case study <ArrowRight className="size-4" /></span></Link>
-          {publicDemos.map((demo) => (
-            <DemoCard key={demo.slug} demo={demo} />
+          {[
+            { href: "/demos/rework", label: "Flagship demo", title: "Rework Flow: from arrival to an explainable invoice", body: "Follow a fictional freight load through bay hold, rework and an evidence-backed invoice. Six scenarios, a guided walkthrough, and a resettable sandbox.", cta: "Open the sandbox", study: "/work/rework-flow" },
+            { href: "/demos/ellwood", label: "Concept demo", title: "Ellwood Flow: a drawing revision after release", body: "Review affected work, make the current revision unmistakable, and carry the decision into the shop-floor handoff. A concept inspired by past workplace experience.", cta: "Open the walkthrough", study: "/work/ellwood-flow" },
+            { href: "https://240.yorkstead.com", label: "Flagship demo", title: "Union OS: restaurant operations", body: "A tableside ordering, kitchen and payments prototype built around a real neighborhood restaurant.", cta: "Open the demo", study: "/work/table-os" },
+          ].map((demo) => (
+            <div key={demo.href} className="rounded-xl border border-border bg-card p-7">
+              <span className="font-mono text-xs uppercase tracking-widest text-primary">{demo.label}</span>
+              <h2 className="mt-3 text-2xl font-semibold">{demo.title}</h2>
+              <p className="mt-3 max-w-3xl text-muted-foreground">{demo.body}</p>
+              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
+                <a href={demo.href} className="inline-flex items-center gap-2 font-medium text-primary hover:underline">{demo.cta} <ArrowRight className="size-4" /></a>
+                <Link href={demo.study} className="text-sm text-muted-foreground hover:text-foreground">Read the case study</Link>
+              </div>
+            </div>
           ))}
         </div>
       </section>
@@ -90,17 +99,17 @@ export default function DemosPage() {
             Tailored Engineering
           </div>
           <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Need a workflow engine configured for your shop?
+            Want software built around how your business runs?
           </h2>
           <p className="mt-3 text-sm text-muted-foreground max-w-xl mx-auto">
-            Let&apos;s map your actual quoting, shopfloor, and shipping bottlenecks into a dedicated operational system.
+            Tell us where the handoffs break down and we will show you what a focused system, owned by you, could look like.
           </p>
           <div className="mt-6">
             <Link
               href="/#contact"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
             >
-              <span>Schedule Workflow Consultation</span>
+              <span>Start a conversation</span>
               <ArrowRight className="size-4" />
             </Link>
           </div>

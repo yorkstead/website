@@ -49,8 +49,7 @@ export const publicLabExperiments: LabExperiment[] = [
     operationalHypothesis: "Small fabrication shops make fewer quoting errors and experience fewer mid-job stockouts when material reservation is visible directly from the traveler.",
     limitations: "In-memory simulation. Hardware barcode laser scanner integration and automated supplier EDI ordering remain future work.",
     dataSource: "Synthetic fabrication sheet metal stock fixtures.",
-    interactionType: "Live interactive demo",
-    interactionUrl: "/demos/scenarios?scenario=front-range-manufacturing",
+    interactionType: "Architecture & specs only",
     technologies: ["TypeScript Domain Models", "Mobile-First UI Patterns", "Integer Quantity Arithmetic"],
     findings: [
       "Negative stock overdraft prevention must be enforced at the immutable transaction ledger layer.",

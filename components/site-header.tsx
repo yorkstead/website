@@ -27,10 +27,10 @@ export function SiteHeader() {
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <a
-            href="/demos/scenarios"
+            href="/demos"
             className="hidden h-9 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary transition hover:border-primary/50 hover:bg-primary/15 sm:inline-flex"
           >
-            Operations demo
+            Demos
             <MoveUpRight className="size-3.5" aria-hidden="true" />
           </a>
           <ThemeToggle />
@@ -70,10 +70,10 @@ export function SiteHeader() {
                 <DropdownMenu.Separator className="my-2 h-px bg-border" />
                 <DropdownMenu.Item asChild>
                   <a
-                    href="/demos/scenarios"
+                    href="/demos"
                     className="flex min-h-11 items-center justify-between rounded-lg px-3 text-sm font-medium text-primary outline-none data-[highlighted]:bg-primary/10 data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ring sm:hidden"
                   >
-                    Operations demo
+                    Demos
                     <MoveUpRight className="size-3.5" aria-hidden="true" />
                   </a>
                 </DropdownMenu.Item>
