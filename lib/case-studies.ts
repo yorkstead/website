@@ -59,8 +59,8 @@ export const caseStudies: CaseStudy[] = [
       { title: "Manufacturing approval workflow", description: "Turn missing information, review decisions, and release blockers into explicit actions instead of relying on email chains and verbal follow-up." },
     ],
     paths: [
-      { label: "Guided Walkthrough", description: "Follow a drawing revision from review to the shop-floor handoff.", href: "https://ops.yorkstead.com/ellwood?mode=guided", external: true },
-      { label: "Open Sandbox", description: "Explore four fictional release and revision scenarios.", href: "https://ops.yorkstead.com/ellwood", external: true },
+      { label: "Guided Walkthrough", description: "Follow a drawing revision from review to the shop-floor handoff.", href: "/demos/ellwood?mode=guided" },
+      { label: "Open Sandbox", description: "Explore four fictional release and revision scenarios.", href: "/demos/ellwood" },
       { label: "Architecture", description: "Separate source behavior from proposed demo extensions.", href: "/work/ellwood-flow#architecture" },
     ],
     intendedFor: "Manufacturers and fabrication teams that need office decisions, controlled documents, and production handoffs to remain attached to the same release.",
