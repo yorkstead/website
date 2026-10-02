@@ -224,9 +224,9 @@ export const caseStudies: CaseStudy[] = [
     ],
     "paths": [
       {
-        "label": "Explore the Operations demo",
-        "description": "Walk through four publicly available synthetic workflow scenarios.",
-        "href": "/demos/scenarios"
+        "label": "Try the demos",
+        "description": "Click through working prototypes built on made-up data.",
+        "href": "/demos"
       },
       {
         "label": "Read the Operations showcase PDF",
