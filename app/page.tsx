@@ -397,7 +397,7 @@ export default function Home() {
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {[
               { href: "/demos/rework", title: "Rework Flow", kicker: "Freight rework and warehousing", summary: "A seven-step walkthrough of the real application, from the driver's bay reservation to the completion packet." },
-              { href: "/demos/ellwood", title: "Ellwood Flow", kicker: "Manufacturing release control", summary: "A drawing revision arrives after work is released. Review affected work and carry the decision to the shop floor." },
+              { href: "/demos/ellwood", title: "Ellwood Flow", kicker: "Manufacturing release control", summary: "A five-screen walkthrough of a manufacturing release, from its current revision to the shop floor and the pallet plan." },
               { href: "https://240.yorkstead.com", title: "Union OS", kicker: "Restaurant operations", summary: "A tableside ordering, kitchen and payments prototype for a neighborhood restaurant." },
             ].map((item) => (
               <a

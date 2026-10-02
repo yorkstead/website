@@ -1,24 +1,29 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { EllwoodDemo } from "@/components/public-demo/ellwood-demo";
+import { Walkthrough } from "@/components/walkthrough";
+import { ellwoodWalkthroughSteps } from "@/lib/ellwood-walkthrough";
 
 export const metadata: Metadata = {
-  title: "Ellwood Flow concept walkthrough",
-  description: "Explore a fictional manufacturing release and revision handoff. A concept inspired by workplace experience.",
+  title: "Ellwood Flow walkthrough | Yorkstead",
+  description: "Follow a manufacturing release from controlled revision to shop-floor scan, inspection and pallet plan, using screens from the Ellwood Flow prototype.",
   alternates: { canonical: "/demos/ellwood" },
   robots: { index: false, follow: false },
 };
 
-export default async function EllwoodDemoPage({ searchParams }: {
-  searchParams: Promise<{ scenario?: string | string[]; mode?: string | string[] }>;
-}) {
-  const query = await searchParams;
+export default function EllwoodWalkthroughPage() {
   return (
-    <>
-      <nav aria-label="Demo navigation" className="mx-auto max-w-7xl px-5 py-3 text-sm sm:px-8">
-        <Link href="/demos" className="text-muted-foreground hover:text-foreground">← All demos</Link>
-      </nav>
-      <EllwoodDemo initialScenario={typeof query.scenario === "string" ? query.scenario : undefined} initialGuided={query.mode === "guided"} />
-    </>
+    <Walkthrough
+      eyebrow="Walkthrough"
+      title="Ellwood Flow, step by step"
+      intro="A manufacturing release moves from the office to the shop floor and out the door. Here is that path in five screens, with the current revision and its status visible at each point."
+      note="These are screens from the working prototype, run with example jobs and panel marks. Ellwood Flow is a concept inspired by past workplace experience, not a system adopted by that employer, and it has not been measured in a live shop."
+      steps={ellwoodWalkthroughSteps}
+      cta={{
+        heading: "Want this on your own shop floor?",
+        body: "We build release control around how your shop already works, and you own the result.",
+        inquiryLabel: "Talk about your shop",
+        inquiryHref: "/#contact",
+        caseStudyHref: "/work/ellwood-flow",
+      }}
+    />
   );
 }
