@@ -391,12 +391,12 @@ export default function Home() {
               Click through the software, not a slide deck.
             </h2>
             <p className="mt-4 text-base leading-7 text-muted-foreground">
-              Each demo is a working prototype with made-up data. Nothing you do is saved, and it resets on reload. No login required.
+              Each demo uses made-up data and needs no login. Rework Flow is a screen-by-screen walkthrough of the real application; the others you can click through, and nothing you do is saved.
             </p>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {[
-              { href: "/demos/rework", title: "Rework Flow", kicker: "Freight rework and warehousing", summary: "Follow a fictional load from bay hold to an evidence-backed invoice across six scenarios." },
+              { href: "/demos/rework", title: "Rework Flow", kicker: "Freight rework and warehousing", summary: "A seven-step walkthrough of the real application, from the driver's bay reservation to the completion packet." },
               { href: "/demos/ellwood", title: "Ellwood Flow", kicker: "Manufacturing release control", summary: "A drawing revision arrives after work is released. Review affected work and carry the decision to the shop floor." },
               { href: "https://240.yorkstead.com", title: "Union OS", kicker: "Restaurant operations", summary: "A tableside ordering, kitchen and payments prototype for a neighborhood restaurant." },
             ].map((item) => (
