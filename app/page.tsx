@@ -115,7 +115,7 @@ export default function Home() {
               href="/demos"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
             >
-              Try the demos <MoveUpRight className="size-4" />
+              See the walkthroughs <MoveUpRight className="size-4" />
             </a>
             <Link
               href="#buying-model"
@@ -388,10 +388,10 @@ export default function Home() {
           <div className="max-w-3xl">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Try it yourself</div>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-              Click through the software, not a slide deck.
+              Follow the software, not a slide deck.
             </h2>
             <p className="mt-4 text-base leading-7 text-muted-foreground">
-              Each demo uses made-up data and needs no login. Rework Flow is a screen-by-screen walkthrough of the real application; the others you can click through, and nothing you do is saved.
+              Each walkthrough follows a working prototype screen by screen, with made-up data and no login. Union OS is a live demo you can click through, and nothing you do is saved.
             </p>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -411,14 +411,14 @@ export default function Home() {
                   <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.summary}</p>
                 </div>
                 <div className="mt-5 flex items-center gap-1 text-xs font-medium text-primary">
-                  <span>Open demo</span>
+                  <span>{item.href.startsWith("http") ? "Open the live demo" : "Open the walkthrough"}</span>
                   <ArrowRight className="size-3.5 transition group-hover:translate-x-1" />
                 </div>
               </a>
             ))}
           </div>
           <div className="mt-8 text-sm">
-            <Link href="/demos" className="font-medium text-primary hover:underline">All demos →</Link>
+            <Link href="/demos" className="font-medium text-primary hover:underline">All walkthroughs →</Link>
           </div>
         </div>
       </section>

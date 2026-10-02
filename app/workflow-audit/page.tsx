@@ -93,7 +93,7 @@ export default function WorkflowAuditPage() {
             Find where your operations get stuck.
           </h1>
           <p className="mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Start with the operational problem that matters most. The audit uses agreed observation, interviews or system review to map your current tools, investigate failures and recommend a practical fix. Our demos show capability; your audit can address a different priority.
+            Start with the operational problem that matters most. The audit uses agreed observation, interviews or system review to map your current tools, investigate failures and recommend a practical fix. Our walkthroughs show capability; your audit can address a different priority.
           </p>
 
           <div className="mt-6 inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3.5 py-2 text-xs font-medium text-primary">

@@ -26,7 +26,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             href="/demos"
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
           >
-            <span>Try the demos</span>
+            <span>See the walkthroughs</span>
             <MoveUpRight className="size-3.5" />
           </a>
         </div>

@@ -17,7 +17,7 @@ export function ScenarioHub({ initialScenario }: { initialScenario?: string }) {
 
   return (
     <main className="min-h-screen bg-black py-10 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto mb-4 text-sm"><Link href="/demos" className="text-zinc-400 hover:text-white">← All demos</Link></div>
+      <div className="max-w-6xl mx-auto mb-4 text-sm"><Link href="/demos" className="text-zinc-400 hover:text-white">← All walkthroughs</Link></div>
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Industry / Workflow Module Switcher */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">

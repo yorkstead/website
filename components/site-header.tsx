@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { href: "/work", label: "Work" },
-  { href: "/demos", label: "Demos" },
+  { href: "/demos", label: "Walkthroughs" },
   { href: "/packages", label: "Pricing & Model" },
   { href: "/about", label: "About" },
   { href: "/#contact", label: "Contact" },
@@ -30,7 +30,7 @@ export function SiteHeader() {
             href="/demos"
             className="hidden h-9 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary transition hover:border-primary/50 hover:bg-primary/15 sm:inline-flex"
           >
-            Demos
+            Walkthroughs
             <MoveUpRight className="size-3.5" aria-hidden="true" />
           </a>
           <ThemeToggle />
@@ -73,7 +73,7 @@ export function SiteHeader() {
                     href="/demos"
                     className="flex min-h-11 items-center justify-between rounded-lg px-3 text-sm font-medium text-primary outline-none data-[highlighted]:bg-primary/10 data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ring sm:hidden"
                   >
-                    Demos
+                    Walkthroughs
                     <MoveUpRight className="size-3.5" aria-hidden="true" />
                   </a>
                 </DropdownMenu.Item>
