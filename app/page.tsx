@@ -112,7 +112,7 @@ export default function Home() {
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <a
-              href="https://ops.yorkstead.com/demo"
+              href="/demos/scenarios"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
             >
               Explore Yorkstead Operations <MoveUpRight className="size-4" />
@@ -400,7 +400,7 @@ export default function Home() {
             </div>
             <div className="flex flex-wrap gap-3">
               <a
-                href="https://ops.yorkstead.com/demo"
+                href="/demos/scenarios"
                 className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow transition hover:bg-primary/90"
               >
                 <span>Launch Interactive Demo</span>
@@ -449,7 +449,7 @@ export default function Home() {
             ].map((item) => (
               <a
                 key={item.scenario}
-                href={`https://ops.yorkstead.com/demo?scenario=${item.scenario}`}
+                href={`/demos/scenarios?scenario=${item.scenario}`}
                 className="group flex flex-col justify-between rounded-xl border border-border bg-background/80 p-5 transition hover:border-primary/40 hover:bg-card/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div>

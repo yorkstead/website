@@ -23,7 +23,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             The interactive operations sandboxes run on synthetic dummy data and require <strong>zero login</strong> to test.
           </p>
           <a
-            href="https://ops.yorkstead.com/demo"
+            href="/demos/scenarios"
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
           >
             <span>Launch Operations Demo</span>

@@ -60,7 +60,7 @@ const projectExamples = [
     title: "Yorkstead Operations",
     description: "Problem → Intervention → Result",
     detail: "Production coordination, inventory accuracy, scheduling visibility, and reporting designed around daily operations rather than a spreadsheet abstraction.",
-    href: "https://ops.yorkstead.com/demo",
+    href: "/demos/scenarios",
   },
   {
     title: "Freight Flow",

@@ -12,10 +12,10 @@ describe("Public Demos Directory & Integration Contract", () => {
     expect(slugs).toContain("peak-mobile-detail");
   });
 
-  it("ensures every demo points to canonical https://ops.yorkstead.com deep links", () => {
+  it("ensures every demo points to canonical yorkstead.com/demos/scenarios deep links", () => {
     for (const demo of publicDemos) {
-      expect(demo.canonicalLaunchUrl).toBe(`https://ops.yorkstead.com/demo?scenario=${demo.slug}`);
-      expect(demo.canonicalLaunchUrl.startsWith("https://ops.yorkstead.com/demo")).toBe(true);
+      expect(demo.canonicalLaunchUrl).toBe(`/demos/scenarios?scenario=${demo.slug}`);
+      expect(demo.canonicalLaunchUrl.startsWith("/demos/scenarios")).toBe(true);
     }
   });
 
