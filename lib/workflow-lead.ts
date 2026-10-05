@@ -150,7 +150,7 @@ export type WorkflowLeadResult =
   | { status: "duplicate" }
   | { status: "spam" }
   | { status: "rate_limited" }
-  | { status: "server_error" };
+  | { status: "server_error"; error: unknown };
 
 type WorkflowLeadStore = {
   countRecent: () => Promise<number>;
@@ -165,7 +165,7 @@ export async function processWorkflowLead(payload: WorkflowLeadPayload, store: W
     if (await store.countRecent() >= 3) return { status: "rate_limited" };
     const id = await store.insert(payload, workflowLeadSubmissionKey(payload));
     return id ? { status: "success", id, values: payload } : { status: "duplicate" };
-  } catch {
-    return { status: "server_error" };
+  } catch (error) {
+    return { status: "server_error", error };
   }
 }
