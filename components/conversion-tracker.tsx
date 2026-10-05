@@ -51,6 +51,7 @@ type TrackedLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href" | "
 
 export function TrackedLink({ href, event, metadata, children, ...props }: TrackedLinkProps) {
   const handleClick = () => trackConversionEvent(event, metadata);
-  if (href.startsWith("/") || href.startsWith("#")) return <Link href={href} onClick={handleClick} {...props}>{children}</Link>;
+  // File downloads skip client-side navigation, which only handles pages.
+  if ((href.startsWith("/") || href.startsWith("#")) && !props.download) return <Link href={href} onClick={handleClick} {...props}>{children}</Link>;
   return <a href={href} onClick={handleClick} {...props}>{children}</a>;
 }
