@@ -231,7 +231,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-8 md:grid-cols-3">
+          <div className="mt-12 grid gap-8 lg:grid-cols-3">
             <div className="flex flex-col rounded-xl border border-border bg-background/80 p-6 shadow-sm sm:p-8">
               <div className="font-mono text-[9px] uppercase tracking-wider text-primary">01 // Operational Fit</div>
               <h3 className="mt-3 text-xl font-semibold tracking-tight">Software suited to your actual operation</h3>
