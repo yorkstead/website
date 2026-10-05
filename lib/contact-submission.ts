@@ -29,7 +29,7 @@ export type ContactSubmissionResult =
   | { status: "duplicate"; message: string }
   | { status: "rate_limited"; message: string }
   | { status: "spam"; message: string }
-  | { status: "server_error"; message: string };
+  | { status: "server_error"; message: string; error?: unknown };
 
 export type ContactStore = {
   countRecent: () => Promise<number>;
@@ -146,10 +146,11 @@ export async function processContactSubmission(
       budget,
       intake,
     };
-  } catch {
+  } catch (error) {
     return {
       status: "server_error",
       message: `The contact channel is temporarily unavailable. Email ${brand.email} instead.`,
+      error,
     };
   }
 }
