@@ -47,6 +47,6 @@ describe("workflow lead funnel", () => {
     expect(await processWorkflowLead({ ...valid, email: "alex@example.com", website: "" }, { countRecent: async () => 0, insert: async () => null })).toEqual({ status: "duplicate" });
     expect(await processWorkflowLead({ ...valid, email: "alex@example.com", website: "bot.example" }, { countRecent: async () => 0, insert: async () => 1 })).toEqual({ status: "spam" });
     expect(await processWorkflowLead({ ...valid, email: "alex@example.com", website: "" }, { countRecent: async () => 3, insert: async () => 1 })).toEqual({ status: "rate_limited" });
-    expect(await processWorkflowLead({ ...valid, email: "alex@example.com", website: "" }, { countRecent: async () => { throw new Error("offline"); }, insert: async () => 1 })).toEqual({ status: "server_error" });
+    expect(await processWorkflowLead({ ...valid, email: "alex@example.com", website: "" }, { countRecent: async () => { throw new Error("offline"); }, insert: async () => 1 })).toMatchObject({ status: "server_error", error: new Error("offline") });
   });
 });

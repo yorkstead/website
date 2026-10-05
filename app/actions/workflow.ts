@@ -59,7 +59,10 @@ export async function submitWorkflowLead(_: WorkflowLeadState, formData: FormDat
   if (result.status === "invalid") return { status: "error", message: "Check the highlighted fields and try again.", errors: result.errors };
   if (result.status === "rate_limited") return { status: "error", message: `Several inquiries have come from this connection recently. Try again later or email ${brand.email}.` };
   if (result.status === "duplicate") return { status: "success", message: "This request is already in the queue and does not need to be sent again." };
-  if (result.status === "server_error") return { status: "error", message: `The lead form is temporarily unavailable. Email ${brand.email} instead.` };
+  if (result.status === "server_error") {
+    logOperationalError("workflow_lead.failed", requestId, result.error, { dependency: "database", operation: "create_workflow_lead" });
+    return { status: "error", message: `The lead form is temporarily unavailable. Email ${brand.email} instead.` };
+  }
 
   after(async () => {
     const notificationTask = (async () => {
