@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   createOperationalContext,
+  logOperationalError,
   fetchWithTimeout,
   jsonWithRequestId,
   requestCorrelationId,
@@ -47,5 +48,21 @@ describe("operational observability", () => {
     expect(sanitizedErrorCode(new DOMException("timed out", "TimeoutError"))).toBe("timeout");
     expect(sanitizedErrorCode({ code: "ECONNRESET", message: "credential" })).toBe("network_error");
     expect(sanitizedErrorCode({ code: "RESEND_INVALID_API_KEY", message: "credential" })).toBe("resend_invalid_api_key");
+  });
+
+  test("logs the SQLSTATE of database failures without serializing error text", () => {
+    const messages: string[] = [];
+    const databaseError = Object.assign(new Error('new row for relation "conversion_events" violates check constraint'), { code: "23514" });
+    logOperationalError("contact_inquiry.failed", "request_42", databaseError, { dependency: "database" }, (message) => messages.push(message));
+    logOperationalError("contact_inquiry.failed", "request_43", new Error("offline"), { dependency: "database" }, (message) => messages.push(message));
+    expect(JSON.parse(messages[0])).toEqual({ level: "error", event: "contact_inquiry.failed", requestId: "request_42", dependency: "database", sqlState: "23514", errorCode: "database_error" });
+    expect(JSON.parse(messages[1])).toEqual({ level: "error", event: "contact_inquiry.failed", requestId: "request_43", dependency: "database", errorCode: "internal_error" });
+    expect(messages.join("")).not.toContain("conversion_events");
+  });
+
+  test("does not label non-database failures with a SQLSTATE", () => {
+    const messages: string[] = [];
+    logOperationalError("lead_notification.failed", "request_44", Object.assign(new Error("write EPIPE"), { code: "EPIPE" }), { dependency: "resend" }, (message) => messages.push(message));
+    expect(JSON.parse(messages[0])).not.toHaveProperty("sqlState");
   });
 });

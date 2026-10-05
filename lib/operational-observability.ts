@@ -22,7 +22,7 @@ export type IntegrationReport = {
 
 type LogWriter = (message: string) => void;
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-type OperationalMetadata = Partial<Record<"dependency" | "errorCode" | "operation" | "status", string> & Record<"httpStatus" | "itemCount" | "rateLimitRemaining", number>>;
+type OperationalMetadata = Partial<Record<"dependency" | "errorCode" | "operation" | "sqlState" | "status", string> & Record<"httpStatus" | "itemCount" | "rateLimitRemaining", number>>;
 
 function safeRequestId(value: string | null) {
   return value && /^[a-z0-9._:-]{1,128}$/i.test(value) ? value : null;
@@ -45,8 +45,16 @@ export function sanitizedErrorCode(error: unknown) {
   return "internal_error";
 }
 
+// Only database-dependency failures can carry a SQLSTATE; other five-character codes such as EPIPE or EPERM must not be labelled as PostgreSQL. PostgreSQL SQLSTATE codes (for example 23514 check_violation, 42703 undefined_column) identify the failure class without exposing row data.
+function sqlStateOf(error: unknown, metadata: OperationalMetadata) {
+  if (metadata.dependency !== "database") return undefined;
+  const code = error && typeof error === "object" && "code" in error ? String((error as { code?: unknown }).code ?? "") : "";
+  return /^[0-9A-Z]{5}$/.test(code) ? code : undefined;
+}
+
 export function logOperationalError(event: string, requestId: string, error: unknown, metadata: OperationalMetadata = {}, writer: LogWriter = console.error) {
-  writer(JSON.stringify({ level: "error", event, requestId, ...metadata, errorCode: sanitizedErrorCode(error) }));
+  const sqlState = sqlStateOf(error, metadata);
+  writer(JSON.stringify({ level: "error", event, requestId, ...metadata, ...(sqlState ? { sqlState } : {}), errorCode: sanitizedErrorCode(error) }));
 }
 
 export function createOperationalContext(request: Request, route: string, writers: { info?: LogWriter; error?: LogWriter } = {}) {
