@@ -326,10 +326,10 @@ export default function Home() {
                 How do we deliver tailored business software without starting from scratch or forcing you into rigid off-the-shelf software? By connecting three disciplined practices:
               </p>
             </div>
-            <div>
+            <div className="shrink-0">
               <Link
                 href="/how-we-build"
-                className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-5 text-sm font-medium transition hover:border-primary/40"
+                className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-card px-5 text-sm font-medium transition hover:border-primary/40"
               >
                 How we build <ArrowRight className="size-4" />
               </Link>
