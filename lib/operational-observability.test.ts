@@ -59,4 +59,10 @@ describe("operational observability", () => {
     expect(JSON.parse(messages[1])).toEqual({ level: "error", event: "contact_inquiry.failed", requestId: "request_43", dependency: "database", errorCode: "internal_error" });
     expect(messages.join("")).not.toContain("conversion_events");
   });
+
+  test("does not label non-database failures with a SQLSTATE", () => {
+    const messages: string[] = [];
+    logOperationalError("lead_notification.failed", "request_44", Object.assign(new Error("write EPIPE"), { code: "EPIPE" }), { dependency: "resend" }, (message) => messages.push(message));
+    expect(JSON.parse(messages[0])).not.toHaveProperty("sqlState");
+  });
 });

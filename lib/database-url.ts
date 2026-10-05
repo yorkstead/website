@@ -9,7 +9,8 @@ export function explicitVerifyFullSSL(databaseURL: string) {
     return databaseURL;
   }
   if (url.searchParams.has("uselibpqcompat")) return databaseURL;
-  if (!["prefer", "require", "verify-ca"].includes(url.searchParams.get("sslmode") ?? "")) return databaseURL;
+  // pg-connection-string honors the last sslmode when a URL repeats the parameter, so judge the effective (last) value.
+  if (!["prefer", "require", "verify-ca"].includes(url.searchParams.getAll("sslmode").at(-1) ?? "")) return databaseURL;
   url.searchParams.set("sslmode", "verify-full");
   return url.toString();
 }
