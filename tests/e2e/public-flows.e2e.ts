@@ -23,7 +23,7 @@ test("homepage renders and primary navigation reaches the about page", async ({ 
   expect(response?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
   expect(response?.headers()["permissions-policy"]).toContain("publickey-credentials-get=(self)");
   expect(response?.headers()["x-content-type-options"]).toBe("nosniff");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Software and automation");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Software you buy once. Software you own.");
   await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
   await page.getByRole("link", { name: "About", exact: true }).click();
   await expect(page).toHaveURL(/\/about$/);
