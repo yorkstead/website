@@ -131,7 +131,7 @@ test("project profiles connect industries and uses to relevant service paths", a
     await expect(page.getByRole("heading", { name: "Industries and applicable uses" })).toBeVisible();
     await expect(page.locator(`a[href="${profile.service}"]`)).toBeVisible();
     if (profile.slug === "jwld-store") await expect(page.locator('a[href="https://jwld.store"]')).toHaveAttribute("target", "_blank");
-    if (profile.slug === "sic-pizza-pos") await expect(page.locator('a[href="https://sic-pizza.vercel.app"]')).toHaveAttribute("target", "_blank");
+    if (profile.slug === "sic-pizza-pos") await expect(page.locator('a[href="https://pos.yorkstead.com"]')).toHaveAttribute("target", "_blank");
     if (profile.slug === "employee-barcodes") await expect(page.locator('a[href="https://barcodes.4twenty.dev"]')).toHaveAttribute("target", "_blank");
     await expect(page.locator("article article").first()).toBeVisible();
     if (profile.slug === "work-control") {

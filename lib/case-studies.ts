@@ -420,7 +420,7 @@ export const caseStudies: CaseStudy[] = [
       { title: "Split payment and audit trail", description: "Model diner-level allocations, tips, payment-provider boundaries, and append-only actor history before introducing certified payment processing or reconciliation." },
     ],
     paths: [
-      { label: "Open the interactive prototype", description: "Use the current browser-runnable vertical slice to explore employee access, floor, ordering, kitchen, guest, payment, and history views.", href: "https://sic-pizza.vercel.app", external: true },
+      { label: "Open the interactive prototype", description: "Use the current browser-runnable vertical slice to explore employee access, floor, ordering, kitchen, guest, payment, and history views.", href: "https://pos.yorkstead.com", external: true },
       { label: "Packages, process & pricing", description: "See what an audit, focused restaurant workflow, or connected system could include and cost.", href: "/packages#restaurant" },
       { label: "Workflow automation", description: "Explore how ordering, approvals, kitchen transitions, notifications, and exception handling can become one controlled operating flow.", href: "/services/workflow-automation" },
       { label: "Review the source and architecture", description: "Inspect the public repository, domain rules, persistence schema, implementation boundaries, and phased production backlog.", href: "https://github.com/4twentydev/sic-pizza", external: true },
