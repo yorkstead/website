@@ -18,17 +18,17 @@ export type Engagement = {
 export const engagements = [
   {
     id: "workflow-diagnostic",
-    title: "Workflow Audit",
-    priceLabel: "Scope & terms agreed in proposal",
-    summary: "Spend time in the business observing real work: tracing an order from intake to delivery, mapping spreadsheet silos, and identifying where information stalls or gets re-entered.",
-    timing: "Delivered on a timeline confirmed in the proposal",
+    title: "Workflow Rescue",
+    priceLabel: "$750 founding client rate",
+    summary: "Choose one frustrating workflow. Yorkstead traces how it actually moves, ranks the breakdowns, and delivers a practical Operations Systems Blueprint before you buy an implementation.",
+    timing: "One workflow · target delivery within 7 business days after agreed inputs are complete",
     includes: [
       "Uncovers bottlenecks, paper processes, duplicate tools, and single-employee silos",
       "Operations Systems Blueprint: current-state map and bottlenecks ranked by impact",
       "Evidence-backed architecture recommendation and proposed implementation scope",
-      "Scope, deliverables, timeline, and fee confirmed in writing before work begins",
+      "Founding scope is limited to one workflow; deliverables and timing are confirmed in writing before work begins",
     ],
-    cta: { label: "Book a workflow audit", href: "/workflow-audit#audit-intake" },
+    cta: { label: "Start a Workflow Rescue", href: "/workflow-audit#audit-intake" },
   },
   {
     id: "workflow-sprint",

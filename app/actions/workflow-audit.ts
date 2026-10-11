@@ -34,7 +34,7 @@ export async function submitWorkflowAudit(_: WorkflowAuditState, formData: FormD
 
   const result = await processWorkflowAudit(payload, {
     countRecent: async () => {
-      const rows = await withOperationTimeout(sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE ip_hash = ${ipHash} AND LOWER(project_type) = 'workflow audit' AND created_at > NOW() - INTERVAL '1 hour'`);
+      const rows = await withOperationTimeout(sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE ip_hash = ${ipHash} AND LOWER(project_type) IN ('workflow audit', 'workflow rescue') AND created_at > NOW() - INTERVAL '1 hour'`);
       return Number(rows[0]?.count ?? 0);
     },
     insert: async (values, submissionKey) => {
@@ -65,5 +65,5 @@ export async function submitWorkflowAudit(_: WorkflowAuditState, formData: FormD
     })();
     await Promise.allSettled([notificationTask, recordConversionEvent({ event: "workflow_audit_submission_success", path: "/workflow-audit", visitorHash })]);
   });
-  return { status: "success", message: "Your workflow audit request is in. Brandon will review the operating problem and follow up directly with fit, scope, fee, and the next available step." };
+  return { status: "success", message: "Your Workflow Rescue request is in. Brandon will review the operating problem and follow up directly with fit, scope, the founding-client rate, and the next available step." };
 }

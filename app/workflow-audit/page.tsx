@@ -6,25 +6,26 @@ import { TrackedLink, WorkflowAuditViewTracker } from "@/components/conversion-t
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { WorkflowAuditBookingLink, WorkflowAuditForm } from "@/components/workflow-audit-form";
+import { WorkflowRescueCheck } from "@/components/workflow-rescue-check";
 import { Card, CardContent } from "@/components/ui/card";
 import { brand } from "@/lib/brand";
 import { workflowAuditEngagement } from "@/lib/engagements";
 import { workflowAuditBookingURL } from "@/lib/workflow-audit-config";
 
 export const metadata: Metadata = {
-  title: "Workflow Audit and Implementation Recommendation",
-  description: "A workflow audit covering current systems, observed problems, recommended fixes and a proposed implementation contract. Scope, deliverables, and timeline confirmed in the proposal.",
+  title: "Workflow Rescue for Broken Business Processes",
+  description: "Choose one frustrating workflow. Yorkstead maps the handoffs, ranks the breakdowns, and delivers an Operations Systems Blueprint with a practical next step.",
   alternates: { canonical: "/workflow-audit" },
   openGraph: {
-    title: `Workflow Diagnostic · ${brand.name}`,
-    description: "Understand your current systems, the problem and a practical fix before buying an implementation.",
+    title: `Workflow Rescue · ${brand.name}`,
+    description: "Bring Yorkstead the workflow your team hates. Get a clear map, ranked bottlenecks, and a practical fix.",
     url: "/workflow-audit",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `${brand.name} — ${brand.descriptor}` }],
   },
   twitter: {
     card: "summary_large_image",
-    title: `Workflow Diagnostic · ${brand.name}`,
-    description: "Understand your current systems, the problem and a practical fix before buying an implementation.",
+    title: `Workflow Rescue · ${brand.name}`,
+    description: "Bring Yorkstead the workflow your team hates. Get a clear map, ranked bottlenecks, and a practical fix.",
     images: ["/opengraph-image"],
   },
 };
@@ -43,10 +44,10 @@ const friction = [
 ];
 
 const process = [
-  ["01", "Focused intake", "You share the core workflow, handoffs, tools, and immediate pain points without uploading sensitive records."],
-  ["02", "Deep investigation", "Brandon spends time in the business tracing where data originates, where it gets re-entered, and where decisions stall."],
+  ["01", "Focused intake", "You choose one workflow and share the handoffs, tools, and immediate pain points without uploading sensitive records."],
+  ["02", "Working session", "Brandon follows one representative job through the process and separates the normal path from exceptions and workarounds."],
   ["03", "Impact ranking", "Observed friction is ranked by operational impact, with measured facts separated from staff estimates and unknowns."],
-  ["04", "Operations Blueprint", "You receive the systems inventory, findings, recommended fix and a proposed implementation contract. Confirm the delivery date after agreed inputs are complete."],
+  ["04", "Operations Blueprint", "You receive the workflow map, ranked findings, recommended next step, and an optional implementation scope within the agreed delivery window."],
 ];
 
 const deliverables = [
@@ -87,28 +88,28 @@ export default function WorkflowAuditPage() {
       <section className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-16 sm:px-8 sm:pt-24 lg:grid-cols-[1.08fr_.92fr] lg:items-end">
         <div>
           <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-            Paid Operational Review · {workflowAuditEngagement.priceLabel}
+            Workflow Rescue · {workflowAuditEngagement.priceLabel}
           </div>
           <h1 className="mt-4 max-w-4xl text-5xl font-semibold leading-[.95] tracking-[-0.055em] sm:text-7xl">
-            Find where your operations get stuck.
+            Bring me the workflow your team hates.
           </h1>
           <p className="mt-7 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Start with the operational problem that matters most. The audit uses agreed observation, interviews or system review to map your current tools, investigate failures and recommend a practical fix. Our walkthroughs show capability; your audit can address a different priority.
+            Pick one repeated process where work gets re-entered, chased, delayed, or trapped with one person. Yorkstead will map how it actually moves, rank the breakdowns, and show you the smallest practical way to fix it.
           </p>
 
           <div className="mt-6 inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3.5 py-2 text-xs font-medium text-primary">
             <CheckCircle2 className="size-4 shrink-0 text-primary" />
-            <span>Target findings in about 48 hours after agreed observation and inputs are complete.</span>
+            <span>First three qualified clients · one workflow · target delivery within 7 business days.</span>
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <TrackedLink
-              href="#audit-intake"
+              href="#bottleneck-check"
               event="workflow_audit_cta_click"
               metadata={{ placement: "workflow-audit-hero" }}
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground"
             >
-              Start the qualification intake <ArrowRight className="size-4" />
+              Check your workflow <ArrowRight className="size-4" />
             </TrackedLink>
             {bookingURL ? (
               <WorkflowAuditBookingLink
@@ -118,7 +119,7 @@ export default function WorkflowAuditPage() {
             ) : null}
           </div>
           <p className="mt-4 max-w-xl text-xs leading-5 text-muted-foreground">
-            Fit, scope, fee, and timing are confirmed directly before booking. No payment is collected on this site.
+            The founding rate covers the review and Blueprint for one workflow. Fit, inputs, and delivery timing are confirmed directly before booking. No payment is collected on this site.
           </p>
         </div>
 
@@ -126,8 +127,8 @@ export default function WorkflowAuditPage() {
           <CardContent className="p-6 sm:p-8">
             <div className="flex items-center justify-between border-b border-border pb-5">
               <div>
-                <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary">Target symptoms</div>
-                <div className="mt-1 text-sm font-medium">What we investigate & isolate during the diagnostic</div>
+                <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary">Strong rescue signals</div>
+                <div className="mt-1 text-sm font-medium">What makes one workflow worth investigating</div>
               </div>
               <Gauge className="size-5 shrink-0 text-primary" />
             </div>
@@ -143,6 +144,10 @@ export default function WorkflowAuditPage() {
         </Card>
       </section>
 
+      <section id="bottleneck-check" className="relative mx-auto max-w-7xl scroll-mt-6 px-5 pb-20 sm:px-8">
+        <WorkflowRescueCheck />
+      </section>
+
       <section className="relative mx-auto max-w-7xl px-5 pb-12 sm:px-8">
         <h2 className="text-2xl font-semibold">Own the solution and the ability to run it</h2>
         <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Buy the agreed custom assets with source, operating instructions, and a documented handoff, with a strongly recommended review by a developer you choose and pay. Evaluate client-owned hardware and in-house servers where they add value. Final ownership transfer follows payment. Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation. Optional support retainers cover questions, troubleshooting triage, and scheduled health checks, with scope and terms agreed in the proposal, and are not required to keep using the purchased system.</p>
@@ -154,7 +159,7 @@ export default function WorkflowAuditPage() {
           <div className="mb-10 max-w-2xl">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">The Process</div>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              From operational chaos to a clear architecture.
+              From a frustrating handoff to a practical next step.
             </h2>
           </div>
           <div className="grid border-y border-border lg:grid-cols-4">
@@ -177,6 +182,52 @@ export default function WorkflowAuditPage() {
         </div>
       </section>
 
+      <section className="relative border-y border-border bg-card/35">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[.72fr_1.28fr]">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Fictional example · not a customer result</div>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight">See what the Blueprint makes visible.</h2>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              A Blueprint does not begin by prescribing new software. It makes the current record, broken handoff, operational consequence, and smallest safe intervention explicit.
+            </p>
+          </div>
+          <Card className="overflow-hidden bg-background/75">
+            <CardContent className="p-0">
+              <div className="border-b border-border px-5 py-4 sm:px-6">
+                <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary">Example workflow · quote to production release</div>
+              </div>
+              <div className="grid gap-px bg-border sm:grid-cols-3">
+                <div className="bg-card p-5">
+                  <div className="font-mono text-[9px] text-primary">01 · CURRENT RECORD</div>
+                  <h3 className="mt-3 text-sm font-medium">Inbox + estimating sheet</h3>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">Customer requirements arrive in email, then get copied into a private spreadsheet.</p>
+                </div>
+                <div className="bg-card p-5">
+                  <div className="font-mono text-[9px] text-amber-500">02 · BREAKDOWN</div>
+                  <h3 className="mt-3 text-sm font-medium">Approval loses revision context</h3>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">The shop receives a release, but cannot see whether the quoted drawing is still current.</p>
+                </div>
+                <div className="bg-card p-5">
+                  <div className="font-mono text-[9px] text-emerald-500">03 · SMALLEST FIX</div>
+                  <h3 className="mt-3 text-sm font-medium">One controlled release checkpoint</h3>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">Keep existing tools; add a shared approval record that locks the released revision and owner.</p>
+                </div>
+              </div>
+              <div className="grid gap-4 border-t border-border p-5 sm:grid-cols-2 sm:p-6">
+                <div className="rounded-lg border border-border bg-card/60 p-4">
+                  <div className="text-xs font-medium">Finding ranked: high operational impact</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">Evidence required: two recent revision changes, who discovered them, and what work had already begun.</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card/60 p-4">
+                  <div className="text-xs font-medium">Recommendation: validate before building</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">Pilot the checkpoint beside the existing process, then decide whether automation is justified.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Deliverable: Operations Systems Blueprint */}
       <section className="relative mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-[.72fr_1.28fr]">
@@ -184,7 +235,7 @@ export default function WorkflowAuditPage() {
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Tangible Deliverable</div>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight">The Operations Systems Blueprint</h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              You leave with a concrete, documented strategy that gives you total clarity on what to fix, what to keep, what to build, and what it will cost.
+              You leave with a concrete, documented strategy showing what to keep, what to simplify, what might justify automation, and what the next implementation would include.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -205,8 +256,8 @@ export default function WorkflowAuditPage() {
       <section id="audit-intake" className="relative border-t border-border bg-card/35">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[.55fr_1.45fr]">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Diagnostic Intake</div>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">Start with the messy version.</h2>
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Workflow Rescue intake</div>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight">Tell me the messy version.</h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
               Tell us about the process, the spreadsheets, and where your team is losing time. We do not require sensitive customer records, trade secrets, or financial files.
             </p>
@@ -217,7 +268,7 @@ export default function WorkflowAuditPage() {
               </p>
               <p className="flex gap-2">
                 <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-primary" />
-                Submissions go directly to Brandon York for review and direct follow-up.
+                Submissions go directly to Brandon York for fit review. The $750 founding rate is offered to the first three qualified one-workflow engagements.
               </p>
             </div>
           </div>
@@ -233,4 +284,3 @@ export default function WorkflowAuditPage() {
     </main>
   );
 }
-

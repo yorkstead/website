@@ -21,6 +21,8 @@ export const conversionEventNames = [
   "workflow_audit_validation_error",
   "workflow_audit_submission_success",
   "workflow_audit_booking_click",
+  "workflow_rescue_check_start",
+  "workflow_rescue_check_complete",
 ] as const;
 export type ConversionEventName = typeof conversionEventNames[number];
 

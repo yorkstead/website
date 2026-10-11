@@ -14,11 +14,13 @@
     "design-system": "bun design-system/build.mjs",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit --incremental false",
     "test": "bun test",
     "test:e2e": "playwright test",
     "auth:migrate": "bun x @better-auth/cli@1.7.1 migrate --yes",
     "db:migrate": "bun scripts/migrate.ts",
-    "db:migrate:check": "bun scripts/migrate.ts --check"
+    "db:migrate:check": "bun scripts/migrate.ts --check",
+    "yorkstead:check": "node scripts/yorkstead-check.mjs"
   },
   "dependencies": {
     "@better-auth/passkey": "^1.6.26",

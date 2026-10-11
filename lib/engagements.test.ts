@@ -13,9 +13,9 @@ import {
 } from "@/lib/engagements";
 
 describe("public engagement offers and buying model", () => {
-  test("keeps the core service ladder offers in one typed catalog with proposal-agreed audit and scoped-proposal terms", () => {
+  test("keeps the core service ladder offers in one typed catalog with a fixed founding rescue offer and scoped implementation terms", () => {
     expect(engagements.map(({ id, priceLabel }) => ({ id, priceLabel }))).toEqual([
-      { id: "workflow-diagnostic", priceLabel: "Scope & terms agreed in proposal" },
+      { id: "workflow-diagnostic", priceLabel: "$750 founding client rate" },
       { id: "workflow-sprint", priceLabel: "Scoped proposal" },
       { id: "department-system", priceLabel: "Scoped proposal" },
       { id: "custom-operations-system", priceLabel: "Scoped proposal" },
@@ -28,6 +28,8 @@ describe("public engagement offers and buying model", () => {
     expect(serializedOffers).not.toContain("$8,000");
     expect(serializedOffers).not.toContain("$25,000");
     expect(serializedOffers).not.toContain("$350");
+    expect(getEngagement("workflow-diagnostic")?.title).toBe("Workflow Rescue");
+    expect(getEngagement("workflow-diagnostic")?.timing).toContain("One workflow");
   });
 
   test("connects every offer to the appropriate qualification path", () => {

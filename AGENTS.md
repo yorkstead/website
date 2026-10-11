@@ -1,3 +1,13 @@
+# Yorkstead Website
+
+- Use Bun and preserve the existing Next.js App Router architecture.
+- Read `.specify/memory/constitution.md` before material product changes.
+- Material features require a spec, plan, and tasks under `specs/`.
+- Preserve the privacy-first lead pipeline: no advertising identifiers, no client-side database access, and no sensitive operational records in public intake forms.
+- Database changes require ordered migrations and `bun run db:migrate:check`.
+- Before completion, use the relevant repository skills and run the checks in `docs/verification.md`.
+- Update `docs/handoffs/CURRENT.md` whenever active work changes state.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
