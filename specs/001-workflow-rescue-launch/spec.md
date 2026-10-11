@@ -1,7 +1,7 @@
 # Feature: Workflow Rescue public launch
 
 ## Status
-Verification
+Release approved
 
 ## User outcome
 As an owner-led business with a frustrating operational handoff, I want to understand whether that workflow is a strong rescue candidate and exactly what a paid review includes, so that I can make a confident inquiry without buying a vague consulting engagement.
@@ -19,7 +19,7 @@ As an owner-led business with a frustrating operational handoff, I want to under
 ### Out of scope
 - Customer accounts, authentication, file uploads, payments, subscriptions, team seats, or a persistent customer portal.
 - Automated operational advice presented as a substitute for direct investigation.
-- Changes to the owner dashboard, contact database schema, or deployment configuration.
+- Changes to the owner dashboard or deployment configuration, or database changes beyond allowing the two new anonymous conversion event names.
 - Claims of measured savings, guaranteed results, or existing customer adoption.
 
 ## Acceptance criteria
@@ -33,10 +33,10 @@ As an owner-led business with a frustrating operational handoff, I want to under
 ## Constraints and compatibility
 - Existing behavior to preserve: `/workflow-audit`, conversion measurement, booking link handling, intake validation, duplicate detection, notification, and owner lead management.
 - Data/security considerations: The bottleneck check is local-only and asks no identifying questions. Public form input remains untrusted and server validated.
-- Operational or rollback considerations: The feature is additive copy/UI work and can be rolled back without a database change.
+- Operational or rollback considerations: The feature is additive copy/UI work. A forward-only compatibility migration expands the existing analytics event-name constraint; rolling back the UI does not require reversing it.
 
 ## Verification evidence
 - Commands: `bun run yorkstead:check`; `bun run db:migrate:check`; `bun run lint`; `bun run typecheck`; `bun test`; `bun run build`.
-- Results: Scaffold passed with one active spec; four migrations validated; lint passed with zero errors and three unrelated existing warnings; typecheck passed; 209 tests passed and two existing database-integration tests were skipped; production build compiled and generated 70 routes successfully.
-- Security review: The bottleneck check is local-only, collects no identifying information, and records only start/completion plus the allowlisted anonymous result band. Existing server validation, duplicate protection, rate limiting, bounded intake, and private lead storage remain in place. No new dependency, secret, migration, customer account, upload, or payment boundary was introduced.
-- Manual checks still required: Responsive page review, keyboard/touch interaction, and a real preview intake submission using non-sensitive test data.
+- Results: Scaffold passed with one active spec; six migrations validated; lint passed with zero errors and three unrelated existing warnings; typecheck passed; 219 tests passed and two existing database-integration tests were skipped; production build compiled and generated 72 routes successfully.
+- Security review: The bottleneck check is local-only, collects no identifying information, and records only start/completion plus the allowlisted anonymous result band. Existing server validation, duplicate protection, rate limiting, bounded intake, and private lead storage remain in place. No new dependency, secret, customer account, upload, or payment boundary was introduced; the only database change expands an existing analytics allowlist.
+- Release review: The protected Vercel preview deployed successfully and was approved by the owner on 2026-10-11.

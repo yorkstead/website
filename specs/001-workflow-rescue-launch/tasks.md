@@ -5,10 +5,10 @@
 - [x] T003 Build the interactive bottleneck check and sellable public offer — verify: scoring, engagement, intake, and analytics tests pass
 - [x] T004 Align intake, engagement catalog, and privacy-first conversion events — verify: workflow and engagement tests pass
 - [x] T005 Run required verification and security review — verify: full automated suite and build pass; security evidence recorded in `spec.md`
-- [ ] T006 Converge implementation against every acceptance criterion and update handoff — verify: spec evidence matrix and clean diff
+- [x] T006 Converge implementation against every acceptance criterion and update handoff — verify: spec evidence matrix, protected preview approval, and clean release diff
 
 ## Handoff state
-- Current task: T006
-- Last verified: Full automated verification and security review passed on 2026-10-11.
-- Next action: Publish an authorized preview, complete responsive/keyboard/intake review, then mark the spec complete.
-- Blockers: Preview publication requires explicit authorization because it sends the site source and configuration to Vercel.
+- Current task: Complete — approved for production release.
+- Last verified: Full automated verification, security review, and protected preview approval passed on 2026-10-11.
+- Next action: Monitor the founding-client funnel and integrate the offer into the 30 Days to Market campaign.
+- Blockers: None.
