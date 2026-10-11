@@ -145,7 +145,7 @@ describe("case study data", () => {
   test("positions SIC Pizza as a working POS prototype without production claims", () => {
     const study = getCaseStudy("sic-pizza-pos");
     expect(study?.status).toBe("Concept prototype");
-    expect(study?.paths.some(({ href }) => href === "https://sic-pizza.vercel.app")).toBeTrue();
+    expect(study?.paths.some(({ href }) => href === "https://pos.yorkstead.com")).toBeTrue();
     expect(study?.paths.some(({ href }) => href === "https://github.com/4twentydev/sic-pizza")).toBeTrue();
     expect(study?.capabilities).toContain("Kitchen display lifecycle");
     expect(study?.limitations.toLowerCase()).toContain("mocked card authorization");

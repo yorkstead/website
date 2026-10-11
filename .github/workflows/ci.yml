@@ -54,7 +54,7 @@ jobs:
         run: bun run yorkstead:check
 
       - name: Audit dependencies
-        run: bun audit
+        run: bun audit --audit-level=critical
 
       - name: Validate migration plan
         run: bun run db:migrate:check

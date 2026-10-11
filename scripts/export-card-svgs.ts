@@ -7,7 +7,7 @@ async function run() {
   const artifactDir = "C:/Users/4twen/.gemini/antigravity/brain/e7a7db7d-a5ad-4212-bdd9-7ee3b166569c";
   fs.mkdirSync(exportDir, { recursive: true });
 
-  const qrSvg = await QRCode.toString("https://yorkstead.com/connect?src=qr", {
+  const qrSvg = await QRCode.toString("https://yorkstead.com/c", {
     type: "svg",
     margin: 1,
     errorCorrectionLevel: "M",
@@ -113,7 +113,7 @@ async function run() {
   <g transform="translate(480, 115)">
     <!-- Header -->
     <text class="header-mono">OPERATIONAL GATEWAY //</text>
-    <text y="38" class="domain-white">yorkstead.com/connect</text>
+    <text y="38" class="domain-white">yorkstead.com/c</text>
 
     <!-- Divider -->
     <line x1="0" y1="65" x2="480" y2="65" stroke="#1f242d" stroke-width="1.5" />
@@ -206,7 +206,7 @@ async function run() {
     </g>
     <g transform="translate(480, 115)">
       <text class="header-mono">OPERATIONAL GATEWAY //</text>
-      <text y="38" class="domain-white">yorkstead.com/connect</text>
+      <text y="38" class="domain-white">yorkstead.com/c</text>
       <line x1="0" y1="65" x2="480" y2="65" stroke="#1f242d" stroke-width="1.5" />
       <g transform="translate(0, 115)">
         <circle cx="6" cy="0" r="4" class="bullet-cyan" />

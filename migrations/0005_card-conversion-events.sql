@@ -1,0 +1,3 @@
+ALTER TABLE conversion_events DROP CONSTRAINT IF EXISTS conversion_events_name_check;
+--> statement-breakpoint
+ALTER TABLE conversion_events ADD CONSTRAINT conversion_events_name_check CHECK (event_name IN ('service_page_view', 'case_study_view', 'page_view', 'view_content', 'demo_view', 'lead', 'schedule_start', 'schedule_complete', 'qualified_lead', 'workflow_audit_cta_click', 'contact_form_start', 'contact_form_submission', 'email_link_click', 'phone_link_click', 'external_booking_link_click', 'workflow_audit_view', 'workflow_audit_form_start', 'workflow_audit_validation_error', 'workflow_audit_submission_success', 'workflow_audit_booking_click', 'card_scan', 'contact_save_click'));

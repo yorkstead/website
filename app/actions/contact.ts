@@ -113,7 +113,7 @@ export async function submitContact(_: ContactState, formData: FormData): Promis
     return { status: "duplicate", message: result.message };
   }
   if (result.status === "server_error") {
-    logOperationalError("contact_inquiry.failed", requestId, new Error("Storage operation failed"), {
+    logOperationalError("contact_inquiry.failed", requestId, result.error ?? new Error("Storage operation failed"), {
       dependency: "database",
       operation: "create_contact_inquiry",
     });

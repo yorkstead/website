@@ -51,7 +51,10 @@ export async function submitWorkflowAudit(_: WorkflowAuditState, formData: FormD
   }
   if (result.status === "rate_limited") return { status: "error", message: `Several audit requests have come from this connection recently. Try again later or email ${brand.email}.` };
   if (result.status === "duplicate") return { status: "duplicate", message: "This audit request is already in the queue. There is no need to submit it again." };
-  if (result.status === "server_error") return { status: "error", message: `The secure intake channel is temporarily unavailable. Email ${brand.email} instead.` };
+  if (result.status === "server_error") {
+    logOperationalError("workflow_audit.failed", requestId, result.error, { dependency: "database", operation: "create_workflow_audit" });
+    return { status: "error", message: `The secure intake channel is temporarily unavailable. Email ${brand.email} instead.` };
+  }
 
   after(async () => {
     const notificationTask = (async () => {

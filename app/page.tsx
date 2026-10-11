@@ -231,7 +231,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-8 md:grid-cols-3">
+          <div className="mt-12 grid gap-8 lg:grid-cols-3">
             <div className="flex flex-col rounded-xl border border-border bg-background/80 p-6 shadow-sm sm:p-8">
               <div className="font-mono text-[9px] uppercase tracking-wider text-primary">01 // Operational Fit</div>
               <h3 className="mt-3 text-xl font-semibold tracking-tight">Software suited to your actual operation</h3>
@@ -326,10 +326,10 @@ export default function Home() {
                 How do we deliver tailored business software without starting from scratch or forcing you into rigid off-the-shelf software? By connecting three disciplined practices:
               </p>
             </div>
-            <div>
+            <div className="shrink-0">
               <Link
                 href="/how-we-build"
-                className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-5 text-sm font-medium transition hover:border-primary/40"
+                className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-card px-5 text-sm font-medium transition hover:border-primary/40"
               >
                 How we build <ArrowRight className="size-4" />
               </Link>
@@ -406,7 +406,7 @@ export default function Home() {
                 className="group flex flex-col justify-between rounded-xl border border-border bg-background/80 p-6 transition hover:border-primary/40 hover:bg-card/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{item.kicker}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground md:min-h-[2lh]">{item.kicker}</div>
                   <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground transition group-hover:text-primary">{item.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.summary}</p>
                 </div>

@@ -13,7 +13,7 @@ export type WorkflowAuditResult =
   | { status: "duplicate" }
   | { status: "spam" }
   | { status: "rate_limited" }
-  | { status: "server_error" };
+  | { status: "server_error"; error: unknown };
 
 type WorkflowAuditStore = {
   countRecent: () => Promise<number>;
@@ -29,7 +29,7 @@ export async function processWorkflowAudit(payload: WorkflowAuditPayload, store:
     if (await store.countRecent() >= 3) return { status: "rate_limited" };
     const id = await store.insert(values, workflowAuditSubmissionKey(values));
     return id ? { status: "success", id, values } : { status: "duplicate" };
-  } catch {
-    return { status: "server_error" };
+  } catch (error) {
+    return { status: "server_error", error };
   }
 }

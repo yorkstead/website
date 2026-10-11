@@ -117,6 +117,7 @@ describe("Contact & Product Inquiry Form Outcomes", () => {
     if (result.status === "server_error") {
       expect(result.message).toContain("temporarily unavailable");
       expect(result.message).toContain("Email");
+      expect((result.error as Error).message).toBe("Neon PostgreSQL connection timeout");
     }
   });
 

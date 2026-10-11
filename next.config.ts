@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   images: {
     qualities: [75, 78, 80, 82],
   },
+  async redirects() {
+    // Earlier cards pointed at /connect. Temporary so it can be repointed.
+    return [{ source: "/connect", destination: "/card", permanent: false }];
+  },
   async headers() {
     return [
       {

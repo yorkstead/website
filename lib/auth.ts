@@ -2,6 +2,7 @@ import { passkey } from "@better-auth/passkey";
 import { sendPasswordResetEmail } from "@/lib/password-reset-email";
 import { brand } from "@/lib/brand";
 import { resolveAuthConfiguration, type AuthConfiguration } from "@/lib/auth-config";
+import { explicitVerifyFullSSL } from "@/lib/database-url";
 import { ownerBootstrapAllowed } from "@/lib/owner-bootstrap";
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
@@ -15,7 +16,7 @@ export function getAuthConfiguration() {
 }
 
 function getAuthPool() {
-  authPool ??= new Pool({ connectionString: getAuthConfiguration().databaseURL });
+  authPool ??= new Pool({ connectionString: explicitVerifyFullSSL(getAuthConfiguration().databaseURL) });
   return authPool;
 }
 

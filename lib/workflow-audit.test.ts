@@ -36,7 +36,7 @@ describe("workflow audit intake", () => {
     expect(await processWorkflowAudit(valid, { countRecent: async () => 0, insert: async () => null })).toEqual({ status: "duplicate" });
     expect(await processWorkflowAudit({ ...valid, website: "bot.example" }, { countRecent: async () => 0, insert: async () => 1 })).toEqual({ status: "spam" });
     expect(await processWorkflowAudit(valid, { countRecent: async () => 3, insert: async () => 1 })).toEqual({ status: "rate_limited" });
-    expect(await processWorkflowAudit(valid, { countRecent: async () => { throw new Error("offline"); }, insert: async () => 1 })).toEqual({ status: "server_error" });
+    expect(await processWorkflowAudit(valid, { countRecent: async () => { throw new Error("offline"); }, insert: async () => 1 })).toMatchObject({ status: "server_error", error: new Error("offline") });
   });
 
   test("accepts only configured HTTPS booking links", () => {

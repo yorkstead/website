@@ -23,7 +23,7 @@ test("homepage renders and primary navigation reaches the about page", async ({ 
   expect(response?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
   expect(response?.headers()["permissions-policy"]).toContain("publickey-credentials-get=(self)");
   expect(response?.headers()["x-content-type-options"]).toBe("nosniff");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Software and automation");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Software you buy once. Software you own.");
   await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
   await page.getByRole("link", { name: "About", exact: true }).click();
   await expect(page).toHaveURL(/\/about$/);
@@ -131,7 +131,7 @@ test("project profiles connect industries and uses to relevant service paths", a
     await expect(page.getByRole("heading", { name: "Industries and applicable uses" })).toBeVisible();
     await expect(page.locator(`a[href="${profile.service}"]`)).toBeVisible();
     if (profile.slug === "jwld-store") await expect(page.locator('a[href="https://jwld.store"]')).toHaveAttribute("target", "_blank");
-    if (profile.slug === "sic-pizza-pos") await expect(page.locator('a[href="https://sic-pizza.vercel.app"]')).toHaveAttribute("target", "_blank");
+    if (profile.slug === "sic-pizza-pos") await expect(page.locator('a[href="https://pos.yorkstead.com"]')).toHaveAttribute("target", "_blank");
     if (profile.slug === "employee-barcodes") await expect(page.locator('a[href="https://barcodes.4twenty.dev"]')).toHaveAttribute("target", "_blank");
     await expect(page.locator("article article").first()).toBeVisible();
     if (profile.slug === "work-control") {

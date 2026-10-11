@@ -30,7 +30,7 @@ export const publicLabExperiments: LabExperiment[] = [
     limitations: "Uses mocked in-memory state, seeded development PINs, decorative same-browser QR join, and mocked card authorization. Not certified for live payment processing.",
     dataSource: "Synthetic menu items and mock tableside orders.",
     interactionType: "External runnable slice",
-    interactionUrl: "https://sic-pizza.vercel.app",
+    interactionUrl: "https://pos.yorkstead.com",
     technologies: ["Next.js 16", "React 19", "TypeScript", "Drizzle ORM", "Tailwind CSS"],
     findings: [
       "Guest item proposals must require explicit server authorization before kitchen transmission.",
