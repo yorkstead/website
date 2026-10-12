@@ -66,7 +66,7 @@ export const engagements = [
     includes: [
       "Modular capabilities: Command Center, Jobs, Production, Inventory, Scheduling, QC, Shipping, Documents, Reporting, Customer Portal",
       "Structured milestone payments tied to verified progress and written acceptance",
-      "Delivered custom assets, source access, usage rights, and third-party dependencies defined in the proposal",
+      "Agreed custom code and documentation delivered after final payment, with exact scope and third-party dependencies defined in the proposal",
     ],
     cta: { label: "Discuss an operations system", href: "/?engagement=custom-operations-system#contact" },
   },
@@ -91,7 +91,7 @@ export type NamedSystem = ConfirmedNamedSystem;
 export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
   {
     id: "union-os",
-    name: "UnionOS",
+    name: "Union OS",
     category: "Hospitality & Restaurant Operations",
     priceLabel: "$7,500",
     priceType: "fixed",
@@ -112,7 +112,7 @@ export const confirmedNamedSystems: readonly ConfirmedNamedSystem[] = [
       "Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.",
     ],
     caseStudyHref: "/work/table-os",
-    cta: { label: "Inquire about UnionOS", href: "/work/table-os#trial-intake" },
+    cta: { label: "Inquire about Union OS", href: "/work/table-os#trial-intake" },
   },
   {
     id: "rework-flow",
@@ -204,7 +204,7 @@ export const buyingModelElements: readonly CommercialItem[] = [
     title: "Documented Handoff",
     subtitle: "Clear handover so your team can run it",
     description:
-      "Every implementation concludes with documented operation, team onboarding, and delivery of agreed custom assets and source access under clear terms.",
+      "Every implementation concludes with documented operation, team onboarding, and delivery of the agreed custom code and documentation after final payment.",
     points: [
       "Operating instructions and administration guides provided at handoff",
       "Source access and database architecture transferred per proposal terms",
@@ -306,9 +306,9 @@ export const specializedServices = [
   },
   {
     title: "Workflow Rescue",
-    priceLabel: "Scope & pricing confirmed in proposal",
+    priceLabel: "$750 founding client rate",
     summary: "Fast, targeted simplification for smaller businesses.",
-    detail: "Understand the bottleneck, simplify the process, automate 2–3 key steps, build a live dashboard, kill an unwieldy spreadsheet, and document the flow.",
+    detail: "Map and rank the bottlenecks in one frustrating workflow, then receive an Operations Systems Blueprint with a practical next step. Limited to the first three qualified clients, with target delivery within 7 business days after agreed inputs are complete.",
   },
 ] as const satisfies readonly SpecializedService[];
 
@@ -318,10 +318,10 @@ export const milestoneSchedule = [
 ] as const;
 
 export const ownershipStatement =
-  "Continued use of your purchased system does not require a Yorkstead support subscription. Your proposal defines the software and documentation delivered, source access, usage and modification rights, and any third-party dependencies. You can manage ongoing maintenance internally or appoint another provider, subject to those terms.";
+  "You get the agreed custom code and documentation after final payment. Your proposal defines exactly what is delivered, your usage and modification rights, and any third-party dependencies. Continued use does not require a Yorkstead support subscription, and you can maintain the system internally or appoint another provider.";
 
 export const engagementPlanningNote =
-  "Every engagement is scoped to your specific operational requirements. Final scope, price, timing, integrations, migration, and support are confirmed in the agreed proposal before work begins. Implementation uses structured milestone payments confirmed in writing. Delivered assets, source access, usage rights, and third-party dependencies are defined in the proposal; provider costs and optional support are separate.";
+  "Every engagement is scoped to your specific operational requirements. Final scope, price, timing, integrations, migration, and support are confirmed in the agreed proposal before work begins. Implementation uses structured milestone payments confirmed in writing. You receive the agreed custom code and documentation after final payment; the proposal defines the exact delivered scope, usage rights, and third-party dependencies. Provider costs and optional support are separate.";
 
 export const workflowAuditEngagement = engagements[0];
 

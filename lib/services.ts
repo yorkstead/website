@@ -105,7 +105,7 @@ export const publicServices = [
     ],
     typicalEngagement: { label: "Scoped proposal based on workflow complexity, connected APIs, and human review rules", note: "Every deployment is tailored to your operation. Scope, deliverables, milestones, and terms are confirmed in the agreed proposal before work begins." },
     faqs: [
-      { question: "What should be automated first?", answer: "A frequent, rule-driven handoff with a clear input and output—not necessarily the workflow people complain about most. A workflow audit can identify the smallest useful starting point." },
+      { question: "What should be automated first?", answer: "A frequent, rule-driven handoff with a clear input and output—not necessarily the workflow people complain about most. Workflow Rescue can identify the smallest useful starting point." },
       { question: "Will automation remove the human review step?", answer: "Only where the rule is safe and explicit. Pricing judgment, unusual jobs, customer commitments, and failed handoffs often need a visible approval or exception queue." },
       { question: "Can you connect the software we already use?", answer: "Sometimes. Each connection depends on the vendor’s supported API, permissions, rate limits, export options, and commercial terms. Those are verified before an integration is promised." },
       { question: "What happens when an automation fails?", answer: "The workflow should fail visibly, preserve enough context to recover, and avoid silently duplicating work. Failure handling is part of the design, not an afterthought." },

@@ -119,7 +119,7 @@ export default function WorkflowAuditPage() {
             ) : null}
           </div>
           <p className="mt-4 max-w-xl text-xs leading-5 text-muted-foreground">
-            The founding rate covers the review and Blueprint for one workflow. Fit, inputs, and delivery timing are confirmed directly before booking. No payment is collected on this site.
+            Start with a free floor walk if you want to show me the problem first. The $750 founding rate covers the review and Blueprint for one workflow. Fit, inputs, and delivery timing are confirmed directly before paid work begins. No payment is collected on this site.
           </p>
         </div>
 
@@ -150,7 +150,7 @@ export default function WorkflowAuditPage() {
 
       <section className="relative mx-auto max-w-7xl px-5 pb-12 sm:px-8">
         <h2 className="text-2xl font-semibold">Own the solution and the ability to run it</h2>
-        <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">Buy the agreed custom assets with source, operating instructions, and a documented handoff, with a strongly recommended review by a developer you choose and pay. Evaluate client-owned hardware and in-house servers where they add value. Final ownership transfer follows payment. Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation. Optional support retainers cover questions, troubleshooting triage, and scheduled health checks, with scope and terms agreed in the proposal, and are not required to keep using the purchased system.</p>
+        <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">You get the agreed custom code, documentation, and operating instructions after final payment, plus a documented handoff and the freedom to use a developer you choose. Hosting and third-party services are identified separately, and the proposal defines exactly what is delivered. Optional Yorkstead support is available, but it is not required to keep using the purchased system.</p>
       </section>
 
       {/* Process */}

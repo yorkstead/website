@@ -32,6 +32,7 @@ import { caseStudies } from "@/lib/case-studies";
 import { organizationStructuredData } from "@/lib/founder";
 import { publicBusinessDetails, publicBusinessPhoneHref } from "@/lib/local-business";
 import { publicServices } from "@/lib/services";
+import { workflowAuditBookingURL } from "@/lib/workflow-audit-config";
 
 const serviceIcons = { factory: Factory, workflow: GitBranch, website: Globe2, "scan-line": ScanLine };
 
@@ -85,6 +86,7 @@ const operatingExperience = [
 ];
 
 export default function Home() {
+  const bookingURL = workflowAuditBookingURL();
   return (
     <main className="min-h-screen overflow-hidden">
       <script
@@ -262,7 +264,7 @@ export default function Home() {
               <div className="font-mono text-[9px] uppercase tracking-wider text-primary">02 // Real Ownership</div>
               <h3 className="mt-3 text-xl font-semibold tracking-tight">Clear control over your system and data</h3>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Continued use of your purchased system does not require a Yorkstead support subscription. Your proposal defines the software and documentation delivered, source access, usage and modification rights, and any third-party dependencies. You can manage ongoing maintenance internally or appoint another provider, subject to those terms.
+                You get the agreed custom code and documentation after final payment. The proposal defines exactly what is delivered, your usage and modification rights, and any third-party dependencies. Continued use does not require a Yorkstead support subscription, and you can maintain the system internally or appoint another provider.
               </p>
               <ul className="mt-6 space-y-2.5 border-t border-border pt-6 text-xs leading-5 text-muted-foreground">
                 <li className="flex items-start gap-2">
@@ -346,7 +348,7 @@ export default function Home() {
               </p>
               <div className="mt-6 border-t border-border pt-4">
                 <Link href="/workflow-audit" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline">
-                  Learn about the workflow audit <ArrowRight className="size-3" />
+                  Learn about Workflow Rescue <ArrowRight className="size-3" />
                 </Link>
               </div>
             </div>
@@ -520,13 +522,16 @@ export default function Home() {
                 I bring production management, CNC fabrication, inventory, shipping, and day-to-day operations experience to the software side of the problem. That combination keeps the work grounded in what actually happens between the office, shop floor, truck, and customer.
               </p>
               <TrackedLink
-                href="/workflow-audit"
-                event="workflow_audit_cta_click"
-                metadata={{ placement: "homepage-operators" }}
+                href={bookingURL}
+                target="_blank"
+                rel="noreferrer"
+                event="external_booking_link_click"
+                metadata={{ destination: "free-floor-walk", placement: "homepage-operators" }}
                 className="mt-8 inline-flex h-11 items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-5 text-sm font-medium text-primary transition hover:bg-primary/15"
               >
-                Book a workflow audit <ArrowRight className="size-4" />
+                Book a free floor walk <ArrowRight className="size-4" />
               </TrackedLink>
+              <p className="mt-3 font-mono text-[10px] text-muted-foreground">cal.com/yorkstead · no charge</p>
             </div>
             <div className="border-t border-border lg:border-l lg:border-t-0 lg:pl-10">
               <div className="py-4 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground lg:pt-0">

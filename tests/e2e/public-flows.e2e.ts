@@ -98,7 +98,7 @@ test("mobile layout keeps audit navigation usable", async ({ page }) => {
   await expectNoHorizontalDocumentOverflow(page);
   await expect(page.getByRole("link", { name: "Command Center" })).toBeHidden();
   await expect(page.getByRole("link", { name: "Contact", exact: true })).toBeHidden();
-  await page.getByRole("link", { name: "Book a workflow audit" }).first().click();
+  await page.getByRole("link", { name: "Workflow Rescue" }).first().click();
   await expect(page).toHaveURL(/\/workflow-audit$/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("operations get stuck");
   await expectNoHorizontalDocumentOverflow(page);

@@ -51,9 +51,9 @@ describe("public engagement offers and buying model", () => {
     const ids = confirmedNamedSystems.map((s) => s.id);
     expect(ids).toEqual(["union-os", "rework-flow", "expanded-warehousing"]);
 
-    // UnionOS
+    // Union OS
     const unionOS = confirmedNamedSystems.find((s) => s.id === "union-os");
-    expect(unionOS?.name).toBe("UnionOS");
+    expect(unionOS?.name).toBe("Union OS");
     expect(unionOS?.priceLabel).toBe("$7,500");
     expect(unionOS?.priceType).toBe("fixed");
     expect(unionOS?.readinessLabel).toBe("Interactive concept demonstration");
@@ -122,7 +122,7 @@ describe("public engagement offers and buying model", () => {
 
   test("exports the verbatim approved ownership statement", () => {
     const expectedOwnership =
-      "Continued use of your purchased system does not require a Yorkstead support subscription. Your proposal defines the software and documentation delivered, source access, usage and modification rights, and any third-party dependencies. You can manage ongoing maintenance internally or appoint another provider, subject to those terms.";
+      "You get the agreed custom code and documentation after final payment. Your proposal defines exactly what is delivered, your usage and modification rights, and any third-party dependencies. Continued use does not require a Yorkstead support subscription, and you can maintain the system internally or appoint another provider.";
     expect(ownershipStatement).toBe(expectedOwnership);
   });
 
@@ -144,9 +144,11 @@ describe("public engagement offers and buying model", () => {
     expect(serializedMilestones).not.toContain("30%");
     expect(serializedMilestones).not.toContain("10%");
 
-    // Specialized services - all proposal-based
+    // Specialized services keep implementation work proposal-based while Workflow Rescue carries its approved founding rate.
     expect(specializedServices.length).toBe(3);
-    specializedServices.forEach((s) => {
+    const workflowRescue = specializedServices.find((service) => service.title === "Workflow Rescue");
+    expect(workflowRescue?.priceLabel).toBe("$750 founding client rate");
+    specializedServices.filter((service) => service.title !== "Workflow Rescue").forEach((s) => {
       expect(s.priceLabel).toContain("confirmed in proposal");
       expect(s.priceLabel).not.toContain("$");
     });
