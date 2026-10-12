@@ -183,7 +183,7 @@ export default function PlatformPage() {
             Ready to configure a system for your shop?
           </h2>
           <p className="mt-3 text-sm text-muted-foreground max-w-xl mx-auto">
-            Book a workflow audit to map your physical shopfloor handoffs into a unified operational software architecture.
+            Start Workflow Rescue to map your physical shopfloor handoffs into a unified operational software architecture.
           </p>
           <div className="mt-6">
             <Link href="/packages#operations" className="mb-4 inline-flex min-h-11 items-center gap-2 rounded-lg border border-primary/30 px-6 text-sm font-medium text-primary sm:mb-0 sm:mr-4">

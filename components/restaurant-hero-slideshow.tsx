@@ -168,7 +168,7 @@ export function RestaurantHeroSlideshow() {
       <div className="grid border-b border-border bg-background/50 text-xs sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
         <div className="flex items-center justify-between px-5 py-2.5 sm:px-7">
           <span className="text-muted-foreground">
-            <strong className="text-foreground">Explore it now:</strong> Launch the online UnionOS simulation.
+            <strong className="text-foreground">Explore it now:</strong> Launch the online Union OS simulation.
           </span>
           <a
             href="https://240.yorkstead.com"

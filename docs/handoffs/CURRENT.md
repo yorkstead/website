@@ -1,9 +1,9 @@
 # Current handoff
 
-- Active feature: Workflow Rescue public launch slice
-- Active spec: `specs/001-workflow-rescue-launch/`
-- Current task: Complete — owner-approved production release.
-- Last verified: Preflight, six migrations, lint, typecheck, 219 tests, security review, production build, and protected preview approval passed on 2026-10-11.
-- Next action: Monitor production and run the Workflow Rescue launch arc inside the 30 Days to Market campaign.
+- Active feature: 30 Days to Market site alignment
+- Active spec: `specs/002-social-plan-site-alignment/`
+- Current task: T003 — align booking, restaurant naming, and ownership wording before Week 2.
+- Last verified: Every campaign destination through Week 3 and the Cal.com free floor-walk page returned HTTP 200 on 2026-10-11.
+- Next action: Run repository verification and deploy the alignment slice.
 - Blockers: None.
-- Recommended role: Growth operator and release monitor.
+- Recommended role: Growth operator and release engineer.

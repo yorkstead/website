@@ -24,7 +24,7 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
     await expect(reworkCard.getByText("Included configuration, implementation, integrations, and handoff are defined in the proposal.")).toBeVisible();
     await expect(reworkCard.getByText("Working demonstration")).toBeVisible();
 
-    const unionCard = page.locator("article", { hasText: "UnionOS" });
+    const unionCard = page.locator("article", { hasText: "Union OS" });
     await expect(unionCard).toBeVisible();
     await expect(unionCard.getByText("$7,500", { exact: true })).toBeVisible();
     await expect(unionCard.getByText("Included configuration, implementation, integrations, and handoff are defined in the proposal.")).toBeVisible();

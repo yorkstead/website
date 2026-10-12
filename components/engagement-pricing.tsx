@@ -14,7 +14,7 @@ export function EngagementPricing() {
               Buy the system. Choose the support.
             </h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              A structured ladder from initial workflow audit to a tailored company operating system. You purchase the software; continued use does not depend on a mandatory Yorkstead subscription.
+              A structured ladder from Workflow Rescue to a tailored company operating system. You purchase the software; continued use does not depend on a mandatory Yorkstead subscription.
             </p>
           </div>
           <div className="space-y-3">
@@ -73,4 +73,3 @@ export function EngagementPricing() {
     </section>
   );
 }
-

@@ -11,7 +11,7 @@ describe("case study data", () => {
   test("assigns an explicit, supported status to every current project", () => {
     expect(Object.fromEntries(caseStudies.map((study) => [study.title, study.status]))).toEqual({
       "Rework Flow": "In development",
-      "TableOS": "In development",
+      "Union OS": "In development",
       "Ellwood Flow": "Concept prototype",
       "Yorkstead Operations": "In development",
       "jwld.store": "Live system",

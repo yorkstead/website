@@ -27,7 +27,7 @@ function SubmitButton() {
 }
 
 export function WorkflowAuditBookingLink({ href, className }: { href: string; className?: string }) {
-  return <TrackedLink href={href} target="_blank" rel="noreferrer" event="external_booking_link_click" metadata={{ destination: "workflow-rescue-booking" }} className={className}>Book the review call <ArrowRight className="size-4" /></TrackedLink>;
+  return <TrackedLink href={href} target="_blank" rel="noreferrer" event="external_booking_link_click" metadata={{ destination: "workflow-rescue-booking" }} className={className}>Book a free floor walk <ArrowRight className="size-4" /></TrackedLink>;
 }
 
 export function WorkflowAuditForm({ bookingURL }: { bookingURL: string | null }) {

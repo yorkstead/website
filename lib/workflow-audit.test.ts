@@ -39,9 +39,9 @@ describe("workflow audit intake", () => {
     expect(await processWorkflowAudit(valid, { countRecent: async () => { throw new Error("offline"); }, insert: async () => 1 })).toMatchObject({ status: "server_error", error: new Error("offline") });
   });
 
-  test("accepts only configured HTTPS booking links", () => {
+  test("accepts configured HTTPS booking links and safely falls back for invalid values", () => {
     expect(workflowAuditBookingURL("https://calendar.example.com/audit")).toBe("https://calendar.example.com/audit");
-    expect(workflowAuditBookingURL("http://calendar.example.com/audit")).toBeNull();
-    expect(workflowAuditBookingURL("not-a-url")).toBeNull();
+    expect(workflowAuditBookingURL("http://calendar.example.com/audit")).toBe("https://cal.com/yorkstead");
+    expect(workflowAuditBookingURL("not-a-url")).toBe("https://cal.com/yorkstead");
   });
 });
