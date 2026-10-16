@@ -671,7 +671,7 @@ export default function Home() {
         </div>
       </section>
 
-      <SiteFooter systemForm="core">
+      <SiteFooter systemForm="ownership">
         <nav aria-label="Service pages" className="flex flex-wrap gap-x-5 gap-y-2 lg:justify-end">
           {publicServices.map((service) => (
             <Link key={service.slug} href={`/services/${service.slug}`} className="transition hover:text-foreground">
