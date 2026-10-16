@@ -100,12 +100,16 @@ button, a { cursor: pointer; }
 ::selection { background: color-mix(in oklab, var(--primary) 35%, transparent); }
 
 .system-form {
+  --system-form-x: 84vw;
+  --system-form-y: 34vh;
   position: fixed;
   z-index: 12;
-  top: clamp(8rem, 18vh, 12rem);
-  right: clamp(-1.25rem, 1vw, 1rem);
+  top: var(--system-form-y);
+  left: var(--system-form-x);
   width: clamp(12rem, 24vw, 22rem);
   aspect-ratio: 1;
+  transform: translate3d(-50%, -50%, 0);
+  will-change: top, left;
   pointer-events: none;
   opacity: 0.58;
   mix-blend-mode: multiply;
@@ -138,7 +142,7 @@ button, a { cursor: pointer; }
 .system-form-fallback i { position: absolute; inset: 28%; border: 1px solid color-mix(in oklab, var(--primary) 24%, transparent); border-radius: 50%; }
 
 @media (max-width: 700px) {
-  .system-form { top: 7.5rem; right: -2.75rem; width: 11rem; opacity: 0.38; }
+  .system-form { --system-form-x: 78vw; --system-form-y: 28vh; width: 11rem; opacity: 0.38; }
 }
 
 @media (prefers-reduced-motion: reduce) {

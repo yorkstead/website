@@ -15,6 +15,24 @@ type MotionState = {
 const desktopParticleCount = 84;
 const mobileParticleCount = 42;
 const maximumSpread = 0.28;
+const desktopPlacements = [
+  [84, 34],
+  [82, 68],
+  [64, 76],
+  [18, 62],
+  [18, 28],
+  [74, 22],
+  [84, 62],
+] as const;
+const mobilePlacements = [
+  [78, 28],
+  [80, 68],
+  [72, 74],
+  [28, 68],
+  [24, 26],
+  [76, 22],
+  [78, 64],
+] as const;
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState<boolean | null>(null);
@@ -142,10 +160,11 @@ function SystemParticles({
     positionAttribute.needsUpdate = true;
 
     const elapsed = clock.getElapsedTime();
-    const breath = 1 + Math.sin(elapsed * 0.82) * 0.012;
+    const breath = 1 + Math.sin(elapsed * 0.82) * 0.02;
     group.current.scale.setScalar(breath);
-    group.current.rotation.x = Math.sin(elapsed * 0.18) * 0.018;
-    group.current.rotation.y = Math.sin(elapsed * 0.14 + 0.8) * 0.026;
+    group.current.rotation.x = Math.sin(elapsed * 0.38) * 0.035;
+    group.current.rotation.y = Math.sin(elapsed * 0.31 + 0.8) * 0.045;
+    group.current.rotation.z = Math.sin(elapsed * 0.46 + 1.2) * 0.014;
   });
 
   return (
@@ -182,10 +201,20 @@ export function SystemForm() {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion !== false || webglAvailable !== true) return;
+    if (reducedMotion !== false || webglAvailable !== true || mobile === null) return;
 
     let cancelled = false;
     let cleanup: (() => void) | undefined;
+
+    const updatePlacement = (fromIndex: number, toIndex: number, progress: number) => {
+      if (!root.current) return;
+      const placements = mobile ? mobilePlacements : desktopPlacements;
+      const from = placements[fromIndex];
+      const to = placements[toIndex];
+      const eased = progress * progress * (3 - 2 * progress);
+      root.current.style.setProperty("--system-form-x", `${THREE.MathUtils.lerp(from[0], to[0], eased)}vw`);
+      root.current.style.setProperty("--system-form-y", `${THREE.MathUtils.lerp(from[1], to[1], eased)}vh`);
+    };
 
     void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(([gsapModule, scrollTriggerModule]) => {
       if (cancelled) return;
@@ -194,52 +223,62 @@ export function SystemForm() {
       gsap.registerPlugin(ScrollTrigger);
 
       const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-system-form]"));
-      const context = gsap.context(() => {
-        sections.slice(1).forEach((section, transitionIndex) => {
-          const proxy = { progress: 0 };
-          const tween = gsap.fromTo(
-            proxy,
-            { progress: 0 },
-            {
-              progress: 1,
-              ease: "none",
-              immediateRender: false,
-              onUpdate: () => {
-                if (!tween.scrollTrigger?.isActive) return;
-                motion.current.fromIndex = transitionIndex;
-                motion.current.toIndex = transitionIndex + 1;
-                motion.current.progress = proxy.progress;
-              },
-              scrollTrigger: {
-                trigger: section,
-                start: "top 86%",
-                end: "top 42%",
-                scrub: 0.45,
-                invalidateOnRefresh: true,
-                onUpdate: (self) => {
-                  motion.current.velocity = Math.min(2200, Math.abs(self.getVelocity()));
-                },
-                onLeave: () => {
-                  motion.current = { fromIndex: transitionIndex + 1, toIndex: transitionIndex + 1, progress: 1, velocity: 0 };
-                },
-                onLeaveBack: () => {
-                  motion.current = { fromIndex: transitionIndex, toIndex: transitionIndex, progress: 0, velocity: 0 };
-                },
-              },
-            },
-          );
-        });
-      }, root);
+      const triggers = sections.slice(1).map((section, transitionIndex) =>
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 86%",
+          end: "top 42%",
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (!self.isActive) return;
+            motion.current = {
+              fromIndex: transitionIndex,
+              toIndex: transitionIndex + 1,
+              progress: self.progress,
+              velocity: Math.min(2200, Math.abs(self.getVelocity())),
+            };
+            updatePlacement(transitionIndex, transitionIndex + 1, self.progress);
+          },
+          onLeave: () => {
+            motion.current = { fromIndex: transitionIndex + 1, toIndex: transitionIndex + 1, progress: 1, velocity: 0 };
+            updatePlacement(transitionIndex + 1, transitionIndex + 1, 1);
+          },
+          onLeaveBack: () => {
+            motion.current = { fromIndex: transitionIndex, toIndex: transitionIndex, progress: 0, velocity: 0 };
+            updatePlacement(transitionIndex, transitionIndex, 0);
+          },
+        }),
+      );
 
       ScrollTrigger.refresh();
-      cleanup = () => context.revert();
+      const activeTransition = triggers.findIndex((trigger) => trigger.isActive);
+      if (activeTransition >= 0) {
+        const trigger = triggers[activeTransition];
+        motion.current = {
+          fromIndex: activeTransition,
+          toIndex: activeTransition + 1,
+          progress: trigger.progress,
+          velocity: 0,
+        };
+        updatePlacement(activeTransition, activeTransition + 1, trigger.progress);
+      } else {
+        const completedTransitions = triggers.filter((trigger) => trigger.progress >= 1).length;
+        motion.current = {
+          fromIndex: completedTransitions,
+          toIndex: completedTransitions,
+          progress: 1,
+          velocity: 0,
+        };
+        updatePlacement(completedTransitions, completedTransitions, 1);
+      }
+      cleanup = () => triggers.forEach((trigger) => trigger.kill());
     });
 
     return () => {
       cancelled = true;
       cleanup?.();
     };
-  }, [reducedMotion, webglAvailable]);
+  }, [mobile, reducedMotion, webglAvailable]);
 
   const useFallback = reducedMotion !== false || webglAvailable !== true;
 
