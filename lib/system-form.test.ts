@@ -27,11 +27,11 @@ describe("SystemForm geometry", () => {
 
   test("maps scroll states to recognizable operational drawings", () => {
     expect(systemFormSubjects).toEqual({
-      architecture: "shop-drawing",
-      disorder: "clipboard",
-      flow: "shopfloor-layout",
-      structure: "assembly-drawing",
-      network: "pos-terminal",
+      architecture: "software-shop-blueprint",
+      disorder: "workflow-audit-clipboard",
+      flow: "production-flow-map",
+      structure: "modular-system-assembly",
+      network: "connected-pos-terminal",
     });
   });
 
@@ -64,7 +64,10 @@ describe("SystemForm geometry", () => {
     for (const fragments of Object.values(first)) {
       expect(fragments).toHaveLength(typescriptFragments.length);
       for (const fragment of fragments) {
-        expect([...fragment.position, ...fragment.spread].every(Number.isFinite)).toBe(true);
+        expect(
+          [...fragment.position, ...fragment.spread, fragment.scale, fragment.rotation].every(Number.isFinite),
+        ).toBe(true);
+        expect(fragment.scale).toBeGreaterThan(0);
       }
     }
   });
