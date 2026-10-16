@@ -37,7 +37,7 @@ test.describe("jwld.store case study and portfolio verification", () => {
       await expect(page.getByRole("heading", { name: "jwld.store", level: 1 })).toBeVisible();
       await expect(page.locator('a[href="/media/jwld/jwld-store-showcase.pdf"]').first()).toBeVisible();
       await expect(page.locator('a[href="/packages"]').first()).toBeVisible();
-      await expect(page.locator('a[href="https://jwld.store"]').first()).toHaveAttribute("target", "_blank");
+      await expect(page.locator('a[href="/work/jwld-store#project-media-heading"]').first()).toBeVisible();
       await expect(page.getByRole("link", { name: /Discuss your commerce workflow/i }).first()).toHaveAttribute("href", "/#contact");
 
       // Verify gallery images exist and are displayed

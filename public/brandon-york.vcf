@@ -8,6 +8,6 @@ EMAIL;TYPE=INTERNET,WORK:brandon@yorkstead.com
 EMAIL;TYPE=INTERNET,OFFICE:hello@yorkstead.com
 URL;TYPE=WORK:https://yorkstead.com
 URL;TYPE=PORTAL:https://yorkstead.com/connect
-URL;TYPE=OPERATIONS:https://ops.yorkstead.com
+URL;TYPE=WORK:https://yorkstead.com
 NOTE:Industrial Software & Workflow Automation for Manufacturing, Logistics, and Hospitality.
 END:VCARD

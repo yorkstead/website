@@ -316,7 +316,7 @@ export const caseStudies: CaseStudy[] = [
       { title: "Connected store operations", description: "Anchor stock reservations, checkout sessions, and administrative order handling in source-backed workflows that connect front-of-house intent to behind-the-scenes work." },
     ],
     paths: [
-      { label: "Visit the live store", description: "Explore the current branded catalog, product pages, shopping bag, and custom-commission path.", href: "https://jwld.store", external: true },
+      { label: "View the storefront gallery", description: "Explore verified storefront, product-detail, shopping-bag, and custom-commission screens in the gallery below.", href: "/work/jwld-store#project-media-heading" },
       { label: "Read the commerce showcase", description: "Open the supplied eight-page booklet covering storefront discovery, buying paths, and source-backed operations.", href: "/media/jwld/jwld-store-showcase.pdf" },
       { label: "Websites and online commerce", description: "Explore storefront, catalog, marketplace, intake, and operational-integration options for a product-led business.", href: "/services/small-business-websites" },
       { label: "Packages, process & pricing", description: "Compare fixed-scope options from a Workflow Sprint to complete department and operations systems.", href: "/packages" },
@@ -568,7 +568,7 @@ export const caseStudies: CaseStudy[] = [
       { title: "Rapid label distribution", description: "Search active employees, preview a standardized label, print individual or multi-label sheets, and share a generated PNG when a physical label is needed quickly." },
     ],
     paths: [
-      { label: "Explore the barcode tool", description: "Use the deployed employee-label workflow for directory management, barcode preview, print-sheet composition, and label sharing.", href: "https://barcodes.4twenty.dev", external: true },
+      { label: "Explore the barcode walkthrough", description: "Review the employee directory, barcode preview, print-sheet composition, and label sharing workflow on Yorkstead.", href: "/demos/barcodes" },
       { label: "Manufacturing software", description: "Connect operator identity to job, panel, part, quality, inventory, packaging, or completion records inside a broader production system.", href: "/services/manufacturing-software" },
       { label: "Workflow automation", description: "Design the downstream scan event, validation, exception, notification, and reporting flow that gives the barcode operational meaning.", href: "/services/workflow-automation" },
     ],

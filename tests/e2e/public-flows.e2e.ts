@@ -35,7 +35,7 @@ test("homepage renders and primary navigation reaches the about page", async ({ 
 test("workflow audit form exposes native required-field validation", async ({ page }) => {
   const assertNoErrors = failOnBrowserErrors(page);
   await page.goto("/workflow-audit#audit-intake");
-  await page.getByRole("button", { name: "Request workflow audit" }).click();
+  await page.getByRole("button", { name: "Request Workflow Rescue" }).click();
   await expect(page.locator("#audit-name")).toBeFocused();
   await expect(page.locator("#audit-name")).toHaveJSProperty("validity.valueMissing", true);
   await expect(page).toHaveURL(/\/workflow-audit/);
@@ -100,7 +100,7 @@ test("mobile layout keeps audit navigation usable", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Contact", exact: true })).toBeHidden();
   await page.getByRole("link", { name: "Workflow Rescue" }).first().click();
   await expect(page).toHaveURL(/\/workflow-audit$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("operations get stuck");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("workflow your team hates");
   await expectNoHorizontalDocumentOverflow(page);
   assertNoErrors();
 });
@@ -130,9 +130,9 @@ test("project profiles connect industries and uses to relevant service paths", a
     await page.goto(`/work/${profile.slug}`);
     await expect(page.getByRole("heading", { name: "Industries and applicable uses" })).toBeVisible();
     await expect(page.locator(`a[href="${profile.service}"]`)).toBeVisible();
-    if (profile.slug === "jwld-store") await expect(page.locator('a[href="https://jwld.store"]')).toHaveAttribute("target", "_blank");
+    if (profile.slug === "jwld-store") await expect(page.locator('a[href="/work/jwld-store#project-media-heading"]')).toBeVisible();
     if (profile.slug === "sic-pizza-pos") await expect(page.locator('a[href="https://pos.yorkstead.com"]')).toHaveAttribute("target", "_blank");
-    if (profile.slug === "employee-barcodes") await expect(page.locator('a[href="https://barcodes.4twenty.dev"]')).toHaveAttribute("target", "_blank");
+    if (profile.slug === "employee-barcodes") await expect(page.locator('a[href="/demos/barcodes"]')).toBeVisible();
     await expect(page.locator("article article").first()).toBeVisible();
     if (profile.slug === "work-control") {
       const featuredImage = page.getByAltText("Yorkstead Operations executive cockpit with delivery tasks, calendar, module quicklinks, and infrastructure status").first();

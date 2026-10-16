@@ -63,7 +63,7 @@ describe("case study data", () => {
         if (study.slug === "table-os") {
           expect(study.paths.some(({ href }) => href === "https://240.yorkstead.com")).toBeTrue();
         } else {
-          expect(study.paths.some(({ href }) => href.startsWith("https://ops.yorkstead.com/") || href.startsWith("/demos/"))).toBeTrue();
+          expect(study.paths.some(({ href }) => href.startsWith("/demos/"))).toBeTrue();
         }
       } else expect(study.paths.some(({ href }) => href.startsWith("/services/"))).toBeTrue();
     }
@@ -131,7 +131,7 @@ describe("case study data", () => {
     const study = getCaseStudy("jwld-store");
     expect(study?.status).toBe("Live system");
     expect(study?.kicker).toBe("Commerce");
-    expect(study?.paths.some(({ href }) => href === "https://jwld.store")).toBeTrue();
+    expect(study?.paths.some(({ href }) => href === "/work/jwld-store#project-media-heading")).toBeTrue();
     expect(study?.paths.some(({ href }) => href === "/media/jwld/jwld-store-showcase.pdf")).toBeTrue();
     expect(study?.paths.some(({ href }) => href === "/services/small-business-websites")).toBeTrue();
     expect(study?.paths.some(({ href }) => href === "/packages")).toBeTrue();
@@ -154,7 +154,7 @@ describe("case study data", () => {
   test("positions employee barcodes as a previously used identity-label tool with explicit scan boundaries", () => {
     const study = getCaseStudy("employee-barcodes");
     expect(study?.status).toBe("Previously used");
-    expect(study?.paths.some(({ href }) => href === "https://barcodes.4twenty.dev")).toBeTrue();
+    expect(study?.paths.some(({ href }) => href === "/demos/barcodes")).toBeTrue();
     expect(study?.paths.some(({ href }) => href === "/services/manufacturing-software")).toBeTrue();
     expect(study?.capabilities).toContain("Shareable PNG label output");
     expect(study?.limitations.toLowerCase()).toContain("does not itself record scanner events");
