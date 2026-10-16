@@ -26,7 +26,7 @@ describe("business card contact", () => {
   });
 
   test("database constraint allows every conversion event the app records", () => {
-    const migration = readFileSync(resolve(import.meta.dir, "../migrations/0006_workflow-rescue-conversion-events.sql"), "utf8");
+    const migration = readFileSync(resolve(import.meta.dir, "../migrations/0007_analytics-foundation.sql"), "utf8");
     for (const name of conversionEventNames) expect(migration).toContain(`'${name}'`);
   });
 });

@@ -1,9 +1,11 @@
-import { isConversionEventName, recordConversionEvent } from "@/lib/conversion-analytics";
-import { hashedRequestAddress } from "@/lib/request-privacy";
+import { normalizeAnalyticsAttribution } from "@/lib/analytics-attribution";
+import { isAnalyticsEventName, sanitizeAnalyticsProperties } from "@/lib/analytics-contract";
+import { analyticsDeviceType } from "@/lib/analytics-request-context";
+import { recordConversionEvent } from "@/lib/conversion-analytics";
+import { hashedAnalyticsSession, hashedRequestAddress } from "@/lib/request-privacy";
 
 export const runtime = "nodejs";
 
-const metadataKeys = new Set(["field", "fields", "service", "caseStudy", "placement", "destination", "projectType", "page", "source", "campaign", "problemAreas", "status", "content_name", "band"]);
 const privatePaths = ["/api", "/account", "/dashboard", "/login"];
 
 function safePath(value: unknown) {
@@ -11,23 +13,27 @@ function safePath(value: unknown) {
   return value.slice(0, 200);
 }
 
-function safeMetadata(value: unknown) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  const metadata: Record<string, string | string[]> = {};
-  for (const [key, item] of Object.entries(value)) {
-    if (!metadataKeys.has(key)) continue;
-    if (typeof item === "string") metadata[key] = item.slice(0, 120);
-    if (Array.isArray(item)) metadata[key] = item.filter((entry): entry is string => typeof entry === "string").slice(0, 20).map((entry) => entry.slice(0, 80));
-  }
-  return metadata;
-}
-
 export async function POST(request: Request) {
-  if (Number(request.headers.get("content-length") ?? 0) > 2048) return new Response(null, { status: 413 });
+  if (process.env.NEXT_PUBLIC_FIRST_PARTY_ANALYTICS === "disabled") return new Response(null, { status: 204 });
+  if (!process.env.DATABASE_URL || process.env.DATABASE_URL === "[SENSITIVE]") return new Response(null, { status: 204 });
+  if (Number(request.headers.get("content-length") ?? 0) > 4096) return new Response(null, { status: 413 });
   try {
-    const body = await request.json() as { event?: unknown; path?: unknown; metadata?: unknown };
-    if (!isConversionEventName(body.event)) return new Response(null, { status: 400 });
-    await recordConversionEvent({ event: body.event, path: safePath(body.path), metadata: safeMetadata(body.metadata), visitorHash: hashedRequestAddress(request.headers, "conversion-analytics", true) });
+    const body = await request.json() as { event?: unknown; path?: unknown; metadata?: unknown; context?: { eventId?: unknown; sessionId?: unknown; attribution?: unknown } };
+    if (!isAnalyticsEventName(body.event)) return new Response(null, { status: 400 });
+    const eventId = typeof body.context?.eventId === "string" && /^[0-9a-f-]{36}$/i.test(body.context.eventId) ? body.context.eventId : undefined;
+    const sessionId = typeof body.context?.sessionId === "string" ? body.context.sessionId : undefined;
+    await recordConversionEvent({
+      event: body.event,
+      path: safePath(body.path),
+      metadata: sanitizeAnalyticsProperties(body.event, body.metadata),
+      visitorHash: hashedRequestAddress(request.headers, "conversion-analytics", true),
+      eventId,
+      sessionHash: hashedAnalyticsSession(sessionId),
+      attribution: normalizeAnalyticsAttribution(body.context?.attribution),
+      deviceType: analyticsDeviceType(request.headers.get("user-agent")),
+      countryCode: request.headers.get("x-vercel-ip-country") ?? "",
+      regionCode: request.headers.get("x-vercel-ip-country-region") ?? "",
+    });
     return new Response(null, { status: 202 });
   } catch (error) {
     console.error("Conversion event unavailable", error instanceof Error ? error.message : "unknown error");

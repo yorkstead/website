@@ -119,7 +119,7 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
 
     // Test workflow audit form native validation
     await page.goto("/workflow-audit#audit-intake");
-    const submitBtn = page.getByRole("button", { name: "Request workflow audit" });
+    const submitBtn = page.getByRole("button", { name: "Request Workflow Rescue" });
     await submitBtn.click();
 
     // Browser native validation should block submission and set valueMissing on required name field
@@ -141,7 +141,7 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
   });
 
   test("5. First-party analytics: isolated event dispatch without third-party leaks", async ({ page }) => {
-    let dispatchedPayload = null;
+    const dispatchedPayloads: Array<Record<string, unknown>> = [];
     let thirdPartyLeakDetected = false;
 
     // Intercept all requests to track first-party events and catch external leaks
@@ -149,9 +149,9 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
       const url = route.request().url();
       if (url.includes("/api/analytics/events")) {
         try {
-          dispatchedPayload = JSON.parse(route.request().postData() || "{}");
+          dispatchedPayloads.push(JSON.parse(route.request().postData() || "{}") as Record<string, unknown>);
         } catch {
-          dispatchedPayload = null;
+          // Malformed analytics payloads remain absent from the verified event set.
         }
         await route.fulfill({
           status: 202,
@@ -175,9 +175,9 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
     await page.waitForTimeout(1000);
 
     // Verify first-party conversion measurement captured the interaction with exact payload
-    expect(Boolean(dispatchedPayload)).toBe(true);
-    expect(dispatchedPayload?.["event"]).toBe("workflow_audit_view");
-    expect(dispatchedPayload?.["path"]).toBe("/workflow-audit");
+    const workflowAuditView = dispatchedPayloads.find((payload) => payload.event === "workflow_audit_view");
+    expect(Boolean(workflowAuditView)).toBe(true);
+    expect(workflowAuditView?.path).toBe("/workflow-audit");
 
     // Verify zero third-party advertising leaks occurred
     expect(thirdPartyLeakDetected).toBe(false);

@@ -48,10 +48,10 @@ describe("Analytics persistence and API route", () => {
 
     const insertQuery = executedQueries.find((q) => q.text.includes("INSERT INTO conversion_events"));
     expect(insertQuery).toBeDefined();
-    expect(insertQuery!.values[0]).toBe("case_study_view");
-    expect(insertQuery!.values[1]).toBe("/work/rework-flow");
-    expect(insertQuery!.values[2]).toBe(JSON.stringify({ caseStudy: "rework-flow" }));
-    expect(insertQuery!.values[3]).toBe("test-visitor-hash-123");
+    expect(insertQuery!.values[1]).toBe("case_study_view");
+    expect(insertQuery!.values[2]).toBe("/work/rework-flow");
+    expect(insertQuery!.values[3]).toBe(JSON.stringify({ caseStudy: "rework-flow" }));
+    expect(insertQuery!.values[4]).toBe("test-visitor-hash-123");
   });
 
   test("recordConversionEvent enforces 100/hr rate limit per visitor hash", async () => {
@@ -114,8 +114,8 @@ describe("Analytics persistence and API route", () => {
 
     const insertQuery = executedQueries.find((q) => q.text.includes("INSERT INTO conversion_events"));
     expect(insertQuery).toBeDefined();
-    expect(insertQuery!.values[0]).toBe("workflow_audit_cta_click");
-    expect(insertQuery!.values[1]).toBe("/workflow-audit");
+    expect(insertQuery!.values[1]).toBe("workflow_audit_cta_click");
+    expect(insertQuery!.values[2]).toBe("/workflow-audit");
   });
 
   test("POST /api/analytics/events returns 202 when database storage fails without claiming event was saved", async () => {
@@ -167,13 +167,13 @@ describe("Analytics persistence and API route", () => {
     expect(executedQueries.length).toBe(0);
   });
 
-  test("POST /api/analytics/events returns 413 when content-length exceeds 2048 bytes", async () => {
+  test("POST /api/analytics/events returns 413 when content-length exceeds 4096 bytes", async () => {
     const { POST } = await import("@/app/api/analytics/events/route");
     const request = new Request("https://yorkstead.test/api/analytics/events", {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "content-length": "2049",
+        "content-length": "4097",
       },
       body: JSON.stringify({ event: "page_view" }),
     });
@@ -189,7 +189,7 @@ describe("Analytics persistence and API route", () => {
       event: "page_view",
       path: "/dashboard/leads", // Private path should be sanitized to "/"
       metadata: {
-        caseStudy: "rework-flow", // Allowed key
+        title: "Public page", // Allowed for page_view
         maliciousKey: "secret_data", // Disallowed key, should be stripped
       },
     };
@@ -209,9 +209,9 @@ describe("Analytics persistence and API route", () => {
 
     const insertQuery = executedQueries.find((q) => q.text.includes("INSERT INTO conversion_events"));
     expect(insertQuery).toBeDefined();
-    expect(insertQuery!.values[1]).toBe("/"); // Sanitized path
-    const parsedMetadata = JSON.parse(insertQuery!.values[2] as string);
-    expect(parsedMetadata.caseStudy).toBe("rework-flow");
+    expect(insertQuery!.values[2]).toBe("/"); // Sanitized path
+    const parsedMetadata = JSON.parse(insertQuery!.values[3] as string);
+    expect(parsedMetadata.title).toBe("Public page");
     expect(parsedMetadata.maliciousKey).toBeUndefined();
   });
 });

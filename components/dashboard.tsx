@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Activity, AlertCircle, Archive, ArrowRightCircle, CalendarDays, CheckCircle2, CircleDot, Clock3, Command,
+  Activity, AlertCircle, Archive, ArrowRightCircle, BarChart3, CalendarDays, CheckCircle2, CircleDot, Clock3, Command,
   DatabaseBackup, Download, Flame, Inbox, KeyRound, CornerDownLeft, Grid2X2, Keyboard, LayoutDashboard,
   Lightbulb, ListChecks, ListFilter, Pencil, BookOpenCheck, ClipboardCheck, DownloadCloud, Gauge, Megaphone, Plus,
   RefreshCw, RotateCcw, RotateCw, Search, Settings, Sparkles, Square, Target, TerminalSquare, Trash2, Upload, X,
@@ -681,6 +681,7 @@ export function Dashboard() {
       { id: "tasks", section: "Navigate", label: "Go to tasks", hint: "Daily actions", icon: <ListChecks />, run: () => document.querySelector("#tasks")?.scrollIntoView() },
       { id: "activity", section: "Navigate", label: "Go to activity", hint: "Workspace history", icon: <Activity />, run: () => document.querySelector("#activity")?.scrollIntoView() },
       { id: "leads", section: "Navigate", label: "Client leads", hint: "Lead pipeline & inquiries", icon: <Inbox />, run: () => router.push("/dashboard/leads") },
+      { id: "analytics", section: "Navigate", label: "Analytics", hint: "Traffic, funnels & demand", icon: <BarChart3 />, run: () => router.push("/dashboard/analytics") },
       { id: "marketing", section: "Navigate", label: "Marketing operations", hint: "Acquisition engine", icon: <Megaphone />, run: () => router.push("/dashboard/marketing") },
       { id: "consultations", section: "Navigate", label: "Consultation playbooks", hint: "Discovery playbooks", icon: <ClipboardCheck />, run: () => router.push("/dashboard/consultations") },
       { id: "account", section: "Workspace", label: "Account and passkeys", hint: "Owner credentials", icon: <KeyRound />, run: () => router.push("/account") },
@@ -793,6 +794,7 @@ export function Dashboard() {
 
             <div className="pt-4 px-3 py-1 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">Operations</div>
             <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/leads"><Inbox className="size-4" />Client leads</Link>
+            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/analytics"><BarChart3 className="size-4" />Analytics</Link>
             <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/marketing"><Megaphone className="size-4" />Marketing</Link>
             <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/consultations"><ClipboardCheck className="size-4" />Consultations</Link>
           </nav>

@@ -1,35 +1,78 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { useEffect } from "react";
-import type { ConversionEventName } from "@/lib/conversion-analytics";
+import { useReportWebVitals } from "next/web-vitals";
+import { attributionFromLocation } from "@/lib/analytics-attribution";
+import type { AnalyticsAttribution, AnalyticsEventName, AnalyticsEventProperties } from "@/lib/analytics-contract";
 
-type EventMetadata = Record<string, string | number | boolean | string[]>;
+const sessionStorageKey = "yorkstead.analytics.session.v1";
+const privatePaths = ["/api", "/account", "/dashboard", "/login"];
 
-export function trackConversionEvent(event: ConversionEventName, metadata: EventMetadata | string = {}) {
-  const body = JSON.stringify({ event, path: window.location.pathname, metadata: typeof metadata === "string" ? { field: metadata } : metadata });
-  if (typeof window !== "undefined" && typeof (window as { fbq?: (...args: unknown[]) => void }).fbq === "function") {
-    const mappedEvent = (() => {
-      switch (event) {
-        case "page_view": return "PageView";
-        case "view_content": return "ViewContent";
-        case "demo_view": return "ViewContent";
-        case "lead": return "Lead";
-        case "schedule_start": return "ScheduleStart";
-        case "schedule_complete": return "ScheduleComplete";
-        case "qualified_lead": return "Lead";
-        default: return event.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-      }
-    })();
-    const normalized = typeof metadata === "string" ? { content_name: metadata } : metadata;
-    (window as { fbq?: (...args: unknown[]) => void }).fbq!("track", mappedEvent, normalized);
+export type BrowserAnalyticsSession = { sessionId: string; attribution: AnalyticsAttribution };
+
+export function getBrowserAnalyticsSession(): BrowserAnalyticsSession | null {
+  if (typeof window === "undefined" || process.env.NEXT_PUBLIC_FIRST_PARTY_ANALYTICS === "disabled") return null;
+  try {
+    const existing = JSON.parse(window.sessionStorage.getItem(sessionStorageKey) ?? "null") as BrowserAnalyticsSession | null;
+    const sessionId = existing?.sessionId && /^[0-9a-f-]{36}$/i.test(existing.sessionId) ? existing.sessionId : crypto.randomUUID();
+    const session = { sessionId, attribution: attributionFromLocation(window.location.href, document.referrer, existing?.attribution) };
+    window.sessionStorage.setItem(sessionStorageKey, JSON.stringify(session));
+    return session;
+  } catch {
+    return { sessionId: crypto.randomUUID(), attribution: attributionFromLocation(window.location.href, document.referrer) };
   }
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon("/api/analytics/events", new Blob([body], { type: "application/json" }));
+}
+
+export function trackConversionEvent(event: AnalyticsEventName, metadata: AnalyticsEventProperties | string = {}) {
+  if (typeof window === "undefined" || privatePaths.some((prefix) => window.location.pathname.startsWith(prefix))) return;
+  const session = getBrowserAnalyticsSession();
+  if (!session) return;
+  const body = JSON.stringify({
+    event,
+    path: window.location.pathname,
+    metadata: typeof metadata === "string" ? { field: metadata } : metadata,
+    context: { eventId: crypto.randomUUID(), ...session },
+  });
+  if (navigator.sendBeacon && navigator.sendBeacon("/api/analytics/events", new Blob([body], { type: "application/json" }))) {
     return;
   }
   void fetch("/api/analytics/events", { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true });
+}
+
+function reportWebVital(metric: { name: string; value: number; rating: "good" | "needs-improvement" | "poor"; navigationType: string }) {
+  trackConversionEvent("web_vital", { metric: metric.name, value: metric.value, rating: metric.rating, navigationType: metric.navigationType });
+}
+
+export function AnalyticsRuntime() {
+  const pathname = usePathname();
+  useReportWebVitals(reportWebVital);
+
+  useEffect(() => {
+    if (!privatePaths.some((prefix) => pathname.startsWith(prefix))) trackConversionEvent("page_view");
+  }, [pathname]);
+
+  useEffect(() => {
+    const reportError = (event: ErrorEvent) => trackConversionEvent("client_error", {
+      errorType: event.error instanceof Error ? event.error.name : "Error",
+      sourcePath: event.filename ? (() => { try { return new URL(event.filename).pathname; } catch { return "unknown"; } })() : "unknown",
+      line: event.lineno,
+      column: event.colno,
+    });
+    const reportRejection = (event: PromiseRejectionEvent) => trackConversionEvent("client_error", {
+      errorType: event.reason instanceof Error ? event.reason.name : "UnhandledRejection",
+      sourcePath: "promise",
+    });
+    window.addEventListener("error", reportError);
+    window.addEventListener("unhandledrejection", reportRejection);
+    return () => {
+      window.removeEventListener("error", reportError);
+      window.removeEventListener("unhandledrejection", reportRejection);
+    };
+  }, []);
+  return null;
 }
 
 export function WorkflowAuditViewTracker() {
@@ -44,8 +87,8 @@ export function ConversionViewTracker({ event, field, value }: { event: "service
 
 type TrackedLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href" | "onClick"> & {
   href: string;
-  event: ConversionEventName;
-  metadata?: EventMetadata;
+  event: AnalyticsEventName;
+  metadata?: AnalyticsEventProperties;
   children: ReactNode;
 };
 

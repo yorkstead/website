@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { isValidEmailAddress } from "@/lib/semantic-validation";
 import { isAllowedProductId, getProductInquiryDetails } from "@/lib/product-inquiry";
 import { brand } from "@/lib/brand";
+import type { AnalyticsAttribution } from "@/lib/analytics-contract";
 
 export type ContactPayload = {
   name: string;
@@ -12,6 +13,8 @@ export type ContactPayload = {
   budget?: string;
   message: string;
   website?: string;
+  analyticsSessionId?: string;
+  attribution?: AnalyticsAttribution;
 };
 
 export type ContactValidationErrors = Partial<Record<"name" | "email" | "message" | "projectType", string>>;
@@ -42,6 +45,7 @@ export type ContactStore = {
       budget: string | null;
       message: string;
       intake?: Record<string, unknown> | null;
+      attribution?: AnalyticsAttribution;
     },
     submissionKey: string
   ) => Promise<number | null>;
@@ -127,6 +131,7 @@ export async function processContactSubmission(
         budget: budget || null,
         message: payload.message.trim(),
         intake: intake ?? null,
+        attribution: payload.attribution,
       },
       key
     );

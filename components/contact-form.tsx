@@ -1,11 +1,11 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, LoaderCircle, Send } from "lucide-react";
 import { submitContact, type ContactState } from "@/app/actions/contact";
-import { trackConversionEvent } from "@/components/conversion-tracker";
+import { getBrowserAnalyticsSession, trackConversionEvent } from "@/components/conversion-tracker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,25 @@ function SubmitButton() {
   );
 }
 
+function AnalyticsAttributionFields() {
+  const fields = useRef<Record<string, HTMLInputElement | null>>({});
+  useEffect(() => {
+    const session = getBrowserAnalyticsSession();
+    const values: Record<string, string> = {
+      analyticsSessionId: session?.sessionId ?? "",
+      landingPath: session?.attribution.landingPath ?? "",
+      referrerHost: session?.attribution.referrerHost ?? "",
+      utmSource: session?.attribution.utmSource ?? "",
+      utmMedium: session?.attribution.utmMedium ?? "",
+      utmCampaign: session?.attribution.utmCampaign ?? "",
+      utmContent: session?.attribution.utmContent ?? "",
+      utmTerm: session?.attribution.utmTerm ?? "",
+    };
+    for (const [name, value] of Object.entries(values)) if (fields.current[name]) fields.current[name].value = value;
+  }, []);
+  return <>{["analyticsSessionId", "landingPath", "referrerHost", "utmSource", "utmMedium", "utmCampaign", "utmContent", "utmTerm"].map((name) => <input key={name} ref={(node) => { fields.current[name] = node; }} type="hidden" name={name} defaultValue="" />)}</>;
+}
+
 export function ContactForm() {
   const [state, action] = useActionState(submitContact, initialContactState);
   const started = useRef(false);
@@ -47,6 +66,7 @@ export function ContactForm() {
 
   return (
     <form action={action} onFocusCapture={trackStart} className="space-y-5">
+      <AnalyticsAttributionFields />
       {selectedProduct || selectedService || selectedEngagement ? (
         <div className="rounded-lg border border-primary/25 bg-primary/10 px-4 py-3">
           <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-primary">Conversation context</div>

@@ -34,6 +34,13 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [{ src: "/brand/logo/1x/logo-light.png", sizes: "1001x1001" }],
       },
       {
+        name: "Analytics",
+        short_name: "Analytics",
+        description: "Open Yorkstead owner analytics",
+        url: "/dashboard/analytics",
+        icons: [{ src: "/brand/logo/1x/logo-light.png", sizes: "1001x1001" }],
+      },
+      {
         name: "Consultations",
         short_name: "Consultations",
         description: "Open consultation discovery playbooks",

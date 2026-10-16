@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
+  BarChart3,
   ClipboardCheck,
   Database,
   ExternalLink,
@@ -110,6 +111,13 @@ export function QuickLaunch({
   ];
 
   const operationsLinks = [
+    {
+      id: "analytics",
+      label: "Analytics",
+      href: "/dashboard/analytics",
+      icon: <BarChart3 className="size-4 text-violet-400" />,
+      hint: "Traffic, funnels & business KPIs",
+    },
     {
       id: "leads",
       label: "Client Leads",

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import { AnalyticsRuntime } from "@/components/conversion-tracker";
 import { brand } from "@/lib/brand";
 import "./globals.css";
 
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${geist.variable} ${geistMono.variable}`}>
-      <body className="antialiased"><ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme disableTransitionOnChange storageKey="yorkstead-theme">{children}<ServiceWorkerRegister /></ThemeProvider></body>
+      <body className="antialiased"><ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme disableTransitionOnChange storageKey="yorkstead-theme">{children}<Suspense fallback={null}><AnalyticsRuntime /></Suspense><ServiceWorkerRegister /></ThemeProvider></body>
     </html>
   );
 }

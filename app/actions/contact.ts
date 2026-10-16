@@ -3,10 +3,11 @@
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { brand } from "@/lib/brand";
+import { normalizeAnalyticsAttribution } from "@/lib/analytics-attribution";
 import { contactDatabase } from "@/lib/contact-inquiries";
 import { recordConversionEvent } from "@/lib/conversion-analytics";
 import { sendLeadNotification } from "@/lib/lead-notification";
-import { hashedRequestAddress } from "@/lib/request-privacy";
+import { hashedAnalyticsSession, hashedRequestAddress } from "@/lib/request-privacy";
 import { logOperationalError, requestCorrelationId, withOperationTimeout } from "@/lib/operational-observability";
 import {
   contactSubmissionKey,
@@ -36,6 +37,16 @@ export async function submitContact(_: ContactState, formData: FormData): Promis
     productId: text(formData, "productId", 80),
     budget: text(formData, "budget", 80),
     message: text(formData, "message", 4000),
+    analyticsSessionId: text(formData, "analyticsSessionId", 36),
+    attribution: normalizeAnalyticsAttribution({
+      landingPath: text(formData, "landingPath", 200),
+      referrerHost: text(formData, "referrerHost", 160),
+      utmSource: text(formData, "utmSource", 120),
+      utmMedium: text(formData, "utmMedium", 120),
+      utmCampaign: text(formData, "utmCampaign", 200),
+      utmContent: text(formData, "utmContent", 200),
+      utmTerm: text(formData, "utmTerm", 120),
+    }),
   };
 
   const requestHeaders = await headers();
@@ -86,14 +97,23 @@ export async function submitContact(_: ContactState, formData: FormData): Promis
       return Number(rows[0]?.count ?? 0);
     },
     insert: async (values, submissionKey) => {
+      const attribution = values.attribution ?? {};
+      const source = attribution.utmSource ?? attribution.referrerHost ?? "direct";
+      const medium = attribution.utmMedium ?? (attribution.referrerHost ? "referral" : "none");
       const rows = await withOperationTimeout(
         sql`INSERT INTO contact_inquiries (
-          name, email, company, project_type, budget, message, ip_hash, intake, submission_key
+          name, email, company, project_type, budget, message, ip_hash, intake, submission_key,
+          source, medium, campaign, content, term, landing_page, referrer,
+          utm_source, utm_medium, utm_campaign, utm_content, utm_term
         ) VALUES (
           ${values.name}, ${values.email}, ${values.company}, ${values.projectType},
           ${values.budget}, ${values.message}, ${ipHash},
           ${values.intake ? JSON.stringify(values.intake) : null}::jsonb,
-          ${submissionKey}
+          ${submissionKey}, ${source}, ${medium}, ${attribution.utmCampaign ?? null},
+          ${attribution.utmContent ?? null}, ${attribution.utmTerm ?? null},
+          ${attribution.landingPath ?? null}, ${attribution.referrerHost ?? null},
+          ${attribution.utmSource ?? null}, ${attribution.utmMedium ?? null},
+          ${attribution.utmCampaign ?? null}, ${attribution.utmContent ?? null}, ${attribution.utmTerm ?? null}
         ) ON CONFLICT (submission_key) DO NOTHING RETURNING id`
       );
       return rows[0]?.id ? Number(rows[0].id) : null;
@@ -153,6 +173,8 @@ export async function submitContact(_: ContactState, formData: FormData): Promis
         path: "/",
         visitorHash,
         metadata: result.projectType ? { projectType: result.projectType } : {},
+        sessionHash: hashedAnalyticsSession(payload.analyticsSessionId),
+        attribution: payload.attribution,
       }),
     ]);
   });

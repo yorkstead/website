@@ -13,7 +13,7 @@ The application owns the technical SEO and first-party conversion layer. Externa
 
 ## First-party analytics
 
-Conversion events are written to the existing Neon `conversion_events` table. No Google Analytics, Meta Pixel, advertising identifier, browser cookie, or third-party analytics script is added.
+Governed traffic, conversion, performance, and reliability events are written to the existing Neon `conversion_events` table and summarized in the authenticated `/dashboard/analytics` view. No Google Analytics, Meta Pixel, advertising identifier, browser cookie, or third-party analytics script is added. The canonical architecture, KPI definitions, provider boundaries, event contract, retention settings, and future Expo path are documented in [`ANALYTICS-ARCHITECTURE.md`](ANALYTICS-ARCHITECTURE.md).
 
 The browser sends only an allowlisted event name, the current public path, and limited context such as a service slug, project slug, placement, or booking destination. The server derives a daily salted one-way request hash for rate limiting and aggregate counting; it does not store the raw network address in the analytics table. Records older than 90 days are pruned as new events are recorded.
 

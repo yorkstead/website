@@ -20,7 +20,7 @@ Application schema changes are ordered SQL files in `migrations/`. `bun run db:m
 
 Use `bun run db:migrate:check` to validate migration filenames, statement boundaries, and checksums without connecting to or changing a database. Better Auth continues to use its separate `bun run auth:migrate` command.
 
-Copy `.env.example` to `.env.local` for the complete local configuration contract. Search Console, first-party conversion measurement, optional public business details, and post-deployment checks are documented in [`docs/SEO-AND-MEASUREMENT.md`](docs/SEO-AND-MEASUREMENT.md). The private consultation templates, workflow, and database setup are documented in [`docs/CONSULTATION-PLAYBOOKS.md`](docs/CONSULTATION-PLAYBOOKS.md). The 90-day outbound, content, field-visit, partnership, and collateral system is documented in [`docs/MARKETING-OPERATIONS.md`](docs/MARKETING-OPERATIONS.md). Direct ThinkPad and OnePlus operator launchers and instant biometric passkey sign-in are documented in [`docs/OPERATOR_ACCESS.md`](docs/OPERATOR_ACCESS.md).
+Copy `.env.example` to `.env.local` for the complete local configuration contract. The canonical event model, owner dashboard, provider boundaries, privacy controls, and mobile path are documented in [`docs/ANALYTICS-ARCHITECTURE.md`](docs/ANALYTICS-ARCHITECTURE.md); Search Console and post-deployment search checks remain in [`docs/SEO-AND-MEASUREMENT.md`](docs/SEO-AND-MEASUREMENT.md). The private consultation templates, workflow, and database setup are documented in [`docs/CONSULTATION-PLAYBOOKS.md`](docs/CONSULTATION-PLAYBOOKS.md). The 90-day outbound, content, field-visit, partnership, and collateral system is documented in [`docs/MARKETING-OPERATIONS.md`](docs/MARKETING-OPERATIONS.md). Direct ThinkPad and OnePlus operator launchers and instant biometric passkey sign-in are documented in [`docs/OPERATOR_ACCESS.md`](docs/OPERATOR_ACCESS.md).
 
 ## Authentication
 
@@ -119,7 +119,7 @@ ANALYTICS_HASH_SALT=<random secret>
 
 No payment processing is included because the project has no supported payment architecture. The page clearly states that fit, scope, fee, and timing are confirmed directly before booking. If `WORKFLOW_AUDIT_BOOKING_URL` is absent or invalid, the confirmation state falls back to direct email follow-up.
 
-Tracked conversion events cover service and case-study views, Workflow Audit CTA clicks, both form funnels, successful server submissions, email and optional phone links, and external booking links. They are written to Neon and are not sent to Google Analytics, Meta, or another external analytics service. The full event list and privacy contract are documented in `docs/SEO-AND-MEASUREMENT.md`.
+Governed first-party events cover public page and content views, campaign attribution, conversion funnels, server-confirmed lead outcomes, Core Web Vitals, and sanitized reliability signals. They are written to Neon and are not sent to Google Analytics, Meta, or another external analytics service. The authenticated `/dashboard/analytics` view and full privacy contract are documented in `docs/ANALYTICS-ARCHITECTURE.md`.
 
 The deployed project requires `DATABASE_URL`, provisioned automatically by the connected Neon integration. Application-level owner authentication protects the dashboard and every writable workspace API.
 
