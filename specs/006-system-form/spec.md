@@ -19,11 +19,12 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 2. Transitions are anchored to named homepage sections rather than calculated from total page progress.
 3. Scrolling backward reverses the active morph without a discontinuity.
 4. The form travels between distinct screen regions with the same reversible section progress.
-5. Scroll velocity may loosen the form, but the displacement is capped.
-6. Reduced-motion users receive a static architectural mark; no animation loop or ScrollTrigger is created.
-7. Mobile renders fewer instances and every canvas caps DPR.
-8. Rendering pauses when the document is not visible.
-9. Existing homepage content, routes, lead capture, and privacy behavior remain unchanged.
+5. Transitional disassembly expands beyond the resting footprint while remaining capped and behind page content.
+6. Scroll velocity may loosen the form, but the displacement is capped.
+7. Reduced-motion users receive a static architectural mark; no animation loop or ScrollTrigger is created.
+8. Mobile renders fewer instances and every canvas caps DPR.
+9. Rendering pauses when the document is not visible.
+10. Existing homepage content, routes, lead capture, and privacy behavior remain unchanged.
 
 ## Non-goals
 

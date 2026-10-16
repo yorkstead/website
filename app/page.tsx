@@ -464,7 +464,7 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="relative border-b border-border bg-card/35">
+      <section id="services" data-system-form="core" className="relative border-b border-border bg-card/35">
         <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
           <div className="mb-10 max-w-2xl">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Specialized Services</div>
@@ -619,7 +619,7 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" data-system-form="core" className="relative border-t border-border bg-card/35">
+      <section id="contact" className="relative border-t border-border bg-card/35">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-24 sm:px-8 lg:grid-cols-[.7fr_1.3fr]">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Project contact</div>

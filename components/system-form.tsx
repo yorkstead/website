@@ -14,7 +14,7 @@ type MotionState = {
 
 const desktopParticleCount = 84;
 const mobileParticleCount = 42;
-const maximumSpread = 0.28;
+const maximumSpread = 0.42;
 const desktopPlacements = [
   [84, 34],
   [82, 68],
@@ -132,7 +132,7 @@ function SystemParticles({
     const transitionArc = Math.sin(progress * Math.PI);
     renderedVelocity.current = Math.max(state.velocity, renderedVelocity.current * Math.pow(0.025, delta));
     const velocityContribution = Math.min(1, renderedVelocity.current / 2200);
-    const spreadAmount = Math.min(maximumSpread, transitionArc * (0.1 + velocityContribution * 0.18));
+    const spreadAmount = Math.min(maximumSpread, transitionArc * (0.16 + velocityContribution * 0.32));
     const positionAttribute = points.current.getAttribute("position") as THREE.BufferAttribute;
     const damping = hasSettledFrame.current ? 1 - Math.exp(-delta * 5.5) : 1;
     const renderedPositions = settledPositions.current;
@@ -237,6 +237,8 @@ export function SystemForm() {
       const eased = progress * progress * (3 - 2 * progress);
       root.current.style.setProperty("--system-form-x", `${THREE.MathUtils.lerp(from[0], to[0], eased)}vw`);
       root.current.style.setProperty("--system-form-y", `${THREE.MathUtils.lerp(from[1], to[1], eased)}vh`);
+      const expansion = fromIndex === toIndex ? 1 : 1 + Math.sin(progress * Math.PI) * (mobile ? 0.38 : 0.62);
+      root.current.style.setProperty("--system-form-scale", expansion.toFixed(3));
     };
 
     const synchronizeToSections = () => {
