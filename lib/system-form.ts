@@ -1,10 +1,15 @@
 export const systemFormSequence = [
   "core",
   "architecture",
-  "disorder",
+  "core",
   "flow",
-  "structure",
+  "core",
   "network",
+  "core",
+  "disorder",
+  "core",
+  "structure",
+  "core",
   "core",
 ] as const;
 

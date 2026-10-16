@@ -10,3 +10,4 @@
 - [x] T008 — Replace the abstract code suggestion with readable TypeScript fragments that participate in every morph.
 - [x] T009 — Increase TypeScript fragment scale and brightness and add restrained syntax coloring.
 - [x] T010 — Add a continuous compile pulse and recognizable operational drawing silhouettes.
+- [x] T011 — Extend the animation through the footer and alternate code with selected operational forms across the lower homepage.

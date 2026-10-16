@@ -5,7 +5,7 @@ import { engagementPlanningNote, engagements } from "@/lib/engagements";
 
 export function EngagementPricing() {
   return (
-    <section id="pricing" aria-labelledby="pricing-heading" className="relative border-y border-border bg-card/35">
+    <section id="pricing" data-system-form="core" aria-labelledby="pricing-heading" className="relative border-y border-border bg-card/35">
       <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div className="max-w-2xl">

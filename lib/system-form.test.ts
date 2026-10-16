@@ -9,7 +9,20 @@ import {
 
 describe("SystemForm geometry", () => {
   test("uses the approved reversible form sequence", () => {
-    expect(systemFormSequence).toEqual(["core", "architecture", "disorder", "flow", "structure", "network", "core"]);
+    expect(systemFormSequence).toEqual([
+      "core",
+      "architecture",
+      "core",
+      "flow",
+      "core",
+      "network",
+      "core",
+      "disorder",
+      "core",
+      "structure",
+      "core",
+      "core",
+    ]);
   });
 
   test("maps scroll states to recognizable operational drawings", () => {

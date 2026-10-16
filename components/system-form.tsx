@@ -28,6 +28,11 @@ const desktopPlacements = [
   [18, 28],
   [74, 22],
   [84, 62],
+  [78, 32],
+  [20, 28],
+  [82, 30],
+  [20, 58],
+  [76, 72],
 ] as const;
 const mobilePlacements = [
   [78, 28],
@@ -37,6 +42,11 @@ const mobilePlacements = [
   [24, 26],
   [76, 22],
   [78, 64],
+  [74, 28],
+  [26, 24],
+  [76, 30],
+  [26, 62],
+  [72, 72],
 ] as const;
 
 function useMediaQuery(query: string) {

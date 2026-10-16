@@ -223,7 +223,7 @@ export default function Home() {
       </section>
 
       {/* Buying Model: Buy the system. Choose the support. */}
-      <section id="buying-model" data-system-form="disorder" className="relative border-y border-border bg-card/45 py-20 sm:py-24">
+      <section id="buying-model" data-system-form="core" className="relative border-y border-border bg-card/45 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="max-w-3xl">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">The Buying Model</div>
@@ -387,7 +387,7 @@ export default function Home() {
       </section>
 
       {/* Demos */}
-      <section id="demos" data-system-form="structure" className="relative border-b border-border bg-card/40 py-20 sm:py-24">
+      <section id="demos" data-system-form="core" className="relative border-b border-border bg-card/40 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="max-w-3xl">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Try it yourself</div>
@@ -509,7 +509,7 @@ export default function Home() {
       </section>
 
       {/* Operational Friction Section */}
-      <section aria-labelledby="operators-heading" className="relative border-b border-border">
+      <section data-system-form="disorder" aria-labelledby="operators-heading" className="relative border-b border-border">
         <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
           <div className="grid gap-12 lg:grid-cols-[.82fr_1.18fr] lg:gap-16">
             <div>
@@ -589,7 +589,7 @@ export default function Home() {
       <EngagementPricing />
 
       {/* Selected Work */}
-      <section id="work" className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8">
+      <section id="work" data-system-form="structure" className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8">
         <div className="mb-12">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <div className="max-w-2xl">
@@ -619,7 +619,7 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="relative border-t border-border bg-card/35">
+      <section id="contact" data-system-form="core" className="relative border-t border-border bg-card/35">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-24 sm:px-8 lg:grid-cols-[.7fr_1.3fr]">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Project contact</div>
@@ -671,7 +671,7 @@ export default function Home() {
         </div>
       </section>
 
-      <SiteFooter>
+      <SiteFooter systemForm="core">
         <nav aria-label="Service pages" className="flex flex-wrap gap-x-5 gap-y-2 lg:justify-end">
           {publicServices.map((service) => (
             <Link key={service.slug} href={`/services/${service.slug}`} className="transition hover:text-foreground">

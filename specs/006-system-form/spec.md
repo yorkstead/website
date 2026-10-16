@@ -7,10 +7,10 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 ## Scope
 
 - Add one fixed, decorative WebGL canvas to the homepage.
-- Morph a persistent population of points and short rods through `Core → Architecture → Disorder → Flow → Structure → Network → Core`.
+- Morph a persistent population of points, short rods, and readable code between a Core state and selected operational forms at restrained intervals down the full homepage.
 - Make readable TypeScript fragments the primary morphing material, with abstract strokes and nodes retained only as low-opacity scaffolding.
 - Keep the opening state visibly active at rest with a quiet compile pulse, and resolve the five middle states into a shop drawing, clipboard, shop-floor layout, assembly drawing, and POS terminal.
-- Drive each transition from an existing homepage section with GSAP ScrollTrigger.
+- Drive each transition from an existing homepage section or the homepage footer with GSAP ScrollTrigger.
 - Move the persistent form through a restrained sequence of viewport positions as its state changes.
 - Preserve bidirectional scroll behavior and a nearly imperceptible idle breath.
 - Reduce geometry on small screens, cap device pixel ratio and transition spread, pause while the document is hidden, and provide a non-WebGL/reduced-motion fallback.
@@ -27,7 +27,8 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 8. Mobile renders fewer instances and every canvas caps DPR.
 9. Rendering pauses when the document is not visible.
 10. Existing homepage content, routes, lead capture, and privacy behavior remain unchanged.
-11. The final Core resolves and fades as its owning section leaves the viewport instead of persisting across every remaining section.
+11. The code state continues through the lower homepage and remains active at the page footer rather than fading after Services.
+12. Operational drawings appear only at selected section beats and return to Core between them, creating a quiet code-to-interface rhythm rather than a morph on every section.
 
 ## Non-goals
 
