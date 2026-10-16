@@ -18,8 +18,8 @@ type MotionState = {
   velocity: number;
 };
 
-const desktopParticleCount = 116;
-const mobileParticleCount = 64;
+const desktopParticleCount = 132;
+const mobileParticleCount = 72;
 const maximumSpread = 0.48;
 
 function illustrationWeight(name: SystemFormName) {
@@ -236,7 +236,7 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
       sprite.scale.set(height * entry.aspect * fragmentScale, height * fragmentScale, 1);
       const material = sprite.material as THREE.SpriteMaterial;
       material.rotation = THREE.MathUtils.lerp(source.rotation, destination.rotation, eased);
-      material.opacity = 0.46 - illustrationAmount * 0.13 + compilePulse * 0.12 + transitionArc * 0.04;
+      material.opacity = 0.42 - illustrationAmount * 0.2 + compilePulse * 0.1 + transitionArc * 0.035;
     }
 
     hasSettledFrame.current = true;
@@ -370,10 +370,10 @@ function SystemParticles({
     hasSettledFrame.current = true;
 
     if (rodMaterial.current) {
-      rodMaterial.current.opacity = 0.16 + illustrationAmount * 0.14 + transitionArc * 0.035;
+      rodMaterial.current.opacity = 0.13 + illustrationAmount * 0.23 + transitionArc * 0.03;
     }
     if (pointMaterial.current) {
-      pointMaterial.current.opacity = 0.24 + illustrationAmount * 0.13 + transitionArc * 0.035;
+      pointMaterial.current.opacity = 0.2 + illustrationAmount * 0.12 + transitionArc * 0.03;
     }
 
     const breath = 1 + Math.sin(elapsed * 0.82) * (0.028 - illustrationAmount * 0.014);
@@ -388,7 +388,7 @@ function SystemParticles({
   return (
     <group ref={group}>
       <instancedMesh ref={rods} args={[undefined, undefined, count]} frustumCulled={false}>
-        <boxGeometry args={[0.015, 0.14, 0.012]} />
+        <boxGeometry args={[0.01, 0.14, 0.008]} />
         <meshBasicMaterial ref={rodMaterial} color={color} transparent opacity={0.22} depthWrite={false} depthTest={false} />
       </instancedMesh>
       <points frustumCulled={false}>
@@ -398,7 +398,7 @@ function SystemParticles({
         <pointsMaterial
           ref={pointMaterial}
           color={color}
-          size={0.014}
+          size={0.012}
           sizeAttenuation
           transparent
           opacity={0.3}
