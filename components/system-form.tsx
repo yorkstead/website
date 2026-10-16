@@ -103,6 +103,7 @@ function SystemParticles({
   const renderedVelocity = useRef(0);
   const settledPositions = useRef(new Float32Array(count * 3));
   const settledTangents = useRef(new Float32Array(count * 3));
+  const settledLengths = useRef(new Float32Array(count));
   const hasSettledFrame = useRef(false);
   const targets = useMemo(() => generateSystemFormTargets(count), [count]);
   const initialPointPositions = useMemo(() => new Float32Array(count * 3), [count]);
@@ -116,6 +117,7 @@ function SystemParticles({
     rods.current?.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     settledPositions.current = new Float32Array(count * 3);
     settledTangents.current = new Float32Array(count * 3);
+    settledLengths.current = new Float32Array(count);
     hasSettledFrame.current = false;
   }, [count]);
 
@@ -137,6 +139,7 @@ function SystemParticles({
     const damping = hasSettledFrame.current ? 1 - Math.exp(-delta * 5.5) : 1;
     const renderedPositions = settledPositions.current;
     const renderedTangents = settledTangents.current;
+    const renderedLengths = settledLengths.current;
 
     for (let index = 0; index < count; index += 1) {
       const source = from[index];
@@ -167,9 +170,11 @@ function SystemParticles({
       renderedTangents[offset + 1] = THREE.MathUtils.lerp(renderedTangents[offset + 1], tangent.y, damping);
       renderedTangents[offset + 2] = THREE.MathUtils.lerp(renderedTangents[offset + 2], tangent.z, damping);
       tangent.set(renderedTangents[offset], renderedTangents[offset + 1], renderedTangents[offset + 2]).normalize();
+      const targetLength = THREE.MathUtils.lerp(source.length, destination.length, eased);
+      renderedLengths[index] = THREE.MathUtils.lerp(renderedLengths[index], targetLength, damping);
       dummy.position.copy(position);
       dummy.quaternion.setFromUnitVectors(up, tangent);
-      dummy.scale.set(1, 0.72 + Math.sin(source.phase) * 0.16, 1);
+      dummy.scale.set(1, renderedLengths[index], 1);
       dummy.updateMatrix();
       rods.current.setMatrixAt(index, dummy.matrix);
     }
@@ -189,14 +194,14 @@ function SystemParticles({
   return (
     <group ref={group}>
       <instancedMesh ref={rods} args={[undefined, undefined, count]} frustumCulled={false}>
-        <cylinderGeometry args={[0.009, 0.009, 0.13, 4]} />
-        <meshBasicMaterial color={color} transparent opacity={0.46} depthWrite={false} depthTest={false} />
+        <boxGeometry args={[0.015, 0.14, 0.012]} />
+        <meshBasicMaterial color={color} transparent opacity={0.42} depthWrite={false} depthTest={false} />
       </instancedMesh>
       <points frustumCulled={false}>
         <bufferGeometry ref={points}>
           <bufferAttribute attach="attributes-position" args={[initialPointPositions, 3]} />
         </bufferGeometry>
-        <pointsMaterial color={color} size={0.022} sizeAttenuation transparent opacity={0.58} depthWrite={false} depthTest={false} />
+        <pointsMaterial color={color} size={0.018} sizeAttenuation transparent opacity={0.54} depthWrite={false} depthTest={false} />
       </points>
     </group>
   );
@@ -241,6 +246,10 @@ export function SystemForm() {
       root.current.style.setProperty("--system-form-scale", expansion.toFixed(3));
     };
 
+    const updatePresence = (presence: number) => {
+      root.current?.style.setProperty("--system-form-presence", THREE.MathUtils.clamp(presence, 0, 1).toFixed(3));
+    };
+
     const synchronizeToSections = () => {
       animationFrame = 0;
       const timestamp = performance.now();
@@ -271,6 +280,7 @@ export function SystemForm() {
           velocity,
         };
         updatePlacement(transitionIndex, transitionIndex + 1, progress);
+        updatePresence(1);
         root.current?.setAttribute("data-active-form", systemFormSequence[transitionIndex + 1]);
         return;
       }
@@ -282,6 +292,16 @@ export function SystemForm() {
         velocity: 0,
       };
       updatePlacement(completedTransitions, completedTransitions, 1);
+      if (completedTransitions === sections.length - 1) {
+        const finalBottom = sections[sections.length - 1].getBoundingClientRect().bottom;
+        const fadeStart = window.innerHeight * 0.82;
+        const fadeEnd = window.innerHeight * 0.3;
+        const fadeProgress = THREE.MathUtils.clamp((fadeStart - finalBottom) / Math.max(1, fadeStart - fadeEnd), 0, 1);
+        const easedFade = fadeProgress * fadeProgress * (3 - 2 * fadeProgress);
+        updatePresence(1 - easedFade);
+      } else {
+        updatePresence(1);
+      }
       root.current?.setAttribute("data-active-form", systemFormSequence[completedTransitions]);
     };
 

@@ -103,6 +103,8 @@ button, a { cursor: pointer; }
   --system-form-x: 84vw;
   --system-form-y: 34vh;
   --system-form-scale: 1;
+  --system-form-presence: 1;
+  --system-form-opacity: 0.58;
   position: fixed;
   z-index: 1;
   top: var(--system-form-y);
@@ -116,7 +118,7 @@ button, a { cursor: pointer; }
     left 520ms cubic-bezier(0.22, 1, 0.36, 1),
     transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
-  opacity: 0.58;
+  opacity: calc(var(--system-form-opacity) * var(--system-form-presence));
   mix-blend-mode: multiply;
   mask-image: radial-gradient(circle, black 38%, transparent 76%);
 }
@@ -127,7 +129,7 @@ button, a { cursor: pointer; }
   z-index: 2;
 }
 
-.dark .system-form { mix-blend-mode: screen; opacity: 0.46; }
+.dark .system-form { --system-form-opacity: 0.46; mix-blend-mode: screen; }
 
 .system-form-fallback {
   position: absolute;
@@ -153,7 +155,7 @@ button, a { cursor: pointer; }
 .system-form-fallback i { position: absolute; inset: 28%; border: 1px solid color-mix(in oklab, var(--primary) 24%, transparent); border-radius: 50%; }
 
 @media (max-width: 700px) {
-  .system-form { --system-form-x: 78vw; --system-form-y: 28vh; width: 11rem; opacity: 0.38; }
+  .system-form { --system-form-x: 78vw; --system-form-y: 28vh; --system-form-opacity: 0.38; width: 11rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

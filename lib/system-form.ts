@@ -16,23 +16,24 @@ export type SystemFormParticle = {
   tangent: Point3;
   spread: Point3;
   phase: number;
+  length: number;
 };
 
 export type SystemFormTargets = Record<SystemFormName, SystemFormParticle[]>;
 
-const boxEdges: readonly (readonly [Point3, Point3])[] = [
-  [[-0.72, -0.72, -0.38], [0.72, -0.72, -0.38]],
-  [[0.72, -0.72, -0.38], [0.72, 0.72, -0.38]],
-  [[0.72, 0.72, -0.38], [-0.72, 0.72, -0.38]],
-  [[-0.72, 0.72, -0.38], [-0.72, -0.72, -0.38]],
-  [[-0.72, -0.72, 0.38], [0.72, -0.72, 0.38]],
-  [[0.72, -0.72, 0.38], [0.72, 0.72, 0.38]],
-  [[0.72, 0.72, 0.38], [-0.72, 0.72, 0.38]],
-  [[-0.72, 0.72, 0.38], [-0.72, -0.72, 0.38]],
-  [[-0.72, -0.72, -0.38], [-0.72, -0.72, 0.38]],
-  [[0.72, -0.72, -0.38], [0.72, -0.72, 0.38]],
-  [[0.72, 0.72, -0.38], [0.72, 0.72, 0.38]],
-  [[-0.72, 0.72, -0.38], [-0.72, 0.72, 0.38]],
+const architectureLines: readonly (readonly [Point3, Point3])[] = [
+  [[-0.78, -0.7, 0], [0.78, -0.7, 0]],
+  [[0.78, -0.7, 0], [0.78, 0.7, 0]],
+  [[0.78, 0.7, 0], [-0.78, 0.7, 0]],
+  [[-0.78, 0.7, 0], [-0.78, -0.7, 0]],
+  [[-0.52, -0.44, 0.06], [0.52, -0.44, 0.06]],
+  [[0.52, -0.44, 0.06], [0.52, 0.44, 0.06]],
+  [[0.52, 0.44, 0.06], [-0.52, 0.44, 0.06]],
+  [[-0.52, 0.44, 0.06], [-0.52, -0.44, 0.06]],
+  [[-0.78, -0.2, -0.05], [-0.52, -0.2, -0.05]],
+  [[0.52, 0.2, -0.05], [0.78, 0.2, -0.05]],
+  [[-0.18, -0.7, -0.05], [-0.18, -0.44, -0.05]],
+  [[0.18, 0.44, -0.05], [0.18, 0.7, -0.05]],
 ];
 
 function seededRandom(seed: number) {
@@ -59,59 +60,89 @@ function lerpPoint(a: Point3, b: Point3, amount: number): Point3 {
   ];
 }
 
-function corePoint(index: number, count: number): { position: Point3; tangent: Point3 } {
-  const y = 1 - (index / Math.max(1, count - 1)) * 2;
-  const radius = Math.sqrt(Math.max(0, 1 - y * y));
-  const angle = index * Math.PI * (3 - Math.sqrt(5));
-  const position: Point3 = [Math.cos(angle) * radius * 0.68, y * 0.72, Math.sin(angle) * radius * 0.42];
-  return { position, tangent: normalize([-Math.sin(angle), 0.24, Math.cos(angle)]) };
-}
+type FormPoint = { position: Point3; tangent: Point3; length: number };
 
-function architecturePoint(index: number, count: number): { position: Point3; tangent: Point3 } {
-  const edgeProgress = (index / count) * boxEdges.length;
-  const edgeIndex = Math.min(boxEdges.length - 1, Math.floor(edgeProgress));
-  const [start, end] = boxEdges[edgeIndex];
+function corePoint(index: number, count: number): FormPoint {
+  const tokensPerRow = count >= 70 ? 7 : 5;
+  const rows = Math.ceil(count / tokensPerRow);
+  const row = Math.floor(index / tokensPerRow);
+  const token = index % tokensPerRow;
+  const indent = ((row * 3) % 4) * 0.055;
+  const x = -0.7 + indent + token * (1.38 / Math.max(1, tokensPerRow - 1));
+  const y = rows <= 1 ? 0 : 0.68 - row * (1.36 / (rows - 1));
+  const z = ((row + token * 2) % 3 - 1) * 0.045;
   return {
-    position: lerpPoint(start, end, edgeProgress - edgeIndex),
-    tangent: normalize([end[0] - start[0], end[1] - start[1], end[2] - start[2]]),
+    position: [x, y, z],
+    tangent: normalize([1, 0, token % 3 === 0 ? 0.08 : 0]),
+    length: 0.55 + ((row * 5 + token * 3) % 7) * 0.12,
   };
 }
 
-function disorderPoint(random: () => number): { position: Point3; tangent: Point3 } {
-  const position: Point3 = [(random() - 0.5) * 1.75, (random() - 0.5) * 1.65, (random() - 0.5) * 0.95];
-  const tangent: Point3 = normalize([random() - 0.5, random() - 0.5, random() - 0.5]);
-  return { position, tangent };
+function architecturePoint(index: number, count: number): FormPoint {
+  const edgeProgress = (index / count) * architectureLines.length;
+  const edgeIndex = Math.min(architectureLines.length - 1, Math.floor(edgeProgress));
+  const [start, end] = architectureLines[edgeIndex];
+  return {
+    position: lerpPoint(start, end, edgeProgress - edgeIndex),
+    tangent: normalize([end[0] - start[0], end[1] - start[1], end[2] - start[2]]),
+    length: edgeIndex < 8 ? 0.9 : 0.65,
+  };
 }
 
-function flowPoint(index: number, count: number): { position: Point3; tangent: Point3 } {
-  const progress = index / Math.max(1, count - 1);
-  const x = progress * 1.8 - 0.9;
-  const angle = progress * Math.PI * 2.5;
-  const lane = ((index % 4) - 1.5) * 0.045;
-  const position: Point3 = [x, Math.sin(angle) * 0.42 + lane, Math.cos(angle) * 0.28 + lane * 0.6];
-  return { position, tangent: normalize([1.8, Math.cos(angle) * Math.PI * 1.05, -Math.sin(angle) * Math.PI * 0.7]) };
+function disorderPoint(index: number, random: () => number): FormPoint {
+  const vertical = index % 7 === 0;
+  const position: Point3 = [(random() - 0.5) * 1.75, (random() - 0.5) * 1.55, (random() - 0.5) * 0.22];
+  return {
+    position,
+    tangent: vertical ? [0, 1, 0] : [1, 0, (random() - 0.5) * 0.08],
+    length: 0.45 + random() * 1.15,
+  };
 }
 
-function structurePoint(index: number, count: number): { position: Point3; tangent: Point3 } {
+function flowPoint(index: number, count: number): FormPoint {
+  const lanes = count >= 70 ? 7 : 5;
+  const steps = Math.ceil(count / lanes);
+  const lane = index % lanes;
+  const step = Math.floor(index / lanes);
+  const progress = steps <= 1 ? 0 : step / (steps - 1);
+  const vertical = index % 9 === 0;
+  const x = progress * 1.7 - 0.85;
+  const y = (lane / Math.max(1, lanes - 1) - 0.5) * 1.25 + Math.sin(progress * Math.PI * 2 + lane * 0.72) * 0.1;
+  return {
+    position: [x, y, ((lane + step) % 3 - 1) * 0.045],
+    tangent: vertical ? [0, 1, 0] : [1, 0, 0],
+    length: vertical ? 0.58 : 0.72 + ((lane + step) % 5) * 0.14,
+  };
+}
+
+function structurePoint(index: number, count: number): FormPoint {
   const columns = Math.ceil(Math.sqrt(count * 1.35));
   const rows = Math.ceil(count / columns);
   const column = index % columns;
   const row = Math.floor(index / columns);
   const x = columns <= 1 ? 0 : (column / (columns - 1) - 0.5) * 1.55;
   const y = rows <= 1 ? 0 : (row / (rows - 1) - 0.5) * 1.35;
-  const z = ((column + row) % 3 - 1) * 0.13;
-  return { position: [x, y, z], tangent: (column + row) % 2 === 0 ? [1, 0, 0.14] : [0, 1, -0.14] };
+  const z = ((column + row) % 3 - 1) * 0.045;
+  return {
+    position: [x, y, z],
+    tangent: (column + row) % 4 === 0 ? [0, 1, 0] : [1, 0, 0],
+    length: (column + row) % 4 === 0 ? 0.62 : 0.72 + ((column * 2 + row) % 5) * 0.12,
+  };
 }
 
-function networkPoint(index: number, count: number): { position: Point3; tangent: Point3 } {
+function networkPoint(index: number, count: number): FormPoint {
   const spokes = 7;
   const spoke = index % spokes;
   const ringIndex = Math.floor(index / spokes);
   const rings = Math.max(1, Math.ceil(count / spokes) - 1);
   const radius = 0.12 + (ringIndex / rings) * 0.75;
   const angle = (spoke / spokes) * Math.PI * 2 + ringIndex * 0.045;
-  const position: Point3 = [Math.cos(angle) * radius, Math.sin(angle) * radius * 0.88, Math.sin(ringIndex * 0.72 + spoke) * 0.22];
-  return { position, tangent: normalize([Math.cos(angle), Math.sin(angle) * 0.88, 0.12]) };
+  const position: Point3 = [Math.cos(angle) * radius, Math.sin(angle) * radius * 0.88, Math.sin(ringIndex * 0.72 + spoke) * 0.07];
+  return {
+    position,
+    tangent: normalize([Math.cos(angle), Math.sin(angle) * 0.88, 0.02]),
+    length: ringIndex % 3 === 0 ? 0.48 : 0.86,
+  };
 }
 
 export function generateSystemFormTargets(count: number): SystemFormTargets {
@@ -135,7 +166,7 @@ export function generateSystemFormTargets(count: number): SystemFormTargets {
     const forms = {
       core: corePoint(index, count),
       architecture: architecturePoint(index, count),
-      disorder: disorderPoint(random),
+      disorder: disorderPoint(index, random),
       flow: flowPoint(index, count),
       structure: structurePoint(index, count),
       network: networkPoint(index, count),

@@ -8,6 +8,7 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 
 - Add one fixed, decorative WebGL canvas to the homepage.
 - Morph a persistent population of points and short rods through `Core → Architecture → Disorder → Flow → Structure → Network → Core`.
+- Keep each state legible as a planar code/system diagram made from orthogonal strokes, tokens, brackets, and nodes rather than free-floating shards.
 - Drive each transition from an existing homepage section with GSAP ScrollTrigger.
 - Move the persistent form through a restrained sequence of viewport positions as its state changes.
 - Preserve bidirectional scroll behavior and a nearly imperceptible idle breath.
@@ -25,6 +26,7 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 8. Mobile renders fewer instances and every canvas caps DPR.
 9. Rendering pauses when the document is not visible.
 10. Existing homepage content, routes, lead capture, and privacy behavior remain unchanged.
+11. The final Core resolves and fades as its owning section leaves the viewport instead of persisting across every remaining section.
 
 ## Non-goals
 

@@ -14,7 +14,8 @@ describe("SystemForm geometry", () => {
     for (const particles of Object.values(first)) {
       expect(particles).toHaveLength(84);
       for (const particle of particles) {
-        expect([...particle.position, ...particle.tangent, ...particle.spread, particle.phase].every(Number.isFinite)).toBe(true);
+        expect([...particle.position, ...particle.tangent, ...particle.spread, particle.phase, particle.length].every(Number.isFinite)).toBe(true);
+        expect(particle.length).toBeGreaterThan(0);
       }
     }
   });
