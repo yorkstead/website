@@ -462,8 +462,8 @@ export function SystemForm() {
       lastScrollY = window.scrollY;
       lastTimestamp = timestamp;
 
-      const startLine = window.innerHeight;
-      const endLine = window.innerHeight * 0.2;
+      const startLine = window.innerHeight * 0.9;
+      const endLine = window.innerHeight * 0.42;
       const transitionDistance = Math.max(1, startLine - endLine);
       const transitionCount = sections.length - 1;
       const terminalTransitionCount = Math.min(2, transitionCount);
@@ -485,10 +485,13 @@ export function SystemForm() {
 
       for (let transitionIndex = 0; transitionIndex < transitionCount; transitionIndex += 1) {
         const targetTop = sections[transitionIndex + 1].getBoundingClientRect().top;
+        const terminalWindowStart = transitionIndex === terminalStartIndex ? 0 : 0.58;
+        const terminalWindowEnd = transitionIndex === terminalStartIndex ? 0.34 : 0.9;
         const progress =
           transitionIndex >= terminalStartIndex
             ? THREE.MathUtils.clamp(
-                terminalProgress * terminalTransitionCount - (transitionIndex - terminalStartIndex),
+                (terminalProgress - terminalWindowStart) /
+                  Math.max(0.01, terminalWindowEnd - terminalWindowStart),
                 0,
                 1,
               )
