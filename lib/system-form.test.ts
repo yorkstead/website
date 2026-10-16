@@ -27,11 +27,11 @@ describe("SystemForm geometry", () => {
 
   test("maps scroll states to recognizable operational drawings", () => {
     expect(systemFormSubjects).toEqual({
-      architecture: "software-shop-blueprint",
-      disorder: "workflow-audit-clipboard",
-      flow: "production-flow-map",
-      structure: "modular-system-assembly",
-      network: "connected-pos-terminal",
+      architecture: "dimensioned-machine-elevation",
+      disorder: "marked-up-shop-traveler",
+      flow: "production-routing-plan",
+      structure: "exploded-modular-assembly",
+      network: "terminal-orthographic-projection",
     });
   });
 
@@ -46,6 +46,16 @@ describe("SystemForm geometry", () => {
         expect([...particle.position, ...particle.tangent, ...particle.spread, particle.phase, particle.length].every(Number.isFinite)).toBe(true);
         expect(particle.length).toBeGreaterThan(0);
       }
+    }
+  });
+
+  test("gives every operational drawing a shared CAD registration plane", () => {
+    const targets = generateSystemFormTargets(84);
+
+    for (const name of ["architecture", "disorder", "flow", "structure", "network"] as const) {
+      const positions = targets[name].map(({ position }) => position);
+      expect(positions.some(([, , z]) => z <= -0.08)).toBe(true);
+      expect(Math.max(...positions.map(([x]) => x)) - Math.min(...positions.map(([x]) => x))).toBeGreaterThan(1.5);
     }
   });
 
