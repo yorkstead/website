@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand-mark";
 import { brand } from "@/lib/brand";
 
-export function SiteFooter({ children, systemForm }: { children?: ReactNode; systemForm?: "core" }) {
+export function SiteFooter({ children, systemForm }: { children?: ReactNode; systemForm?: "core" | "ownership" }) {
   return (
     <footer data-system-form={systemForm} className="relative border-t border-border px-5 py-8">
       <div className="mx-auto grid max-w-7xl gap-5 text-xs text-muted-foreground lg:grid-cols-[auto_1fr] lg:items-center">
