@@ -39,19 +39,117 @@ export type TypeScriptFragmentTarget = {
 
 export type TypeScriptFragmentTargets = Record<SystemFormName, TypeScriptFragmentTarget[]>;
 
-const architectureLines: readonly (readonly [Point3, Point3])[] = [
+export const systemFormSubjects = {
+  architecture: "shop-drawing",
+  disorder: "clipboard",
+  flow: "shopfloor-layout",
+  structure: "assembly-drawing",
+  network: "pos-terminal",
+} as const;
+
+type LineSegment = readonly [Point3, Point3];
+
+const shopDrawingLines: readonly LineSegment[] = [
   [[-0.78, -0.7, 0], [0.78, -0.7, 0]],
   [[0.78, -0.7, 0], [0.78, 0.7, 0]],
   [[0.78, 0.7, 0], [-0.78, 0.7, 0]],
   [[-0.78, 0.7, 0], [-0.78, -0.7, 0]],
-  [[-0.52, -0.44, 0.06], [0.52, -0.44, 0.06]],
-  [[0.52, -0.44, 0.06], [0.52, 0.44, 0.06]],
-  [[0.52, 0.44, 0.06], [-0.52, 0.44, 0.06]],
-  [[-0.52, 0.44, 0.06], [-0.52, -0.44, 0.06]],
-  [[-0.78, -0.2, -0.05], [-0.52, -0.2, -0.05]],
-  [[0.52, 0.2, -0.05], [0.78, 0.2, -0.05]],
-  [[-0.18, -0.7, -0.05], [-0.18, -0.44, -0.05]],
-  [[0.18, 0.44, -0.05], [0.18, 0.7, -0.05]],
+  [[-0.48, -0.38, 0.04], [0.48, -0.38, 0.04]],
+  [[0.48, -0.38, 0.04], [0.48, 0.38, 0.04]],
+  [[0.48, 0.38, 0.04], [-0.48, 0.38, 0.04]],
+  [[-0.48, 0.38, 0.04], [-0.48, -0.38, 0.04]],
+  [[-0.6, -0.5, -0.02], [0.6, -0.5, -0.02]],
+  [[-0.6, -0.56, -0.02], [-0.6, -0.44, -0.02]],
+  [[0.6, -0.56, -0.02], [0.6, -0.44, -0.02]],
+  [[-0.6, 0.5, -0.02], [0.6, 0.5, -0.02]],
+  [[-0.6, 0.44, -0.02], [-0.6, 0.56, -0.02]],
+  [[0.6, 0.44, -0.02], [0.6, 0.56, -0.02]],
+  [[-0.7, -0.62, 0], [-0.52, -0.62, 0]],
+  [[0.52, 0.62, 0], [0.7, 0.62, 0]],
+];
+
+const clipboardLines: readonly LineSegment[] = [
+  [[-0.56, -0.72, 0], [0.56, -0.72, 0]],
+  [[0.56, -0.72, 0], [0.56, 0.58, 0]],
+  [[0.56, 0.58, 0], [-0.56, 0.58, 0]],
+  [[-0.56, 0.58, 0], [-0.56, -0.72, 0]],
+  [[-0.2, 0.58, 0.04], [-0.2, 0.74, 0.04]],
+  [[-0.2, 0.74, 0.04], [0.2, 0.74, 0.04]],
+  [[0.2, 0.74, 0.04], [0.2, 0.58, 0.04]],
+  [[-0.4, 0.34, 0.02], [-0.28, 0.22, 0.02]],
+  [[-0.28, 0.22, 0.02], [-0.12, 0.42, 0.02]],
+  [[-0.02, 0.32, 0.02], [0.4, 0.32, 0.02]],
+  [[-0.4, -0.04, 0.02], [-0.28, -0.16, 0.02]],
+  [[-0.28, -0.16, 0.02], [-0.12, 0.04, 0.02]],
+  [[-0.02, -0.06, 0.02], [0.4, -0.06, 0.02]],
+  [[-0.4, -0.42, 0.02], [-0.28, -0.54, 0.02]],
+  [[-0.28, -0.54, 0.02], [-0.12, -0.34, 0.02]],
+  [[-0.02, -0.44, 0.02], [0.4, -0.44, 0.02]],
+];
+
+const shopfloorLayoutLines: readonly LineSegment[] = [
+  [[-0.82, -0.66, 0], [0.82, -0.66, 0]],
+  [[0.82, -0.66, 0], [0.82, 0.66, 0]],
+  [[0.82, 0.66, 0], [-0.82, 0.66, 0]],
+  [[-0.82, 0.66, 0], [-0.82, -0.66, 0]],
+  [[-0.64, 0.38, 0.03], [-0.18, 0.38, 0.03]],
+  [[-0.18, 0.38, 0.03], [-0.18, 0.08, 0.03]],
+  [[-0.18, 0.08, 0.03], [-0.64, 0.08, 0.03]],
+  [[-0.64, 0.08, 0.03], [-0.64, 0.38, 0.03]],
+  [[0.2, 0.48, 0.03], [0.62, 0.48, 0.03]],
+  [[0.62, 0.48, 0.03], [0.62, 0.16, 0.03]],
+  [[0.62, 0.16, 0.03], [0.2, 0.16, 0.03]],
+  [[0.2, 0.16, 0.03], [0.2, 0.48, 0.03]],
+  [[-0.62, -0.18, 0.03], [-0.18, -0.18, 0.03]],
+  [[-0.18, -0.18, 0.03], [-0.18, -0.5, 0.03]],
+  [[-0.18, -0.5, 0.03], [-0.62, -0.5, 0.03]],
+  [[-0.62, -0.5, 0.03], [-0.62, -0.18, 0.03]],
+  [[0.2, -0.12, 0.03], [0.62, -0.12, 0.03]],
+  [[0.62, -0.12, 0.03], [0.62, -0.48, 0.03]],
+  [[0.62, -0.48, 0.03], [0.2, -0.48, 0.03]],
+  [[0.2, -0.48, 0.03], [0.2, -0.12, 0.03]],
+  [[0, -0.58, -0.02], [0, 0.58, -0.02]],
+];
+
+const assemblyDrawingLines: readonly LineSegment[] = [
+  [[-0.28, 0.68, 0.04], [0.28, 0.68, 0.04]],
+  [[0.28, 0.68, 0.04], [0.28, 0.48, 0.04]],
+  [[0.28, 0.48, 0.04], [-0.28, 0.48, 0.04]],
+  [[-0.28, 0.48, 0.04], [-0.28, 0.68, 0.04]],
+  [[-0.5, 0.24, 0.02], [0.5, 0.24, 0.02]],
+  [[0.5, 0.24, 0.02], [0.5, -0.02, 0.02]],
+  [[0.5, -0.02, 0.02], [-0.5, -0.02, 0.02]],
+  [[-0.5, -0.02, 0.02], [-0.5, 0.24, 0.02]],
+  [[-0.38, -0.28, 0], [0.38, -0.28, 0]],
+  [[0.38, -0.28, 0], [0.38, -0.48, 0]],
+  [[0.38, -0.48, 0], [-0.38, -0.48, 0]],
+  [[-0.38, -0.48, 0], [-0.38, -0.28, 0]],
+  [[-0.62, -0.64, -0.02], [0.62, -0.64, -0.02]],
+  [[0, 0.82, -0.04], [0, 0.38, -0.04]],
+  [[0, 0.34, -0.04], [0, -0.14, -0.04]],
+  [[0, -0.18, -0.04], [0, -0.56, -0.04]],
+  [[-0.7, 0.12, -0.02], [-0.56, 0.12, -0.02]],
+  [[0.56, -0.38, -0.02], [0.7, -0.38, -0.02]],
+];
+
+const posTerminalLines: readonly LineSegment[] = [
+  [[-0.68, 0.62, 0.03], [0.58, 0.62, 0.03]],
+  [[0.58, 0.62, 0.03], [0.68, -0.12, 0.03]],
+  [[0.68, -0.12, 0.03], [-0.58, -0.12, 0.03]],
+  [[-0.58, -0.12, 0.03], [-0.68, 0.62, 0.03]],
+  [[-0.48, 0.46, 0.05], [0.4, 0.46, 0.05]],
+  [[0.4, 0.46, 0.05], [0.46, 0.04, 0.05]],
+  [[0.46, 0.04, 0.05], [-0.42, 0.04, 0.05]],
+  [[-0.42, 0.04, 0.05], [-0.48, 0.46, 0.05]],
+  [[-0.16, -0.12, 0], [-0.1, -0.42, 0]],
+  [[0.18, -0.12, 0], [0.12, -0.42, 0]],
+  [[-0.38, -0.42, 0], [0.42, -0.42, 0]],
+  [[0.42, -0.42, 0], [0.54, -0.62, 0]],
+  [[0.54, -0.62, 0], [-0.5, -0.62, 0]],
+  [[-0.5, -0.62, 0], [-0.38, -0.42, 0]],
+  [[0.72, 0.38, -0.02], [0.82, 0.38, -0.02]],
+  [[0.82, 0.38, -0.02], [0.82, -0.28, -0.02]],
+  [[0.82, -0.28, -0.02], [0.72, -0.28, -0.02]],
 ];
 
 function seededRandom(seed: number) {
@@ -96,71 +194,37 @@ function corePoint(index: number, count: number): FormPoint {
   };
 }
 
-function architecturePoint(index: number, count: number): FormPoint {
-  const edgeProgress = (index / count) * architectureLines.length;
-  const edgeIndex = Math.min(architectureLines.length - 1, Math.floor(edgeProgress));
-  const [start, end] = architectureLines[edgeIndex];
+function lineDrawingPoint(index: number, count: number, lines: readonly LineSegment[]): FormPoint {
+  const edgeProgress = (index / count) * lines.length;
+  const edgeIndex = Math.min(lines.length - 1, Math.floor(edgeProgress));
+  const [start, end] = lines[edgeIndex];
+  const segmentLength = Math.hypot(end[0] - start[0], end[1] - start[1], end[2] - start[2]);
+  const instancesPerSegment = Math.max(1, count / lines.length);
   return {
     position: lerpPoint(start, end, edgeProgress - edgeIndex),
     tangent: normalize([end[0] - start[0], end[1] - start[1], end[2] - start[2]]),
-    length: edgeIndex < 8 ? 0.9 : 0.65,
+    length: Math.max(0.45, Math.min(2.15, (segmentLength / instancesPerSegment / 0.14) * 0.82)),
   };
 }
 
-function disorderPoint(index: number, random: () => number): FormPoint {
-  const vertical = index % 7 === 0;
-  const position: Point3 = [(random() - 0.5) * 1.75, (random() - 0.5) * 1.55, (random() - 0.5) * 0.22];
-  return {
-    position,
-    tangent: vertical ? [0, 1, 0] : [1, 0, (random() - 0.5) * 0.08],
-    length: 0.45 + random() * 1.15,
-  };
+function architecturePoint(index: number, count: number): FormPoint {
+  return lineDrawingPoint(index, count, shopDrawingLines);
+}
+
+function disorderPoint(index: number, count: number): FormPoint {
+  return lineDrawingPoint(index, count, clipboardLines);
 }
 
 function flowPoint(index: number, count: number): FormPoint {
-  const lanes = count >= 70 ? 7 : 5;
-  const steps = Math.ceil(count / lanes);
-  const lane = index % lanes;
-  const step = Math.floor(index / lanes);
-  const progress = steps <= 1 ? 0 : step / (steps - 1);
-  const vertical = index % 9 === 0;
-  const x = progress * 1.7 - 0.85;
-  const y = (lane / Math.max(1, lanes - 1) - 0.5) * 1.25 + Math.sin(progress * Math.PI * 2 + lane * 0.72) * 0.1;
-  return {
-    position: [x, y, ((lane + step) % 3 - 1) * 0.045],
-    tangent: vertical ? [0, 1, 0] : [1, 0, 0],
-    length: vertical ? 0.58 : 0.72 + ((lane + step) % 5) * 0.14,
-  };
+  return lineDrawingPoint(index, count, shopfloorLayoutLines);
 }
 
 function structurePoint(index: number, count: number): FormPoint {
-  const columns = Math.ceil(Math.sqrt(count * 1.35));
-  const rows = Math.ceil(count / columns);
-  const column = index % columns;
-  const row = Math.floor(index / columns);
-  const x = columns <= 1 ? 0 : (column / (columns - 1) - 0.5) * 1.55;
-  const y = rows <= 1 ? 0 : (row / (rows - 1) - 0.5) * 1.35;
-  const z = ((column + row) % 3 - 1) * 0.045;
-  return {
-    position: [x, y, z],
-    tangent: (column + row) % 4 === 0 ? [0, 1, 0] : [1, 0, 0],
-    length: (column + row) % 4 === 0 ? 0.62 : 0.72 + ((column * 2 + row) % 5) * 0.12,
-  };
+  return lineDrawingPoint(index, count, assemblyDrawingLines);
 }
 
 function networkPoint(index: number, count: number): FormPoint {
-  const spokes = 7;
-  const spoke = index % spokes;
-  const ringIndex = Math.floor(index / spokes);
-  const rings = Math.max(1, Math.ceil(count / spokes) - 1);
-  const radius = 0.12 + (ringIndex / rings) * 0.75;
-  const angle = (spoke / spokes) * Math.PI * 2 + ringIndex * 0.045;
-  const position: Point3 = [Math.cos(angle) * radius, Math.sin(angle) * radius * 0.88, Math.sin(ringIndex * 0.72 + spoke) * 0.07];
-  return {
-    position,
-    tangent: normalize([Math.cos(angle), Math.sin(angle) * 0.88, 0.02]),
-    length: ringIndex % 3 === 0 ? 0.48 : 0.86,
-  };
+  return lineDrawingPoint(index, count, posTerminalLines);
 }
 
 export function generateSystemFormTargets(count: number): SystemFormTargets {
@@ -184,7 +248,7 @@ export function generateSystemFormTargets(count: number): SystemFormTargets {
     const forms = {
       core: corePoint(index, count),
       architecture: architecturePoint(index, count),
-      disorder: disorderPoint(index, random),
+      disorder: disorderPoint(index, count),
       flow: flowPoint(index, count),
       structure: structurePoint(index, count),
       network: networkPoint(index, count),

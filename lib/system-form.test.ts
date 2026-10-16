@@ -3,12 +3,23 @@ import {
   generateSystemFormTargets,
   generateTypeScriptFragmentTargets,
   systemFormSequence,
+  systemFormSubjects,
   typescriptFragments,
 } from "./system-form";
 
 describe("SystemForm geometry", () => {
   test("uses the approved reversible form sequence", () => {
     expect(systemFormSequence).toEqual(["core", "architecture", "disorder", "flow", "structure", "network", "core"]);
+  });
+
+  test("maps scroll states to recognizable operational drawings", () => {
+    expect(systemFormSubjects).toEqual({
+      architecture: "shop-drawing",
+      disorder: "clipboard",
+      flow: "shopfloor-layout",
+      structure: "assembly-drawing",
+      network: "pos-terminal",
+    });
   });
 
   test("generates a stable, finite population for every form", () => {

@@ -9,3 +9,4 @@
 - [x] T007 — Refine the forms into code-like orthogonal strokes and shorten the final Core hold after preview feedback.
 - [x] T008 — Replace the abstract code suggestion with readable TypeScript fragments that participate in every morph.
 - [x] T009 — Increase TypeScript fragment scale and brightness and add restrained syntax coloring.
+- [x] T010 — Add a continuous compile pulse and recognizable operational drawing silhouettes.
