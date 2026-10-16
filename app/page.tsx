@@ -26,6 +26,7 @@ import { FounderIntroduction } from "@/components/founder-introduction";
 import { ProjectStatusLegend } from "@/components/project-status-legend";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { SystemForm } from "@/components/system-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { brand, brandMailto } from "@/lib/brand";
 import { caseStudies } from "@/lib/case-studies";
@@ -94,10 +95,11 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData).replace(/</g, "\\u003c") }}
       />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_0%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_38%)]" />
+      <SystemForm />
       <SiteHeader />
 
       {/* Hero Section */}
-      <section className="relative mx-auto grid min-h-[72vh] max-w-7xl items-center gap-14 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.15fr_.85fr]">
+      <section data-system-form="core" className="relative mx-auto grid min-h-[72vh] max-w-7xl items-center gap-14 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.15fr_.85fr]">
         <div>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
             <span className="size-1.5 animate-pulse rounded-full bg-primary" />
@@ -178,7 +180,7 @@ export default function Home() {
       </section>
 
       {/* Why we build this way, with an illustrative cost comparison */}
-      <section id="why" className="relative border-b border-border py-20 sm:py-24">
+      <section id="why" data-system-form="architecture" className="relative border-b border-border py-20 sm:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-2">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Why we do it this way</div>
@@ -221,7 +223,7 @@ export default function Home() {
       </section>
 
       {/* Buying Model: Buy the system. Choose the support. */}
-      <section id="buying-model" className="relative border-y border-border bg-card/45 py-20 sm:py-24">
+      <section id="buying-model" data-system-form="disorder" className="relative border-y border-border bg-card/45 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="max-w-3xl">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">The Buying Model</div>
@@ -316,7 +318,7 @@ export default function Home() {
       </section>
 
       {/* Delivery Relationship: Consulting, Modules, Tailored Implementation */}
-      <section id="delivery-model" className="relative border-b border-border py-20 sm:py-24">
+      <section id="delivery-model" data-system-form="flow" className="relative border-b border-border py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div className="max-w-3xl">
@@ -385,7 +387,7 @@ export default function Home() {
       </section>
 
       {/* Demos */}
-      <section id="demos" className="relative border-b border-border bg-card/40 py-20 sm:py-24">
+      <section id="demos" data-system-form="structure" className="relative border-b border-border bg-card/40 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="max-w-3xl">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Try it yourself</div>
@@ -426,7 +428,7 @@ export default function Home() {
       </section>
 
       {/* Coherent Industries Section */}
-      <section id="industries" aria-labelledby="industries-heading" className="relative border-b border-border bg-card/25 py-20 sm:py-24">
+      <section id="industries" data-system-form="network" aria-labelledby="industries-heading" className="relative border-b border-border bg-card/25 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="max-w-3xl">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Operational Breadth</div>
@@ -617,7 +619,7 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="relative border-t border-border bg-card/35">
+      <section id="contact" data-system-form="core" className="relative border-t border-border bg-card/35">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-24 sm:px-8 lg:grid-cols-[.7fr_1.3fr]">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Project contact</div>
