@@ -84,7 +84,7 @@ For Expo, expose the existing `AnalyticsDashboardData` from an owner-authenticat
 - `ANALYTICS_RETENTION_DAYS`: event retention from 30 to 730 days; defaults to 90.
 - `NEXT_PUBLIC_FIRST_PARTY_ANALYTICS`: set to `disabled` to stop public collection at both client and route layers; any other value keeps the documented first-party collection enabled.
 
-Apply `bun run db:migrate` before relying on the dashboard. The dashboard is near-real-time because it reads Postgres on request. For higher traffic, add daily/hourly rollup tables and refresh them from Vercel Cron rather than scanning raw events indefinitely.
+Production Vercel builds apply ordered, checksum-verified migrations before compiling the application, using the non-readable `DATABASE_URL` secret available inside the trusted build environment. Preview and local builds do not migrate the production database. The dashboard is near-real-time because it reads Postgres on request. For higher traffic, add daily/hourly rollup tables and refresh them from Vercel Cron rather than scanning raw events indefinitely.
 
 ## Privacy and consent
 

@@ -8,3 +8,4 @@
 - [x] Update navigation, PWA shortcut, environment, privacy, and architecture docs.
 - [x] Add focused tests.
 - [x] Run repository verification and record results.
+- [x] Apply ordered migrations from the trusted production Vercel build environment.
