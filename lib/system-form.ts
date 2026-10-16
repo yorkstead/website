@@ -40,16 +40,18 @@ export const typescriptFragments = [
 export type TypeScriptFragmentTarget = {
   position: Point3;
   spread: Point3;
+  scale: number;
+  rotation: number;
 };
 
 export type TypeScriptFragmentTargets = Record<SystemFormName, TypeScriptFragmentTarget[]>;
 
 export const systemFormSubjects = {
-  architecture: "shop-drawing",
-  disorder: "clipboard",
-  flow: "shopfloor-layout",
-  structure: "assembly-drawing",
-  network: "pos-terminal",
+  architecture: "dimensioned-machine-elevation",
+  disorder: "marked-up-shop-traveler",
+  flow: "production-routing-plan",
+  structure: "exploded-modular-assembly",
+  network: "terminal-orthographic-projection",
 } as const;
 
 type LineSegment = readonly [Point3, Point3];
@@ -71,6 +73,14 @@ const shopDrawingLines: readonly LineSegment[] = [
   [[0.6, 0.44, -0.02], [0.6, 0.56, -0.02]],
   [[-0.7, -0.62, 0], [-0.52, -0.62, 0]],
   [[0.52, 0.62, 0], [0.7, 0.62, 0]],
+  [[-0.64, 0.02, 0.02], [-0.48, 0.02, 0.02]],
+  [[-0.48, 0.02, 0.02], [-0.4, 0.12, 0.02]],
+  [[-0.4, 0.12, 0.02], [-0.32, 0.02, 0.02]],
+  [[-0.32, 0.02, 0.02], [-0.16, 0.02, 0.02]],
+  [[-0.08, 0.18, 0.02], [0.44, 0.18, 0.02]],
+  [[-0.08, 0.02, 0.02], [0.32, 0.02, 0.02]],
+  [[-0.08, -0.14, 0.02], [0.4, -0.14, 0.02]],
+  [[-0.08, -0.3, 0.02], [0.24, -0.3, 0.02]],
 ];
 
 const clipboardLines: readonly LineSegment[] = [
@@ -90,6 +100,12 @@ const clipboardLines: readonly LineSegment[] = [
   [[-0.4, -0.42, 0.02], [-0.28, -0.54, 0.02]],
   [[-0.28, -0.54, 0.02], [-0.12, -0.34, 0.02]],
   [[-0.02, -0.44, 0.02], [0.4, -0.44, 0.02]],
+  [[-0.42, 0.48, 0.02], [0.42, 0.48, 0.02]],
+  [[-0.42, 0.12, 0.02], [-0.34, 0.04, 0.02]],
+  [[-0.34, 0.04, 0.02], [-0.26, 0.12, 0.02]],
+  [[-0.42, -0.26, 0.02], [-0.34, -0.34, 0.02]],
+  [[-0.34, -0.34, 0.02], [-0.26, -0.26, 0.02]],
+  [[-0.12, -0.62, 0.02], [0.34, -0.62, 0.02]],
 ];
 
 const shopfloorLayoutLines: readonly LineSegment[] = [
@@ -114,6 +130,15 @@ const shopfloorLayoutLines: readonly LineSegment[] = [
   [[0.62, -0.48, 0.03], [0.2, -0.48, 0.03]],
   [[0.2, -0.48, 0.03], [0.2, -0.12, 0.03]],
   [[0, -0.58, -0.02], [0, 0.58, -0.02]],
+  [[-0.76, 0.56, 0.06], [-0.06, 0.56, 0.06]],
+  [[-0.06, 0.56, 0.06], [-0.12, 0.62, 0.06]],
+  [[-0.06, 0.56, 0.06], [-0.12, 0.5, 0.06]],
+  [[0.06, 0, 0.06], [0.72, 0, 0.06]],
+  [[0.72, 0, 0.06], [0.66, 0.06, 0.06]],
+  [[0.72, 0, 0.06], [0.66, -0.06, 0.06]],
+  [[-0.76, -0.58, 0.06], [-0.06, -0.58, 0.06]],
+  [[-0.06, -0.58, 0.06], [-0.12, -0.52, 0.06]],
+  [[-0.06, -0.58, 0.06], [-0.12, -0.64, 0.06]],
 ];
 
 const assemblyDrawingLines: readonly LineSegment[] = [
@@ -135,6 +160,12 @@ const assemblyDrawingLines: readonly LineSegment[] = [
   [[0, -0.18, -0.04], [0, -0.56, -0.04]],
   [[-0.7, 0.12, -0.02], [-0.56, 0.12, -0.02]],
   [[0.56, -0.38, -0.02], [0.7, -0.38, -0.02]],
+  [[-0.58, 0.34, -0.04], [-0.42, 0.24, -0.04]],
+  [[-0.42, 0.24, -0.04], [-0.58, 0.14, -0.04]],
+  [[0.58, 0.12, -0.04], [0.42, 0.02, -0.04]],
+  [[0.42, 0.02, -0.04], [0.58, -0.08, -0.04]],
+  [[-0.46, -0.58, 0.02], [-0.28, -0.72, 0.02]],
+  [[0.46, -0.58, 0.02], [0.28, -0.72, 0.02]],
 ];
 
 const posTerminalLines: readonly LineSegment[] = [
@@ -155,7 +186,39 @@ const posTerminalLines: readonly LineSegment[] = [
   [[0.72, 0.38, -0.02], [0.82, 0.38, -0.02]],
   [[0.82, 0.38, -0.02], [0.82, -0.28, -0.02]],
   [[0.82, -0.28, -0.02], [0.72, -0.28, -0.02]],
+  [[-0.32, 0.34, 0.07], [0.3, 0.34, 0.07]],
+  [[-0.3, 0.2, 0.07], [0.28, 0.2, 0.07]],
+  [[-0.28, 0.08, 0.07], [0.12, 0.08, 0.07]],
+  [[-0.26, -0.52, 0.03], [-0.18, -0.52, 0.03]],
+  [[-0.04, -0.52, 0.03], [0.04, -0.52, 0.03]],
+  [[0.18, -0.52, 0.03], [0.26, -0.52, 0.03]],
+  [[0.72, 0.28, -0.02], [0.58, 0.2, -0.02]],
+  [[0.58, 0.2, -0.02], [0.72, 0.12, -0.02]],
 ];
+
+// Shared drafting marks make every subject read as one family of CAD studies.
+// They stay behind the object outline and are built from the same particle
+// population instead of introducing a separate illustration layer.
+const cadRegistrationLines: readonly LineSegment[] = [
+  [[-0.92, -0.78, -0.08], [-0.7, -0.78, -0.08]],
+  [[0.7, -0.78, -0.08], [0.92, -0.78, -0.08]],
+  [[-0.92, 0.78, -0.08], [-0.7, 0.78, -0.08]],
+  [[0.7, 0.78, -0.08], [0.92, 0.78, -0.08]],
+  [[-0.88, -0.82, -0.08], [-0.88, -0.68, -0.08]],
+  [[-0.88, 0.68, -0.08], [-0.88, 0.82, -0.08]],
+  [[0.88, -0.82, -0.08], [0.88, -0.68, -0.08]],
+  [[0.88, 0.68, -0.08], [0.88, 0.82, -0.08]],
+  [[-0.34, 0, -0.1], [-0.08, 0, -0.1]],
+  [[0.08, 0, -0.1], [0.34, 0, -0.1]],
+  [[0, -0.32, -0.1], [0, -0.08, -0.1]],
+  [[0, 0.08, -0.1], [0, 0.32, -0.1]],
+];
+
+const architectureCadLines = [...shopDrawingLines, ...cadRegistrationLines] as const;
+const disorderCadLines = [...clipboardLines, ...cadRegistrationLines] as const;
+const flowCadLines = [...shopfloorLayoutLines, ...cadRegistrationLines] as const;
+const structureCadLines = [...assemblyDrawingLines, ...cadRegistrationLines] as const;
+const networkCadLines = [...posTerminalLines, ...cadRegistrationLines] as const;
 
 function seededRandom(seed: number) {
   let state = seed >>> 0;
@@ -200,36 +263,67 @@ function corePoint(index: number, count: number): FormPoint {
 }
 
 function lineDrawingPoint(index: number, count: number, lines: readonly LineSegment[]): FormPoint {
-  const edgeProgress = (index / count) * lines.length;
-  const edgeIndex = Math.min(lines.length - 1, Math.floor(edgeProgress));
+  const segmentLengths = lines.map(([start, end]) =>
+    Math.hypot(end[0] - start[0], end[1] - start[1], end[2] - start[2]),
+  );
+  const totalLength = segmentLengths.reduce((sum, length) => sum + length, 0);
+  const minimumPerSegment = count >= lines.length ? 1 : 0;
+  const remaining = Math.max(0, count - minimumPerSegment * lines.length);
+  const exactAllocations = segmentLengths.map(
+    (length) => minimumPerSegment + (remaining * length) / Math.max(totalLength, Number.EPSILON),
+  );
+  const allocations = exactAllocations.map(Math.floor);
+  let unassigned = count - allocations.reduce((sum, allocation) => sum + allocation, 0);
+
+  exactAllocations
+    .map((allocation, segmentIndex) => ({
+      segmentIndex,
+      remainder: allocation - Math.floor(allocation),
+    }))
+    .sort((a, b) => b.remainder - a.remainder || a.segmentIndex - b.segmentIndex)
+    .forEach(({ segmentIndex }) => {
+      if (unassigned <= 0) return;
+      allocations[segmentIndex] += 1;
+      unassigned -= 1;
+    });
+
+  let edgeIndex = 0;
+  let allocationStart = 0;
+  while (edgeIndex < lines.length - 1 && index >= allocationStart + allocations[edgeIndex]) {
+    allocationStart += allocations[edgeIndex];
+    edgeIndex += 1;
+  }
+
   const [start, end] = lines[edgeIndex];
-  const segmentLength = Math.hypot(end[0] - start[0], end[1] - start[1], end[2] - start[2]);
-  const instancesPerSegment = Math.max(1, count / lines.length);
+  const instancesOnSegment = Math.max(1, allocations[edgeIndex]);
+  const localIndex = index - allocationStart;
+  const edgeProgress = instancesOnSegment === 1 ? 0.5 : localIndex / (instancesOnSegment - 1);
+  const segmentLength = segmentLengths[edgeIndex];
   return {
-    position: lerpPoint(start, end, edgeProgress - edgeIndex),
+    position: lerpPoint(start, end, edgeProgress),
     tangent: normalize([end[0] - start[0], end[1] - start[1], end[2] - start[2]]),
-    length: Math.max(0.45, Math.min(2.15, (segmentLength / instancesPerSegment / 0.14) * 0.82)),
+    length: Math.max(0.35, Math.min(2.1, (segmentLength / instancesOnSegment / 0.14) * 0.9)),
   };
 }
 
 function architecturePoint(index: number, count: number): FormPoint {
-  return lineDrawingPoint(index, count, shopDrawingLines);
+  return lineDrawingPoint(index, count, architectureCadLines);
 }
 
 function disorderPoint(index: number, count: number): FormPoint {
-  return lineDrawingPoint(index, count, clipboardLines);
+  return lineDrawingPoint(index, count, disorderCadLines);
 }
 
 function flowPoint(index: number, count: number): FormPoint {
-  return lineDrawingPoint(index, count, shopfloorLayoutLines);
+  return lineDrawingPoint(index, count, flowCadLines);
 }
 
 function structurePoint(index: number, count: number): FormPoint {
-  return lineDrawingPoint(index, count, assemblyDrawingLines);
+  return lineDrawingPoint(index, count, structureCadLines);
 }
 
 function networkPoint(index: number, count: number): FormPoint {
-  return lineDrawingPoint(index, count, posTerminalLines);
+  return lineDrawingPoint(index, count, networkCadLines);
 }
 
 export function generateSystemFormTargets(count: number): SystemFormTargets {
@@ -290,26 +384,38 @@ export function generateTypeScriptFragmentTargets(): TypeScriptFragmentTargets {
 
     targets.core.push({
       position: [-0.18 + (index % 3) * 0.055, 0.72 - progress * 1.44, ((index % 3) - 1) * 0.025],
+      scale: 1,
+      rotation: 0,
       ...shared,
     });
     targets.architecture.push({
       position: [column === 0 ? -0.5 : 0.5, 0.57 - row * 0.38, column === 0 ? 0.025 : -0.025],
+      scale: 0.68,
+      rotation: column === 0 ? -0.025 : 0.025,
       ...shared,
     });
     targets.disorder.push({
       position: [(random() - 0.5) * 1.65, (random() - 0.5) * 1.4, (random() - 0.5) * 0.12],
+      scale: 0.58,
+      rotation: (random() - 0.5) * 0.18,
       ...shared,
     });
     targets.flow.push({
       position: [-0.78 + progress * 1.56, Math.sin(progress * Math.PI * 2.25) * 0.55, ((index % 3) - 1) * 0.025],
+      scale: 0.62,
+      rotation: Math.cos(progress * Math.PI * 2.25) * 0.045,
       ...shared,
     });
     targets.structure.push({
       position: [column === 0 ? -0.48 : 0.48, 0.57 - row * 0.38, 0],
+      scale: 0.62,
+      rotation: column === 0 ? -0.035 : 0.035,
       ...shared,
     });
     targets.network.push({
       position: [Math.cos(angle) * 0.72, Math.sin(angle) * 0.63, Math.sin(angle * 2) * 0.04],
+      scale: 0.56,
+      rotation: Math.sin(angle) * 0.055,
       ...shared,
     });
   }
