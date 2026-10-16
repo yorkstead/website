@@ -12,7 +12,7 @@ const expectedSequence = [
   "core",
   "structure",
   "core",
-  "core",
+  "ownership",
 ];
 
 for (const viewport of [
@@ -33,8 +33,8 @@ for (const viewport of [
       document.documentElement.style.scrollBehavior = "auto";
       window.scrollTo(0, document.documentElement.scrollHeight);
     });
-    await expect(page.locator('footer[data-system-form="core"]')).toBeInViewport();
-    await expect(systemForm).toHaveAttribute("data-active-form", "core");
+    await expect(page.locator('footer[data-system-form="ownership"]')).toBeInViewport();
+    await expect(systemForm).toHaveAttribute("data-active-form", "ownership");
     await expect.poll(() => systemForm.evaluate((element) =>
       Number.parseFloat(getComputedStyle(element).getPropertyValue("--system-form-presence")),
     )).toBeGreaterThan(0.99);
