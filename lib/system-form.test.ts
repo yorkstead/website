@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { generateSystemFormTargets, systemFormSequence } from "./system-form";
+import {
+  generateSystemFormTargets,
+  generateTypeScriptFragmentTargets,
+  systemFormSequence,
+  typescriptFragments,
+} from "./system-form";
 
 describe("SystemForm geometry", () => {
   test("uses the approved reversible form sequence", () => {
@@ -23,5 +28,20 @@ describe("SystemForm geometry", () => {
   test("rejects invalid particle counts", () => {
     expect(() => generateSystemFormTargets(0)).toThrow(RangeError);
     expect(() => generateSystemFormTargets(2.5)).toThrow(RangeError);
+  });
+
+  test("uses readable TypeScript fragments with stable targets", () => {
+    expect(typescriptFragments.some((fragment) => fragment.includes("interface Workflow"))).toBe(true);
+    expect(typescriptFragments.some((fragment) => fragment.includes("await step.execute()"))).toBe(true);
+
+    const first = generateTypeScriptFragmentTargets();
+    const second = generateTypeScriptFragmentTargets();
+    expect(second).toEqual(first);
+    for (const fragments of Object.values(first)) {
+      expect(fragments).toHaveLength(typescriptFragments.length);
+      for (const fragment of fragments) {
+        expect([...fragment.position, ...fragment.spread].every(Number.isFinite)).toBe(true);
+      }
+    }
   });
 });

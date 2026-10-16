@@ -8,7 +8,7 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 
 - Add one fixed, decorative WebGL canvas to the homepage.
 - Morph a persistent population of points and short rods through `Core → Architecture → Disorder → Flow → Structure → Network → Core`.
-- Keep each state legible as a planar code/system diagram made from orthogonal strokes, tokens, brackets, and nodes rather than free-floating shards.
+- Make readable TypeScript fragments the primary morphing material, with abstract strokes and nodes retained only as low-opacity scaffolding.
 - Drive each transition from an existing homepage section with GSAP ScrollTrigger.
 - Move the persistent form through a restrained sequence of viewport positions as its state changes.
 - Preserve bidirectional scroll behavior and a nearly imperceptible idle breath.

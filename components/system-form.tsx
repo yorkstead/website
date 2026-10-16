@@ -3,7 +3,12 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
-import { generateSystemFormTargets, systemFormSequence } from "@/lib/system-form";
+import {
+  generateSystemFormTargets,
+  generateTypeScriptFragmentTargets,
+  systemFormSequence,
+  typescriptFragments,
+} from "@/lib/system-form";
 
 type MotionState = {
   fromIndex: number;
@@ -85,6 +90,110 @@ function SystemFormFallback() {
       <span />
       <i />
     </div>
+  );
+}
+
+function createCodeTexture(fragment: string, color: string) {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  if (!context) return null;
+
+  const lines = fragment.split("\n");
+  const font = '500 28px "SFMono-Regular", Consolas, "Liberation Mono", monospace';
+  context.font = font;
+  const width = Math.max(...lines.map((line) => context.measureText(line).width));
+  canvas.width = Math.ceil(width + 24);
+  canvas.height = lines.length * 34 + 18;
+  context.font = font;
+  context.fillStyle = color;
+  context.globalAlpha = 0.9;
+  context.textBaseline = "middle";
+  lines.forEach((line, index) => context.fillText(line, 12, 10 + index * 34 + 17));
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = false;
+  return { texture, aspect: canvas.width / canvas.height, lines: lines.length };
+}
+
+function TypeScriptFragments({ color, motion }: { color: string; motion: MutableRefObject<MotionState> }) {
+  const sprites = useRef<(THREE.Sprite | null)[]>([]);
+  const renderedPositions = useRef(new Float32Array(typescriptFragments.length * 3));
+  const hasSettledFrame = useRef(false);
+  const renderedVelocity = useRef(0);
+  const targets = useMemo(() => generateTypeScriptFragmentTargets(), []);
+  const textures = useMemo(
+    () => typescriptFragments.map((fragment) => createCodeTexture(fragment, color)),
+    [color],
+  );
+  const position = useMemo(() => new THREE.Vector3(), []);
+  const spread = useMemo(() => new THREE.Vector3(), []);
+
+  useEffect(() => {
+    const currentTextures = textures;
+    return () => currentTextures.forEach((entry) => entry?.texture.dispose());
+  }, [textures]);
+
+  useFrame((_, delta) => {
+    const state = motion.current;
+    const fromName = systemFormSequence[state.fromIndex];
+    const toName = systemFormSequence[state.toIndex];
+    const progress = THREE.MathUtils.clamp(state.progress, 0, 1);
+    const eased = progress * progress * (3 - 2 * progress);
+    const transitionArc = Math.sin(progress * Math.PI);
+    const damping = hasSettledFrame.current ? 1 - Math.exp(-delta * 5.5) : 1;
+    renderedVelocity.current = Math.max(state.velocity, renderedVelocity.current * Math.pow(0.025, delta));
+    const velocityContribution = Math.min(1, renderedVelocity.current / 2200);
+
+    for (let index = 0; index < typescriptFragments.length; index += 1) {
+      const sprite = sprites.current[index];
+      if (!sprite) continue;
+      const source = targets[fromName][index];
+      const destination = targets[toName][index];
+      position.set(
+        THREE.MathUtils.lerp(source.position[0], destination.position[0], eased),
+        THREE.MathUtils.lerp(source.position[1], destination.position[1], eased),
+        THREE.MathUtils.lerp(source.position[2], destination.position[2], eased),
+      );
+      spread.set(source.spread[0], source.spread[1], source.spread[2]);
+      position.addScaledVector(spread, transitionArc * (0.15 + velocityContribution * 0.3));
+
+      const offset = index * 3;
+      renderedPositions.current[offset] = THREE.MathUtils.lerp(renderedPositions.current[offset], position.x, damping);
+      renderedPositions.current[offset + 1] = THREE.MathUtils.lerp(renderedPositions.current[offset + 1], position.y, damping);
+      renderedPositions.current[offset + 2] = THREE.MathUtils.lerp(renderedPositions.current[offset + 2], position.z, damping);
+      sprite.position.set(
+        renderedPositions.current[offset],
+        renderedPositions.current[offset + 1],
+        renderedPositions.current[offset + 2],
+      );
+      const material = sprite.material as THREE.SpriteMaterial;
+      material.opacity = 0.42 + transitionArc * 0.08;
+    }
+
+    hasSettledFrame.current = true;
+  });
+
+  return (
+    <group>
+      {textures.map((entry, index) => {
+        if (!entry) return null;
+        const height = entry.lines * 0.072;
+        return (
+          <sprite
+            key={typescriptFragments[index]}
+            ref={(sprite) => {
+              sprites.current[index] = sprite;
+            }}
+            scale={[height * entry.aspect, height, 1]}
+          >
+            <spriteMaterial map={entry.texture} transparent opacity={0.42} depthWrite={false} depthTest={false} />
+          </sprite>
+        );
+      })}
+    </group>
   );
 }
 
@@ -195,14 +304,15 @@ function SystemParticles({
     <group ref={group}>
       <instancedMesh ref={rods} args={[undefined, undefined, count]} frustumCulled={false}>
         <boxGeometry args={[0.015, 0.14, 0.012]} />
-        <meshBasicMaterial color={color} transparent opacity={0.42} depthWrite={false} depthTest={false} />
+        <meshBasicMaterial color={color} transparent opacity={0.14} depthWrite={false} depthTest={false} />
       </instancedMesh>
       <points frustumCulled={false}>
         <bufferGeometry ref={points}>
           <bufferAttribute attach="attributes-position" args={[initialPointPositions, 3]} />
         </bufferGeometry>
-        <pointsMaterial color={color} size={0.018} sizeAttenuation transparent opacity={0.54} depthWrite={false} depthTest={false} />
+        <pointsMaterial color={color} size={0.014} sizeAttenuation transparent opacity={0.24} depthWrite={false} depthTest={false} />
       </points>
+      <TypeScriptFragments color={color} motion={motion} />
     </group>
   );
 }

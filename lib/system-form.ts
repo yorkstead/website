@@ -21,6 +21,24 @@ export type SystemFormParticle = {
 
 export type SystemFormTargets = Record<SystemFormName, SystemFormParticle[]>;
 
+export const typescriptFragments = [
+  'type State =\n  | "idle"\n  | "active";',
+  "interface Workflow {\n  state: State;\n}",
+  "const plan =\n  await map(job);",
+  "for (const step of plan) {\n  await step.execute();\n}",
+  'return {\n  status: "ready"\n};',
+  "export async function\nrun(job: Job) {",
+  "const queue: Step[] =\n  workflow.steps;",
+  "await Promise.all(\n  queue.map(execute)\n);",
+] as const;
+
+export type TypeScriptFragmentTarget = {
+  position: Point3;
+  spread: Point3;
+};
+
+export type TypeScriptFragmentTargets = Record<SystemFormName, TypeScriptFragmentTarget[]>;
+
 const architectureLines: readonly (readonly [Point3, Point3])[] = [
   [[-0.78, -0.7, 0], [0.78, -0.7, 0]],
   [[0.78, -0.7, 0], [0.78, 0.7, 0]],
@@ -175,6 +193,56 @@ export function generateSystemFormTargets(count: number): SystemFormTargets {
     for (const name of Object.keys(forms) as (keyof typeof forms)[]) {
       targets[name].push({ ...forms[name], ...shared });
     }
+  }
+
+  return targets;
+}
+
+export function generateTypeScriptFragmentTargets(): TypeScriptFragmentTargets {
+  const count = typescriptFragments.length;
+  const random = seededRandom(0x74797065);
+  const targets: TypeScriptFragmentTargets = {
+    core: [],
+    architecture: [],
+    disorder: [],
+    flow: [],
+    structure: [],
+    network: [],
+  };
+
+  for (let index = 0; index < count; index += 1) {
+    const progress = index / Math.max(1, count - 1);
+    const angle = progress * Math.PI * 2 - Math.PI / 2;
+    const column = index % 2;
+    const row = Math.floor(index / 2);
+    const shared = {
+      spread: normalize([random() - 0.5, random() - 0.5, (random() - 0.5) * 0.3]),
+    };
+
+    targets.core.push({
+      position: [-0.18 + (index % 3) * 0.055, 0.72 - progress * 1.44, ((index % 3) - 1) * 0.025],
+      ...shared,
+    });
+    targets.architecture.push({
+      position: [column === 0 ? -0.5 : 0.5, 0.57 - row * 0.38, column === 0 ? 0.025 : -0.025],
+      ...shared,
+    });
+    targets.disorder.push({
+      position: [(random() - 0.5) * 1.65, (random() - 0.5) * 1.4, (random() - 0.5) * 0.12],
+      ...shared,
+    });
+    targets.flow.push({
+      position: [-0.78 + progress * 1.56, Math.sin(progress * Math.PI * 2.25) * 0.55, ((index % 3) - 1) * 0.025],
+      ...shared,
+    });
+    targets.structure.push({
+      position: [column === 0 ? -0.48 : 0.48, 0.57 - row * 0.38, 0],
+      ...shared,
+    });
+    targets.network.push({
+      position: [Math.cos(angle) * 0.72, Math.sin(angle) * 0.63, Math.sin(angle * 2) * 0.04],
+      ...shared,
+    });
   }
 
   return targets;
