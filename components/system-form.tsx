@@ -101,6 +101,9 @@ function SystemParticles({
   const rods = useRef<THREE.InstancedMesh>(null);
   const points = useRef<THREE.BufferGeometry>(null);
   const renderedVelocity = useRef(0);
+  const settledPositions = useRef(new Float32Array(count * 3));
+  const settledTangents = useRef(new Float32Array(count * 3));
+  const hasSettledFrame = useRef(false);
   const targets = useMemo(() => generateSystemFormTargets(count), [count]);
   const initialPointPositions = useMemo(() => new Float32Array(count * 3), [count]);
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -111,7 +114,10 @@ function SystemParticles({
 
   useEffect(() => {
     rods.current?.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  }, []);
+    settledPositions.current = new Float32Array(count * 3);
+    settledTangents.current = new Float32Array(count * 3);
+    hasSettledFrame.current = false;
+  }, [count]);
 
   useFrame(({ clock }, delta) => {
     if (!group.current || !rods.current || !points.current) return;
@@ -128,6 +134,9 @@ function SystemParticles({
     const velocityContribution = Math.min(1, renderedVelocity.current / 2200);
     const spreadAmount = Math.min(maximumSpread, transitionArc * (0.1 + velocityContribution * 0.18));
     const positionAttribute = points.current.getAttribute("position") as THREE.BufferAttribute;
+    const damping = hasSettledFrame.current ? 1 - Math.exp(-delta * 5.5) : 1;
+    const renderedPositions = settledPositions.current;
+    const renderedTangents = settledTangents.current;
 
     for (let index = 0; index < count; index += 1) {
       const source = from[index];
@@ -140,6 +149,11 @@ function SystemParticles({
       spread.set(source.spread[0], source.spread[1], source.spread[2]);
       position.addScaledVector(spread, spreadAmount);
 
+      const offset = index * 3;
+      renderedPositions[offset] = THREE.MathUtils.lerp(renderedPositions[offset], position.x, damping);
+      renderedPositions[offset + 1] = THREE.MathUtils.lerp(renderedPositions[offset + 1], position.y, damping);
+      renderedPositions[offset + 2] = THREE.MathUtils.lerp(renderedPositions[offset + 2], position.z, damping);
+      position.set(renderedPositions[offset], renderedPositions[offset + 1], renderedPositions[offset + 2]);
       positionAttribute.setXYZ(index, position.x, position.y, position.z);
 
       tangent
@@ -149,6 +163,10 @@ function SystemParticles({
           THREE.MathUtils.lerp(source.tangent[2], destination.tangent[2], eased),
         )
         .normalize();
+      renderedTangents[offset] = THREE.MathUtils.lerp(renderedTangents[offset], tangent.x, damping);
+      renderedTangents[offset + 1] = THREE.MathUtils.lerp(renderedTangents[offset + 1], tangent.y, damping);
+      renderedTangents[offset + 2] = THREE.MathUtils.lerp(renderedTangents[offset + 2], tangent.z, damping);
+      tangent.set(renderedTangents[offset], renderedTangents[offset + 1], renderedTangents[offset + 2]).normalize();
       dummy.position.copy(position);
       dummy.quaternion.setFromUnitVectors(up, tangent);
       dummy.scale.set(1, 0.72 + Math.sin(source.phase) * 0.16, 1);
@@ -158,6 +176,7 @@ function SystemParticles({
 
     rods.current.instanceMatrix.needsUpdate = true;
     positionAttribute.needsUpdate = true;
+    hasSettledFrame.current = true;
 
     const elapsed = clock.getElapsedTime();
     const breath = 1 + Math.sin(elapsed * 0.82) * 0.028;
@@ -228,8 +247,8 @@ export function SystemForm() {
       lastScrollY = window.scrollY;
       lastTimestamp = timestamp;
 
-      const startLine = window.innerHeight * 0.86;
-      const endLine = window.innerHeight * 0.42;
+      const startLine = window.innerHeight;
+      const endLine = window.innerHeight * 0.2;
       const transitionDistance = Math.max(1, startLine - endLine);
       let completedTransitions = 0;
 
@@ -282,8 +301,8 @@ export function SystemForm() {
       const triggers = sections.slice(1).map((section) =>
         ScrollTrigger.create({
           trigger: section,
-          start: "top 86%",
-          end: "top 42%",
+          start: "top 100%",
+          end: "top 20%",
           invalidateOnRefresh: true,
           onUpdate: scheduleSynchronization,
           onRefresh: scheduleSynchronization,
