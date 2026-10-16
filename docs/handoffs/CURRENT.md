@@ -1,9 +1,9 @@
 # Current handoff
 
-- Active feature: Ops domain retirement
-- Active spec: `specs/003-ops-domain-retirement/`
-- Current task: Complete — coordinated website and ops-domain retirement changes are ready for review.
-- Last verified: Lint, typecheck, migrations, unit tests, production builds, redirect tests, public-route browser crawl, and external destination probes completed on 2026-10-15.
-- Next action: Review and deploy both coordinated repositories, operations first and website second.
+- Active feature: Industry consultation playbooks
+- Active spec: `specs/004-industry-consultation-playbooks/`
+- Current task: Complete — the consultation workspace is industry-first and aligned to the Workflow Rescue, Sprint, Department System, and Company Operations System ladder.
+- Last verified: Yorkstead integrity check, migration check, lint (three pre-existing warnings), typecheck, 222 passing unit tests with 2 intentional database-integration skips, and the Next.js production build completed on 2026-10-16.
+- Next action: Review the authenticated consultation workspace in the deployed owner session, then deploy when approved.
 - Blockers: None.
-- Recommended role: Growth operator and release engineer.
+- Recommended role: Growth operator and product engineer.

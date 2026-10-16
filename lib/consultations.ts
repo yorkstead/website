@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { contactDatabase } from "@/lib/contact-inquiries";
-import { getConsultationPlaybook } from "@/lib/consultation-playbooks";
+import { consultationIndustryResponseKey, getConsultationPlaybook } from "@/lib/consultation-playbooks";
 import { isValidDateKey } from "@/lib/date-time";
 import { createPagination, normalizeCount } from "@/lib/pagination";
 import { isValidEmailAddress } from "@/lib/semantic-validation";
@@ -32,13 +32,20 @@ function shortText(value: unknown, max: number) {
 export function parseConsultationInput(value: unknown): ConsultationInput | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const candidate = value as Record<string, unknown>;
-  const playbook = getConsultationPlaybook(shortText(candidate.serviceSlug, 80));
-  if (!playbook) return null;
-  const allowedFields = new Set(playbook.sections.flatMap((section) => section.fields.map((field) => field.id)));
   const rawResponses = candidate.responses;
   if (!rawResponses || typeof rawResponses !== "object" || Array.isArray(rawResponses)) return null;
+  const responseValues = rawResponses as Record<string, unknown>;
+  const playbook = getConsultationPlaybook(
+    shortText(candidate.serviceSlug, 80),
+    shortText(responseValues[consultationIndustryResponseKey], 80) || null,
+  );
+  if (!playbook) return null;
+  const allowedFields = new Set([
+    consultationIndustryResponseKey,
+    ...playbook.sections.flatMap((section) => section.fields.map((field) => field.id)),
+  ]);
   const responses: Record<string, string> = {};
-  for (const [key, answer] of Object.entries(rawResponses)) {
+  for (const [key, answer] of Object.entries(responseValues)) {
     if (allowedFields.has(key) && typeof answer === "string") responses[key] = answer.trim().slice(0, 10000);
   }
   const status = shortText(candidate.status, 20);
