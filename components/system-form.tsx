@@ -8,6 +8,7 @@ import {
   generateTypeScriptFragmentTargets,
   systemFormSequence,
   typescriptFragments,
+  type SystemFormName,
 } from "@/lib/system-form";
 
 type MotionState = {
@@ -17,9 +18,13 @@ type MotionState = {
   velocity: number;
 };
 
-const desktopParticleCount = 84;
-const mobileParticleCount = 42;
-const maximumSpread = 0.42;
+const desktopParticleCount = 116;
+const mobileParticleCount = 64;
+const maximumSpread = 0.48;
+
+function illustrationWeight(name: SystemFormName) {
+  return name === "core" ? 0 : 1;
+}
 const desktopPlacements = [
   [84, 34],
   [82, 68],
@@ -186,6 +191,11 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
     const progress = THREE.MathUtils.clamp(state.progress, 0, 1);
     const eased = progress * progress * (3 - 2 * progress);
     const transitionArc = Math.sin(progress * Math.PI);
+    const illustrationAmount = THREE.MathUtils.lerp(
+      illustrationWeight(fromName),
+      illustrationWeight(toName),
+      eased,
+    );
     const damping = hasSettledFrame.current ? 1 - Math.exp(-delta * 5.5) : 1;
     renderedVelocity.current = Math.max(state.velocity, renderedVelocity.current * Math.pow(0.025, delta));
     const velocityContribution = Math.min(1, renderedVelocity.current / 2200);
@@ -193,7 +203,8 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
 
     for (let index = 0; index < typescriptFragments.length; index += 1) {
       const sprite = sprites.current[index];
-      if (!sprite) continue;
+      const entry = textures[index];
+      if (!sprite || !entry) continue;
       const source = targets[fromName][index];
       const destination = targets[toName][index];
       position.set(
@@ -219,8 +230,13 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
         renderedPositions.current[offset + 1],
         renderedPositions.current[offset + 2],
       );
+      const fragmentScale =
+        THREE.MathUtils.lerp(source.scale, destination.scale, eased) * (1 - transitionArc * 0.08);
+      const height = entry.lines * 0.082;
+      sprite.scale.set(height * entry.aspect * fragmentScale, height * fragmentScale, 1);
       const material = sprite.material as THREE.SpriteMaterial;
-      material.opacity = 0.48 + compilePulse * 0.14 + transitionArc * 0.06;
+      material.rotation = THREE.MathUtils.lerp(source.rotation, destination.rotation, eased);
+      material.opacity = 0.46 - illustrationAmount * 0.13 + compilePulse * 0.12 + transitionArc * 0.04;
     }
 
     hasSettledFrame.current = true;
@@ -258,7 +274,9 @@ function SystemParticles({
 }) {
   const group = useRef<THREE.Group>(null);
   const rods = useRef<THREE.InstancedMesh>(null);
+  const rodMaterial = useRef<THREE.MeshBasicMaterial>(null);
   const points = useRef<THREE.BufferGeometry>(null);
+  const pointMaterial = useRef<THREE.PointsMaterial>(null);
   const renderedVelocity = useRef(0);
   const settledPositions = useRef(new Float32Array(count * 3));
   const settledTangents = useRef(new Float32Array(count * 3));
@@ -291,6 +309,11 @@ function SystemParticles({
     const progress = Math.max(0, Math.min(1, state.progress));
     const eased = progress * progress * (3 - 2 * progress);
     const transitionArc = Math.sin(progress * Math.PI);
+    const illustrationAmount = THREE.MathUtils.lerp(
+      illustrationWeight(fromName),
+      illustrationWeight(toName),
+      eased,
+    );
     renderedVelocity.current = Math.max(state.velocity, renderedVelocity.current * Math.pow(0.025, delta));
     const velocityContribution = Math.min(1, renderedVelocity.current / 2200);
     const spreadAmount = Math.min(maximumSpread, transitionArc * (0.16 + velocityContribution * 0.32));
@@ -346,24 +369,42 @@ function SystemParticles({
     positionAttribute.needsUpdate = true;
     hasSettledFrame.current = true;
 
-    const breath = 1 + Math.sin(elapsed * 0.82) * 0.028;
+    if (rodMaterial.current) {
+      rodMaterial.current.opacity = 0.16 + illustrationAmount * 0.14 + transitionArc * 0.035;
+    }
+    if (pointMaterial.current) {
+      pointMaterial.current.opacity = 0.24 + illustrationAmount * 0.13 + transitionArc * 0.035;
+    }
+
+    const breath = 1 + Math.sin(elapsed * 0.82) * (0.028 - illustrationAmount * 0.014);
+    const freeRotation = 1 - illustrationAmount * 0.82;
     group.current.scale.setScalar(breath);
-    group.current.rotation.x = Math.sin(elapsed * 0.38) * 0.035;
-    group.current.rotation.y = elapsed * 0.07 + Math.sin(elapsed * 0.31 + 0.8) * 0.045;
-    group.current.rotation.z = Math.sin(elapsed * 0.46 + 1.2) * 0.014;
+    group.current.rotation.x = Math.sin(elapsed * 0.38) * 0.035 * freeRotation;
+    group.current.rotation.y =
+      (elapsed * 0.07 + Math.sin(elapsed * 0.31 + 0.8) * 0.045) * freeRotation;
+    group.current.rotation.z = Math.sin(elapsed * 0.46 + 1.2) * 0.014 * freeRotation;
   });
 
   return (
     <group ref={group}>
       <instancedMesh ref={rods} args={[undefined, undefined, count]} frustumCulled={false}>
         <boxGeometry args={[0.015, 0.14, 0.012]} />
-        <meshBasicMaterial color={color} transparent opacity={0.22} depthWrite={false} depthTest={false} />
+        <meshBasicMaterial ref={rodMaterial} color={color} transparent opacity={0.22} depthWrite={false} depthTest={false} />
       </instancedMesh>
       <points frustumCulled={false}>
         <bufferGeometry ref={points}>
           <bufferAttribute attach="attributes-position" args={[initialPointPositions, 3]} />
         </bufferGeometry>
-        <pointsMaterial color={color} size={0.014} sizeAttenuation transparent opacity={0.3} depthWrite={false} depthTest={false} />
+        <pointsMaterial
+          ref={pointMaterial}
+          color={color}
+          size={0.014}
+          sizeAttenuation
+          transparent
+          opacity={0.3}
+          depthWrite={false}
+          depthTest={false}
+        />
       </points>
       <TypeScriptFragments color={color} motion={motion} />
     </group>
