@@ -160,10 +160,10 @@ function SystemParticles({
     positionAttribute.needsUpdate = true;
 
     const elapsed = clock.getElapsedTime();
-    const breath = 1 + Math.sin(elapsed * 0.82) * 0.02;
+    const breath = 1 + Math.sin(elapsed * 0.82) * 0.028;
     group.current.scale.setScalar(breath);
     group.current.rotation.x = Math.sin(elapsed * 0.38) * 0.035;
-    group.current.rotation.y = Math.sin(elapsed * 0.31 + 0.8) * 0.045;
+    group.current.rotation.y = elapsed * 0.07 + Math.sin(elapsed * 0.31 + 0.8) * 0.045;
     group.current.rotation.z = Math.sin(elapsed * 0.46 + 1.2) * 0.014;
   });
 
@@ -204,7 +204,11 @@ export function SystemForm() {
     if (reducedMotion !== false || webglAvailable !== true || mobile === null) return;
 
     let cancelled = false;
-    let cleanup: (() => void) | undefined;
+    let animationFrame = 0;
+    let lastScrollY = window.scrollY;
+    let lastTimestamp = performance.now();
+    let killScrollTriggers = () => {};
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-system-form]"));
 
     const updatePlacement = (fromIndex: number, toIndex: number, progress: number) => {
       if (!root.current) return;
@@ -216,67 +220,86 @@ export function SystemForm() {
       root.current.style.setProperty("--system-form-y", `${THREE.MathUtils.lerp(from[1], to[1], eased)}vh`);
     };
 
+    const synchronizeToSections = () => {
+      animationFrame = 0;
+      const timestamp = performance.now();
+      const elapsed = Math.max(16, timestamp - lastTimestamp);
+      const velocity = Math.min(2200, (Math.abs(window.scrollY - lastScrollY) / elapsed) * 1000);
+      lastScrollY = window.scrollY;
+      lastTimestamp = timestamp;
+
+      const startLine = window.innerHeight * 0.86;
+      const endLine = window.innerHeight * 0.42;
+      const transitionDistance = Math.max(1, startLine - endLine);
+      let completedTransitions = 0;
+
+      for (let transitionIndex = 0; transitionIndex < sections.length - 1; transitionIndex += 1) {
+        const targetTop = sections[transitionIndex + 1].getBoundingClientRect().top;
+        const progress = THREE.MathUtils.clamp((startLine - targetTop) / transitionDistance, 0, 1);
+
+        if (progress <= 0) break;
+        if (progress >= 1) {
+          completedTransitions = transitionIndex + 1;
+          continue;
+        }
+
+        motion.current = {
+          fromIndex: transitionIndex,
+          toIndex: transitionIndex + 1,
+          progress,
+          velocity,
+        };
+        updatePlacement(transitionIndex, transitionIndex + 1, progress);
+        root.current?.setAttribute("data-active-form", systemFormSequence[transitionIndex + 1]);
+        return;
+      }
+
+      motion.current = {
+        fromIndex: completedTransitions,
+        toIndex: completedTransitions,
+        progress: 1,
+        velocity: 0,
+      };
+      updatePlacement(completedTransitions, completedTransitions, 1);
+      root.current?.setAttribute("data-active-form", systemFormSequence[completedTransitions]);
+    };
+
+    const scheduleSynchronization = () => {
+      if (animationFrame) return;
+      animationFrame = window.requestAnimationFrame(synchronizeToSections);
+    };
+
+    window.addEventListener("scroll", scheduleSynchronization, { passive: true });
+    window.addEventListener("resize", scheduleSynchronization);
+    synchronizeToSections();
+
     void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(([gsapModule, scrollTriggerModule]) => {
       if (cancelled) return;
       const gsap = gsapModule.gsap;
       const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
       gsap.registerPlugin(ScrollTrigger);
 
-      const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-system-form]"));
-      const triggers = sections.slice(1).map((section, transitionIndex) =>
+      const triggers = sections.slice(1).map((section) =>
         ScrollTrigger.create({
           trigger: section,
           start: "top 86%",
           end: "top 42%",
           invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            if (!self.isActive) return;
-            motion.current = {
-              fromIndex: transitionIndex,
-              toIndex: transitionIndex + 1,
-              progress: self.progress,
-              velocity: Math.min(2200, Math.abs(self.getVelocity())),
-            };
-            updatePlacement(transitionIndex, transitionIndex + 1, self.progress);
-          },
-          onLeave: () => {
-            motion.current = { fromIndex: transitionIndex + 1, toIndex: transitionIndex + 1, progress: 1, velocity: 0 };
-            updatePlacement(transitionIndex + 1, transitionIndex + 1, 1);
-          },
-          onLeaveBack: () => {
-            motion.current = { fromIndex: transitionIndex, toIndex: transitionIndex, progress: 0, velocity: 0 };
-            updatePlacement(transitionIndex, transitionIndex, 0);
-          },
+          onUpdate: scheduleSynchronization,
+          onRefresh: scheduleSynchronization,
         }),
       );
 
       ScrollTrigger.refresh();
-      const activeTransition = triggers.findIndex((trigger) => trigger.isActive);
-      if (activeTransition >= 0) {
-        const trigger = triggers[activeTransition];
-        motion.current = {
-          fromIndex: activeTransition,
-          toIndex: activeTransition + 1,
-          progress: trigger.progress,
-          velocity: 0,
-        };
-        updatePlacement(activeTransition, activeTransition + 1, trigger.progress);
-      } else {
-        const completedTransitions = triggers.filter((trigger) => trigger.progress >= 1).length;
-        motion.current = {
-          fromIndex: completedTransitions,
-          toIndex: completedTransitions,
-          progress: 1,
-          velocity: 0,
-        };
-        updatePlacement(completedTransitions, completedTransitions, 1);
-      }
-      cleanup = () => triggers.forEach((trigger) => trigger.kill());
+      killScrollTriggers = () => triggers.forEach((trigger) => trigger.kill());
     });
 
     return () => {
       cancelled = true;
-      cleanup?.();
+      window.removeEventListener("scroll", scheduleSynchronization);
+      window.removeEventListener("resize", scheduleSynchronization);
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      killScrollTriggers();
     };
   }, [mobile, reducedMotion, webglAvailable]);
 
