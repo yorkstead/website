@@ -10,7 +10,7 @@ export const systemFormSequence = [
   "core",
   "structure",
   "core",
-  "core",
+  "ownership",
 ] as const;
 
 export type SystemFormName = (typeof systemFormSequence)[number];
@@ -52,6 +52,7 @@ export const systemFormSubjects = {
   flow: "production-routing-plan",
   structure: "exploded-modular-assembly",
   network: "terminal-orthographic-projection",
+  ownership: "owned-system-cabinet",
 } as const;
 
 type LineSegment = readonly [Point3, Point3];
@@ -196,6 +197,34 @@ const posTerminalLines: readonly LineSegment[] = [
   [[0.58, 0.2, -0.02], [0.72, 0.12, -0.02]],
 ];
 
+const ownedSystemLines: readonly LineSegment[] = [
+  [[-0.58, -0.72, 0.02], [0.58, -0.72, 0.02]],
+  [[0.58, -0.72, 0.02], [0.58, 0.72, 0.02]],
+  [[0.58, 0.72, 0.02], [-0.58, 0.72, 0.02]],
+  [[-0.58, 0.72, 0.02], [-0.58, -0.72, 0.02]],
+  [[-0.46, 0.52, 0.05], [0.46, 0.52, 0.05]],
+  [[0.46, 0.52, 0.05], [0.46, 0.2, 0.05]],
+  [[0.46, 0.2, 0.05], [-0.46, 0.2, 0.05]],
+  [[-0.46, 0.2, 0.05], [-0.46, 0.52, 0.05]],
+  [[-0.46, 0.1, 0.05], [0.46, 0.1, 0.05]],
+  [[0.46, 0.1, 0.05], [0.46, -0.22, 0.05]],
+  [[0.46, -0.22, 0.05], [-0.46, -0.22, 0.05]],
+  [[-0.46, -0.22, 0.05], [-0.46, 0.1, 0.05]],
+  [[-0.46, -0.32, 0.05], [0.46, -0.32, 0.05]],
+  [[0.46, -0.32, 0.05], [0.46, -0.58, 0.05]],
+  [[0.46, -0.58, 0.05], [-0.46, -0.58, 0.05]],
+  [[-0.46, -0.58, 0.05], [-0.46, -0.32, 0.05]],
+  [[-0.34, 0.4, 0.08], [0.2, 0.4, 0.08]],
+  [[-0.34, -0.02, 0.08], [0.16, -0.02, 0.08]],
+  [[-0.34, -0.46, 0.08], [0.12, -0.46, 0.08]],
+  [[0.3, 0.4, 0.08], [0.36, 0.4, 0.08]],
+  [[0.26, -0.02, 0.08], [0.32, -0.02, 0.08]],
+  [[0.22, -0.46, 0.08], [0.28, -0.46, 0.08]],
+  [[-0.7, -0.62, -0.02], [-0.7, 0.62, -0.02]],
+  [[-0.76, -0.62, -0.02], [-0.64, -0.62, -0.02]],
+  [[-0.76, 0.62, -0.02], [-0.64, 0.62, -0.02]],
+];
+
 // Shared drafting marks make every subject read as one family of CAD studies.
 // They stay behind the object outline and are built from the same particle
 // population instead of introducing a separate illustration layer.
@@ -219,6 +248,7 @@ const disorderCadLines = [...clipboardLines, ...cadRegistrationLines] as const;
 const flowCadLines = [...shopfloorLayoutLines, ...cadRegistrationLines] as const;
 const structureCadLines = [...assemblyDrawingLines, ...cadRegistrationLines] as const;
 const networkCadLines = [...posTerminalLines, ...cadRegistrationLines] as const;
+const ownershipCadLines = [...ownedSystemLines, ...cadRegistrationLines] as const;
 
 function seededRandom(seed: number) {
   let state = seed >>> 0;
@@ -326,6 +356,10 @@ function networkPoint(index: number, count: number): FormPoint {
   return lineDrawingPoint(index, count, networkCadLines);
 }
 
+function ownershipPoint(index: number, count: number): FormPoint {
+  return lineDrawingPoint(index, count, ownershipCadLines);
+}
+
 export function generateSystemFormTargets(count: number): SystemFormTargets {
   if (!Number.isInteger(count) || count < 1) throw new RangeError("SystemForm particle count must be a positive integer.");
 
@@ -337,6 +371,7 @@ export function generateSystemFormTargets(count: number): SystemFormTargets {
     flow: [],
     structure: [],
     network: [],
+    ownership: [],
   };
 
   for (let index = 0; index < count; index += 1) {
@@ -351,6 +386,7 @@ export function generateSystemFormTargets(count: number): SystemFormTargets {
       flow: flowPoint(index, count),
       structure: structurePoint(index, count),
       network: networkPoint(index, count),
+      ownership: ownershipPoint(index, count),
     };
 
     for (const name of Object.keys(forms) as (keyof typeof forms)[]) {
@@ -371,6 +407,7 @@ export function generateTypeScriptFragmentTargets(): TypeScriptFragmentTargets {
     flow: [],
     structure: [],
     network: [],
+    ownership: [],
   };
 
   for (let index = 0; index < count; index += 1) {
@@ -416,6 +453,12 @@ export function generateTypeScriptFragmentTargets(): TypeScriptFragmentTargets {
       position: [Math.cos(angle) * 0.72, Math.sin(angle) * 0.63, Math.sin(angle * 2) * 0.04],
       scale: 0.56,
       rotation: Math.sin(angle) * 0.055,
+      ...shared,
+    });
+    targets.ownership.push({
+      position: [column === 0 ? -0.42 : 0.42, 0.56 - row * 0.37, 0.02],
+      scale: 0.58,
+      rotation: column === 0 ? -0.02 : 0.02,
       ...shared,
     });
   }
