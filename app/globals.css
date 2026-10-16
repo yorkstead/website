@@ -104,12 +104,12 @@ button, a { cursor: pointer; }
   --system-form-y: 34vh;
   --system-form-scale: 1;
   --system-form-presence: 1;
-  --system-form-opacity: 0.58;
+  --system-form-opacity: 0.65;
   position: fixed;
   z-index: 1;
   top: var(--system-form-y);
   left: var(--system-form-x);
-  width: clamp(12rem, 24vw, 22rem);
+  width: clamp(14rem, 28vw, 25rem);
   aspect-ratio: 1;
   transform: translate3d(-50%, -50%, 0) scale(var(--system-form-scale));
   will-change: top, left, transform;
@@ -129,7 +129,7 @@ button, a { cursor: pointer; }
   z-index: 2;
 }
 
-.dark .system-form { --system-form-opacity: 0.46; mix-blend-mode: screen; }
+.dark .system-form { --system-form-opacity: 0.54; mix-blend-mode: screen; }
 
 .system-form-fallback {
   position: absolute;
@@ -155,7 +155,7 @@ button, a { cursor: pointer; }
 .system-form-fallback i { position: absolute; inset: 28%; border: 1px solid color-mix(in oklab, var(--primary) 24%, transparent); border-radius: 50%; }
 
 @media (max-width: 700px) {
-  .system-form { --system-form-x: 78vw; --system-form-y: 28vh; --system-form-opacity: 0.38; width: 11rem; }
+  .system-form { --system-form-x: 78vw; --system-form-y: 28vh; --system-form-opacity: 0.46; width: 13rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -8,3 +8,4 @@
 - [x] T006 — Run the repository verification suite and record the result.
 - [x] T007 — Refine the forms into code-like orthogonal strokes and shorten the final Core hold after preview feedback.
 - [x] T008 — Replace the abstract code suggestion with readable TypeScript fragments that participate in every morph.
+- [x] T009 — Increase TypeScript fragment scale and brightness and add restrained syntax coloring.

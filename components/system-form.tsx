@@ -105,10 +105,43 @@ function createCodeTexture(fragment: string, color: string) {
   canvas.width = Math.ceil(width + 24);
   canvas.height = lines.length * 34 + 18;
   context.font = font;
-  context.fillStyle = color;
   context.globalAlpha = 0.9;
   context.textBaseline = "middle";
-  lines.forEach((line, index) => context.fillText(line, 12, 10 + index * 34 + 17));
+  const dark = color === "#6bb9df";
+  const palette = {
+    base: color,
+    keyword: dark ? "#bcb2ff" : "#725fd0",
+    string: dark ? "#7ed8ba" : "#187f69",
+    type: dark ? "#e3c37d" : "#956715",
+  };
+  const tokenPattern = /("[^"]*"|\b(?:type|interface|const|await|async|function|export|for|of|return)\b|\b(?:Workflow|State|Step|Job|Promise)\b)/g;
+
+  lines.forEach((line, index) => {
+    let cursor = 0;
+    let x = 12;
+    const y = 10 + index * 34 + 17;
+
+    for (const match of line.matchAll(tokenPattern)) {
+      const matchIndex = match.index ?? 0;
+      const before = line.slice(cursor, matchIndex);
+      context.fillStyle = palette.base;
+      context.fillText(before, x, y);
+      x += context.measureText(before).width;
+
+      const token = match[0];
+      context.fillStyle = token.startsWith('"')
+        ? palette.string
+        : /^(Workflow|State|Step|Job|Promise)$/.test(token)
+          ? palette.type
+          : palette.keyword;
+      context.fillText(token, x, y);
+      x += context.measureText(token).width;
+      cursor = matchIndex + token.length;
+    }
+
+    context.fillStyle = palette.base;
+    context.fillText(line.slice(cursor), x, y);
+  });
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -170,7 +203,7 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
         renderedPositions.current[offset + 2],
       );
       const material = sprite.material as THREE.SpriteMaterial;
-      material.opacity = 0.42 + transitionArc * 0.08;
+      material.opacity = 0.52 + transitionArc * 0.08;
     }
 
     hasSettledFrame.current = true;
@@ -180,7 +213,7 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
     <group>
       {textures.map((entry, index) => {
         if (!entry) return null;
-        const height = entry.lines * 0.072;
+        const height = entry.lines * 0.082;
         return (
           <sprite
             key={typescriptFragments[index]}
@@ -189,7 +222,7 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
             }}
             scale={[height * entry.aspect, height, 1]}
           >
-            <spriteMaterial map={entry.texture} transparent opacity={0.42} depthWrite={false} depthTest={false} />
+            <spriteMaterial map={entry.texture} transparent opacity={0.52} depthWrite={false} depthTest={false} />
           </sprite>
         );
       })}
