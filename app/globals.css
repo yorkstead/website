@@ -99,6 +99,48 @@ button, a { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
 ::selection { background: color-mix(in oklab, var(--primary) 35%, transparent); }
 
+.system-form {
+  position: fixed;
+  z-index: 12;
+  top: clamp(8rem, 18vh, 12rem);
+  right: clamp(-1.25rem, 1vw, 1rem);
+  width: clamp(12rem, 24vw, 22rem);
+  aspect-ratio: 1;
+  pointer-events: none;
+  opacity: 0.58;
+  mix-blend-mode: multiply;
+  mask-image: radial-gradient(circle, black 38%, transparent 76%);
+}
+
+.dark .system-form { mix-blend-mode: screen; opacity: 0.46; }
+
+.system-form-fallback {
+  position: absolute;
+  inset: 24%;
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
+  transform: rotate(45deg);
+}
+
+.system-form-fallback::before,
+.system-form-fallback::after,
+.system-form-fallback span {
+  content: "";
+  position: absolute;
+  background: color-mix(in oklab, var(--primary) 34%, transparent);
+}
+
+.system-form-fallback::before { inset: 50% -16% auto; height: 1px; }
+.system-form-fallback::after { inset: -16% auto -16% 50%; width: 1px; }
+.system-form-fallback span:nth-child(1) { width: 3px; height: 3px; left: -2px; top: -2px; }
+.system-form-fallback span:nth-child(2) { width: 3px; height: 3px; right: -2px; top: -2px; }
+.system-form-fallback span:nth-child(3) { width: 3px; height: 3px; right: -2px; bottom: -2px; }
+.system-form-fallback span:nth-child(4) { width: 3px; height: 3px; left: -2px; bottom: -2px; }
+.system-form-fallback i { position: absolute; inset: 28%; border: 1px solid color-mix(in oklab, var(--primary) 24%, transparent); border-radius: 50%; }
+
+@media (max-width: 700px) {
+  .system-form { top: 7.5rem; right: -2.75rem; width: 11rem; opacity: 0.38; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
