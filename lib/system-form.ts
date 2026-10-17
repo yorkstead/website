@@ -224,7 +224,6 @@ const ownedSystemLines: readonly LineSegment[] = [
   [[-0.76, -0.62, -0.02], [-0.64, -0.62, -0.02]],
   [[-0.76, 0.62, -0.02], [-0.64, 0.62, -0.02]],
 ];
-
 // Shared drafting marks make every subject read as one family of CAD studies.
 // They stay behind the object outline and are built from the same particle
 // population instead of introducing a separate illustration layer.
