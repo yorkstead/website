@@ -461,8 +461,8 @@ export function generateTypeScriptFragmentTargets(): TypeScriptFragmentTargets {
       ...shared,
     });
     targets.ownership.push({
-      position: [Math.cos(angle) * 0.42, Math.sin(angle) * 0.42, Math.sin(angle * 2) * 0.12],
-      scale: 0.22,
+      position: [Math.cos(angle) * 0.78, Math.sin(angle) * 0.68, Math.sin(angle * 2) * 0.2],
+      scale: 0.24,
       rotation: Math.sin(angle) * 0.08,
       ...shared,
     });

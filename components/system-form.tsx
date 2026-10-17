@@ -223,6 +223,16 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
         position.y + Math.sin(elapsed * 0.68 + index * 1.3) * 0.018,
         position.z,
       );
+      if (finaleAmount > 0) {
+        const orbitAngle = elapsed * (0.16 + (index % 3) * 0.025);
+        const orbitX = position.x * Math.cos(orbitAngle) - position.z * Math.sin(orbitAngle);
+        const orbitZ = position.x * Math.sin(orbitAngle) + position.z * Math.cos(orbitAngle);
+        position.set(
+          THREE.MathUtils.lerp(position.x, orbitX, finaleAmount),
+          position.y + Math.sin(elapsed * 0.34 + index * 1.7) * 0.035 * finaleAmount,
+          THREE.MathUtils.lerp(position.z, orbitZ, finaleAmount),
+        );
+      }
 
       const offset = index * 3;
       renderedPositions.current[offset] = THREE.MathUtils.lerp(renderedPositions.current[offset], position.x, damping);
@@ -241,7 +251,7 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
       material.rotation = THREE.MathUtils.lerp(source.rotation, destination.rotation, eased);
       material.opacity =
         (0.42 - illustrationAmount * 0.2 + compilePulse * 0.1 + transitionArc * 0.035) *
-        (1 - finaleAmount * 0.9);
+        (1 - finaleAmount * 0.3);
     }
 
     hasSettledFrame.current = true;

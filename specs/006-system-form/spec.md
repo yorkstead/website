@@ -14,7 +14,7 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 - Move the persistent form through a restrained sequence of viewport positions as its state changes.
 - Preserve bidirectional scroll behavior and a nearly imperceptible idle breath.
 - Reduce geometry on small screens, cap device pixel ratio and transition spread, pause while the document is hidden, and provide a non-WebGL/reduced-motion fallback.
-- Resolve the final Contact transition into a centered rotating sphere at roughly twice the standard desktop scale.
+- Resolve the final Contact transition into a centered rotating sphere at roughly twice the standard desktop scale, with colored TypeScript fragments orbiting independently around it.
 
 ## Acceptance criteria
 
@@ -33,7 +33,7 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 13. TypeScript fragments compress and dim into denser, front-facing operational illustrations during each selected beat, while the line and point scaffolding strengthens enough to make the subject recognizable without becoming a foreground graphic.
 14. Every operational illustration reads as a CAD study: outline-only geometry, shared registration marks and centerlines, and no independent raster or filled illustration layer.
 15. Resolved drawings hold visibly between shorter morph windows.
-16. The final Contact transition resolves into a centered rotating sphere at roughly twice the standard desktop scale and remains visible through the end of the page.
+16. The final Contact transition resolves into a centered rotating sphere at roughly twice the standard desktop scale, retains independently orbiting colored TypeScript fragments, and remains visible through the end of the page.
 
 ## Non-goals
 
