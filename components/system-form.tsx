@@ -251,7 +251,7 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
       material.rotation = THREE.MathUtils.lerp(source.rotation, destination.rotation, eased);
       material.opacity =
         (0.42 - illustrationAmount * 0.2 + compilePulse * 0.1 + transitionArc * 0.035) *
-        (1 - finaleAmount * 0.3);
+        (1 - finaleAmount * 0.1);
     }
 
     hasSettledFrame.current = true;
