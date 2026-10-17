@@ -14,3 +14,4 @@
 - [x] T012 — Refine the code-to-image transition with denser geometry, subject-specific fragment profiles, and front-facing operational silhouettes.
 - [x] T013 — Restyle every operational subject as a CAD drawing with thin outlines, proportional stroke sampling, registration marks, and centerlines.
 - [x] T014 — Smooth the terminal scroll mapping, lengthen resolved-form holds, and add a final owned-system cabinet drawing at the footer.
+- [x] T015 — Replace the footer cabinet finale with a large centered rotating sphere in Contact.

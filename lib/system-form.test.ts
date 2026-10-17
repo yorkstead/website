@@ -20,7 +20,6 @@ describe("SystemForm geometry", () => {
       "disorder",
       "core",
       "structure",
-      "core",
       "ownership",
     ]);
   });
@@ -32,7 +31,7 @@ describe("SystemForm geometry", () => {
       flow: "production-routing-plan",
       structure: "exploded-modular-assembly",
       network: "terminal-orthographic-projection",
-      ownership: "owned-system-cabinet",
+      ownership: "rotating-system-sphere",
     });
   });
 
@@ -53,7 +52,7 @@ describe("SystemForm geometry", () => {
   test("gives every operational drawing a shared CAD registration plane", () => {
     const targets = generateSystemFormTargets(84);
 
-    for (const name of ["architecture", "disorder", "flow", "structure", "network", "ownership"] as const) {
+    for (const name of ["architecture", "disorder", "flow", "structure", "network"] as const) {
       const positions = targets[name].map(({ position }) => position);
       expect(positions.some(([, , z]) => z <= -0.08)).toBe(true);
       expect(Math.max(...positions.map(([x]) => x)) - Math.min(...positions.map(([x]) => x))).toBeGreaterThan(1.5);

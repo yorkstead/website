@@ -9,7 +9,6 @@ export const systemFormSequence = [
   "disorder",
   "core",
   "structure",
-  "core",
   "ownership",
 ] as const;
 
@@ -52,7 +51,7 @@ export const systemFormSubjects = {
   flow: "production-routing-plan",
   structure: "exploded-modular-assembly",
   network: "terminal-orthographic-projection",
-  ownership: "owned-system-cabinet",
+  ownership: "rotating-system-sphere",
 } as const;
 
 type LineSegment = readonly [Point3, Point3];
@@ -247,7 +246,7 @@ const disorderCadLines = [...clipboardLines, ...cadRegistrationLines] as const;
 const flowCadLines = [...shopfloorLayoutLines, ...cadRegistrationLines] as const;
 const structureCadLines = [...assemblyDrawingLines, ...cadRegistrationLines] as const;
 const networkCadLines = [...posTerminalLines, ...cadRegistrationLines] as const;
-const ownershipCadLines = [...ownedSystemLines, ...cadRegistrationLines] as const;
+export const ownershipCadLines = [...ownedSystemLines, ...cadRegistrationLines] as const;
 
 function seededRandom(seed: number) {
   let state = seed >>> 0;
@@ -356,7 +355,14 @@ function networkPoint(index: number, count: number): FormPoint {
 }
 
 function ownershipPoint(index: number, count: number): FormPoint {
-  return lineDrawingPoint(index, count, ownershipCadLines);
+  const y = 1 - (index / Math.max(1, count - 1)) * 2;
+  const radius = Math.sqrt(Math.max(0, 1 - y * y));
+  const angle = index * Math.PI * (3 - Math.sqrt(5));
+  return {
+    position: [Math.cos(angle) * radius * 0.7, y * 0.72, Math.sin(angle) * radius * 0.7],
+    tangent: normalize([-Math.sin(angle), 0.2, Math.cos(angle)]),
+    length: 0.7,
+  };
 }
 
 export function generateSystemFormTargets(count: number): SystemFormTargets {
@@ -455,9 +461,9 @@ export function generateTypeScriptFragmentTargets(): TypeScriptFragmentTargets {
       ...shared,
     });
     targets.ownership.push({
-      position: [column === 0 ? -0.42 : 0.42, 0.56 - row * 0.37, 0.02],
-      scale: 0.58,
-      rotation: column === 0 ? -0.02 : 0.02,
+      position: [Math.cos(angle) * 0.42, Math.sin(angle) * 0.42, Math.sin(angle * 2) * 0.12],
+      scale: 0.22,
+      rotation: Math.sin(angle) * 0.08,
       ...shared,
     });
   }
