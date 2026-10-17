@@ -454,7 +454,7 @@ export function SystemForm() {
       root.current.style.setProperty("--system-form-x", `${THREE.MathUtils.lerp(from[0], to[0], eased)}vw`);
       root.current.style.setProperty("--system-form-y", `${THREE.MathUtils.lerp(from[1], to[1], eased)}vh`);
       const finalIndex = placements.length - 1;
-      const finalScale = mobile ? 2.2 : 3;
+      const finalScale = mobile ? 1.65 : 2;
       const fromScale = fromIndex === finalIndex ? finalScale : 1;
       const toScale = toIndex === finalIndex ? finalScale : 1;
       const restingScale = THREE.MathUtils.lerp(fromScale, toScale, eased);
