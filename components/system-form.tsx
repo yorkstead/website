@@ -23,7 +23,11 @@ const mobileParticleCount = 72;
 const maximumSpread = 0.48;
 
 function illustrationWeight(name: SystemFormName) {
-  return name === "core" ? 0 : 1;
+  return name === "core" || name === "ownership" ? 0 : 1;
+}
+
+function finaleWeight(name: SystemFormName) {
+  return name === "ownership" ? 1 : 0;
 }
 const desktopPlacements = [
   [84, 34],
@@ -36,8 +40,7 @@ const desktopPlacements = [
   [78, 32],
   [20, 28],
   [82, 30],
-  [20, 58],
-  [76, 72],
+  [50, 50],
 ] as const;
 const mobilePlacements = [
   [78, 28],
@@ -50,8 +53,7 @@ const mobilePlacements = [
   [74, 28],
   [26, 24],
   [76, 30],
-  [26, 62],
-  [72, 72],
+  [50, 50],
 ] as const;
 
 function useMediaQuery(query: string) {
@@ -196,6 +198,7 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
       illustrationWeight(toName),
       eased,
     );
+    const finaleAmount = THREE.MathUtils.lerp(finaleWeight(fromName), finaleWeight(toName), eased);
     const damping = hasSettledFrame.current ? 1 - Math.exp(-delta * 5.5) : 1;
     renderedVelocity.current = Math.max(state.velocity, renderedVelocity.current * Math.pow(0.025, delta));
     const velocityContribution = Math.min(1, renderedVelocity.current / 2200);
@@ -236,7 +239,9 @@ function TypeScriptFragments({ color, motion }: { color: string; motion: Mutable
       sprite.scale.set(height * entry.aspect * fragmentScale, height * fragmentScale, 1);
       const material = sprite.material as THREE.SpriteMaterial;
       material.rotation = THREE.MathUtils.lerp(source.rotation, destination.rotation, eased);
-      material.opacity = 0.42 - illustrationAmount * 0.2 + compilePulse * 0.1 + transitionArc * 0.035;
+      material.opacity =
+        (0.42 - illustrationAmount * 0.2 + compilePulse * 0.1 + transitionArc * 0.035) *
+        (1 - finaleAmount * 0.9);
     }
 
     hasSettledFrame.current = true;
@@ -314,6 +319,7 @@ function SystemParticles({
       illustrationWeight(toName),
       eased,
     );
+    const finaleAmount = THREE.MathUtils.lerp(finaleWeight(fromName), finaleWeight(toName), eased);
     renderedVelocity.current = Math.max(state.velocity, renderedVelocity.current * Math.pow(0.025, delta));
     const velocityContribution = Math.min(1, renderedVelocity.current / 2200);
     const spreadAmount = Math.min(maximumSpread, transitionArc * (0.16 + velocityContribution * 0.32));
@@ -370,18 +376,19 @@ function SystemParticles({
     hasSettledFrame.current = true;
 
     if (rodMaterial.current) {
-      rodMaterial.current.opacity = 0.13 + illustrationAmount * 0.23 + transitionArc * 0.03;
+      rodMaterial.current.opacity = 0.13 + illustrationAmount * 0.23 + finaleAmount * 0.11 + transitionArc * 0.03;
     }
     if (pointMaterial.current) {
-      pointMaterial.current.opacity = 0.2 + illustrationAmount * 0.12 + transitionArc * 0.03;
+      pointMaterial.current.opacity = 0.2 + illustrationAmount * 0.12 + finaleAmount * 0.22 + transitionArc * 0.03;
     }
 
     const breath = 1 + Math.sin(elapsed * 0.82) * (0.028 - illustrationAmount * 0.014);
-    const freeRotation = 1 - illustrationAmount * 0.82;
+    const freeRotation = Math.max(1 - illustrationAmount * 0.82, finaleAmount);
     group.current.scale.setScalar(breath);
-    group.current.rotation.x = Math.sin(elapsed * 0.38) * 0.035 * freeRotation;
+    group.current.rotation.x =
+      Math.sin(elapsed * 0.38) * 0.035 * freeRotation + elapsed * 0.035 * finaleAmount;
     group.current.rotation.y =
-      (elapsed * 0.07 + Math.sin(elapsed * 0.31 + 0.8) * 0.045) * freeRotation;
+      (elapsed * (0.07 + finaleAmount * 0.09) + Math.sin(elapsed * 0.31 + 0.8) * 0.045) * freeRotation;
     group.current.rotation.z = Math.sin(elapsed * 0.46 + 1.2) * 0.014 * freeRotation;
   });
 
@@ -446,7 +453,16 @@ export function SystemForm() {
       const eased = progress * progress * (3 - 2 * progress);
       root.current.style.setProperty("--system-form-x", `${THREE.MathUtils.lerp(from[0], to[0], eased)}vw`);
       root.current.style.setProperty("--system-form-y", `${THREE.MathUtils.lerp(from[1], to[1], eased)}vh`);
-      const expansion = fromIndex === toIndex ? 1 : 1 + Math.sin(progress * Math.PI) * (mobile ? 0.38 : 0.62);
+      const finalIndex = placements.length - 1;
+      const finalScale = mobile ? 2.2 : 3;
+      const fromScale = fromIndex === finalIndex ? finalScale : 1;
+      const toScale = toIndex === finalIndex ? finalScale : 1;
+      const restingScale = THREE.MathUtils.lerp(fromScale, toScale, eased);
+      const transitionLift =
+        fromIndex === toIndex
+          ? 0
+          : Math.sin(progress * Math.PI) * (toIndex === finalIndex ? (mobile ? 0.16 : 0.24) : mobile ? 0.38 : 0.62);
+      const expansion = restingScale + transitionLift;
       root.current.style.setProperty("--system-form-scale", expansion.toFixed(3));
     };
 
@@ -523,12 +539,7 @@ export function SystemForm() {
       };
       updatePlacement(completedTransitions, completedTransitions, 1);
       if (completedTransitions === sections.length - 1) {
-        const finalBottom = sections[sections.length - 1].getBoundingClientRect().bottom;
-        const fadeStart = window.innerHeight * 0.82;
-        const fadeEnd = window.innerHeight * 0.3;
-        const fadeProgress = THREE.MathUtils.clamp((fadeStart - finalBottom) / Math.max(1, fadeStart - fadeEnd), 0, 1);
-        const easedFade = fadeProgress * fadeProgress * (3 - 2 * fadeProgress);
-        updatePresence(1 - easedFade);
+        updatePresence(1);
       } else {
         updatePresence(1);
       }

@@ -619,7 +619,7 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" data-system-form="core" className="relative border-t border-border bg-card/35">
+      <section id="contact" data-system-form="ownership" className="relative border-t border-border bg-card/35">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-24 sm:px-8 lg:grid-cols-[.7fr_1.3fr]">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Project contact</div>
@@ -671,7 +671,7 @@ export default function Home() {
         </div>
       </section>
 
-      <SiteFooter systemForm="ownership">
+      <SiteFooter>
         <nav aria-label="Service pages" className="flex flex-wrap gap-x-5 gap-y-2 lg:justify-end">
           {publicServices.map((service) => (
             <Link key={service.slug} href={`/services/${service.slug}`} className="transition hover:text-foreground">
