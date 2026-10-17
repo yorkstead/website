@@ -15,3 +15,4 @@
 - [x] T013 — Restyle every operational subject as a CAD drawing with thin outlines, proportional stroke sampling, registration marks, and centerlines.
 - [x] T014 — Smooth the terminal scroll mapping, lengthen resolved-form holds, and add a final owned-system cabinet drawing at the footer.
 - [x] T015 — Replace the footer cabinet finale with a centered rotating sphere in Contact.
+- [x] T016 — Keep colored TypeScript fragments visible in a slow independent orbit around the final sphere.
