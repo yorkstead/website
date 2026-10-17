@@ -31,6 +31,7 @@ Give the Yorkstead homepage one quiet, recognizable visual system that reinforce
 12. Operational drawings appear only at selected section beats and return to Core between them, creating a quiet code-to-interface rhythm rather than a morph on every section.
 13. TypeScript fragments compress and dim into denser, front-facing operational illustrations during each selected beat, while the line and point scaffolding strengthens enough to make the subject recognizable without becoming a foreground graphic.
 14. Every operational illustration reads as a CAD study: outline-only geometry, shared registration marks and centerlines, and no independent raster or filled illustration layer.
+15. Resolved drawings hold visibly between shorter morph windows, and the final owned-system cabinet completes before the bottom of the document and remains assembled through the last scroll interval.
 
 ## Non-goals
 

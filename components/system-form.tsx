@@ -462,14 +462,40 @@ export function SystemForm() {
       lastScrollY = window.scrollY;
       lastTimestamp = timestamp;
 
-      const startLine = window.innerHeight;
-      const endLine = window.innerHeight * 0.2;
+      const startLine = window.innerHeight * 0.9;
+      const endLine = window.innerHeight * 0.42;
       const transitionDistance = Math.max(1, startLine - endLine);
+      const transitionCount = sections.length - 1;
+      const terminalTransitionCount = Math.min(2, transitionCount);
+      const terminalStartIndex = transitionCount - terminalTransitionCount;
+      const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const terminalTarget = sections[terminalStartIndex + 1];
+      const terminalTargetTop = terminalTarget.getBoundingClientRect().top + window.scrollY;
+      const terminalStart = Math.min(
+        terminalTargetTop - window.innerHeight * 0.82,
+        maxScroll - window.innerHeight * 1.15,
+      );
+      const terminalProgress = THREE.MathUtils.clamp(
+        (window.scrollY - Math.max(0, terminalStart)) /
+          Math.max(1, maxScroll - Math.max(0, terminalStart)),
+        0,
+        1,
+      );
       let completedTransitions = 0;
 
-      for (let transitionIndex = 0; transitionIndex < sections.length - 1; transitionIndex += 1) {
+      for (let transitionIndex = 0; transitionIndex < transitionCount; transitionIndex += 1) {
         const targetTop = sections[transitionIndex + 1].getBoundingClientRect().top;
-        const progress = THREE.MathUtils.clamp((startLine - targetTop) / transitionDistance, 0, 1);
+        const terminalWindowStart = transitionIndex === terminalStartIndex ? 0 : 0.58;
+        const terminalWindowEnd = transitionIndex === terminalStartIndex ? 0.34 : 0.9;
+        const progress =
+          transitionIndex >= terminalStartIndex
+            ? THREE.MathUtils.clamp(
+                (terminalProgress - terminalWindowStart) /
+                  Math.max(0.01, terminalWindowEnd - terminalWindowStart),
+                0,
+                1,
+              )
+            : THREE.MathUtils.clamp((startLine - targetTop) / transitionDistance, 0, 1);
 
         if (progress <= 0) break;
         if (progress >= 1) {

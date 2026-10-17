@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import type { NextRequest } from "next/server";
-import { archivedInquiryPurgeBefore, workspaceSnapshotRetentionCount } from "@/lib/data-retention";
+import { archivedInquiryPurgeBefore, morningBriefingPurgeBefore, workspaceSnapshotRetentionCount } from "@/lib/data-retention";
 import { createOperationalContext, jsonWithRequestId, withOperationTimeout } from "@/lib/operational-observability";
 
 export const runtime = "nodejs";
@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
   try {
     const sql = neon(process.env.DATABASE_URL);
     const purgeBefore = archivedInquiryPurgeBefore().toISOString();
-    const [inquiries, snapshots] = await withOperationTimeout(Promise.all([
+    const briefingPurgeBefore = morningBriefingPurgeBefore().toISOString();
+    const [inquiries, snapshots, briefings] = await withOperationTimeout(Promise.all([
       sql`DELETE FROM contact_inquiries WHERE status = 'archived' AND archived_at < ${purgeBefore}::timestamptz RETURNING id`,
       sql`
         DELETE FROM workspace_snapshots
@@ -31,9 +32,10 @@ export async function GET(request: NextRequest) {
         )
         RETURNING id
       `,
+      sql`DELETE FROM morning_briefings WHERE briefing_date < (${briefingPurgeBefore}::timestamptz AT TIME ZONE 'America/Denver')::date RETURNING briefing_date`,
     ]));
-    context.completed(200, { status: "ok", itemCount: inquiries.length + snapshots.length });
-    return jsonWithRequestId(context, { ok: true, inquiriesPurged: inquiries.length, snapshotsPurged: snapshots.length });
+    context.completed(200, { status: "ok", itemCount: inquiries.length + snapshots.length + briefings.length });
+    return jsonWithRequestId(context, { ok: true, inquiriesPurged: inquiries.length, snapshotsPurged: snapshots.length, briefingsPurged: briefings.length });
   } catch (error) {
     context.failed(503, error, { dependency: "database", operation: "data_retention" });
     return jsonWithRequestId(context, { error: "Data retention is unavailable" }, { status: 503 });
