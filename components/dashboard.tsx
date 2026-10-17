@@ -717,12 +717,12 @@ export function Dashboard() {
 
   return (
     <div className="relative min-h-screen bg-background font-sans text-foreground selection:bg-primary/20">
-      <DialogBoundary label="Sync conflict resolution" onClose={() => setConflict(null)}>{conflict && <SyncConflictDialog title="Choose which workspace to keep" comparisons={[
+      {conflict && <DialogBoundary label="Sync conflict resolution" onClose={() => setConflict(null)}><SyncConflictDialog title="Choose which workspace to keep" comparisons={[
         { label: "Projects", local: conflict.local.projects.length, cloud: conflict.cloud?.projects.length ?? "—" },
         { label: "Tasks", local: conflict.local.tasks.length, cloud: conflict.cloud?.tasks.length ?? "—" },
         { label: "Inbox items", local: conflict.local.inbox?.length ?? 0, cloud: conflict.cloud?.inbox?.length ?? "—" },
         { label: "Activity entries", local: conflict.local.activity.length, cloud: conflict.cloud?.activity.length ?? "—" },
-      ]} cloudUpdatedAt={conflict.cloudVersion} loading={conflict.loading} resolving={conflict.resolving} error={conflict.error} onRetry={() => void loadConflict(conflict.local)} onUseCloud={useCloudConflict} onKeepLocal={() => void keepLocalConflict()} onExportLocal={() => downloadWorkspace(conflict.local, `work-ctrl-conflict-local-${today}.json`)} />}</DialogBoundary>
+      ]} cloudUpdatedAt={conflict.cloudVersion} loading={conflict.loading} resolving={conflict.resolving} error={conflict.error} onRetry={() => void loadConflict(conflict.local)} onUseCloud={useCloudConflict} onKeepLocal={() => void keepLocalConflict()} onExportLocal={() => downloadWorkspace(conflict.local, `work-ctrl-conflict-local-${today}.json`)} /></DialogBoundary>}
       {composer && <DialogBoundary label="Create a project, task, or idea" onClose={() => setComposer(null)}><Composer mode={composer} projects={workspace.projects} onClose={() => setComposer(null)} onProject={addProject} onTask={addTask} onIdea={addIdea} /></DialogBoundary>}
       {editingProject && <DialogBoundary label="Edit project" onClose={() => setEditingProject(null)}><ProjectEditor project={editingProject} onClose={() => setEditingProject(null)} onSave={updateProject} /></DialogBoundary>}
       {viewingProjectId && workspace.projects.find((project) => project.id === viewingProjectId) && <DialogBoundary label="Project workspace" onClose={() => setViewingProjectId(null)}><ProjectWorkspace project={workspace.projects.find((project) => project.id === viewingProjectId)!} tasks={workspace.tasks} intelligence={intelligence[viewingProjectId]?.data} onClose={() => setViewingProjectId(null)} onEdit={() => { setEditingProject(workspace.projects.find((project) => project.id === viewingProjectId)!); setViewingProjectId(null); }} onAddTask={(title) => addTask(title, viewingProjectId)} onToggleTask={toggleTask} onEditTask={setEditingTask} /></DialogBoundary>}
