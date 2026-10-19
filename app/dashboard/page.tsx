@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BellOff, BellRing, CalendarDays, ClipboardList, ExternalLink, LayoutDashboard, UserRoundSearch } from "lucide-react";
 import { Dashboard } from "@/components/dashboard";
+import { DashboardOperationsBriefing } from "@/components/dashboard/dashboard-operations-briefing";
 import { ConnectedOperations } from "@/components/dashboard/connected-operations";
 import { getOwnerSession } from "@/lib/owner-session";
 import { getDashboardDueFollowUps } from "@/lib/dashboard-data";
@@ -24,7 +25,7 @@ export default async function DashboardPage() {
           </nav>
         </div>
       </section>
-      <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-8"><ConnectedOperations /></div>
+      <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-8"><div className="space-y-4"><ConnectedOperations /><DashboardOperationsBriefing /></div></div>
       <Dashboard />
       {dueFollowUps === null ? (
         <Link href="/dashboard/leads" className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground shadow-lg backdrop-blur lg:bottom-4">
