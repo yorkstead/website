@@ -119,8 +119,8 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle, googleA
     return { year, month: month - 1 };
   });
 
-  useEffect(()=>{let cancelled=false;const month=cursor.year+'-'+String(cursor.month+1).padStart(2,'0');setGoogleMonth({});setMonthLoading(true);setMonthError(false);
-   fetch('/api/dashboard/calendar-month?month='+month,{cache:'no-store'}).then(async r=>{if(!r.ok)throw Error('calendar_unavailable');return r.json();}).then(data=>{if(!cancelled)setGoogleMonth(data.events||{});}).catch(()=>{if(!cancelled)setMonthError(true);}).finally(()=>{if(!cancelled)setMonthLoading(false);});
+  useEffect(()=>{let cancelled=false;const month=cursor.year+'-'+String(cursor.month+1).padStart(2,'0');
+   Promise.resolve().then(()=>{if(cancelled)return null;setGoogleMonth({});setMonthLoading(true);setMonthError(false);return fetch('/api/dashboard/calendar-month?month='+month,{cache:'no-store'});}).then(async r=>{if(!r)return null;if(!r.ok)throw Error('calendar_unavailable');return r.json();}).then(data=>{if(!cancelled&&data)setGoogleMonth(data.events||{});}).catch(()=>{if(!cancelled)setMonthError(true);}).finally(()=>{if(!cancelled)setMonthLoading(false);});
    return()=>{cancelled=true;};
   },[cursor.year,cursor.month]);
   const currentTodayCursor = useMemo(() => {
