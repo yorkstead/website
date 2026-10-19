@@ -110,12 +110,19 @@ function AnalyticsSection({ tasks, projects, today, timeZone }: { tasks: Task[];
 
 function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle, googleAgenda }: { tasks: Task[]; projects: Project[]; todayKey: string; onEdit: (task: Task) => void; onToggle: (id: string) => void; googleAgenda?: {today:string[];tomorrow:string[]} }) {
   const [selectedDate, setSelectedDate] = useState(todayKey);
+  const [googleMonth,setGoogleMonth]=useState<Record<string,{id:string;title:string;time:string|null}[]>>({});
+  const [monthLoading,setMonthLoading]=useState(false);
+  const [monthError,setMonthError]=useState(false);
   const [timelineTab, setTimelineTab] = useState<"upcoming" | "completed">("upcoming");
   const [cursor, setCursor] = useState(() => {
     const [year, month] = todayKey.split("-").map(Number);
     return { year, month: month - 1 };
   });
 
+  useEffect(()=>{let cancelled=false;const month=cursor.year+'-'+String(cursor.month+1).padStart(2,'0');setGoogleMonth({});setMonthLoading(true);setMonthError(false);
+   fetch('/api/dashboard/calendar-month?month='+month,{cache:'no-store'}).then(async r=>{if(!r.ok)throw Error('calendar_unavailable');return r.json();}).then(data=>{if(!cancelled)setGoogleMonth(data.events||{});}).catch(()=>{if(!cancelled)setMonthError(true);}).finally(()=>{if(!cancelled)setMonthLoading(false);});
+   return()=>{cancelled=true;};
+  },[cursor.year,cursor.month]);
   const currentTodayCursor = useMemo(() => {
     const [year, month] = todayKey.split("-").map(Number);
     return { year, month: month - 1 };
@@ -150,7 +157,7 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle, googleA
     .slice(0, 10);
 
   const tomorrowKey = new Date(new Date(todayKey+'T12:00:00Z').getTime()+86400000).toISOString().slice(0,10);
-  const googleForDay = (key:string)=>key===todayKey?(googleAgenda?.today||[]):key===tomorrowKey?(googleAgenda?.tomorrow||[]):[];
+  const googleForDay = (key:string)=>googleMonth[key]?.map(e=>(e.time?e.time+" — ":"")+e.title)||(monthLoading?[]:key===todayKey?(googleAgenda?.today||[]):key===tomorrowKey?(googleAgenda?.tomorrow||[]):[]);
   const selectedGoogleEvents = googleForDay(selectedDate);
   const selectedDayTasks = tasks.filter((task) => task.dueDate === selectedDate);
 
@@ -196,7 +203,7 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle, googleA
                   </Badge>
                 )}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Deadlines and milestones across every project.</p>
+              <p className="mt-1 text-xs text-muted-foreground">WORK//CTRL deadlines and Google Calendar appointments.{monthLoading?" Loading Google events…":monthError?" Google monthly events unavailable.":""}</p>
             </div>
 
             <div className="flex items-center gap-1.5 self-start sm:self-auto">
