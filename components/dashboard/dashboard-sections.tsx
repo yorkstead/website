@@ -108,7 +108,7 @@ function AnalyticsSection({ tasks, projects, today, timeZone }: { tasks: Task[];
   return <section id="analytics" className="mb-10"><Card><CardContent className="p-5"><div className="mb-6 flex items-center gap-2"><BarChart3 className="size-4 text-primary" /><div><h2 className="text-sm font-semibold">Operating analytics</h2><p className="mt-1 text-xs text-muted-foreground">Throughput, flow, and portfolio balance.</p></div></div><div className="grid gap-3 sm:grid-cols-3"><div className="rounded-lg border border-border bg-background/45 p-4"><div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">7-day throughput</div><div className="mt-2 flex items-end justify-between"><span className="text-2xl font-semibold">{completed7.length}</span><TrendingUp className="size-4 text-emerald-400" /></div></div><div className="rounded-lg border border-border bg-background/45 p-4"><div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">30-day completion</div><div className="mt-2 text-2xl font-semibold">{completionRate}%</div></div><div className="rounded-lg border border-border bg-background/45 p-4"><div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">Avg. cycle time</div><div className="mt-2 text-2xl font-semibold">{averageCycle}<span className="ml-1 text-xs font-normal text-muted-foreground">days</span></div></div></div><div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_0.8fr_0.8fr]"><div className="rounded-lg border border-border bg-background/35 p-4"><div className="mb-4 text-xs font-medium">Daily completions</div><div className="flex h-32 items-end gap-2">{daily.map((day) => <div key={day.key} className="flex h-full flex-1 flex-col items-center justify-end gap-2"><span className="font-mono text-[9px] text-muted-foreground">{day.count || ""}</span><div className="w-full rounded-t bg-primary/75 transition-all" style={{ height: `${Math.max(day.count ? 10 : 2, day.count / maxDaily * 82)}%` }} /><span className="font-mono text-[9px] text-muted-foreground">{day.label}</span></div>)}</div></div><div className="rounded-lg border border-border bg-background/35 p-4"><div className="mb-4 text-xs font-medium">Open priority</div><div className="space-y-3">{Object.entries(priority).map(([label, count]) => <div key={label}><div className="mb-1 flex justify-between font-mono text-[9px] text-muted-foreground"><span>{label}</span><span>{count}</span></div><div className="h-1.5 rounded-full bg-secondary"><div className={cn("h-full rounded-full", label === "High" ? "bg-red-500" : label === "Medium" ? "bg-amber-500" : "bg-emerald-500")} style={{ width: `${open.length ? count / open.length * 100 : 0}%` }} /></div></div>)}</div></div><div className="rounded-lg border border-border bg-background/35 p-4"><div className="mb-4 text-xs font-medium">Project portfolio</div><div className="space-y-2">{Object.entries(status).map(([label, count]) => <div key={label} className="flex items-center justify-between rounded-md bg-secondary/40 px-2.5 py-2 text-xs"><span className="text-muted-foreground">{label}</span><span className="font-mono font-semibold">{count}</span></div>)}</div></div></div></CardContent></Card></section>;
 }
 
-function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle }: { tasks: Task[]; projects: Project[]; todayKey: string; onEdit: (task: Task) => void; onToggle: (id: string) => void }) {
+function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle, googleAgenda }: { tasks: Task[]; projects: Project[]; todayKey: string; onEdit: (task: Task) => void; onToggle: (id: string) => void; googleAgenda?: {today:string[];tomorrow:string[]} }) {
   const [selectedDate, setSelectedDate] = useState(todayKey);
   const [timelineTab, setTimelineTab] = useState<"upcoming" | "completed">("upcoming");
   const [cursor, setCursor] = useState(() => {
@@ -149,6 +149,9 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle }: { tas
     .sort((a, b) => String(b.completedAt ?? b.createdAt).localeCompare(String(a.completedAt ?? a.createdAt)))
     .slice(0, 10);
 
+  const tomorrowKey = new Date(new Date(todayKey+'T12:00:00Z').getTime()+86400000).toISOString().slice(0,10);
+  const googleForDay = (key:string)=>key===todayKey?(googleAgenda?.today||[]):key===tomorrowKey?(googleAgenda?.tomorrow||[]):[];
+  const selectedGoogleEvents = googleForDay(selectedDate);
   const selectedDayTasks = tasks.filter((task) => task.dueDate === selectedDate);
 
   const monthDeadlinesCount = dueTasks.filter((task) => {
@@ -229,6 +232,7 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle }: { tas
               {days.map((date) => {
                 const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
                 const dayTasks = dueTasks.filter((task) => task.dueDate === key);
+                const dayGoogleEvents=googleForDay(key);
                 const currentMonth = date.getUTCMonth() === cursor.month;
                 const isToday = key === todayKey;
                 const isSelected = key === selectedDate;
@@ -267,6 +271,8 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle }: { tas
                           <span className="size-1.5 rounded-full bg-red-500" />
                         ) : hasHigh ? (
                           <span className="size-1.5 rounded-full bg-amber-500" />
+                        ) : dayGoogleEvents.length ? (
+                          <span className="size-1.5 rounded-full bg-sky-500" />
                         ) : hasTasks ? (
                           <span className="size-1.5 rounded-full bg-primary" />
                         ) : null}
@@ -297,6 +303,7 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle }: { tas
                           {task.title}
                         </div>
                       ))}
+                      {dayGoogleEvents.slice(0,2).map((event,i)=><div key={'google-'+i} className="truncate rounded bg-sky-500/10 px-1.5 py-0.5 text-[9px] text-sky-600 dark:text-sky-300" title={event}>Google · {event}</div>)}
                       {dayTasks.length > 2 && (
                         <div className="font-mono text-[9px] text-muted-foreground">
                           +{dayTasks.length - 2} more
@@ -319,7 +326,7 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle }: { tas
                   {selectedDateFormatted}
                 </span>
                 <span className="font-mono text-[10px] text-muted-foreground">
-                  ({selectedDayTasks.length} task{selectedDayTasks.length === 1 ? "" : "s"})
+                  ({selectedDayTasks.length} task{selectedDayTasks.length === 1 ? "" : "s"}{selectedGoogleEvents.length?`, ${selectedGoogleEvents.length} Google event${selectedGoogleEvents.length===1?'':'s'}`:''})
                 </span>
               </div>
               {selectedDate !== todayKey && (
@@ -329,6 +336,7 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle }: { tas
               )}
             </div>
 
+            {selectedGoogleEvents.length>0&&<div className="mb-3 space-y-1.5">{selectedGoogleEvents.map((event,i)=><div key={'google-event-'+i} className="rounded-lg bg-sky-500/10 px-3 py-2 text-xs"><span className="mr-2 font-mono text-[9px] text-sky-600 dark:text-sky-300">Google</span>{event}</div>)}</div>}
             {selectedDayTasks.length ? (
               <div className="space-y-1.5">
                 {selectedDayTasks.map((task) => {
@@ -388,7 +396,7 @@ function CalendarTimeline({ tasks, projects, todayKey, onEdit, onToggle }: { tas
               </div>
             ) : (
               <div className="py-3 text-center text-xs text-muted-foreground">
-                No deadlines scheduled for this day.
+                No WORK//CTRL deadlines scheduled for this day.
               </div>
             )}
           </div>
