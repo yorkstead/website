@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BellOff, BellRing, CalendarDays, ClipboardList, ExternalLink, LayoutDashboard, UserRoundSearch } from "lucide-react";
 import { Dashboard } from "@/components/dashboard";
-import { DashboardOperationsBriefing } from "@/components/dashboard/dashboard-operations-briefing";
+import { getGoogleOperations } from "@/lib/dashboard-google-operations";
 import { ConnectedOperations } from "@/components/dashboard/connected-operations";
 import { getOwnerSession } from "@/lib/owner-session";
 import { getDashboardDueFollowUps } from "@/lib/dashboard-data";
@@ -11,7 +11,7 @@ import { getDashboardDueFollowUps } from "@/lib/dashboard-data";
 export default async function DashboardPage() {
   const session = await getOwnerSession(await headers());
   if (!session) redirect("/login?next=/dashboard");
-  const dueFollowUps = await getDashboardDueFollowUps();
+  const [dueFollowUps, googleOperations] = await Promise.all([getDashboardDueFollowUps(), getGoogleOperations()]);
   return (
     <>
       <section aria-label="Unified Yorkstead workspace navigation" className="mx-auto w-full max-w-7xl px-4 pt-5 sm:px-8">
@@ -25,8 +25,8 @@ export default async function DashboardPage() {
           </nav>
         </div>
       </section>
-      <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-8"><div className="space-y-4"><ConnectedOperations /><DashboardOperationsBriefing /></div></div>
-      <Dashboard />
+      <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-8"><ConnectedOperations /></div>
+      <Dashboard googleOperations={googleOperations} />
       {dueFollowUps === null ? (
         <Link href="/dashboard/leads" className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground shadow-lg backdrop-blur lg:bottom-4">
           <BellOff className="size-4" />Follow-up count unavailable
