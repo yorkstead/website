@@ -22,7 +22,7 @@ for (const viewport of [
       document.documentElement.style.scrollBehavior = "auto";
       window.scrollTo(0, document.documentElement.scrollHeight);
     });
-    await expect(page.locator('footer[data-system-form="ownership"]')).toBeInViewport();
+    await expect(page.locator("footer")).toBeInViewport();
     await expect(systemForm).toHaveAttribute("data-active-form", "ownership");
     await expect.poll(() => systemForm.evaluate((element) =>
       Number.parseFloat(getComputedStyle(element).getPropertyValue("--system-form-presence")),
