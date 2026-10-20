@@ -1,19 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-const expectedSequence = [
-  "core",
-  "architecture",
-  "core",
-  "flow",
-  "core",
-  "network",
-  "core",
-  "disorder",
-  "core",
-  "structure",
-  "core",
-  "ownership",
-];
+import { systemFormSequence } from "@/lib/system-form";
+
+const expectedSequence = [...systemFormSequence];
 
 for (const viewport of [
   { name: "desktop", width: 1440, height: 900 },
