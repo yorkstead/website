@@ -11,6 +11,7 @@ type QueueItem = {
   due: string | null;
   href: string;
   opportunityId?: string;
+  nextAction?: string;
 };
 
 type CrmOpportunity = {
@@ -57,6 +58,7 @@ export async function LeadPriorityQueue() {
       return (payload.opportunities || []).map((item): QueueItem => ({
         id: "crm:" + item.opportunity_id,
         opportunityId: item.opportunity_id,
+        nextAction: item.next_action || "",
         source: "CRM",
         label: item.company || item.title || "CRM opportunity",
         stage: item.stage || "open",
@@ -97,7 +99,7 @@ export async function LeadPriorityQueue() {
             </select>
           </label>
           <label className="text-[11px] text-muted-foreground">Next action
-            <input name="nextAction" defaultValue={item.action} maxLength={500} className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"/>
+            <input name="nextAction" defaultValue={item.nextAction || ""} maxLength={500} className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"/>
           </label>
           <label className="text-[11px] text-muted-foreground">Follow-up date
             <input type="date" name="followUpDate" defaultValue={item.due||""} className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"/>
