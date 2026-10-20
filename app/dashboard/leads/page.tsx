@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { AutomationLeads } from "@/components/dashboard/automation-leads";
+import { LeadPriorityQueue } from "@/components/dashboard/lead-priority-queue";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, BellRing, BriefcaseBusiness, CalendarClock, CheckCircle2, CircleDollarSign, ClipboardCheck, Mail, Megaphone, Reply, Send, UserRound } from "lucide-react";
@@ -69,6 +70,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
     <nav className="mb-6 flex gap-1 overflow-x-auto rounded-lg border border-border bg-card p-1"><Link href="/dashboard/leads" className={cn("whitespace-nowrap rounded-md px-3 py-2 text-xs", !stage && !dueToday ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>All</Link><Link href="/dashboard/leads?due=today" className={cn("whitespace-nowrap rounded-md px-3 py-2 text-xs", dueToday ? "bg-amber-500 text-black" : "text-muted-foreground")}>Due today</Link>{stages.map((item) => <Link key={item.value} href={`/dashboard/leads?status=${item.value}`} className={cn("whitespace-nowrap rounded-md px-3 py-2 text-xs", stage === item.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent")}>{item.label}</Link>)}</nav>
 
+    <LeadPriorityQueue />
     <AutomationLeads websiteLeads={leads} />
     {leads.length ? <div className="space-y-4">{leads.map((lead) => {
       const draft = proposalDraft(lead);

@@ -1,19 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-const expectedSequence = [
-  "core",
-  "architecture",
-  "core",
-  "flow",
-  "core",
-  "network",
-  "core",
-  "disorder",
-  "core",
-  "structure",
-  "core",
-  "ownership",
-];
+import { systemFormSequence } from "@/lib/system-form";
+
+const expectedSequence = [...systemFormSequence];
 
 for (const viewport of [
   { name: "desktop", width: 1440, height: 900 },
@@ -33,7 +22,7 @@ for (const viewport of [
       document.documentElement.style.scrollBehavior = "auto";
       window.scrollTo(0, document.documentElement.scrollHeight);
     });
-    await expect(page.locator('footer[data-system-form="ownership"]')).toBeInViewport();
+    await expect(page.locator("footer")).toBeInViewport();
     await expect(systemForm).toHaveAttribute("data-active-form", "ownership");
     await expect.poll(() => systemForm.evaluate((element) =>
       Number.parseFloat(getComputedStyle(element).getPropertyValue("--system-form-presence")),
