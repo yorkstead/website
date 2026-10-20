@@ -1,3 +1,4 @@
+import { updateCrmOpportunity } from "@/app/actions/crm-opportunity";
 import Link from "next/link";
 import { contactDatabase } from "@/lib/contact-inquiries";
 
@@ -9,6 +10,7 @@ type QueueItem = {
   action: string;
   due: string | null;
   href: string;
+  opportunityId?: string;
 };
 
 type CrmOpportunity = {
@@ -54,6 +56,7 @@ export async function LeadPriorityQueue() {
       const payload = await res.json() as { opportunities?: CrmOpportunity[] };
       return (payload.opportunities || []).map((item): QueueItem => ({
         id: "crm:" + item.opportunity_id,
+        opportunityId: item.opportunity_id,
         source: "CRM",
         label: item.company || item.title || "CRM opportunity",
         stage: item.stage || "open",
@@ -86,9 +89,24 @@ export async function LeadPriorityQueue() {
       <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
         <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="rounded bg-secondary px-2 py-0.5 font-mono text-[10px]">{item.source}</span><span className="text-sm font-medium">{item.label}</span><span className="text-xs text-muted-foreground">{item.stage}</span></div><p className="mt-1 text-xs text-muted-foreground">{item.action}</p></div>
         <div className="flex items-center gap-3"><span className={"text-xs " + (item.due && item.due <= today ? "font-semibold text-amber-600" : "text-muted-foreground")}>{item.due ? item.due < today ? "Overdue · " + item.due : item.due === today ? "Due today" : item.due : "Unscheduled"}</span>{item.source === "CRM" ? <a className="text-xs text-primary" href={item.href}>Open →</a> : <Link className="text-xs text-primary" href={item.href}>Open →</Link>}</div>
+        {item.opportunityId && <form action={updateCrmOpportunity} className="grid w-full gap-2 rounded-lg bg-secondary/30 p-3 sm:grid-cols-[160px_1fr_170px_auto]">
+          <input type="hidden" name="opportunityId" value={item.opportunityId}/>
+          <label className="text-[11px] text-muted-foreground">Stage
+            <select name="stage" defaultValue={item.stage} className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm">
+              {["prospect","qualified","demo","proposal","won","lost"].map(stage=><option key={stage} value={stage}>{stage}</option>)}
+            </select>
+          </label>
+          <label className="text-[11px] text-muted-foreground">Next action
+            <input name="nextAction" defaultValue={item.action} maxLength={500} className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"/>
+          </label>
+          <label className="text-[11px] text-muted-foreground">Follow-up date
+            <input type="date" name="followUpDate" defaultValue={item.due||""} className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"/>
+          </label>
+          <button type="submit" className="self-end rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground">Save CRM</button>
+        </form>}
       </div>
     )}</div> : <p className="mt-4 text-sm text-muted-foreground">No open leads in the connected sources.</p>}
     {items.length > 20 && <p className="mt-3 text-xs text-muted-foreground">Showing 20 of {items.length} prioritized records.</p>}
-    <p className="mt-3 text-[11px] text-muted-foreground">Read-only overview. Website and CRM updates remain in their original systems. Up to 100 open records per source are checked.</p>
+    <p className="mt-3 text-[11px] text-muted-foreground">CRM stages, next actions and dates can be edited here. Website inquiry updates remain in the detailed lead cards below. Up to 100 open records per source are checked.</p>
   </section>;
 }
