@@ -61,6 +61,13 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
   const [composer, setComposer] = useState<ComposerMode>(null);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [viewingProjectId, setViewingProjectId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!ready) return;
+    const id = new URLSearchParams(window.location.search).get("project");
+    if (!id || !workspace.projects.some((project) => project.id === id)) return;
+    const timer = window.setTimeout(() => setViewingProjectId(id), 0);
+    return () => window.clearTimeout(timer);
+  }, [ready, workspace.projects]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskView, setTaskView] = useState<TaskView>("Today");
   const [syncState, setSyncState] = useState<SyncState>("loading");
