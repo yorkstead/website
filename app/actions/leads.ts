@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { contactDatabase, type LeadStatus } from "@/lib/contact-inquiries";
 import { followUpTimestamp, leadStatuses } from "@/lib/lead-rules";
 import { getOwnerSession } from "@/lib/owner-session";
@@ -73,5 +74,9 @@ export async function convertLeadToProject(formData: FormData) {
       ),
       updated_at = NOW()
   `;
+  const converted = await sql`SELECT converted_project_id FROM contact_inquiries WHERE id = ${id} LIMIT 1`;
+  const destinationId = converted[0]?.converted_project_id;
+  if (!destinationId) throw new Error("Project conversion was not confirmed");
   revalidatePath("/dashboard"); revalidatePath("/dashboard/leads");
+  redirect("/dashboard?project=" + encodeURIComponent(String(destinationId)));
 }
