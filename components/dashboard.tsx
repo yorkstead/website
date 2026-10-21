@@ -56,6 +56,8 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
   const [history, setHistory] = useState<WorkspaceHistoryState>(() => createHistoryState(emptyWorkspace));
   const [undoToast, setUndoToast] = useState<UndoToast | null>(null);
   const [ready, setReady] = useState(false);
+
+
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<"All" | ProjectKind>("All");
   const [composer, setComposer] = useState<ComposerMode>(null);
