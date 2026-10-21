@@ -56,6 +56,13 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
   const [history, setHistory] = useState<WorkspaceHistoryState>(() => createHistoryState(emptyWorkspace));
   const [undoToast, setUndoToast] = useState<UndoToast | null>(null);
   const [ready, setReady] = useState(false);
+
+
+  const [query, setQuery] = useState("");
+  const [kind, setKind] = useState<"All" | ProjectKind>("All");
+  const [composer, setComposer] = useState<ComposerMode>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [viewingProjectId, setViewingProjectId] = useState<string | null>(null);
   useEffect(() => {
     if (!ready) return;
     const id = new URLSearchParams(window.location.search).get("project");
@@ -63,12 +70,6 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
     const timer = window.setTimeout(() => setViewingProjectId(id), 0);
     return () => window.clearTimeout(timer);
   }, [ready, workspace.projects]);
-
-  const [query, setQuery] = useState("");
-  const [kind, setKind] = useState<"All" | ProjectKind>("All");
-  const [composer, setComposer] = useState<ComposerMode>(null);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [viewingProjectId, setViewingProjectId] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskView, setTaskView] = useState<TaskView>("Today");
   const [syncState, setSyncState] = useState<SyncState>("loading");
