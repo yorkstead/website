@@ -39,20 +39,24 @@ function statusLabel(value: string) {
 }
 
 function LinkagePanel({ projectId }: { projectId: string }) {
-  const [linkage, setLinkage] = useState<LinkagePayload | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [linkageResult, setLinkageResult] = useState<{ projectId: string; value: LinkagePayload } | null>(null);
+  const [failedProjectId, setFailedProjectId] = useState<string | null>(null);
+  const linkage = linkageResult?.projectId === projectId ? linkageResult.value : null;
+  const failed = failedProjectId === projectId;
 
   useEffect(() => {
     let cancelled = false;
-    setLinkage(null);
-    setFailed(false);
     fetch(`/api/dashboard/project-linkage?projectId=${encodeURIComponent(projectId)}`, { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("Linkage unavailable");
         return response.json() as Promise<LinkagePayload>;
       })
-      .then((value) => { if (!cancelled) setLinkage(value); })
-      .catch(() => { if (!cancelled) setFailed(true); });
+      .then((value) => {
+        if (!cancelled) setLinkageResult({ projectId, value });
+      })
+      .catch(() => {
+        if (!cancelled) setFailedProjectId(projectId);
+      });
     return () => { cancelled = true; };
   }, [projectId]);
 
@@ -80,11 +84,13 @@ export function ClientDeliveryWorkspace({ projectId, delivery, onSave }: { proje
   const [draft, setDraft] = useState<ClientDelivery>(() => copyDelivery(delivery));
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!editing) setDraft(copyDelivery(delivery));
-  }, [delivery, editing]);
-
   const current = delivery ?? emptyClientDelivery;
+
+  function beginEditing() {
+    setDraft(copyDelivery(delivery));
+    setError("");
+    setEditing(true);
+  }
 
   function cancel() {
     setDraft(copyDelivery(delivery));
@@ -118,7 +124,7 @@ export function ClientDeliveryWorkspace({ projectId, delivery, onSave }: { proje
     <Card className="bg-background/35"><CardContent className="p-4 sm:p-5">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div><div className="font-mono text-[9px] uppercase tracking-wider text-primary">Client delivery</div><h3 className="mt-1 text-sm font-semibold">Scope, approvals, documents and payment state</h3><p className="mt-1 text-[10px] leading-4 text-muted-foreground">Payment stores a status and external reference only. Do not enter card, bank, secret, or credential data.</p></div>
-        {editing ? <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={cancel}><X />Cancel</Button><Button size="sm" onClick={save}><Save />Save delivery</Button></div> : <Button size="sm" variant="outline" onClick={() => setEditing(true)}><Pencil />Edit delivery</Button>}
+        {editing ? <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={cancel}><X />Cancel</Button><Button size="sm" onClick={save}><Save />Save delivery</Button></div> : <Button size="sm" variant="outline" onClick={beginEditing}><Pencil />Edit delivery</Button>}
       </div>
       {error && <p role="alert" className="mb-4 rounded-md border border-amber-500/25 bg-amber-500/5 px-3 py-2 text-xs text-amber-500">{error}</p>}
 
