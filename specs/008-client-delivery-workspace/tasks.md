@@ -7,5 +7,5 @@
 - [x] T05 Add deep-link not-found recovery and navigation tests.
 - [x] T06 Add private read-only website/CRM linkage endpoint.
 - [x] T07 Extend ProjectWorkspace editing and persistence UI.
-- [ ] T08 Run task-specific and full repository verification.
-- [ ] T09 Converge implementation against acceptance criteria and open PR.
+- [x] T08 Run task-specific and full repository verification.
+- [x] T09 Converge implementation against acceptance criteria and open PR.
