@@ -30,8 +30,10 @@ export function findExactCrmOpportunity(
   lead: { name: string; company: string | null },
   candidates: CrmOpportunityCandidate[],
 ): { status: "linked"; opportunity: CrmOpportunityLink } | { status: "no_match" | "ambiguous" } {
-  const labels = new Set([lead.company, lead.name].filter((value): value is string => Boolean(value?.trim())).map(normalizedLabel));
-  const matches = candidates.filter((candidate) => labels.has(normalizedLabel(candidate.company)));
+  const company = lead.company?.trim();
+  if (!company) return { status: "no_match" };
+  const normalizedCompany = normalizedLabel(company);
+  const matches = candidates.filter((candidate) => normalizedLabel(candidate.company) === normalizedCompany);
   if (matches.length === 0) return { status: "no_match" };
   if (matches.length > 1) return { status: "ambiguous" };
   const match = matches[0];
