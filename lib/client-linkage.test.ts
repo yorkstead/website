@@ -10,6 +10,10 @@ describe("read-only CRM linkage", () => {
     if (result.status === "linked") expect(result.opportunity.opportunityId).toBe("opp-1");
   });
 
+  test("does not use a person's name as a company match", () => {
+    expect(findExactCrmOpportunity({ name: "Arlene Beau", company: null }, [{ opportunity_id: "opp-1", company: "Arlene Beau", title: "Website", stage: "won" }])).toEqual({ status: "no_match" });
+  });
+
   test("does not infer a fuzzy or ambiguous match", () => {
     expect(findExactCrmOpportunity(lead, [{ opportunity_id: "opp-1", company: "Adorned LLC", title: "Website", stage: "won" }])).toEqual({ status: "no_match" });
     expect(findExactCrmOpportunity(lead, [
