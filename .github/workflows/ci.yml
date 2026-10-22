@@ -50,11 +50,6 @@ jobs:
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
 
-      - name: Resolve current Next.js security patch
-        run: |
-          bun update next@16.4.1
-          git diff -- package.json bun.lock
-
       - name: Validate Yorkstead project scaffold
         run: bun run yorkstead:check
 
