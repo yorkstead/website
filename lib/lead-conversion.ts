@@ -1,0 +1,52 @@
+export type LeadConversionQueryClient = {
+  query: (query: string, params?: unknown[]) => Promise<unknown>;
+};
+
+type ConversionIds = {
+  projectId: string;
+  activityId: string;
+  now: string;
+};
+
+const claimLeadConversionQuery = `
+WITH claimed AS (
+  UPDATE contact_inquiries
+  SET status = 'won', archived_at = NULL, converted_project_id = $2, updated_at = NOW()
+  WHERE id = $1 AND converted_project_id IS NULL
+  RETURNING name, email, company, message
+), project_data AS (
+  SELECT jsonb_build_object(
+    'id', $2::text, 'name', COALESCE(company, name), 'eyebrow', 'Client project',
+    'description', message, 'status', 'Planning', 'kind', 'Business', 'stack', '[]'::jsonb,
+    'updatedAt', $3::text, 'updatedLabel', 'Just converted', 'note', 'Lead ' || $1::text || ' · ' || email,
+    'progress', 5, 'accent', 'cyan', 'pinned', true
+  ) AS project,
+  jsonb_build_object('id', $4::text, 'message', 'Converted ' || name || ' into a client project', 'createdAt', $3::text) AS activity
+  FROM claimed
+)
+INSERT INTO workspaces (id, data, updated_at)
+SELECT 'primary', jsonb_build_object('projects', jsonb_build_array(project), 'tasks', '[]'::jsonb, 'activity', jsonb_build_array(activity)), NOW()
+FROM project_data
+ON CONFLICT (id) DO UPDATE SET
+  data = jsonb_set(
+    jsonb_set(workspaces.data, '{projects}', COALESCE(workspaces.data->'projects', '[]'::jsonb) || EXCLUDED.data->'projects'),
+    '{activity}', EXCLUDED.data->'activity' || COALESCE(workspaces.data->'activity', '[]'::jsonb)
+  ),
+  updated_at = NOW()
+`;
+
+function resultRows(result: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(result)) return result as Array<Record<string, unknown>>;
+  if (result && typeof result === "object" && "rows" in result && Array.isArray((result as { rows?: unknown }).rows)) {
+    return (result as { rows: Array<Record<string, unknown>> }).rows;
+  }
+  return [];
+}
+
+export async function convertLeadRecord(client: LeadConversionQueryClient, leadId: number, ids: ConversionIds) {
+  await client.query(claimLeadConversionQuery, [leadId, ids.projectId, ids.now, ids.activityId]);
+  const result = await client.query("SELECT converted_project_id FROM contact_inquiries WHERE id = $1 LIMIT 1", [leadId]);
+  const destinationId = resultRows(result)[0]?.converted_project_id;
+  if (typeof destinationId !== "string" || !destinationId) throw new Error("Project conversion was not confirmed");
+  return destinationId;
+}

@@ -11,6 +11,8 @@ import {
   RefreshCw, RotateCcw, RotateCw, Search, Settings, Sparkles, Square, Target, TerminalSquare, Trash2, Upload, X,
 } from "lucide-react";
 import type { Project, ProjectKind } from "@/lib/projects";
+import type { ClientDelivery } from "@/lib/client-delivery";
+import { resolveProjectDeepLink } from "@/lib/project-deep-link";
 import { defaultWorkspaceSettings, emptyWorkspace, workspaceStorageKey, type InboxItem, type ProjectNote, type Task, type WeeklyReview, type Workspace, type WorkspaceSettings } from "@/lib/workspace";
 import { selectFocusTasks, selectTasksForView } from "@/lib/planning";
 import { isWorkspaceData, normalizeWorkspace } from "@/lib/workspace-validation";
@@ -63,13 +65,31 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
   const [composer, setComposer] = useState<ComposerMode>(null);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [viewingProjectId, setViewingProjectId] = useState<string | null>(null);
+  const [projectLinkNotFound, setProjectLinkNotFound] = useState<string | null>(null);
   useEffect(() => {
     if (!ready) return;
-    const id = new URLSearchParams(window.location.search).get("project");
-    if (!id || !workspace.projects.some((project) => project.id === id)) return;
-    const timer = window.setTimeout(() => setViewingProjectId(id), 0);
+    const resolution = resolveProjectDeepLink(workspace.projects, new URLSearchParams(window.location.search).get("project"));
+    const timer = window.setTimeout(() => {
+      if (resolution.status === "found") {
+        setViewingProjectId(resolution.projectId);
+        setProjectLinkNotFound(null);
+      } else if (resolution.status === "not-found") {
+        setViewingProjectId(null);
+        setProjectLinkNotFound(resolution.projectId);
+      } else {
+        setProjectLinkNotFound(null);
+      }
+    }, 0);
     return () => window.clearTimeout(timer);
   }, [ready, workspace.projects]);
+  const clearProjectDeepLink = useCallback(() => {
+    setViewingProjectId(null);
+    setProjectLinkNotFound(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("project");
+    const query = url.searchParams.toString();
+    router.replace(`${url.pathname}${query ? `?${query}` : ""}${url.hash}`, { scroll: false });
+  }, [router]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskView, setTaskView] = useState<TaskView>("Today");
   const [syncState, setSyncState] = useState<SyncState>("loading");
@@ -388,6 +408,20 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
       ...current,
       projects: current.projects.map((item) => (item.id === project.id ? project : item)),
       activity: [record(`Updated project · ${project.name}`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function updateProjectDelivery(projectId: string, delivery: ClientDelivery) {
+    const project = workspace.projects.find((item) => item.id === projectId);
+    if (!project) return;
+    updateWorkspace(`Updated client delivery · ${project.name}`, (current) => ({
+      ...current,
+      projects: current.projects.map((item) => item.id === projectId ? {
+        ...item,
+        delivery,
+        updatedAt: new Date().toISOString(),
+        updatedLabel: "Client delivery updated",
+      } : item),
+      activity: [record(`Updated client delivery · ${project.name}`), ...current.activity].slice(0, 30),
     }));
   }
   function updateTask(task: Task) {
@@ -746,7 +780,7 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
       ]} cloudUpdatedAt={conflict.cloudVersion} loading={conflict.loading} resolving={conflict.resolving} error={conflict.error} onRetry={() => void loadConflict(conflict.local)} onUseCloud={useCloudConflict} onKeepLocal={() => void keepLocalConflict()} onExportLocal={() => downloadWorkspace(conflict.local, `work-ctrl-conflict-local-${today}.json`)} /></DialogBoundary>}
       {composer && <DialogBoundary label="Create a project, task, or idea" onClose={() => setComposer(null)}><Composer mode={composer} projects={workspace.projects} onClose={() => setComposer(null)} onProject={addProject} onTask={addTask} onIdea={addIdea} /></DialogBoundary>}
       {editingProject && <DialogBoundary label="Edit project" onClose={() => setEditingProject(null)}><ProjectEditor project={editingProject} onClose={() => setEditingProject(null)} onSave={updateProject} /></DialogBoundary>}
-      {viewingProjectId && workspace.projects.find((project) => project.id === viewingProjectId) && <DialogBoundary label="Project workspace" onClose={() => setViewingProjectId(null)}><ProjectWorkspace project={workspace.projects.find((project) => project.id === viewingProjectId)!} tasks={workspace.tasks} intelligence={intelligence[viewingProjectId]?.data} onClose={() => setViewingProjectId(null)} onEdit={() => { setEditingProject(workspace.projects.find((project) => project.id === viewingProjectId)!); setViewingProjectId(null); }} onAddTask={(title) => addTask(title, viewingProjectId)} onToggleTask={toggleTask} onEditTask={setEditingTask} /></DialogBoundary>}
+      {viewingProjectId && workspace.projects.find((project) => project.id === viewingProjectId) && <DialogBoundary label="Project workspace" onClose={clearProjectDeepLink}><ProjectWorkspace project={workspace.projects.find((project) => project.id === viewingProjectId)!} tasks={workspace.tasks} intelligence={intelligence[viewingProjectId]?.data} onClose={clearProjectDeepLink} onEdit={() => { setEditingProject(workspace.projects.find((project) => project.id === viewingProjectId)!); clearProjectDeepLink(); }} onAddTask={(title) => addTask(title, viewingProjectId)} onToggleTask={toggleTask} onEditTask={setEditingTask} onSaveDelivery={(delivery) => updateProjectDelivery(viewingProjectId, delivery)} /></DialogBoundary>}
       {editingTask && <DialogBoundary label="Edit task" onClose={() => setEditingTask(null)}><TaskEditor task={editingTask} projects={workspace.projects} onClose={() => setEditingTask(null)} onSave={updateTask} /></DialogBoundary>}
       {confirmation && <DialogBoundary label="Confirm action" onClose={() => setConfirmation(null)}><ConfirmDialog confirmation={confirmation} onClose={() => setConfirmation(null)} /></DialogBoundary>}
       {commandOpen && <DialogBoundary label="Command palette" onClose={() => setCommandOpen(false)}><div className="fixed inset-0 z-[55] flex justify-center bg-background/75 px-4 pt-[12vh] backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setCommandOpen(false)}><Card className="h-fit w-full max-w-xl overflow-hidden shadow-2xl"><div className="flex items-center gap-3 border-b border-border px-4"><Search className="size-4 text-muted-foreground" /><input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.target.value)} placeholder="Type a command or search projects…" aria-label="Search commands and projects" className="h-14 min-w-0 flex-1 bg-transparent text-sm outline-none" /><kbd className="rounded border border-border bg-secondary px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground">ESC</kbd></div><div className="max-h-[55vh] overflow-y-auto p-2">{filteredCommands.length ? commandSections.map((section) => <div key={section} className="mb-2"><div className="px-2 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">{section}</div>{filteredCommands.filter((action) => action.section === section).map((action) => <button key={action.id} onClick={() => { action.run(); setCommandOpen(false); setCommandQuery(""); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-accent"><span className="text-muted-foreground [&_svg]:size-4">{action.icon}</span><span className="min-w-0 flex-1 truncate text-sm">{action.label}</span><span className="text-[10px] text-muted-foreground">{action.hint}</span><CornerDownLeft className="size-3 text-muted-foreground/50" /></button>)}</div>) : <div className="grid min-h-32 place-items-center text-sm text-muted-foreground">No matching commands</div>}</div><div className="flex items-center gap-4 border-t border-border bg-secondary/30 px-4 py-2 font-mono text-[9px] text-muted-foreground"><span className="flex items-center gap-1"><Keyboard className="size-3" />Ctrl/⌘ K</span><span>Alt N · task</span><span>Alt I · idea</span><span>Ctrl Z · undo</span></div></Card></div></DialogBoundary>}
@@ -831,6 +865,8 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
 
         <main className="min-w-0 flex-1 px-4 pb-16 sm:px-6 xl:px-10">
           <header className="flex h-20 min-w-0 items-center justify-between border-b border-border/60"><div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground"><CircleDot className={cn("size-3 shrink-0", syncState === "offline" || syncState === "conflict" ? "text-amber-400" : "text-emerald-400")} /><span className="hidden truncate sm:inline">{syncState === "offline" ? "Working offline" : syncState === "conflict" ? "Resolve the cloud conflict" : syncState === "saving" ? "Saving…" : "Workspace ready"}</span></div><div className="flex shrink-0 items-center gap-2"><Button variant="outline" className="hidden text-muted-foreground md:flex" onClick={() => setCommandOpen(true)}><Search />Commands <kbd className="ml-4 rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[9px]">Ctrl K</kbd></Button><Button variant="outline" size="icon" onClick={() => void refreshIntelligence()} aria-label="Refresh project status" disabled={refreshing}><RefreshCw className={cn(refreshing && "animate-spin")} /></Button><ThemeToggle /><Button onClick={() => setComposer("project")}><Plus /><span className="hidden sm:inline">New project</span></Button></div></header>
+
+          {projectLinkNotFound && <section role="alert" className="mt-5 flex flex-col justify-between gap-3 rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 sm:flex-row sm:items-center"><div><div className="text-sm font-semibold">Project link not found</div><p className="mt-1 text-xs text-muted-foreground">The requested project <span className="font-mono">{projectLinkNotFound}</span> is not in the current workspace. No records were changed.</p></div><div className="flex shrink-0 gap-2"><Button size="sm" variant="outline" asChild><Link href="/dashboard/leads">Review leads</Link></Button><Button size="sm" onClick={clearProjectDeepLink}>View current projects</Button></div></section>}
 
           <section className="py-10"><div className="mb-8"><div className="mb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-primary">Personal operations</div><h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Build what matters next.</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Projects, tasks, ideas, and movement—captured in one clean operating view.</p></div><div className="grid gap-3 sm:grid-cols-3"><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Projects</div><div className="mt-1 text-2xl font-semibold">{workspace.projects.length}</div></div><Grid2X2 className="size-5 text-primary" /></CardContent></Card><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Open tasks · both sources</div><div className="mt-1 text-2xl font-semibold">{combinedTaskCount}</div><div className="mt-1 text-[10px] text-muted-foreground">{openTasks} workspace · {googleVisible.length} Google due through tomorrow</div></div><ListChecks className="size-5 text-amber-400" /></CardContent></Card><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Signals logged</div><div className="mt-1 text-2xl font-semibold">{workspace.activity.length}</div></div><Activity className="size-5 text-emerald-400" /></CardContent></Card></div></section>
 

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { contactDatabase, type LeadStatus } from "@/lib/contact-inquiries";
 import { followUpTimestamp, leadStatuses } from "@/lib/lead-rules";
+import { convertLeadRecord, type LeadConversionQueryClient } from "@/lib/lead-conversion";
 import { getOwnerSession } from "@/lib/owner-session";
 
 async function ownerSql() {
@@ -48,35 +49,7 @@ export async function convertLeadToProject(formData: FormData) {
   const projectId = randomUUID();
   const now = new Date().toISOString();
   const activityId = randomUUID();
-  await sql`
-    WITH claimed AS (
-      UPDATE contact_inquiries
-      SET status = 'won', archived_at = NULL, converted_project_id = ${projectId}, updated_at = NOW()
-      WHERE id = ${id} AND converted_project_id IS NULL
-      RETURNING name, email, company, message
-    ), project_data AS (
-      SELECT jsonb_build_object(
-        'id', ${projectId}, 'name', COALESCE(company, name), 'eyebrow', 'Client project',
-        'description', message, 'status', 'Planning', 'kind', 'Business', 'stack', '[]'::jsonb,
-        'updatedAt', ${now}, 'updatedLabel', 'Just converted', 'note', 'Lead ' || ${id} || ' · ' || email,
-        'progress', 5, 'accent', 'cyan', 'pinned', true
-      ) AS project,
-      jsonb_build_object('id', ${activityId}, 'message', 'Converted ' || name || ' into a client project', 'createdAt', ${now}) AS activity
-      FROM claimed
-    )
-    INSERT INTO workspaces (id, data, updated_at)
-    SELECT 'primary', jsonb_build_object('projects', jsonb_build_array(project), 'tasks', '[]'::jsonb, 'activity', jsonb_build_array(activity)), NOW()
-    FROM project_data
-    ON CONFLICT (id) DO UPDATE SET
-      data = jsonb_set(
-        jsonb_set(workspaces.data, '{projects}', COALESCE(workspaces.data->'projects', '[]'::jsonb) || EXCLUDED.data->'projects'),
-        '{activity}', EXCLUDED.data->'activity' || COALESCE(workspaces.data->'activity', '[]'::jsonb)
-      ),
-      updated_at = NOW()
-  `;
-  const converted = await sql`SELECT converted_project_id FROM contact_inquiries WHERE id = ${id} LIMIT 1`;
-  const destinationId = converted[0]?.converted_project_id;
-  if (!destinationId) throw new Error("Project conversion was not confirmed");
+  const destinationId = await convertLeadRecord(sql as unknown as LeadConversionQueryClient, id, { projectId, activityId, now });
   revalidatePath("/dashboard"); revalidatePath("/dashboard/leads");
   redirect("/dashboard?project=" + encodeURIComponent(String(destinationId)));
 }

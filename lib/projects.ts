@@ -1,3 +1,5 @@
+import type { ClientDelivery } from "@/lib/client-delivery";
+
 export type ProjectStatus = "Active" | "Planning" | "Shipped" | "Paused";
 export type ProjectKind = "Software" | "CNC" | "Business" | "Experiment";
 
@@ -17,6 +19,7 @@ export type Project = {
   progress: number;
   accent: "cyan" | "amber" | "violet" | "lime";
   pinned?: boolean;
+  delivery?: ClientDelivery;
 };
 
 // Start clean. New projects created in the dashboard persist in local storage.

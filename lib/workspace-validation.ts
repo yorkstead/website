@@ -1,6 +1,7 @@
 import { defaultWorkspaceSettings, emptyWorkspace, type ActivityItem, type InboxItem, type ProjectNote, type Task, type WeeklyReview, type Workspace, type WorkspaceSettings } from "@/lib/workspace";
 import type { Project, ProjectKind, ProjectStatus } from "@/lib/projects";
 import { isValidDateKey, normalizeTimeZone } from "@/lib/date-time";
+import { parseClientDelivery } from "@/lib/client-delivery";
 import { isValidDateValue, normalizeHTTPSURL, uniqueById } from "@/lib/semantic-validation";
 
 const projectStatuses = new Set<ProjectStatus>(["Active", "Planning", "Shipped", "Paused"]);
@@ -40,7 +41,7 @@ function project(value: unknown): Project | null {
     stack: Array.isArray(item.stack) ? item.stack.flatMap((entry) => typeof entry === "string" ? [entry.trim().slice(0, 80)] : []).filter(Boolean).slice(0, 30) : [],
     repo: optionalUrl(item.repo), deployment: optionalUrl(item.deployment), updatedAt: date(item.updatedAt) || new Date().toISOString(),
     updatedLabel: text(item.updatedLabel, 120), note: text(item.note, 4000), progress: Math.max(0, Math.min(100, Number(item.progress) || 0)), accent,
-    pinned: Boolean(item.pinned),
+    pinned: Boolean(item.pinned), delivery: parseClientDelivery(item.delivery),
   };
 }
 
