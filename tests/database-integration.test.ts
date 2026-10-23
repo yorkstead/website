@@ -91,6 +91,17 @@ describe("PostgreSQL migration integration", () => {
       expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectB)).toBeNull();
       expect(await getCustomerProjectAccess(client, { provider, subject: subjectB }, projectA)).toBeNull();
 
+      await client.query("UPDATE customer_tenants SET status = 'suspended' WHERE id = $1", [tenantA]);
+      expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectA)).toBeNull();
+      await client.query("UPDATE customer_tenants SET status = 'disabled' WHERE id = $1", [tenantA]);
+      expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectA)).toBeNull();
+      await client.query("UPDATE customer_tenants SET status = 'active' WHERE id = $1", [tenantA]);
+      expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectA)).toMatchObject({
+        identityId: identityA,
+        tenantId: tenantA,
+        projectId: projectA,
+      });
+
       await client.query("UPDATE customer_identities SET status = 'disabled' WHERE id = $1", [identityA]);
       expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectA)).toBeNull();
       await client.query("UPDATE customer_identities SET status = 'active' WHERE id = $1", [identityA]);
