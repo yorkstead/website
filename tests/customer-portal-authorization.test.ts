@@ -24,7 +24,12 @@ function fixtureDatabase(fixtures: AccessFixture[]) {
         fixture.subject === subject &&
         fixture.projectId === projectId
       );
-      if (!match || (match.tenantStatus !== "active" && text.includes("tenant.status = 'active'"))) return { rows: [] };
+      if (
+        !match ||
+        (match.tenantStatus !== "active" && text.includes("tenant.status = 'active'"))
+      ) {
+        return { rows: [] };
+      }
       return { rows: [{
         identityId: match.identityId,
         tenantId: match.tenantId,
@@ -134,6 +139,7 @@ describe("customer project authorization", () => {
     expect(customerProjectAuthorizationQuery).toContain("tenant.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("project.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("grant_record.status = 'active'");
+    expect(customerProjectAuthorizationQuery).toContain("INNER JOIN customer_tenants AS tenant");
     expect(customerProjectAuthorizationQuery).toContain("tenant.id = membership.tenant_id");
     expect(customerProjectAuthorizationQuery).toContain("grant_record.tenant_id = membership.tenant_id");
     expect(customerProjectAuthorizationQuery).toContain("grant_record.identity_id = identity.id");
