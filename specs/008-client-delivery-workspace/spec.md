@@ -1,7 +1,7 @@
 # Client delivery workspace
 
 **Issue:** #47  
-**Status:** Implementing  
+**Status:** Complete  
 **Date:** 2026-10-22
 
 ## User value
@@ -48,6 +48,14 @@ Production records remain unchanged. Linking or creating the Adorned workspace p
 - ProjectWorkspace identifies its website inquiry and exact CRM opportunity when available, while CRM remains authoritative.
 - No live Adorned record is created, merged, linked, or assigned a payment state by this change.
 - Required repository checks, browser tests, and production build pass in CI.
+
+## Verification
+
+- Implemented and merged through PR #48 at commit `6799d7b821c4e8992cf2099b4b8593a05f91eb55`.
+- CI run 39871675600 passed for the feature head.
+- Independent verification on current `main`: scaffold check passed; eight migrations validated; lint passed with one unrelated existing warning; typecheck passed; 259 tests passed with three database tests skipped because no test database was configured; the production build compiled and generated 76 routes.
+- The 20-test Playwright suite completed with 19 tests in the parallel run and the single timeout passed immediately when rerun with one worker.
+- Vercel reports the merge commit as a ready production deployment. No deployment was initiated during the completion audit.
 
 ## Non-goals
 
