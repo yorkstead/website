@@ -7,4 +7,4 @@
 - [x] T05 Lock customer-facing capabilities off without adding customer routes or UI.
 - [x] T06 Add unit and PostgreSQL integration coverage for isolation and constraints.
 - [x] T07 Run existing owner-only authorization tests and the full verification matrix.
-- [ ] T08 Update the handoff, converge against acceptance criteria, and open the pull request.
+- [x] T08 Update the handoff, converge against acceptance criteria, and open the pull request.
