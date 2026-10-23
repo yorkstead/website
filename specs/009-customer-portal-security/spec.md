@@ -1,6 +1,6 @@
 # Customer portal security foundation
 
-**Status:** Implementing  
+**Status:** Ready for review  
 **Date:** 2026-10-22
 
 ## User value
@@ -42,6 +42,15 @@ PR #49 changes only the Issue #47 specification and handoff documentation. It in
 - Login, invitations, published updates, and document sharing remain disabled and no customer endpoint exists.
 - Existing internal CRM and owner workspace checks continue to pass.
 - The migration plan, lint, typecheck, tests, and production build pass.
+
+## Verification
+
+- The nine-file application migration plan validates, and migration 0009 applied successfully to disposable PostgreSQL twice (apply, then idempotent no-op).
+- 268 unit and PostgreSQL integration tests pass, including same-customer access, cross-customer denial, inactive/revoked denial, unique project ownership, and cross-tenant foreign-key rejection.
+- Existing owner-only API and Server Action authorization tests pass unchanged.
+- Yorkstead scaffold check, migration check, typecheck, and production build pass; the build generated 76 routes and no customer portal route.
+- Lint passes with zero errors and one unrelated pre-existing warning in `components/login-panel.tsx`.
+- The local parallel Playwright run passed 15 of 20 scenarios; five unrelated public-page scenarios timed out or missed navigation under sandbox resource contention. CI remains the authoritative browser run.
 
 ## Non-goals
 
