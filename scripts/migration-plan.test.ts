@@ -9,7 +9,7 @@ describe("application migration plan", () => {
   test("loads ordered, unique, nonempty migrations", async () => {
     const fileNames = (await readdir(migrationsDirectory)).filter((fileName) => fileName.endsWith(".sql")).sort();
     const migrations = await Promise.all(fileNames.map(async (fileName) => parseMigration(fileName, await readFile(resolve(migrationsDirectory, fileName), "utf8"))));
-    expect(migrations.map((migration) => migration.version)).toEqual(["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"]);
+    expect(migrations.map((migration) => migration.version)).toEqual(["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008", "0009"]);
     expect(new Set(migrations.map((migration) => migration.version)).size).toBe(migrations.length);
     expect(migrations.every((migration) => migration.statements.length > 0)).toBeTrue();
     expect(migrations.every((migration) => /^[0-9a-f]{64}$/.test(migration.checksum))).toBeTrue();
@@ -45,6 +45,11 @@ describe("application migration plan", () => {
       "conversion_events_visitor_hash_idx",
       "morning_briefings_ready_content_check",
       "morning_briefings_ready_generated_at_idx",
+      "customer_identities_provider_subject_key",
+      "customer_tenant_memberships_identity_fkey",
+      "customer_tenant_projects_project_key",
+      "customer_project_grants_membership_fkey",
+      "customer_project_grants_project_fkey",
     ]) expect(plan).toContain(expected);
   });
 
