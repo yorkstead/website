@@ -1,6 +1,6 @@
 # CC-002A: active tenant authorization
 
-**Status:** Implementing  
+**Status:** Ready for review  
 **Date:** 2026-10-23
 
 ## User value
