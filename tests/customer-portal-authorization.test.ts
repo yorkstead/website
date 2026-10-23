@@ -24,7 +24,7 @@ function fixtureDatabase(fixtures: AccessFixture[]) {
         fixture.subject === subject &&
         fixture.projectId === projectId
       );
-      if (!match || (match.tenantStatus !== "active" && text.includes("tenant.status = \'active\'"))) return { rows: [] };
+      if (!match || (match.tenantStatus !== "active" && text.includes("tenant.status = 'active'"))) return { rows: [] };
       return { rows: [{
         identityId: match.identityId,
         tenantId: match.tenantId,
