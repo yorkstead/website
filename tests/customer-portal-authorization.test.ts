@@ -24,8 +24,13 @@ function fixtureDatabase(fixtures: AccessFixture[]) {
         fixture.projectId === projectId
       );
       if (!match) return { rows: [] };
-      const { provider: _provider, subject: _subject, ...access } = match;
-      return { rows: [access] };
+      return { rows: [{
+        identityId: match.identityId,
+        tenantId: match.tenantId,
+        projectId: match.projectId,
+        role: match.role,
+        permission: match.permission,
+      }] };
     },
   } as unknown as CustomerAuthorizationDatabase;
 
