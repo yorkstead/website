@@ -10,6 +10,7 @@ import {
 type AccessFixture = CustomerProjectAccess & {
   provider: string;
   subject: string;
+  tenantStatus: "active" | "suspended" | "disabled";
 };
 
 function fixtureDatabase(fixtures: AccessFixture[]) {
@@ -23,7 +24,7 @@ function fixtureDatabase(fixtures: AccessFixture[]) {
         fixture.subject === subject &&
         fixture.projectId === projectId
       );
-      if (!match) return { rows: [] };
+      if (!match || (match.tenantStatus !== "active" && text.includes("tenant.status = \'active\'"))) return { rows: [] };
       return { rows: [{
         identityId: match.identityId,
         tenantId: match.tenantId,
@@ -45,6 +46,7 @@ const customerA: AccessFixture = {
   projectId: "project-a",
   role: "member",
   permission: "view",
+  tenantStatus: "active",
 };
 
 const customerB: AccessFixture = {
@@ -55,6 +57,7 @@ const customerB: AccessFixture = {
   projectId: "project-b",
   role: "admin",
   permission: "view",
+  tenantStatus: "active",
 };
 
 describe("customer portal capability boundary", () => {
@@ -104,6 +107,18 @@ describe("customer project authorization", () => {
     )).toBeNull();
   });
 
+  test("does not authorize suspended or disabled tenants while every downstream grant remains active", async () => {
+    for (const tenantStatus of ["suspended", "disabled"] as const) {
+      const { database } = fixtureDatabase([{ ...customerA, tenantStatus }]);
+
+      expect(await getCustomerProjectAccess(
+        database,
+        { provider: customerA.provider, subject: customerA.subject },
+        customerA.projectId,
+      )).toBeNull();
+    }
+  });
+
   test("rejects empty or non-canonical identifiers before database access", async () => {
     const { database, calls } = fixtureDatabase([customerA]);
 
@@ -113,11 +128,12 @@ describe("customer project authorization", () => {
     expect(calls).toHaveLength(0);
   });
 
-  test("requires every identity, membership, project, and grant status to be active", () => {
+  test("requires every identity, tenant, membership, project, and grant status to be active", () => {
     expect(customerProjectAuthorizationQuery).toContain("identity.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("membership.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("project.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("grant_record.status = 'active'");
+    expect(customerProjectAuthorizationQuery).toContain("tenant.id = membership.tenant_id");
     expect(customerProjectAuthorizationQuery).toContain("grant_record.tenant_id = membership.tenant_id");
     expect(customerProjectAuthorizationQuery).toContain("grant_record.identity_id = identity.id");
   });
