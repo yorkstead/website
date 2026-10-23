@@ -18,9 +18,9 @@ async function expectPostgresError(query: Promise<unknown>, code: string) {
   expect(caught).toMatchObject({ code });
 }
 
-async function expectPostgresErrorAtSavepoint(client: PoolClient, query: Promise<unknown>, code: string) {
+async function expectPostgresErrorAtSavepoint(client: PoolClient, query: () => Promise<unknown>, code: string) {
   await client.query("SAVEPOINT expected_error");
-  await expectPostgresError(query, code);
+  await expectPostgresError(query(), code);
   await client.query("ROLLBACK TO SAVEPOINT expected_error");
   await client.query("RELEASE SAVEPOINT expected_error");
 }
@@ -109,12 +109,12 @@ describe("PostgreSQL migration integration", () => {
 
       await expectPostgresErrorAtSavepoint(
         client,
-        client.query("INSERT INTO customer_tenant_projects (tenant_id, project_id, status) VALUES ($1, $2, 'active')", [tenantB, projectA]),
+        () => client.query("INSERT INTO customer_tenant_projects (tenant_id, project_id, status) VALUES ($1, $2, 'active')", [tenantB, projectA]),
         "23505",
       );
       await expectPostgresErrorAtSavepoint(
         client,
-        client.query("INSERT INTO customer_project_grants (tenant_id, project_id, identity_id, status) VALUES ($1, $2, $3, 'active')", [tenantB, projectA, identityB]),
+        () => client.query("INSERT INTO customer_project_grants (tenant_id, project_id, identity_id, status) VALUES ($1, $2, $3, 'active')", [tenantB, projectA, identityB]),
         "23503",
       );
     } finally {
