@@ -131,6 +131,7 @@ describe("customer project authorization", () => {
   test("requires every identity, tenant, membership, project, and grant status to be active", () => {
     expect(customerProjectAuthorizationQuery).toContain("identity.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("membership.status = 'active'");
+    expect(customerProjectAuthorizationQuery).toContain("tenant.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("project.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("grant_record.status = 'active'");
     expect(customerProjectAuthorizationQuery).toContain("tenant.id = membership.tenant_id");
