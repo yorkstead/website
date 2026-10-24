@@ -32,6 +32,7 @@ export function createCustomerAuthOptions(
     baseURL: configuration.baseURL,
     basePath: customerAuthBoundary.basePath,
     secret: configuration.secret,
+    secrets: [{ version: 1, value: configuration.secret }],
     database,
     emailAndPassword: {
       enabled: true,
