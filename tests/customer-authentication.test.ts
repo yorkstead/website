@@ -93,6 +93,8 @@ describe("customer authentication configuration", () => {
     const options = createCustomerAuthOptions(productionConfiguration, database);
 
     expect(options.basePath).toBe("/api/customer-auth");
+    expect(options.secret).toBe(productionConfiguration.secret);
+    expect(options.secrets).toEqual([{ version: 1, value: productionConfiguration.secret }]);
     expect(options.advanced.cookiePrefix).toBe("yorkstead-customer");
     expect(options.advanced.cookiePrefix).not.toBe("better-auth");
     expect(options.emailAndPassword.disableSignUp).toBe(true);
