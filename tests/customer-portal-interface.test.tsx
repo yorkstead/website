@@ -86,8 +86,9 @@ describe("customer portal presentation", () => {
   test("renders dashboard navigation without escaped newline text", async () => {
     const source = await Bun.file("app/dashboard/page.tsx").text();
 
-    expect(source).toContain('Marketing</Link>\\n            <Link href="/dashboard/customer-portal-preview"');
-    expect(source).not.toContain("Marketing</Link>\\\\n");
+    expect(source).toContain(`Marketing</Link>
+            <Link href="/dashboard/customer-portal-preview"`);
+    expect(source).not.toContain("Marketing</Link>\\n");
   });
 
   test("includes the established responsive layout and focus conventions", async () => {
