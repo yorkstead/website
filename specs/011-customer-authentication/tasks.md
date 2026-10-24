@@ -5,5 +5,5 @@
 - [x] T03 Add dedicated customer-auth persistence and configuration.
 - [x] T04 Add the disabled public route and verified-session authorization service.
 - [x] T05 Add unit and PostgreSQL security coverage.
-- [ ] T06 Run the full verification matrix and update the handoff.
-- [ ] T07 Open a narrow unmerged pull request.
+- [x] T06 Run the full verification matrix and update the handoff.
+- [x] T07 Open a narrow unmerged pull request.
