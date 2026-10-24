@@ -1,3 +1,4 @@
+import { customerCommunicationsCapabilities } from "@/lib/customer-communications-policy";
 import type { PoolClient } from "pg";
 import { customerPortalCapabilities } from "@/lib/customer-portal-authorization";
 import { clientProjectCapabilities } from "@/lib/client-project-data";
@@ -22,7 +23,7 @@ export function createReadinessInspector(
     const context = {
       releaseId: "customer-portal-v1" as const,
       codeRevision: code && /^[a-f0-9]{40}$/.test(code) ? code : null,
-      schemaVersion: "0016" as const,
+      schemaVersion: "0017" as const,
       schemaIdentity: readinessDigest(readinessMigrationManifest),
       configurationIdentity:
         configuration && /^[a-f0-9]{64}$/.test(configuration)
@@ -68,7 +69,10 @@ export function createReadinessInspector(
       Object.values(customerPortalCapabilities).every((v) => v === false) &&
       !clientProjectCapabilities.customerRead &&
       Object.values(documentCapabilities).every((v) => v === false) &&
-      !customerEnrollmentEnabled({ NODE_ENV: "production" });
+      !customerEnrollmentEnabled({ NODE_ENV: "production" }) &&
+      Object.values(customerCommunicationsCapabilities).every(
+        (v) => v === false,
+      );
     set(
       "code.disabled-routes",
       disabled ? "passed" : "blocked",
@@ -77,6 +81,7 @@ export function createReadinessInspector(
         customerPortalCapabilities,
         clientProjectCapabilities,
         documentCapabilities,
+        customerCommunicationsCapabilities,
       ],
     );
     const isolated =
@@ -97,14 +102,26 @@ export function createReadinessInspector(
         documentCapabilities,
         "documents-excluded",
       );
-    for (const id of ["email.provider", "email.proof", "recovery.account"])
+    for (const id of [
+      "email.provider",
+      "email.proof",
+      "recovery.account",
+      "email.webhook",
+      "email.failure-handling",
+      "email.controls",
+    ])
       set(id, "blocked", "unavailable-adapter", [id, "no-live-integration"]);
+    set("email.infrastructure", "not_verified", "code-inspection", [
+      "cc012",
+      "implemented-not-production-qualified",
+      "0017",
+    ]);
     if (disposable) {
       await client.query("SAVEPOINT readiness_schema");
       try {
         const rows = (
           await client.query<{ version: string; checksum: string }>(
-            "SELECT version,checksum FROM application_migrations ORDER BY version LIMIT 17",
+            "SELECT version,checksum FROM application_migrations ORDER BY version LIMIT 18",
           )
         ).rows;
         const ledger = rows.map((r) => [r.version, r.checksum]);

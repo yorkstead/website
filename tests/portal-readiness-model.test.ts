@@ -125,7 +125,7 @@ describe("versioned deterministic release readiness", () => {
     }
     expect(() =>
       assessReadiness(
-        { ...i, context: { ...i.context, schemaVersion: "0017" } as never },
+        { ...i, context: { ...i.context, schemaVersion: "0018" } as never },
         e,
         decision,
         now,
@@ -232,7 +232,7 @@ describe("versioned deterministic release readiness", () => {
       actual.push([m.version, m.checksum]);
     }
     expect(actual).toEqual(readinessMigrationManifest.map((row) => [...row]));
-    expect(actual).toHaveLength(16);
+    expect(actual).toHaveLength(17);
   });
 });
 

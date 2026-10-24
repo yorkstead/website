@@ -1,5 +1,5 @@
 // Release checksum identity; update only with additive migrations. Validated against parseMigration in tests.
-export const readinessMigrationManifest = [
+export const readinessMigrationManifest0016 = [
   ["0001", "99c8c7207f9881ad0c2187e822a3eab8e01f2c5f503a8b88aea066808655bd6d"],
   ["0002", "91b7087a1c2b5df83675a7a5cbeb8f85ad817ed84b346788336d6719bb6677ea"],
   ["0003", "0e8b0cc340c94b3b7f3d9842d1dc292e86de275f20d1539d26529bf5cfab9f21"],
@@ -16,4 +16,9 @@ export const readinessMigrationManifest = [
   ["0014", "6d6f4b1c0e3a2d723f34236ef616f3e75da23bf8e8473580b4a656d3e1804adf"],
   ["0015", "150bea4e20f308fdadbe8e116f30971916c9cbb7a16674ab58863a998515b538"],
   ["0016", "b29f5a042a49d21804c82ec939203add9022f8b7b1e57dc5ab617f658b8b516c"],
+] as const;
+
+// Append-only release manifest; the historical 0016 identity remains available.
+export const readinessMigrationManifest = [...readinessMigrationManifest0016,
+  ["0017", "7497a8aca888799bce8f6f6ea6ea278ebc1216ae9dadecbd6a554ed78b76e9de"],
 ] as const;

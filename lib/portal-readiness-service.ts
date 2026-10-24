@@ -124,7 +124,7 @@ export function createPortalReadinessService(
     const rows = review
       ? (
           await client.query(
-            `SELECT DISTINCT ON(requirement_id) id::text,requirement_id,kind,status,fingerprint,context_digest,source,verified_at,expires_at,actor_id FROM portal_release_evidence WHERE review_id=$1 ORDER BY requirement_id,id DESC`,
+            `SELECT DISTINCT ON(requirement_id) id::text,requirement_id,kind,status,fingerprint,context_digest,source,verified_at,expires_at,actor_id FROM portal_release_evidence WHERE review_id=$1 ORDER BY requirement_id,portal_release_evidence.id DESC`,
             [review.id],
           )
         ).rows
@@ -171,7 +171,7 @@ export function createPortalReadinessService(
         const audit = review
           ? (
               await client.query(
-                "SELECT id::text,revision,event,from_decision,to_decision,assessment_digest,actor_id,created_at FROM portal_release_audit WHERE review_id=$1 ORDER BY id DESC LIMIT 26 OFFSET $2",
+                "SELECT id::text,revision,event,from_decision,to_decision,assessment_digest,actor_id,created_at FROM portal_release_audit WHERE review_id=$1 ORDER BY portal_release_audit.id DESC LIMIT 26 OFFSET $2",
                 [review.id, page * 25],
               )
             ).rows

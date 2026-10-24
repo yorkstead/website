@@ -46,6 +46,7 @@ export function createClientOnboardingService(
   pool: Pick<Pool, "connect">,
   verifyOwner: DocumentOwnerVerifier = ownerSession,
   verifyCustomer: OnboardingCustomerVerifier = customerSession,
+  onIssued?: (client: PoolClient, value: { invitation: Invitation; token: string }) => Promise<void>,
 ) {
   async function transaction<T>(work: (client: PoolClient) => Promise<T>) {
     const client = await pool.connect();
@@ -107,6 +108,7 @@ export function createClientOnboardingService(
           VALUES ($1,$2,$3,$4,clock_timestamp()+$5*interval '1 second') RETURNING ${publicColumns}`,
         [input.tenantId, input.recipientEmail, invitationVerifier(token), issuingActor, input.expiresInSeconds])).rows[0];
         for (const project of [...input.projectIds].sort()) await client.query("INSERT INTO customer_invitation_projects(invitation_id,tenant_id,project_id) VALUES ($1,$2,$3)", [row.id, input.tenantId, project]);
+        await onIssued?.(client, { invitation: row, token });
         return { invitation: row, token }; // Ephemeral trusted-server result; never log/serialize to a UI.
       });
     },
