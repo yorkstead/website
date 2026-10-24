@@ -1,16 +1,16 @@
 # Current handoff
 
-- Active feature: CC-003 — Customer Authentication Foundation.
-- Active spec: `specs/011-customer-authentication/`.
-- Branch: `feat/cc-003-customer-authentication`; implemented and fully verified; PR #53 is open for review and remains unmerged.
-- Architecture: A second Better Auth instance uses the `customer_auth` PostgreSQL schema, `/api/customer-auth` base path, `yorkstead-customer` cookie prefix, and independent `CUSTOMER_AUTH_SECRET`.
-- Provisioning: Public signup and Better Auth user creation are blocked. Session creation requires an already-active `customer_identities` row mapped as `('yorkstead-customer-auth', Better Auth user ID)`.
-- Authorization: Request access derives the subject only from a server-verified, unexpired customer session, then requires the existing active identity, tenant, membership, tenant project, and explicit project grant.
-- Disabled scope: Customer login, registration, invitations, customer routes, publishing, and document sharing remain unavailable. The customer auth route returns a non-cacheable 404 while the login capability is false.
-- Internal compatibility: Existing owner Better Auth configuration, bootstrap, cookie, passkeys, owner session checks, CRM, and workspace routes are unchanged.
-- Persistence: Migration 0010 adds only the isolated Better Auth schema and core tables. Existing customer and internal records are unchanged.
-- Production data/configuration: Not accessed or modified. No customer account, invitation, Adorned link, secret, or production configuration was created.
-- Rollback: Revert application code while preserving the additive schema. Any future destructive cleanup requires a separate data audit and migration.
-- Verification: CI run #208 passed scaffold, dependency audit, migration validation/application, unit/PostgreSQL integration, lint, typecheck, Playwright, production build, and clean-worktree checks.
-- Pull request: #53 is open; no production configuration, merge, or production deployment was initiated.
-- Prior foundation: CC-002A merged through PR #52.
+- Active feature: CC-004 — Customer Portal Interface.
+- Active spec: `specs/012-customer-portal-interface/`.
+- Branch: `feat/cc-004-customer-portal-interface`; implementation and verification complete; PR #54 is open for technical-lead review and remains unmerged.
+- Interface: Reusable overview, timeline, deliverables, activity, and navigation components use Yorkstead's existing tokens and primitives with responsive, accessible, dark-first presentation.
+- Preview: `/dashboard/customer-portal-preview` requires the existing server-verified owner session and renders a clearly labeled fictional fixture. Unauthenticated requests redirect to owner login.
+- Data architecture: The portal contract is a read-only presentation adapter target for existing Project and ClientDelivery concepts, not a persistence source. The fixture has no database, workspace, CRM, tenant, network, or Adorned dependency.
+- Disabled scope: Customer login, invitations, published updates, document sharing, downloads, customer routes, and public document routes remain unavailable.
+- Internal compatibility: Existing owner authentication, CRM, workspace persistence, public website, and customer authorization infrastructure are unchanged. No migration is required.
+- Production data/configuration: Not accessed or modified. No customer account, invitation, live project link, Adorned record, secret, or production configuration was created.
+- Verification: GitHub Actions CI run #215 passed scaffold validation, dependency audit, migration validation and disposable PostgreSQL application, unit/PostgreSQL integration tests, lint, typecheck, Playwright, production build, and clean-worktree verification.
+- Preview reference: The repository's Vercel integration reported the branch preview ready at `https://website-git-feat-cc-004-customer-portal-interface-yorkstead.vercel.app/dashboard/customer-portal-preview`. It still requires owner authentication; no deployment was initiated manually.
+- Review: The automated handoff finding was addressed by this update. No unresolved implementation limitation changes the disabled customer-facing boundary.
+- Rollback: Revert the presentation files, preview route, tests, dashboard link, and documentation. There is no schema or production-data rollback.
+- Pull request: https://github.com/yorkstead/website/pull/54
