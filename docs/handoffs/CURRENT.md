@@ -10,4 +10,4 @@
 - Access limitation: connected deployment metadata is accessible; build-log connector returns 404 even with confirmed team scope, and CLI lacks credentials. The production error excerpt was supplied by the user, not retrieved through the connector. No live customer data was accessed.
 - CC-005 boundary preserved: metadata-only registry, immutable versions, internal-owner decisions and generated append-only audit. All customer login, invitations, reads/writes, uploads, downloads and publishing remain disabled. Existing Project/ClientDelivery remain the project source of truth. Internal approval is not customer consent; database administrators remain trusted.
 - Rollback: revert parser/test changes only; preserve schema/history and historical migration checksums.
-- Review: PR creation and CI results pending. Do not merge or deploy manually.
+- Review: https://github.com/yorkstead/website/pull/56 (open, unmerged). Full CI results, including disposable PostgreSQL 16, Playwright and clean-worktree checks, are tracked on the PR checks tab. Do not merge or deploy manually.
