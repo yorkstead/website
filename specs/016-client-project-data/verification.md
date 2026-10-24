@@ -37,3 +37,17 @@ Git fetch works with the supported network execution access. GitHub CLI API call
 ## Delivery
 
 Implementation commit `6cce66a7b3050cf1d709d4be6efc0e41651007b8` was pushed successfully through the existing remote to `feat/cc-008-client-project-data`; tracking is configured. The worktree was clean after that commit. A documentation-only follow-up records this status; final HEAD is reported in chat. The branch is available at https://github.com/yorkstead/website/tree/feat/cc-008-client-project-data and GitHub supplied the PR creation link https://github.com/yorkstead/website/pull/new/feat/cc-008-client-project-data . No PR was created because API access remains blocked; GitHub Actions CI is unverified. No merge or deployment occurred.
+
+## PR #59 — customer update chronology correction
+
+Reviewed Vercel thread `PRRT_kwDOUJPn1c6v1_G3` at the original projection line 65. The SQL ordering groups by kind/source ID, so preserving that input order produced arbitrary update chronology. The projection now sorts only validated published updates by timestamp instant ascending, then ordinal source ID ascending for equal instants. Sorting occurs on a newly constructed array and does not mutate source/input rows. The presentation adapter preserves the resulting order.
+
+Regression coverage:
+
+- Multiple updates whose source-ID order conflicts with chronology, with reversed input and timezone-offset timestamps.
+- Identical/equivalent timestamp instants, ordered deterministically by source ID across different input permutations.
+- Actual Better Auth session/database flow with four published updates, one draft and another tenant; individual withdrawal removes its content and preserves remaining chronology, retains audit, and project withdrawal hides the whole projection.
+
+Local correction verification: targeted suites 12/12 pass; full suite 353/353 pass with no skips on fresh disposable PostgreSQL 16, including prepared-protocol migrations and upgrade tests. Scaffold, 14-migration validation, critical dependency audit, lint, typecheck and standard production build pass. Lint retains one pre-existing login-panel warning. No migration, authorization query, field allowlist, publication gate, customer route or production configuration changed. Browser-only code is untouched; full browser/enrollment verification is included in fresh PR CI.
+
+PR and review access is now available through the connected GitHub tools; the initial delivery API blocker above is historical. Fresh CI must be checked against the correction commit, not the original `bba69ef` head. Final exact-head run URL/status and thread-resolution evidence are maintained in the PR verification section and review reply after pushing. No merge or deployment is authorized.

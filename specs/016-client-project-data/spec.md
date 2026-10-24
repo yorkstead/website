@@ -10,6 +10,8 @@ Only cloud-persisted records can be prepared. Browser-only changes cannot be obs
 
 All absent records are private. Explicit owner preparation creates a draft snapshot, never visibility. Owner review approves a specific revision; withdrawal retains history and hides content. Approving the project snapshot publishes its overview and permits independently approved children. Dates are independent records, never inherited from milestone approval. No tenant ID is accepted from a customer. Mapping is resolved from the existing active identity, membership, tenant, project and view grant joins on every read. The customer query selects only safe columns and never reads workspace JSON.
 
+Published updates are ordered oldest first by the timestamp instant, with ordinal source-ID order for equal instants. The CustomerPortalView adapter preserves this order. Withdrawing an update removes only that update from the visible chronology.
+
 No automatic legacy backfill, customer route, customer activation or new source editor. Production read capability is hard-coded false. Trusted integration tests exercise the same query with an isolated provider session; owner-only preview uses deterministic fictional source data and the same adapter.
 
 ## Synchronization

@@ -62,7 +62,9 @@ export function assembleClientProjectProjection(projectId: string, rows: Visible
     version: 1, projectId, overview,
     milestones: records.flatMap(r => r.content.kind === "milestone" ? [{ id: r.id, content: r.content, targetDate: dates.get(r.id) }] : []),
     deliverables: records.flatMap(r => r.content.kind === "deliverable" ? [{ id: r.id, content: r.content }] : []),
-    updates: records.flatMap(r => r.content.kind === "update" ? [{ id: r.id, content: r.content }] : []),
+    updates: records.flatMap(r => r.content.kind === "update" ? [{ id: r.id, content: r.content }] : [])
+      .sort((a, b) => Date.parse(a.content.createdAt) - Date.parse(b.content.createdAt)
+        || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
   };
 }
 

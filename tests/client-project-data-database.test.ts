@@ -204,3 +204,38 @@ dbTest("archived mappings and suspended tenant/membership deny publication and p
     await pool.query(`UPDATE ${table} SET status='active' WHERE ${column}=$1`,[value]);
   }
 });
+
+
+dbTest("published update chronology survives individual withdrawal without disclosing drafts or other tenants", async () => {
+  const f = await fixture();
+  f.workspace.notes = [
+    { id: "a-newest", projectId: f.projects[0], type: "Update", content: "Newest approved update", createdAt: "2026-10-03T12:00:00Z" },
+    { id: "z-oldest", projectId: f.projects[0], type: "Update", content: "Oldest approved update", createdAt: "2026-10-01T12:00:00Z" },
+    { id: "m-tied", projectId: f.projects[0], type: "Update", content: "Middle M", createdAt: "2026-10-02T12:00:00Z" },
+    { id: "b-tied", projectId: f.projects[0], type: "Update", content: "Middle B", createdAt: "2026-10-02T12:00:00Z" },
+    { id: "draft", projectId: f.projects[0], type: "Update", content: "PRIVATE DRAFT UPDATE", createdAt: "2026-09-01T12:00:00Z" },
+  ];
+  await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'", [f.workspace]);
+  const approved = new Map<string, PublicationRecord>();
+  for (const sourceId of ["a-newest", "z-oldest", "m-tied", "b-tied"]) {
+    approved.set(sourceId, await approve(f, await prepare(f, "update", sourceId)));
+  }
+  await prepare(f, "update", "draft");
+  expect(await read(f.sessions[0], f.projects[0])).toBeNull();
+  const overview = await published(f);
+  const projection = (await read(f.sessions[0], f.projects[0]))!;
+  expect(projection.updates.map(u => u.id)).toEqual(["z-oldest", "b-tied", "m-tied", "a-newest"]);
+  expect(toCustomerPortalView(projection).activity.map(u => u.id)).toEqual(["z-oldest", "b-tied", "m-tied", "a-newest"]);
+  expect(await read(f.sessions[1], f.projects[0])).toBeNull();
+  const withdrawn = approved.get("b-tied")!;
+  await service.withdraw(headers, f.projects[0], withdrawn.id, withdrawn.revision);
+  const after = (await read(f.sessions[0], f.projects[0]))!;
+  expect(after.updates.map(u => u.id)).toEqual(["z-oldest", "m-tied", "a-newest"]);
+  expect(toCustomerPortalView(after).activity.map(u => u.id)).toEqual(["z-oldest", "m-tied", "a-newest"]);
+  expect(JSON.stringify(after)).not.toMatch(/Middle B|PRIVATE DRAFT UPDATE/);
+  const history = await service.inspect(headers, f.projects[0]);
+  expect(history.records.find(r => r.id === withdrawn.id)?.state).toBe("withdrawn");
+  expect(history.audit.some(e => e.publication_id === withdrawn.id && e.event === "withdrawn")).toBe(true);
+  await service.withdraw(headers, f.projects[0], overview.id, overview.revision);
+  expect(await read(f.sessions[0], f.projects[0])).toBeNull();
+});
