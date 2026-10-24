@@ -351,3 +351,40 @@ dbtest(
   },
   20000,
 );
+
+dbtest(
+  "same-status live observation changes stale acknowledgments and reject old mutation digests",
+  async () => {
+    const f = fixture();
+    f.inspection = {
+      ...f.inspection,
+      facts: f.inspection.facts.map((f) =>
+        f.id === "email.provider" ? { ...f, status: "blocked" } : f,
+      ),
+    };
+    await operation(f.service, "verify");
+    await operation(f.service, "acknowledge");
+    const before = await f.service.inspect(headers);
+    const input = {
+      action: "acknowledge",
+      expectedRevision: before.revision,
+      contextDigest: before.assessment.contextDigest,
+      assessmentDigest: before.assessment.digest,
+      confirmed: true,
+    };
+    f.inspection = {
+      ...f.inspection,
+      facts: f.inspection.facts.map((f) =>
+        f.id === "email.provider" ? { ...f, fingerprint: "f".repeat(64) } : f,
+      ),
+    };
+    const after = await f.service.inspect(headers);
+    expect(
+      after.assessment.requirements.find((r) => r.id === "email.provider")
+        ?.status,
+    ).toBe("blocked");
+    expect(after.assessment.digest).not.toBe(before.assessment.digest);
+    expect(after.assessment.decision.state).toBe("stale");
+    await expect(f.service.mutate(headers, input)).rejects.toThrow("changed");
+  },
+);

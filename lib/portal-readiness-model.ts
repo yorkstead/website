@@ -154,6 +154,20 @@ export function assessReadiness(
     }
     return {
       ...def,
+      // Bind the live observation even when its derived/displayed status stays blocked/unknown.
+      // Fixed-field projection plus ordinal sorting is deterministic and exposes only a digest.
+      observationDigest: readinessDigest(
+        current
+          .map((f) =>
+            JSON.stringify([
+              f.status,
+              f.fingerprint,
+              f.source,
+              f.justification ?? null,
+            ]),
+          )
+          .sort(),
+      ),
       status,
       reason,
       evidenceId: latest?.id ?? null,
@@ -172,6 +186,7 @@ export function assessReadiness(
     contextDigest,
     requirements.map((r) => [
       r.id,
+      r.observationDigest,
       r.status,
       r.reason,
       r.evidenceId,

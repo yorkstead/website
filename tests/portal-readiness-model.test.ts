@@ -235,3 +235,49 @@ describe("versioned deterministic release readiness", () => {
     expect(actual).toHaveLength(16);
   });
 });
+
+test("same-status observation changes invalidate acknowledgments and assessment preconditions", () => {
+  for (const status of ["blocked", "not_verified"] as const) {
+    const initial = syntheticInspection();
+    const inspection = {
+      ...initial,
+      facts: initial.facts.map((f) =>
+        f.id === "email.provider" ? { ...f, status } : f,
+      ),
+    };
+    for (const evidence of [
+      [],
+      syntheticEvidence(inspection, now).map((e) =>
+        e.requirementId === "email.provider" ? { ...e, status } : e,
+      ),
+    ]) {
+      const before = assessReadiness(inspection, evidence, none, now);
+      const decision: ReadinessDecision = {
+        state: "acknowledged",
+        digest: before.digest,
+        expiresAt: new Date(now.getTime() + 3600000).toISOString(),
+        actor: "fictional-owner",
+        at: now.toISOString(),
+      };
+      expect(
+        assessReadiness(inspection, evidence, decision, now).decision.current,
+      ).toBe(true);
+      const changed = {
+        ...inspection,
+        facts: inspection.facts.map((f) =>
+          f.id === "email.provider"
+            ? { ...f, fingerprint: readinessDigest("new-observation") }
+            : f,
+        ),
+      };
+      const after = assessReadiness(changed, evidence, decision, now);
+      expect(
+        after.requirements.find((r) => r.id === "email.provider")?.status,
+      ).toBe(
+        status,
+      );
+      expect(after.digest).not.toBe(before.digest);
+      expect(after.decision.state).toBe("stale");
+    }
+  }
+});
