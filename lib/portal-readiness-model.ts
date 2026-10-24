@@ -168,6 +168,24 @@ export function assessReadiness(
           )
           .sort(),
       ),
+      // Bind the selected immutable evidence snapshot independently of its displayed status.
+      // Actor/provenance/time/context are fixed-field inputs; no arbitrary payload is hashed.
+      evidenceDigest: readinessDigest(
+        latest
+          ? [
+              latest.id,
+              latest.requirementId,
+              latest.kind,
+              latest.status,
+              latest.fingerprint,
+              latest.contextDigest,
+              latest.source,
+              latest.verifiedAt,
+              latest.expiresAt,
+              latest.actor,
+            ]
+          : null,
+      ),
       status,
       reason,
       evidenceId: latest?.id ?? null,
@@ -187,6 +205,7 @@ export function assessReadiness(
     requirements.map((r) => [
       r.id,
       r.observationDigest,
+      r.evidenceDigest,
       r.status,
       r.reason,
       r.evidenceId,

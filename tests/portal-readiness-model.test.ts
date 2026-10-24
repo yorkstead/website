@@ -273,11 +273,147 @@ test("same-status observation changes invalidate acknowledgments and assessment 
       const after = assessReadiness(changed, evidence, decision, now);
       expect(
         after.requirements.find((r) => r.id === "email.provider")?.status,
-      ).toBe(
-        status,
-      );
+      ).toBe(status);
       expect(after.digest).not.toBe(before.digest);
       expect(after.decision.state).toBe("stale");
     }
   }
+});
+
+test("selected evidence fingerprints stale same-status acknowledgments independently of live observations", () => {
+  for (const status of ["blocked", "not_verified"] as const) {
+    const initial = syntheticInspection();
+    const inspection = {
+      ...initial,
+      facts: initial.facts.map((f) =>
+        f.id === "email.provider" ? { ...f, status } : f,
+      ),
+    };
+    const rows = syntheticEvidence(inspection, now).map((e) =>
+      e.requirementId === "email.provider" ? { ...e, status } : e,
+    );
+    const before = assessReadiness(inspection, rows, none, now);
+    const decision: ReadinessDecision = {
+      state: "acknowledged",
+      digest: before.digest,
+      expiresAt: new Date(now.getTime() + 3600000).toISOString(),
+      actor: "fictional-owner",
+      at: now.toISOString(),
+    };
+    const changed = rows.map((e) =>
+      e.requirementId === "email.provider"
+        ? { ...e, fingerprint: readinessDigest("changed-evidence-only") }
+        : e,
+    );
+    const after = assessReadiness(inspection, changed, decision, now);
+    expect(
+      after.requirements.find((r) => r.id === "email.provider")?.status,
+    ).toBe(status);
+    expect(after.digest).not.toBe(before.digest);
+    expect(after.decision.state).toBe("stale");
+  }
+});
+
+test("material attestation identity changes invalidate approved reviews while global statuses remain passed", () => {
+  const inspection = syntheticInspection(),
+    rows = syntheticEvidence(inspection, now),
+    before = assessReadiness(inspection, rows, none, now);
+  const approved: ReadinessDecision = {
+    state: "approved",
+    digest: before.digest,
+    expiresAt: before.expiresAt,
+    actor: "fictional-owner",
+    at: now.toISOString(),
+  };
+  const after = assessReadiness(
+    inspection,
+    rows.map((e) =>
+      e.requirementId === "security.review"
+        ? { ...e, fingerprint: readinessDigest("new-attestation-identity") }
+        : e,
+    ),
+    approved,
+    now,
+  );
+  expect(after.globalReady).toBe(true);
+  expect(after.digest).not.toBe(before.digest);
+  expect(after.decision.state).toBe("stale");
+});
+
+test("digest is deterministic across observation ordering, duplicate ordering and property ordering", () => {
+  const inspection = syntheticInspection(),
+    rows = syntheticEvidence(inspection, now);
+  const before = assessReadiness(inspection, rows, none, now);
+  const reordered = {
+    context: { ...inspection.context },
+    facts: [...inspection.facts].reverse().map((f) => ({
+      source: f.source,
+      fingerprint: f.fingerprint,
+      status: f.status,
+      id: f.id,
+      ...(f.justification ? { justification: f.justification } : {}),
+    })),
+  };
+  const reorderedEvidence = [...rows].reverse().map((e) => ({
+    actor: e.actor,
+    expiresAt: e.expiresAt,
+    verifiedAt: e.verifiedAt,
+    source: e.source,
+    contextDigest: e.contextDigest,
+    fingerprint: e.fingerprint,
+    status: e.status,
+    kind: e.kind,
+    requirementId: e.requirementId,
+    id: e.id,
+  }));
+  expect(assessReadiness(reordered, reorderedEvidence, none, now).digest).toBe(
+    before.digest,
+  );
+  const duplicates = {
+    ...inspection,
+    facts: [
+      ...inspection.facts,
+      inspection.facts[0],
+      { ...inspection.facts[0], fingerprint: "f".repeat(64) },
+    ],
+  };
+  expect(
+    assessReadiness(
+      { ...duplicates, facts: [...duplicates.facts].reverse() },
+      rows,
+      none,
+      now,
+    ).digest,
+  ).toBe(assessReadiness(duplicates, rows, none, now).digest);
+});
+
+test("refreshing evidence invalidates approval without changing live facts or passed requirement statuses", () => {
+  const inspection = syntheticInspection(),
+    rows = syntheticEvidence(inspection, now),
+    before = assessReadiness(inspection, rows, none, now);
+  const approved: ReadinessDecision = {
+    state: "approved",
+    digest: before.digest,
+    expiresAt: before.expiresAt,
+    actor: "fictional-owner",
+    at: now.toISOString(),
+  };
+  const refreshed = rows.map((e) => ({
+    ...e,
+    id: `renewed-${e.id}`,
+    verifiedAt: new Date(now.getTime() + 1000).toISOString(),
+    expiresAt: new Date(Date.parse(e.expiresAt) + 1000).toISOString(),
+  }));
+  const after = assessReadiness(
+    inspection,
+    refreshed,
+    approved,
+    new Date(now.getTime() + 2000),
+  );
+  expect(after.globalReady).toBe(true);
+  expect(after.requirements.map((r) => r.status)).toEqual(
+    before.requirements.map((r) => r.status),
+  );
+  expect(after.digest).not.toBe(before.digest);
+  expect(after.decision.state).toBe("stale");
 });

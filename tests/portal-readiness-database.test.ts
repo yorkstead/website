@@ -2,6 +2,7 @@ import { afterAll, expect, test } from "bun:test";
 import { Pool } from "pg";
 import { readFile, readdir } from "node:fs/promises";
 import { createPortalReadinessService } from "@/lib/portal-readiness-service";
+import { createReadinessController } from "@/lib/portal-readiness-http";
 import { createReadinessInspector } from "@/lib/portal-readiness-adapters";
 import { readinessMigrationManifest } from "@/lib/portal-readiness-migrations";
 import { manualReadinessIds } from "@/lib/portal-readiness-catalog";
@@ -386,5 +387,163 @@ dbtest(
     expect(after.assessment.digest).not.toBe(before.assessment.digest);
     expect(after.assessment.decision.state).toBe("stale");
     await expect(f.service.mutate(headers, input)).rejects.toThrow("changed");
+  },
+);
+
+dbtest(
+  "concurrent stale-digest acknowledgments cannot commit when same-status observations change",
+  async () => {
+    const f = fixture();
+    f.inspection = {
+      ...f.inspection,
+      facts: f.inspection.facts.map((f) =>
+        f.id === "email.provider" ? { ...f, status: "blocked" } : f,
+      ),
+    };
+    await operation(f.service, "verify");
+    await operation(f.service, "acknowledge");
+    const before = await f.service.inspect(headers);
+    const stale = {
+      action: "acknowledge",
+      expectedRevision: before.revision,
+      contextDigest: before.assessment.contextDigest,
+      assessmentDigest: before.assessment.digest,
+      confirmed: true,
+    };
+    f.inspection = {
+      ...f.inspection,
+      facts: f.inspection.facts.map((f) =>
+        f.id === "email.provider" ? { ...f, fingerprint: "e".repeat(64) } : f,
+      ),
+    };
+    const results = await Promise.allSettled([
+      f.service.mutate(headers, stale),
+      f.service.mutate(headers, stale),
+    ]);
+    expect(
+      results.every(
+        (r) =>
+          r.status === "rejected" &&
+          r.reason instanceof Error &&
+          r.reason.message === "Readiness changed",
+      ),
+    ).toBe(true);
+    const after = await f.service.inspect(headers);
+    expect(after.revision).toBe(before.revision);
+    expect(after.audit).toEqual(before.audit);
+    expect(after.assessment.decision.state).toBe("stale");
+  },
+);
+
+dbtest(
+  "evidence refresh rejects concurrent old assessment digests even with a current revision, then allows fresh approval",
+  async () => {
+    const f = fixture();
+    await qualify(f);
+    await operation(f.service, "approve");
+    const before = await f.service.inspect(headers);
+    await operation(f.service, "verify");
+    const refreshed = await f.service.inspect(headers);
+    expect(refreshed.assessment.globalReady).toBe(true);
+    expect(refreshed.assessment.requirements.map((r) => r.status)).toEqual(
+      before.assessment.requirements.map((r) => r.status),
+    );
+    expect(refreshed.assessment.digest).not.toBe(before.assessment.digest);
+    expect(refreshed.assessment.decision.state).toBe("none");
+    const stale = {
+      action: "approve",
+      expectedRevision: refreshed.revision,
+      contextDigest: refreshed.assessment.contextDigest,
+      assessmentDigest: before.assessment.digest,
+      confirmed: true,
+    };
+    const results = await Promise.allSettled([
+      f.service.mutate(headers, stale),
+      f.service.mutate(headers, stale),
+    ]);
+    expect(
+      results.every(
+        (r) =>
+          r.status === "rejected" &&
+          r.reason instanceof Error &&
+          r.reason.message === "Readiness changed",
+      ),
+    ).toBe(true);
+    const unchanged = await f.service.inspect(headers);
+    expect(unchanged.revision).toBe(refreshed.revision);
+    expect(unchanged.audit).toEqual(refreshed.audit);
+    await operation(f.service, "approve");
+    const approved = await f.service.inspect(headers);
+    expect(approved.assessment.decision.current).toBe(true);
+    expect(approved.assessment.launchReady).toBe(false);
+  },
+);
+
+dbtest(
+  "browser evidence and forged technical attestations cannot satisfy a trusted failed gate",
+  async () => {
+    const f = fixture();
+    f.inspection = {
+      ...f.inspection,
+      facts: f.inspection.facts.map((f) =>
+        f.id === "production.secrets" ? { ...f, status: "blocked" } : f,
+      ),
+    };
+    const controller = createReadinessController({
+      verifyOwner: owner,
+      service: f.service,
+      origin: "http://localhost:3106",
+    });
+    const before = await f.service.inspect(headers),
+      base = {
+        expectedRevision: before.revision,
+        contextDigest: before.assessment.contextDigest,
+        assessmentDigest: before.assessment.digest,
+        confirmed: true,
+      };
+    const post = (body: unknown) =>
+      controller(
+        new Request("http://localhost:3106/api/portal-readiness", {
+          method: "POST",
+          headers: {
+            origin: "http://localhost:3106",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }),
+      );
+    for (const body of [
+      {
+        action: "verify",
+        ...base,
+        evidence: [
+          {
+            requirementId: "production.secrets",
+            status: "passed",
+            fingerprint: "a".repeat(64),
+          },
+        ],
+      },
+      { action: "attest", ...base, requirementId: "production.secrets" },
+      {
+        action: "verify",
+        ...base,
+        facts: f.inspection.facts.map((f) => ({ ...f, status: "passed" })),
+      },
+    ])
+      expect((await post(body)).status).toBe(400);
+    expect((await f.service.inspect(headers)).revision).toBe(before.revision);
+    await operation(f.service, "verify");
+    for (const requirementId of manualReadinessIds)
+      await operation(f.service, "attest", { requirementId });
+    const after = await f.service.inspect(headers);
+    expect(
+      after.assessment.requirements.find((r) => r.id === "production.secrets")
+        ?.status,
+    ).toBe("blocked");
+    expect(after.assessment.globalReady).toBe(false);
+    await expect(operation(f.service, "approve")).rejects.toThrow(
+      "unavailable",
+    );
   },
 );
