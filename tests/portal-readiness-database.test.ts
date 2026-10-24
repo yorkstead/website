@@ -4,7 +4,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { createPortalReadinessService } from "@/lib/portal-readiness-service";
 import { createReadinessController } from "@/lib/portal-readiness-http";
 import { createReadinessInspector } from "@/lib/portal-readiness-adapters";
-import { readinessMigrationManifest } from "@/lib/portal-readiness-migrations";
+import { readinessMigrationManifest0016 } from "@/lib/portal-readiness-migrations";
 import { manualReadinessIds } from "@/lib/portal-readiness-catalog";
 import { parseMigration } from "@/scripts/migration-plan";
 import { syntheticInspection } from "./fixtures/portal-readiness-synthetic";
@@ -344,7 +344,7 @@ dbtest(
       expect(
         (await client.query("SELECT id FROM portal_release_reviews")).rows,
       ).toHaveLength(0);
-      expect(readinessMigrationManifest).toHaveLength(16);
+      expect(readinessMigrationManifest0016).toHaveLength(16);
     } finally {
       await client.query("ROLLBACK");
       client.release();

@@ -27,6 +27,7 @@ export function createCustomerEnrollmentService(
   pool: Pick<Pool, "connect" | "query">,
   delivery: EnrollmentDelivery,
   hashPassword: (password: string) => Promise<string>,
+  enqueueProof?: (client: PoolClient, value: { invitationId: string; tenantId: string; recipient: string; challengeId: string; proof: string; expiresAt: Date }) => Promise<void>,
 ) {
   async function transaction<T>(work: (client: PoolClient) => Promise<T>) {
     const client = await pool.connect();
@@ -66,9 +67,10 @@ export function createCustomerEnrollmentService(
       await client.query<{
         id: string;
         recipient_email: string;
+        tenant_id: string;
         valid: boolean;
       }>(
-        `SELECT id,recipient_email,(status='pending' AND expires_at>clock_timestamp()) AS valid
+        `SELECT id,tenant_id,recipient_email,(status='pending' AND expires_at>clock_timestamp()) AS valid
       FROM customer_invitations WHERE token_verifier=$1 FOR UPDATE`,
         [verifier],
       )
@@ -123,13 +125,15 @@ export function createCustomerEnrollmentService(
           )
         ).rows;
         if (recent.length) throw new InvitationAccessError();
-        await client.query(
+        const challenge = await client.query<{ expires_at: Date }>(
           `INSERT INTO customer_enrollment_challenges(id,invitation_id,proof_verifier,expires_at)
-          VALUES ($1,$2,$3,clock_timestamp()+interval '599 seconds')`,
+          VALUES ($1,$2,$3,clock_timestamp()+interval '599 seconds') RETURNING expires_at`,
           [id, invitation.id, digest(proof)],
         );
+        await enqueueProof?.(client, { invitationId: invitation.id, tenantId: invitation.tenant_id, recipient: invitation.recipient_email, challengeId: id, proof, expiresAt: challenge.rows[0].expires_at });
         return invitation;
       });
+      if (enqueueProof) return { challengeId: id };
       try {
         await delivery.send({ recipient: invitation.recipient_email, proof });
       } catch {

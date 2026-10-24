@@ -77,7 +77,7 @@ export const readinessCatalog: readonly ReadinessDefinition[] = [
     "schema.applied",
     "Release",
     "Migration ledger matches the exact release checksum manifest",
-    "All 16 applied migrations, no unknown or mismatched checksum",
+    "All 17 applied migrations, no unknown or mismatched checksum",
   ),
   technical(
     "production.secrets",
@@ -103,6 +103,9 @@ export const readinessCatalog: readonly ReadinessDefinition[] = [
     "Production disclosure and source invalidation qualified",
     "Safe snapshot review, authorization and cache/invalidation verification",
   ),
+  technical("email.infrastructure", "Email", "Transactional infrastructure independently qualified", "Code and fake tests alone cannot qualify production delivery"),
+  technical("email.webhook", "Email", "Provider webhook verification and event replay qualified", "Approved signing keys, rotation and exact-production delivery-event rehearsal"),
+  technical("email.controls", "Email", "Delivery and recovery operational controls qualified", "Independent rate-limit/load, custody lifecycle and operator alert qualification"),
   technical(
     "email.sender",
     "Email",
@@ -113,13 +116,13 @@ export const readinessCatalog: readonly ReadinessDefinition[] = [
     "email.dns",
     "Email",
     "SPF, DKIM and DMARC alignment verified",
-    "Authorized non-sending DNS verification; unavailable in CC-011",
+    "Authorized non-sending DNS verification; separate qualification required",
   ),
   technical(
     "email.provider",
     "Email",
     "Invitation delivery provider and semantics qualified",
-    "Delivery, idempotency and secure token handling; no live provider wired",
+    "Delivery, idempotency and secure token handling; CC-012 transport hard-disabled",
   ),
   technical(
     "email.proof",
