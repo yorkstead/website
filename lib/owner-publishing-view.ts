@@ -10,6 +10,7 @@ export type OwnerPublishingView = {
   selected: null | {
     id: string; name: string; canPublish: boolean; reason: string | null;
     candidates: { kind: PublicationKind; sourceId: string; content: SafePublication; descriptionAvailable: boolean }[];
+    excludedCandidates: { sourceId: string; reason: string }[];
     records: OwnerPublication[];
     preview: ClientProjectProjection | null;
     audit: { id: string; publicationId: string; revision: number; event: string; actor: string; role: string; from: string | null; to: string; at: string }[];

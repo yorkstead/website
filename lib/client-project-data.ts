@@ -2,7 +2,7 @@
 import type { Pool, PoolClient } from "pg";
 import { z } from "zod";
 import type { OwnerPublishingView } from "@/lib/owner-publishing-view";
-import { parseWorkspace } from "@/lib/workspace-validation";
+import { parsePublicationWorkspace } from "@/lib/client-project-source";
 import type { DocumentOwnerVerifier } from "@/lib/document-approval";
 import type { CustomerSessionVerifier } from "@/lib/customer-session-authorization";
 import { customerAuthBoundary } from "@/lib/customer-auth-config";
@@ -49,7 +49,7 @@ export function createClientProjectPublicationService(pool: Pick<Pool, "connect"
   }
   async function source(client: PoolClient) {
     const row = (await client.query<{ data: unknown; digest: string }>("SELECT data,md5(data::text) AS digest FROM workspaces WHERE id='primary' FOR UPDATE")).rows[0];
-    const workspace = row && parseWorkspace(row.data);
+    const workspace = row && parsePublicationWorkspace(row.data).workspace;
     if (!workspace) throw new ClientProjectAccessError();
     return { workspace, digest: row.digest };
   }
@@ -72,7 +72,8 @@ export function createClientProjectPublicationService(pool: Pick<Pool, "connect"
       return transaction(headers, async client => {
         // Same lock order as preparation/approval: persisted source, then scope.
         const persisted = (await client.query<{ data: unknown; digest: string }>("SELECT data,md5(data::text) AS digest FROM workspaces WHERE id='primary' FOR UPDATE")).rows[0];
-        const workspace = persisted ? parseWorkspace(persisted.data) : null;
+        const parsedSource = parsePublicationWorkspace(persisted?.data);
+        const workspace = parsedSource.workspace;
         if (persisted && !workspace) throw new ClientProjectAccessError();
         const retained = (await client.query<{ project_id: string }>("SELECT DISTINCT project_id FROM client_project_publications ORDER BY project_id")).rows;
         const projects = (workspace?.projects ?? []).map(p => ({ id: p.id, name: p.name, persisted: true }));
@@ -106,7 +107,7 @@ export function createClientProjectPublicationService(pool: Pick<Pool, "connect"
         const auditRows = mapping ? (await client.query(`SELECT id::text,publication_id,revision,event,actor_id,actor_role,from_state,to_state,created_at
           FROM client_project_publication_audit WHERE tenant_id=$1 AND project_id=$2 ORDER BY id DESC LIMIT 200`, [mapping.tenant_id, projectId])).rows : [];
         const audit = auditRows.map(r => ({ id: r.id, publicationId: r.publication_id, revision: r.revision, event: r.event, actor: r.actor_id, role: r.actor_role, from: r.from_state, to: r.to_state, at: r.created_at.toISOString() }));
-        return { projects, selected: { id: projectId, name: project?.name ?? `Removed project · ${projectId}`, canPublish, reason, candidates, records, preview, audit } };
+        return { projects, selected: { id: projectId, name: project?.name ?? `Removed project · ${projectId}`, canPublish, reason, candidates, excludedCandidates: parsedSource.excludedUpdates.filter(note => note.projectId === projectId).map(({ sourceId, reason }) => ({ sourceId, reason })), records, preview, audit } };
       });
     },
     async prepare(headers: Headers, projectId: string, value: unknown) {

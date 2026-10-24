@@ -15,3 +15,7 @@ An owner-only approved preview is assembled using the same ClientProjectProjecti
 ## Scope and release
 
 Customer production routes, provider/enrollment gates, uploads/downloads, external reads and approvals remain disabled. No historical migration edits, production configuration/secrets/data operations, manual deployment or merge. Deliver feature branch, complete local/CI evidence, and unmerged PR. The supplied request ends at “No bulk publish”; no bulk action is implemented.
+
+## Publication timestamp provenance
+
+Valid calendar-date Update timestamps are represented at UTC midnight in strict publication snapshots; existing timezone-aware datetime strings are preserved. Publication reads validate timestamps against the original persisted note before the general workspace parser can repair missing/invalid dates to the current clock. Incompatible Update notes are excluded individually, with an owner-visible reason. They cannot be prepared, cannot fabricate publication dates, and do not block other candidates, approved preview, audit or withdrawal. The source workspace is never modified by this reader.

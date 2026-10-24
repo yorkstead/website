@@ -11,6 +11,7 @@
 | Exact approved preview, no drafts or other-project content | Projection equivalence and multi-project tests |
 | Responsive accessible selector/actions, pending/empty/error/success states | Component and mobile/desktop browser tests |
 | Safe CSRF/body bounds/errors/private no-store | HTTP controller tests |
+| Date-only normalization, preserved offsets, invalid/missing source timestamp exclusion without clock fabrication | Source-unit, database and owner browser regressions |
 | Audit actor/revision/time and retained history | Service/database tests |
 | Production customer gates unchanged | Existing gate suites and diff review |
 | Full local checks and CI; unmerged PR | verification.md and PR checks |

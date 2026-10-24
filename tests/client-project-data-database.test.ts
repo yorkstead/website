@@ -331,3 +331,30 @@ dbTest("date-only source updates preserve publishing view, approved preview, his
   expect(view.selected?.preview).toBeNull();
   expect(view.selected?.records.find(r => r.id === overview.id)?.state).toBe("withdrawn");
 });
+
+dbTest("incompatible persisted update candidates cannot fabricate dates or block preview, audit and withdrawal", async () => {
+  const f = await fixture();
+  const raw = { ...f.workspace, notes: [...f.workspace.notes!,
+    { id: "invalid-update", projectId: f.projects[0], type: "Update", content: "INVALID TIMESTAMP CANDIDATE", createdAt: "not-a-date" },
+    { id: "missing-update", projectId: f.projects[0], type: "Update", content: "MISSING TIMESTAMP CANDIDATE" },
+    { id: "zoned-update", projectId: f.projects[0], type: "Update", content: "Valid timezone-aware update", createdAt: "2026-10-02T09:30:00-06:00" },
+  ] };
+  await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'", [raw]);
+  const overview = await published(f);
+  const update = await approve(f, await prepare(f, "update", "zoned-update"));
+  let view = await service.publishingWorkspace(headers, f.projects[0]);
+  expect(view.selected?.excludedCandidates.map(c => c.sourceId)).toEqual(["invalid-update", "missing-update"]);
+  expect(view.selected?.candidates.some(c => ["invalid-update", "missing-update"].includes(c.sourceId))).toBe(false);
+  expect(view.selected?.preview?.updates[0].content.createdAt).toBe("2026-10-02T09:30:00-06:00");
+  expect(view.selected?.preview).toEqual(await read(f.sessions[0], f.projects[0]));
+  expect(JSON.stringify(view.selected?.preview)).not.toContain("TIMESTAMP CANDIDATE");
+  await expect(prepare(f, "update", "invalid-update")).rejects.toThrow("access denied");
+  await expect(prepare(f, "update", "missing-update")).rejects.toThrow("access denied");
+  await service.withdraw(headers, f.projects[0], update.id, update.revision);
+  view = await service.publishingWorkspace(headers, f.projects[0]);
+  expect(view.selected?.preview?.updates).toHaveLength(0);
+  expect(view.selected?.audit.some(e => e.publicationId === update.id && e.event === "withdrawn")).toBe(true);
+  expect((await service.inspect(headers, f.projects[0])).audit.length).toBeGreaterThan(0);
+  await service.withdraw(headers, f.projects[0], overview.id, overview.revision);
+  expect((await service.publishingWorkspace(headers, f.projects[0])).selected?.preview).toBeNull();
+});
