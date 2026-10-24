@@ -1,0 +1,78 @@
+import { test,expect } from "@playwright/test";
+import { Pool } from "pg";
+import { publishingOwner,setupOwnerPublishingFixture } from "../fixtures/owner-publishing-setup";
+const origin='http://127.0.0.1:3103';
+for (const width of [390,1440]) test(`owner reviews, publishes, resolves conflicts and withdraws at ${width}px`,async({page,context})=>{
+  const {projectId}=await setupOwnerPublishingFixture();
+  await page.setViewportSize({width,height:900});
+  const login=await context.request.post('/api/auth/sign-in/email',{headers:{origin},data:publishingOwner});
+  expect(login.status()).toBe(200);
+  await page.goto('/dashboard/client-publishing');
+  await expect(page.getByRole('combobox',{name:'Existing project'})).toBeEnabled();
+  await page.getByRole('combobox',{name:'Existing project'}).selectOption(projectId);
+  const candidates=page.getByRole('region',{name:'Source candidates'});
+  const records=page.getByRole('region',{name:'Draft review and publication records'});
+  const preview=page.getByRole('region',{name:'Approved customer-view preview'});
+  const candidate=(kind:string,id:string)=>candidates.getByRole('listitem').filter({has:page.getByText(`${kind} · ${id}`,{exact:true})});
+  const record=(kind:string,id:string)=>records.getByRole('listitem').filter({has:page.getByRole('heading',{name:`${kind} · ${id}`,exact:true})});
+  async function prepare(kind:string,id:string){await candidate(kind,id).getByRole('button',{name:/Prepare/}).click();await expect(record(kind,id)).toBeVisible();}
+  async function approve(kind:string,id:string){const row=record(kind,id);await row.getByRole('checkbox',{name:'I reviewed this exact draft revision'}).check();await row.getByRole('button',{name:kind==='project'?'Publish project overview':'Approve reviewed draft'}).click();await expect(row.getByText(/approved · Revision/)).toBeVisible();}
+  await prepare('milestone','milestone');await approve('milestone','milestone');
+  await expect(preview.getByText(/Preview unavailable/)).toBeVisible();
+  await candidate('project',projectId).getByRole('checkbox',{name:'Include source description in this draft'}).check();
+  await prepare('project',projectId);
+  await expect(record('project',projectId).getByText('Reviewed fictional source summary')).toBeVisible();
+  await approve('project',projectId);
+  await expect(preview.getByText('Fictional milestone',{exact:true})).toBeVisible();
+  await expect(preview.getByText('Reviewed fictional source summary')).toBeVisible();
+  await expect(preview.getByText('Nov 15, 2026')).toHaveCount(0); // date has its own decision
+  await prepare('deliverable','deliverable');
+  await expect(preview.getByText('Unapproved fictional deliverable')).toHaveCount(0);
+  await page.getByRole('combobox',{name:'Publication records filter'}).selectOption('draft');
+  await expect(record('deliverable','deliverable')).toBeVisible();
+  await expect(record('project',projectId)).toHaveCount(0);
+  await page.getByRole('combobox',{name:'Publication records filter'}).selectOption('withdrawn');
+  await expect(page.getByText('No records match this view.')).toBeVisible();
+  await page.getByRole('combobox',{name:'Publication records filter'}).selectOption('all');
+  await record('milestone','milestone').getByRole('button',{name:'Withdraw record',exact:true}).click();
+  await record('milestone','milestone').getByRole('button',{name:'Confirm withdrawal'}).click();
+  await expect(preview.getByText('Fictional milestone',{exact:true})).toHaveCount(0);
+  await expect(preview.getByText('Reviewed fictional source summary')).toBeVisible();
+  // Another verified owner's edit makes the visible review revision stale.
+  await prepare('project',projectId);
+  const state=await (await context.request.get(`/api/owner-publishing?projectId=${projectId}`)).json();
+  const overview=state.selected.records.find((r:{kind:string})=>r.kind==='project');
+  await record('project',projectId).getByRole('checkbox',{name:'I reviewed this exact draft revision'}).check();
+  expect((await context.request.post('/api/owner-publishing',{headers:{origin},data:{action:'prepare',projectId,kind:'project',sourceId:projectId,expectedRevision:overview.revision,includeDescription:true}})).status()).toBe(200);
+  await record('project',projectId).getByRole('button',{name:'Publish project overview'}).click();
+  await expect(page.getByRole('alert',{name:'Publishing error'})).toContainText('Publication changed');
+  await expect(record('project',projectId).getByRole('button',{name:'Publish project overview'})).toBeDisabled();
+  await expect(preview.getByText('Reviewed fictional source summary')).toHaveCount(0);
+  await page.getByRole('button',{name:'Refresh review queue'}).click();
+  await expect(record('project',projectId).getByRole('checkbox')).not.toBeChecked();
+  await approve('project',projectId);
+  const full=await context.request.get(`/dashboard/client-publishing/preview?projectId=${projectId}`);
+  expect(full.status()).toBe(200);expect(full.headers()['cache-control']).toContain('no-store');const html=await full.text();expect(html).not.toContain('PRIVATE OWNER NOTE');expect(html).not.toContain('Unapproved fictional deliverable');
+  const pool=new Pool({connectionString:process.env.TEST_DATABASE_URL});
+  try {await pool.query("UPDATE workspaces SET data=jsonb_set(data,'{projects,0,description}','\"Changed saved summary\"') WHERE id='primary'");} finally {await pool.end();}
+  await page.getByRole('button',{name:'Refresh review queue'}).click();
+  await expect(record('project',projectId)).toContainText('Invalidated');
+  await expect(preview.getByText(/Preview unavailable/)).toBeVisible();
+  await candidate('project',projectId).getByRole('checkbox',{name:'Include source description in this draft'}).check();
+  await prepare('project',projectId);await approve('project',projectId);
+  await expect(preview.getByText('Changed saved summary')).toBeVisible();
+  await record('project',projectId).getByRole('button',{name:'Withdraw whole-project visibility'}).click();
+  await record('project',projectId).getByRole('button',{name:'Confirm withdrawal'}).click();
+  await expect(preview.getByText(/Preview unavailable/)).toBeVisible();
+  await expect(page.getByRole('region',{name:'Publication audit timeline'})).toContainText('cc009-browser-owner');
+  await expect(page.getByText('PRIVATE OWNER NOTE')).toHaveCount(0);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+  await page.route('**/api/owner-publishing**',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Publishing is temporarily unavailable'})}));
+  await page.getByRole('button',{name:'Refresh review queue'}).click();
+  await expect(page.getByRole('alert',{name:'Publishing error'})).toContainText('Publishing is temporarily unavailable');
+  await expect(page.getByRole('region',{name:'Approved customer-view preview'})).toHaveCount(0);
+  await page.unroute('**/api/owner-publishing**');
+  await page.route('**/api/owner-publishing**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({projects:[],selected:null})}));
+  await page.getByRole('button',{name:'Refresh review queue'}).click();
+  await expect(page.getByText('No persisted projects yet.',{exact:false})).toBeVisible();
+});

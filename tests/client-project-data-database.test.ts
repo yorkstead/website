@@ -239,3 +239,72 @@ dbTest("published update chronology survives individual withdrawal without discl
   await service.withdraw(headers, f.projects[0], overview.id, overview.revision);
   expect(await read(f.sessions[0], f.projects[0])).toBeNull();
 });
+
+// CC-009 exercises the owner workflow over the same CC-008 sources and decisions.
+dbTest("owner publishing candidates and exact approved preview reuse customer-safe extraction and gates", async () => {
+  const f=await fixture();
+  let view=await service.publishingWorkspace(headers,f.projects[0]);
+  expect(view.selected?.canPublish).toBe(true);
+  expect(view.selected?.preview).toBeNull();
+  expect(view.selected?.candidates.map(c=>c.kind)).toEqual(["project","milestone","date","deliverable","update"]);
+  expect(JSON.stringify(view.selected?.candidates)).not.toContain("PRIVATE");
+  expect(view.selected?.candidates.find(c=>c.kind==='project')?.descriptionAvailable).toBe(true);
+  const milestone=await approve(f,await prepare(f,"milestone"));
+  const draft=await prepare(f,"deliverable");
+  view=await service.publishingWorkspace(headers,f.projects[0]);
+  expect(view.selected?.preview).toBeNull();
+  const overview=await published(f);
+  view=await service.publishingWorkspace(headers,f.projects[0]);
+  expect(view.selected?.preview).toEqual(await read(f.sessions[0],f.projects[0]));
+  expect(view.selected?.preview?.deliverables).toHaveLength(0);
+  expect(view.selected?.records.find(r=>r.id===draft.id)?.state).toBe('draft');
+  expect(view.selected?.records.find(r=>r.id===overview.id)?.actor).toBe('fictional-cc008-owner');
+  expect(JSON.stringify(view)).not.toContain('source_digest');
+  expect(view.selected?.audit.some(e=>e.publicationId===overview.id && e.event==='approved')).toBe(true);
+  await service.withdraw(headers,f.projects[0],milestone.id,milestone.revision);
+  expect((await service.publishingWorkspace(headers,f.projects[0])).selected?.preview?.milestones).toHaveLength(0);
+  await service.withdraw(headers,f.projects[0],overview.id,overview.revision);
+  expect((await service.publishingWorkspace(headers,f.projects[0])).selected?.preview).toBeNull();
+});
+
+dbTest("owner workflow refresh distinguishes invalidation, removed sources and retained history", async () => {
+  const f=await fixture();
+  const overview=await published(f);
+  f.workspace.projects[0].description='Changed persisted description';
+  await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'",[f.workspace]);
+  let view=await service.publishingWorkspace(headers,f.projects[0]);
+  expect(view.selected?.preview).toBeNull();
+  expect(view.selected?.records[0].invalidated).toBe(true);
+  expect(view.selected?.candidates.find(c=>c.kind==='project')?.content).toMatchObject({summary:'Changed persisted description'});
+  await expect(approve(f,overview)).rejects.toThrow('conflict');
+  const revision=view.selected!.records[0].revision;
+  const fresh=await approve(f,await prepare(f,'project',f.projects[0],revision));
+  expect((await service.publishingWorkspace(headers,f.projects[0])).selected?.preview?.overview.summary).toBe('Changed persisted description');
+  f.workspace.projects=f.workspace.projects.slice(1);
+  await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'",[f.workspace]);
+  view=await service.publishingWorkspace(headers,f.projects[0]);
+  expect(view.projects.find(p=>p.id===f.projects[0])?.persisted).toBe(false);
+  expect(view.selected?.canPublish).toBe(false);
+  expect(view.selected?.candidates).toHaveLength(0);
+  expect(view.selected?.preview).toBeNull();
+  const invalid=view.selected!.records[0];
+  await service.withdraw(headers,f.projects[0],fresh.id,invalid.revision);
+  await pool.query("DELETE FROM workspaces WHERE id='primary'");
+  expect((await service.publishingWorkspace(headers,f.projects[0])).selected?.audit.length).toBeGreaterThan(0);
+});
+
+dbTest("owner workflow requires verified owner and explicit project selection; inactive mappings suppress preview", async () => {
+  const f=await fixture();
+  await published(f);
+  await expect(createClientProjectPublicationService(pool,async()=>null).publishingWorkspace(headers,f.projects[0])).rejects.toThrow('access denied');
+  await expect(service.publishingWorkspace(headers,'unrelated-selector')).rejects.toThrow('access denied');
+  expect((await service.publishingWorkspace(headers)).selected).toBeNull();
+  expect((await service.publishingWorkspace(headers,f.projects[1])).selected?.records).toHaveLength(0);
+  await pool.query("UPDATE customer_tenant_projects SET status='archived' WHERE project_id=$1",[f.projects[0]]);
+  const view=await service.publishingWorkspace(headers,f.projects[0]);
+  expect(view.selected?.canPublish).toBe(false);
+  expect(view.selected?.preview).toBeNull();
+  expect(view.selected?.records).toHaveLength(1);
+  await pool.query("DELETE FROM customer_tenant_projects WHERE project_id=$1",[f.projects[1]]);
+  expect((await service.publishingWorkspace(headers,f.projects[1])).selected?.reason).toContain('No tenant/project mapping');
+});

@@ -1,13 +1,14 @@
 // Server domain service. No HTTP endpoint or Server Action exports.
 import type { Pool, PoolClient } from "pg";
 import { z } from "zod";
+import type { OwnerPublishingView } from "@/lib/owner-publishing-view";
 import { parseWorkspace } from "@/lib/workspace-validation";
 import type { DocumentOwnerVerifier } from "@/lib/document-approval";
 import type { CustomerSessionVerifier } from "@/lib/customer-session-authorization";
 import { customerAuthBoundary } from "@/lib/customer-auth-config";
 import { getCustomerAuth } from "@/lib/customer-auth";
 import {
-  assembleClientProjectProjection, prepareSourceContent, publicationKind,
+  assembleClientProjectProjection, prepareSourceContent, publicationKind, safePublication,
   type PublicationKind, type SafePublication, type VisiblePublication,
 } from "@/lib/client-project-projection";
 
@@ -66,6 +67,48 @@ export function createClientProjectPublicationService(pool: Pick<Pool, "connect"
     return row;
   }
   return {
+    async publishingWorkspace(headers: Headers, projectId?: string): Promise<OwnerPublishingView> {
+      if (projectId !== undefined) id.parse(projectId);
+      return transaction(headers, async client => {
+        // Same lock order as preparation/approval: persisted source, then scope.
+        const persisted = (await client.query<{ data: unknown; digest: string }>("SELECT data,md5(data::text) AS digest FROM workspaces WHERE id='primary' FOR UPDATE")).rows[0];
+        const workspace = persisted ? parseWorkspace(persisted.data) : null;
+        if (persisted && !workspace) throw new ClientProjectAccessError();
+        const retained = (await client.query<{ project_id: string }>("SELECT DISTINCT project_id FROM client_project_publications ORDER BY project_id")).rows;
+        const projects = (workspace?.projects ?? []).map(p => ({ id: p.id, name: p.name, persisted: true }));
+        for (const row of retained) if (!projects.some(p => p.id === row.project_id)) projects.push({ id: row.project_id, name: `Removed project · ${row.project_id}`, persisted: false });
+        if (!projectId) return { projects, selected: null };
+        const project = workspace?.projects.find(p => p.id === projectId);
+        if (!projects.some(p => p.id === projectId)) throw new ClientProjectAccessError();
+        const mapping = (await client.query<{ tenant_id: string; active: boolean }>(`SELECT p.tenant_id,(p.status='active' AND t.status='active') AS active
+          FROM customer_tenant_projects p JOIN customer_tenants t ON t.id=p.tenant_id WHERE p.project_id=$1 FOR SHARE OF p,t`, [projectId])).rows[0];
+        const canPublish = Boolean(project && mapping?.active);
+        const reason = !project ? "Source project is no longer persisted. History and withdrawal remain available."
+          : !mapping ? "No tenant/project mapping exists. Publishing requires a separately configured mapping."
+          : !mapping.active ? "The tenant or project mapping is inactive. Publishing is unavailable." : null;
+        const candidates: NonNullable<OwnerPublishingView["selected"]>["candidates"] = [];
+        if (workspace && project) {
+          const sources: [PublicationKind, string][] = [["project", project.id],
+            ...(project.delivery?.milestones ?? []).flatMap(m => [["milestone", m.id], ...(m.targetDate ? [["date", m.id]] : [])] as [PublicationKind, string][]),
+            ...(project.delivery?.deliverables ?? []).map(d => ["deliverable", d.id] as [PublicationKind, string]),
+            ...(workspace.notes ?? []).filter(n => n.projectId===projectId && n.type==="Update").map(n => ["update", n.id] as [PublicationKind, string])];
+          for (const [kind, sourceId] of sources) {
+            const content = prepareSourceContent(workspace, projectId, kind, sourceId, true);
+            if (content) candidates.push({ kind, sourceId, content, descriptionAvailable: content.kind==='project' ? Boolean(content.summary) : content.kind==='deliverable' && Boolean(content.description) });
+          }
+        }
+        const raw = mapping ? (await client.query<PublicationRecord>("SELECT * FROM client_project_publications WHERE tenant_id=$1 AND project_id=$2 ORDER BY kind,source_id", [mapping.tenant_id, projectId])).rows : [];
+        const records = raw.map(r => ({ id: r.id, sourceId: r.source_id, kind: r.kind, content: safePublication.parse(r.payload), state: r.state, revision: r.revision,
+          invalidated: !persisted || r.source_digest !== persisted.digest, actor: r.decided_by, decidedAt: r.decided_at?.toISOString() ?? null }));
+        const approved = canPublish ? (await client.query<VisiblePublication>(`SELECT source_id,kind,payload FROM client_project_publications
+          WHERE tenant_id=$1 AND project_id=$2 AND state='approved' AND source_digest=$3 ORDER BY kind,source_id`, [mapping!.tenant_id, projectId, persisted!.digest])).rows : [];
+        const preview = canPublish ? assembleClientProjectProjection(projectId, approved) : null;
+        const auditRows = mapping ? (await client.query(`SELECT id::text,publication_id,revision,event,actor_id,actor_role,from_state,to_state,created_at
+          FROM client_project_publication_audit WHERE tenant_id=$1 AND project_id=$2 ORDER BY id DESC LIMIT 200`, [mapping.tenant_id, projectId])).rows : [];
+        const audit = auditRows.map(r => ({ id: r.id, publicationId: r.publication_id, revision: r.revision, event: r.event, actor: r.actor_id, role: r.actor_role, from: r.from_state, to: r.to_state, at: r.created_at.toISOString() }));
+        return { projects, selected: { id: projectId, name: project?.name ?? `Removed project · ${projectId}`, canPublish, reason, candidates, records, preview, audit } };
+      });
+    },
     async prepare(headers: Headers, projectId: string, value: unknown) {
       const input = preparation.parse(value);
       return transaction(headers, async client => {

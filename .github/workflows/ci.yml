@@ -85,6 +85,11 @@ jobs:
           CUSTOMER_ENROLLMENT_DISPOSABLE: enabled
         run: bunx playwright test -c playwright.cc007.config.ts
 
+      - name: Verify owner publishing browser workflow
+        env:
+          NODE_ENV: development
+        run: bunx playwright test -c playwright.cc009.config.ts
+
       - name: Build without production runtime secrets
         run: bun run build
 
