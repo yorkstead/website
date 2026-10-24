@@ -146,6 +146,27 @@ describe("Client Access HTTP boundary", () => {
     expect(
       clientAccessDisposableEnabled({ ...env, NODE_ENV: "development" }),
     ).toBe(true);
+    for (const suffix of [
+      "?host=remote.example.test",
+      "?%68ost=remote.example.test",
+      "?host=localhost&host=remote.example.test",
+      "?hostaddr=192.0.2.1",
+      "?database=production",
+      "?dbname=production",
+      "?port=6432",
+      "?sslmode=require",
+      "#host=remote.example.test",
+    ]) {
+      const databaseURL = env.DATABASE_URL + suffix;
+      expect(
+        clientAccessDisposableEnabled({
+          ...env,
+          DATABASE_URL: databaseURL,
+          TEST_DATABASE_URL: databaseURL,
+        }),
+      ).toBe(false);
+    }
+
     expect(
       clientAccessDisposableEnabled({ ...env, NODE_ENV: "production" }),
     ).toBe(false);

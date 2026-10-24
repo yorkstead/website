@@ -39,3 +39,5 @@ Authorization checks every active lifecycle on each customer request. Membership
 ## Preparation versus issuance
 
 Preparation stores recipient, sorted project scope and intended post-issuance lifetime. It generates no token/verifier, changes no CC-006 invitation and performs no delivery. The issued list contains only authoritative CC-006 rows. Expired is derived from pending status and database time; supersession/revocation/redemption remain original lifecycle events. Delivery cannot be inferred and is always unknown/unavailable here. Redemption indicates the existing verified lifecycle, never mere preparation. Readiness always reports customer production enrollment/access disabled and never launch-ready.
+
+Disposable URL validation rejects all query parameters and fragments: pg connection-string options can override host/database/port independently of the URL hostname/path. Plain loopback URLs only; no connection options are necessary in this synthetic workflow.

@@ -103,6 +103,10 @@ export function clientAccessDisposableEnabled(
   try {
     const url = new URL(env.DATABASE_URL);
     return (
+      // pg connection-string query options can override host/database/port.
+      // Disposable mode accepts only a plain URL, never alternate routing options.
+      url.search === "" &&
+      url.hash === "" &&
       ["postgres:", "postgresql:"].includes(url.protocol) &&
       ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) &&
       /(test|disposable)/.test(url.pathname)
