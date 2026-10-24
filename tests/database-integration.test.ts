@@ -106,6 +106,24 @@ describe("PostgreSQL migration integration", () => {
       expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectB)).toBeNull();
       expect(await getCustomerProjectAccess(client, { provider, subject: subjectB }, projectA)).toBeNull();
 
+      await client.query("DELETE FROM customer_project_grants WHERE tenant_id = $1 AND project_id = $2 AND identity_id = $3", [tenantA, projectA, identityA]);
+      expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectA)).toBeNull();
+      await client.query(
+        "INSERT INTO customer_project_grants (tenant_id, project_id, identity_id, status) VALUES ($1, $2, $3, 'active')",
+        [tenantA, projectA, identityA],
+      );
+
+      await client.query("DELETE FROM customer_tenant_memberships WHERE tenant_id = $1 AND identity_id = $2", [tenantA, identityA]);
+      expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectA)).toBeNull();
+      await client.query(
+        "INSERT INTO customer_tenant_memberships (tenant_id, identity_id, status) VALUES ($1, $2, 'active')",
+        [tenantA, identityA],
+      );
+      await client.query(
+        "INSERT INTO customer_project_grants (tenant_id, project_id, identity_id, status) VALUES ($1, $2, $3, 'active')",
+        [tenantA, projectA, identityA],
+      );
+
       await client.query("UPDATE customer_tenants SET status = 'suspended' WHERE id = $1", [tenantA]);
       expect(await getCustomerProjectAccess(client, { provider, subject: subjectA }, projectA)).toBeNull();
       await client.query("UPDATE customer_tenants SET status = 'disabled' WHERE id = $1", [tenantA]);
