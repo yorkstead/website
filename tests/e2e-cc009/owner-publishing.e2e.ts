@@ -17,6 +17,7 @@ for (const width of [390,1440]) test(`owner reviews, publishes, resolves conflic
   const record=(kind:string,id:string)=>records.getByRole('listitem').filter({has:page.getByRole('heading',{name:`${kind} · ${id}`,exact:true})});
   async function prepare(kind:string,id:string){await candidate(kind,id).getByRole('button',{name:/Prepare/}).click();await expect(record(kind,id)).toBeVisible();}
   async function approve(kind:string,id:string){const row=record(kind,id);await row.getByRole('checkbox',{name:'I reviewed this exact draft revision'}).check();await row.getByRole('button',{name:kind==='project'?'Publish project overview':'Approve reviewed draft'}).click();await expect(row.getByText(/approved · Revision/)).toBeVisible();}
+  await expect(candidate('update','update').getByText('2026-10-01T00:00:00.000Z',{exact:true})).toBeVisible();
   await prepare('milestone','milestone');await approve('milestone','milestone');
   await expect(preview.getByText(/Preview unavailable/)).toBeVisible();
   await candidate('project',projectId).getByRole('checkbox',{name:'Include source description in this draft'}).check();

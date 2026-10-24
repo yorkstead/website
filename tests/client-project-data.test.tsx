@@ -6,6 +6,7 @@ import { assembleClientProjectProjection, prepareSourceContent, safePublication,
 import { clientProjectCapabilities, createClientProjectReader, getClientProjectProjection } from "@/lib/client-project-data";
 import type { Pool } from "pg";
 import type { Workspace } from "@/lib/workspace";
+import { parseWorkspace } from "@/lib/workspace-validation";
 
 test("strict customer schema rejects internal and administrative fields", () => {
   expect(safePublication.safeParse({ ...clientProjectDemo.overview, note: "private" }).success).toBe(false);
@@ -69,4 +70,16 @@ test("equal update instants use source ID as a deterministic, locale-independent
     expect(projection.updates.map(u => u.id)).toEqual(["a-tied", "m-tied", "z-tied"]);
     expect(toCustomerPortalView(projection).activity.map(u => u.id)).toEqual(["a-tied", "m-tied", "z-tied"]);
   }
+});
+
+
+test("workspace-valid date-only update notes normalize at the source boundary without relaxing publication schema", () => {
+  const workspace = parseWorkspace({ projects: [{ id: "project", name: "Fictional date-only project" }], tasks: [], activity: [], notes: [{ id: "update", projectId: "project", type: "Update", content: "Fictional dated update", createdAt: "2026-10-01" }] })!;
+  expect(workspace.notes![0].createdAt).toBe("2026-10-01");
+  expect(prepareSourceContent(workspace, "project", "update", "update")).toEqual({ kind: "update", detail: "Fictional dated update", createdAt: "2026-10-01T00:00:00.000Z" });
+  expect(safePublication.safeParse({ kind: "update", detail: "Unnormalized input", createdAt: "2026-10-01" }).success).toBe(false);
+  workspace.notes![0].createdAt = "2026-10-01T12:00:00+02:00";
+  expect(prepareSourceContent(workspace, "project", "update", "update")).toMatchObject({ createdAt: "2026-10-01T12:00:00+02:00" });
+  workspace.notes![0].createdAt = "not-a-date";
+  expect(prepareSourceContent(workspace, "project", "update", "update")).toBeNull();
 });

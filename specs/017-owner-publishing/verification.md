@@ -31,3 +31,10 @@ CSP/X-Frame-Options are unchanged; preview uses shared portal sections inline an
 ## Release and rollback
 
 Customer enrollment/login/data access, uploads/downloads and external approvals remain disabled in production. No real customer data, emails, customer activation, production secrets/settings, manual migration/deployment or merge. Mapping provisioning and finer-grained invalidation remain out of scope. Revert UI/adapters/read method first; retain CC-008 registry and audit. Fresh exact-head CI and unmerged PR delivery will be recorded on the PR checks/verification section after push.
+
+
+## Automated review correction — date-only Update notes
+
+PR #60 thread `PRRT_kwDOUJPn1c6v5ql5` identified a valid compatibility edge: workspace validation accepts calendar dates in note.createdAt, while publication snapshots intentionally require full datetimes. The shared source adapter now maps date-only values to UTC midnight before strict publication validation, preserves already valid datetime strings, and returns no candidate for unsupported timestamps instead of throwing across the whole workflow. No schema or disclosure policy is weakened.
+
+New unit and PostgreSQL regressions cover date-only candidates, preserved datetime offsets, strict rejection of unnormalized publication timestamps, unsupported-candidate failure, approved owner/customer preview parity, audit history and individual/overview withdrawal. Initial 363-test local evidence above precedes these two regressions. The correction full suite passes 365/365 with zero skips; targeted source/projection/database suites pass 17/17, lint/typecheck and the standard production build pass (existing login warning only), and both mobile/desktop owner browser flows pass with a date-only Update fixture. Final exact-head CI evidence is recorded on PR #60. The managed environment briefly restarted during review, then recovered; no production system was accessed.

@@ -308,3 +308,26 @@ dbTest("owner workflow requires verified owner and explicit project selection; i
   await pool.query("DELETE FROM customer_tenant_projects WHERE project_id=$1",[f.projects[1]]);
   expect((await service.publishingWorkspace(headers,f.projects[1])).selected?.reason).toContain('No tenant/project mapping');
 });
+
+
+dbTest("date-only source updates preserve publishing view, approved preview, history and withdrawal controls", async () => {
+  const f = await fixture();
+  f.workspace.notes!.push({ id: "date-only-update", projectId: f.projects[0], type: "Update", content: "Fictional calendar-date update", createdAt: "2026-10-02" });
+  await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'", [f.workspace]);
+  const overview = await published(f);
+  let view = await service.publishingWorkspace(headers, f.projects[0]);
+  expect(view.selected?.preview?.overview.title).toBe("Fictional project 0");
+  expect(view.selected?.candidates.find(c => c.sourceId === "date-only-update")?.content).toMatchObject({ kind: "update", createdAt: "2026-10-02T00:00:00.000Z" });
+  const update = await approve(f, await prepare(f, "update", "date-only-update"));
+  view = await service.publishingWorkspace(headers, f.projects[0]);
+  expect(view.selected?.preview?.updates.map(u => u.content.createdAt)).toEqual(["2026-10-02T00:00:00.000Z"]);
+  expect(view.selected?.preview).toEqual(await read(f.sessions[0], f.projects[0]));
+  await service.withdraw(headers, f.projects[0], update.id, update.revision);
+  view = await service.publishingWorkspace(headers, f.projects[0]);
+  expect(view.selected?.preview?.updates).toHaveLength(0);
+  expect(view.selected?.audit.some(e => e.publicationId === update.id && e.event === "withdrawn")).toBe(true);
+  await service.withdraw(headers, f.projects[0], overview.id, overview.revision);
+  view = await service.publishingWorkspace(headers, f.projects[0]);
+  expect(view.selected?.preview).toBeNull();
+  expect(view.selected?.records.find(r => r.id === overview.id)?.state).toBe("withdrawn");
+});
