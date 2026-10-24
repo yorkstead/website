@@ -71,3 +71,13 @@ test("source projection preview remains owner-only and project APIs remain absen
     expect((await request.post(path, { headers: { "x-role": "owner" }, data: { state: "approved" } })).status()).toBe(404);
   }
 });
+
+test("client publishing page, approved preview and operations require owner authentication",async({page,request})=>{
+  for(const path of ['/dashboard/client-publishing','/dashboard/client-publishing/preview?projectId=forged']){
+    await page.goto(path);await expect(page).toHaveURL(/\/login\?next=/);
+  }
+  for(const method of ['get','post'] as const){
+    const response=await request[method]('/api/owner-publishing',method==='post'?{data:{action:'approve',actor:'forged',tenantId:'other'}}:{});
+    expect(response.status()).toBe(401);expect(response.headers()['cache-control']).toContain('no-store');
+  }
+});

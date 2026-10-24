@@ -46,7 +46,12 @@ export function prepareSourceContent(workspace: Workspace, projectId: string, ki
     return safePublication.parse({ kind, title: source.title, status: source.status, ...(includeDescription && source.description ? { description: source.description } : {}) });
   }
   const source = workspace.notes?.find(n => n.projectId === projectId && n.id === sourceId && n.type === "Update");
-  return source ? safePublication.parse({ kind, detail: source.content, createdAt: source.createdAt }) : null;
+  if (!source) return null;
+  // Workspace notes also allow calendar dates. Represent those dates at UTC
+  // midnight without changing the strict datetime-only publication contract.
+  const createdAt = isValidDateKey(source.createdAt) ? `${source.createdAt}T00:00:00.000Z` : source.createdAt;
+  const result = safePublication.safeParse({ kind, detail: source.content, createdAt });
+  return result.success ? result.data : null;
 }
 
 export type VisiblePublication = { source_id: string; kind: PublicationKind; payload: unknown };
