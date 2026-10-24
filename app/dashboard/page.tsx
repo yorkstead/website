@@ -19,7 +19,8 @@ export default async function DashboardPage() {
           <nav className="flex flex-wrap gap-2 text-xs" aria-label="Workspace sections">
             <Link href="/dashboard" aria-current="page" className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-primary"><LayoutDashboard className="size-4" /> Workspace</Link>
             <Link href="/dashboard/leads" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><UserRoundSearch className="size-4" /> Website leads</Link>
-            <Link href="/dashboard/marketing" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><ClipboardList className="size-4" /> Marketing</Link>\n            <Link href="/dashboard/customer-portal-preview" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><PanelsTopLeft className="size-4" /> Portal preview</Link>
+            <Link href="/dashboard/marketing" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><ClipboardList className="size-4" /> Marketing</Link>
+            <Link href="/dashboard/customer-portal-preview" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><PanelsTopLeft className="size-4" /> Portal preview</Link>
             <a href="https://cal.yorkstead.com/command" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><CalendarDays className="size-4" /> Daily operations <ExternalLink className="size-3" /></a>
           </nav>
         </div>
