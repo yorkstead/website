@@ -825,3 +825,311 @@ dbtest(
     }
   },
 );
+
+function failingRecoveryPool(fragment: string, onFailure: () => void) {
+  return {
+    async connect() {
+      const client = await pool.connect();
+      return new Proxy(client, {
+        get(target, key) {
+          if (key === "query")
+            return (...args: unknown[]) => {
+              if (typeof args[0] === "string" && args[0].includes(fragment)) {
+                onFailure();
+                return Promise.reject(
+                  new Error("Fictional database write failure"),
+                );
+              }
+              return Reflect.apply(target.query, target, args);
+            };
+          const value = Reflect.get(target, key, target);
+          return typeof value === "function" ? value.bind(target) : value;
+        },
+      });
+    },
+  };
+}
+
+for (const failure of [
+  "suppressed",
+  "enqueue",
+  "custody",
+  "challenge",
+] as const) {
+  dbtest(
+    `recovery ${failure} failures retain both budgets and request audit through exhaustion`,
+    async () => {
+      const f = await fixture(),
+        i = infrastructure(),
+        source = `failed-recovery-${crypto.randomUUID()}`;
+      let calls = 0;
+      if (failure === "suppressed")
+        await pool.query(
+          "INSERT INTO customer_mail_suppressions(recipient_digest,reason) VALUES ($1,'complained')",
+          [mailDigest(f.email)],
+        );
+      const queue =
+        failure === "custody"
+          ? createCustomerMailQueue(pool, {
+              keyring: {
+                ...i.keyring,
+                seal() {
+                  calls++;
+                  throw new Error("Fictional custody unavailable");
+                },
+              },
+              adapter: i.fake,
+              sender: "sender@example.test",
+              origin: "https://portal.example.test",
+              environment: disposableMailEnv,
+            })
+          : {
+              async enqueue(...args: Parameters<typeof i.queue.enqueue>) {
+                calls++;
+                if (failure === "enqueue")
+                  throw new Error("Fictional queue unavailable");
+                return i.queue.enqueue(...args);
+              },
+            };
+      const recovery = createCustomerAccountRecovery(
+        failure === "challenge"
+          ? failingRecoveryPool(
+              "INSERT INTO customer_recovery_challenges",
+              () => {
+                calls++;
+              },
+            )
+          : pool,
+        queue,
+        hash,
+        disposableMailEnv,
+      );
+      const before = (
+        await pool.query(
+          "SELECT count(*)::int n FROM customer_mail_audit WHERE event='recovery_requested'",
+        )
+      ).rows[0].n;
+      const unknown = await recovery.begin(
+        {
+          tenantId: f.tenant,
+          email: `unknown-${crypto.randomUUID()}@example.test`,
+        },
+        `unknown-source-${crypto.randomUUID()}`,
+      );
+      for (let n = 0; n < 8; n++) {
+        expect(
+          await recovery.begin(
+            { tenantId: f.tenant, email: ` ${f.email.toUpperCase()} ` },
+            source,
+          ),
+        ).toEqual(unknown);
+        const budgets = (
+          await pool.query(
+            "SELECT bucket,attempts FROM customer_enrollment_limits WHERE bucket=ANY($1::text[])",
+            [
+              [
+                mailDigest(`recovery-account:${f.email}`),
+                mailDigest(`recovery-network:${source}`),
+              ],
+            ],
+          )
+        ).rows;
+        expect(budgets).toHaveLength(2);
+        expect(budgets.every((b) => b.attempts === n + 1)).toBe(true);
+        expect(
+          (
+            await pool.query(
+              "SELECT count(*)::int n FROM customer_mail_audit WHERE event='recovery_requested'",
+            )
+          ).rows[0].n,
+        ).toBe(before + n + 2);
+      }
+      expect(calls).toBe(5);
+      expect(
+        (
+          await pool.query(
+            "SELECT id FROM customer_recovery_challenges WHERE identity_id=$1",
+            [f.identity],
+          )
+        ).rows,
+      ).toHaveLength(0);
+      expect(
+        (
+          await pool.query(
+            "SELECT id FROM customer_mail_jobs WHERE identity_id=$1",
+            [f.identity],
+          )
+        ).rows,
+      ).toHaveLength(0);
+      expect(i.fake.messages).toHaveLength(0);
+      // Account exhaustion still charges the source. Failed deliveries cannot spare
+      // its shared budget when an attacker rotates to another eligible account.
+      for (let n = 8; n < 20; n++)
+        await recovery.begin({ tenantId: f.tenant, email: f.email }, source);
+      const other = await fixture();
+      expect(
+        await recovery.begin(
+          { tenantId: other.tenant, email: other.email },
+          source,
+        ),
+      ).toEqual(unknown);
+      expect(calls).toBe(5);
+      expect(
+        (
+          await pool.query(
+            "SELECT attempts FROM customer_enrollment_limits WHERE bucket=$1",
+            [mailDigest(`recovery-network:${source}`)],
+          )
+        ).rows[0].attempts,
+      ).toBe(21);
+      expect(
+        (
+          await pool.query(
+            "SELECT count(*)::int n FROM customer_mail_audit WHERE event='recovery_requested'",
+          )
+        ).rows[0].n,
+      ).toBe(before + 22);
+      expect(
+        (
+          await pool.query(
+            "SELECT id FROM customer_recovery_challenges WHERE identity_id=$1",
+            [other.identity],
+          )
+        ).rows,
+      ).toHaveLength(0);
+    },
+  );
+}
+
+dbtest(
+  "admission audit failure rolls back both budgets and fails closed before recovery delivery",
+  async () => {
+    const f = await fixture(),
+      i = infrastructure(),
+      source = `audit-failure-${crypto.randomUUID()}`;
+    const generic = await i.recovery.begin(
+      {
+        tenantId: f.tenant,
+        email: `missing-${crypto.randomUUID()}@example.test`,
+      },
+      `unknown-${crypto.randomUUID()}`,
+    );
+    const before = (
+      await pool.query(
+        "SELECT count(*)::int n FROM customer_mail_audit WHERE event='recovery_requested'",
+      )
+    ).rows[0].n;
+    let audits = 0,
+      enqueues = 0;
+    const recovery = createCustomerAccountRecovery(
+      failingRecoveryPool("INSERT INTO customer_mail_audit", () => {
+        audits++;
+      }),
+      {
+        async enqueue() {
+          enqueues++;
+          throw new Error("Must not reach delivery");
+        },
+      },
+      hash,
+      disposableMailEnv,
+    );
+    expect(
+      await recovery.begin({ tenantId: f.tenant, email: f.email }, source),
+    ).toEqual(generic);
+    expect(audits).toBe(1);
+    expect(enqueues).toBe(0);
+    expect(
+      (
+        await pool.query(
+          "SELECT bucket FROM customer_enrollment_limits WHERE bucket=ANY($1::text[])",
+          [
+            [
+              mailDigest(`recovery-account:${f.email}`),
+              mailDigest(`recovery-network:${source}`),
+            ],
+          ],
+        )
+      ).rows,
+    ).toHaveLength(0);
+    expect(
+      (
+        await pool.query(
+          "SELECT count(*)::int n FROM customer_mail_audit WHERE event='recovery_requested'",
+        )
+      ).rows[0].n,
+    ).toBe(before);
+    expect(
+      (
+        await pool.query(
+          "SELECT id FROM customer_recovery_challenges WHERE identity_id=$1",
+          [f.identity],
+        )
+      ).rows,
+    ).toHaveLength(0);
+  },
+);
+
+dbtest(
+  "concurrent failed enqueues retain all admission charges and audits while enforcing the account budget",
+  async () => {
+    const f = await fixture(),
+      source = `concurrent-failure-${crypto.randomUUID()}`;
+    let enqueues = 0;
+    const recovery = createCustomerAccountRecovery(
+      pool,
+      {
+        async enqueue() {
+          enqueues++;
+          throw new Error("Fictional queue unavailable");
+        },
+      },
+      hash,
+      disposableMailEnv,
+    );
+    const before = (
+      await pool.query(
+        "SELECT count(*)::int n FROM customer_mail_audit WHERE event='recovery_requested'",
+      )
+    ).rows[0].n;
+    const responses = await Promise.all(
+      Array.from({ length: 7 }, () =>
+        recovery.begin({ tenantId: f.tenant, email: f.email }, source),
+      ),
+    );
+    expect(
+      responses.every(
+        (r) => JSON.stringify(r) === JSON.stringify(responses[0]),
+      ),
+    ).toBe(true);
+    expect(enqueues).toBe(5);
+    const budgets = (
+      await pool.query(
+        "SELECT attempts FROM customer_enrollment_limits WHERE bucket=ANY($1::text[])",
+        [
+          [
+            mailDigest(`recovery-account:${f.email}`),
+            mailDigest(`recovery-network:${source}`),
+          ],
+        ],
+      )
+    ).rows;
+    expect(budgets).toHaveLength(2);
+    expect(budgets.every((b) => b.attempts === 7)).toBe(true);
+    expect(
+      (
+        await pool.query(
+          "SELECT count(*)::int n FROM customer_mail_audit WHERE event='recovery_requested'",
+        )
+      ).rows[0].n,
+    ).toBe(before + 7);
+    expect(
+      (
+        await pool.query(
+          "SELECT id FROM customer_recovery_challenges WHERE identity_id=$1",
+          [f.identity],
+        )
+      ).rows,
+    ).toHaveLength(0);
+  },
+);

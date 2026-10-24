@@ -84,51 +84,57 @@ export function createCustomerAccountRecovery(
         .strict()
         .safeParse(value);
       if (!input.success || !source || source.length > 200) return generic;
-      // Both budgets are charged, even when an account is absent or another budget is exhausted.
-      await mailTransaction(pool, async (client) => {
-        const accountLimit = await limit(
-          client,
-          `recovery-account:${input.data.email}`,
-          5,
-        );
-        const networkLimit = await limit(
-          client,
-          `recovery-network:${source}`,
-          20,
-        );
-        await mailAudit(client, null, "recovery_requested");
-        if (!accountLimit || !networkLimit) return;
-        const identity = await eligible(
-          client,
-          input.data.tenantId,
-          undefined,
-          input.data.email,
-        );
-        if (!identity) return;
-        await client.query(
-          "UPDATE customer_recovery_challenges SET revoked_at=clock_timestamp() WHERE identity_id=$1 AND consumed_at IS NULL AND revoked_at IS NULL",
-          [identity.id],
-        );
-        const token = randomBytes(32).toString("base64url"),
-          id = randomUUID();
-        const challenge = (
-          await client.query<{ expires_at: Date }>(
-            `INSERT INTO customer_recovery_challenges(id,tenant_id,identity_id,verifier,expires_at) VALUES ($1,$2,$3,$4,clock_timestamp()+interval '590 seconds') RETURNING expires_at`,
-            [id, input.data.tenantId, identity.id, mailDigest(token)],
-          )
-        ).rows[0];
-        await queue.enqueue(client, {
-          type: "account_recovery",
-          tenantId: input.data.tenantId,
-          identityId: identity.id,
-          recoveryId: id,
-          recipient: identity.email,
-          secret: token,
-          expiresAt: challenge.expires_at,
+      try {
+        // Commit abuse budgets and the request audit together before attempting delivery.
+        // Failure here denies delivery; failure later cannot refund either budget.
+        const allowed = await mailTransaction(pool, async (client) => {
+          const accountLimit = await limit(
+            client,
+            `recovery-account:${input.data.email}`,
+            5,
+          );
+          const networkLimit = await limit(
+            client,
+            `recovery-network:${source}`,
+            20,
+          );
+          await mailAudit(client, null, "recovery_requested");
+          return accountLimit && networkLimit;
         });
-      }).catch(() => {
-        /* Generic account response also covers custody/suppression/dependency failure. */
-      });
+        if (!allowed) return generic;
+        await mailTransaction(pool, async (client) => {
+          const identity = await eligible(
+            client,
+            input.data.tenantId,
+            undefined,
+            input.data.email,
+          );
+          if (!identity) return;
+          await client.query(
+            "UPDATE customer_recovery_challenges SET revoked_at=clock_timestamp() WHERE identity_id=$1 AND consumed_at IS NULL AND revoked_at IS NULL",
+            [identity.id],
+          );
+          const token = randomBytes(32).toString("base64url"),
+            id = randomUUID();
+          const challenge = (
+            await client.query<{ expires_at: Date }>(
+              `INSERT INTO customer_recovery_challenges(id,tenant_id,identity_id,verifier,expires_at) VALUES ($1,$2,$3,$4,clock_timestamp()+interval '590 seconds') RETURNING expires_at`,
+              [id, input.data.tenantId, identity.id, mailDigest(token)],
+            )
+          ).rows[0];
+          await queue.enqueue(client, {
+            type: "account_recovery",
+            tenantId: input.data.tenantId,
+            identityId: identity.id,
+            recoveryId: id,
+            recipient: identity.email,
+            secret: token,
+            expiresAt: challenge.expires_at,
+          });
+        });
+      } catch {
+        /* Generic response for budget/audit, eligibility, custody and enqueue failures. */
+      }
       return generic;
     },
     async complete(value: unknown, source: string) {

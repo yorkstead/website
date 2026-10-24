@@ -77,7 +77,7 @@ export function createCustomerCommunicationsService(
         ).rows;
         const audit = (
           await client.query<{ id: string; event: string; at: Date }>(
-            "SELECT id::text,event,created_at AS at FROM customer_mail_audit ORDER BY customer_mail_audit.id DESC LIMIT 50 OFFSET $1",
+            "SELECT id::text,event,created_at AS at FROM customer_mail_audit ORDER BY customer_mail_audit.id DESC LIMIT 51 OFFSET $1",
             [page * 50],
           )
         ).rows;
@@ -102,13 +102,13 @@ export function createCustomerCommunicationsService(
             createdAt: j.created_at.toISOString(),
             expiresAt: j.expires_at.toISOString(),
           })),
-          audit: audit.map((a) => ({
+          audit: audit.slice(0, 50).map((a) => ({
             id: a.id,
             event: a.event,
             at: a.at.toISOString(),
           })),
           page,
-          hasMore: jobs.length > 25,
+          hasMore: jobs.length > 25 || audit.length > 50,
         };
       });
     },

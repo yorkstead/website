@@ -3,6 +3,7 @@ import {
   publishingOwner,
   setupOwnerPublishingFixture,
 } from "../fixtures/owner-publishing-setup";
+import { extendCommunicationsAuditHistory } from "../fixtures/customer-communications-history";
 const origin = "http://127.0.0.1:3107";
 for (const width of [390, 1440])
   test(`owner inspects read-only communications and closed production gates at ${width}px`, async ({
@@ -10,11 +11,13 @@ for (const width of [390, 1440])
     context,
   }) => {
     await setupOwnerPublishingFixture();
+    const history = await extendCommunicationsAuditHistory();
     await page.setViewportSize({ width, height: 900 });
     const denied = await context.request.get("/api/customer-communications");
     expect(denied.status()).toBe(401);
     expect(denied.headers()["referrer-policy"]).toBe("no-referrer");
     expect(denied.headers()["cache-control"]).toContain("no-store");
+    expect(denied.headers()["cache-control"]).toContain("private");
     await page.goto("/dashboard/customer-communications");
     await expect(page).toHaveURL(/login/);
     expect(
@@ -93,4 +96,60 @@ for (const width of [390, 1440])
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
     ).toBe(true);
+    const pages = Math.max(
+      Math.ceil(history.jobs / 25),
+      Math.ceil(history.audit / 50),
+    );
+    const navigation = page.getByRole("navigation", {
+      name: "Communications history pages",
+    });
+    const seenJobs: string[] = [],
+      seenAudit: string[] = [];
+    for (let n = 0; n < pages; n++) {
+      await expect(
+        navigation.getByText(`Page ${n + 1}`, { exact: true }),
+      ).toBeVisible();
+      const response = await context.request.get(
+        `/api/customer-communications?page=${n}`,
+      );
+      expect(response.headers()["cache-control"]).toContain(
+        "private, no-store",
+      );
+      expect(response.headers()["referrer-policy"]).toBe("no-referrer");
+      const view = await response.json();
+      await expect(
+        page
+          .getByRole("region", { name: "Security and audit history" })
+          .locator("li"),
+      ).toHaveCount(view.audit.length);
+      await expect(
+        page
+          .getByRole("region", { name: "Message lifecycle" })
+          .locator("article"),
+      ).toHaveCount(view.jobs.length);
+      seenJobs.push(...view.jobs.map((j: { id: string }) => j.id));
+      seenAudit.push(...view.audit.map((a: { id: string }) => a.id));
+      if (n + 1 < pages)
+        await navigation
+          .getByRole("button", { name: "Next", exact: true })
+          .click();
+    }
+    expect(new Set(seenJobs).size).toBe(history.jobs);
+    expect(new Set(seenAudit).size).toBe(history.audit);
+    await expect(
+      navigation.getByRole("button", { name: "Next", exact: true }),
+    ).toBeDisabled();
+    await expect(
+      page.getByRole("region", { name: "Message lifecycle" }),
+    ).toContainText("No delivery history.");
+    await navigation
+      .getByRole("button", { name: "Previous", exact: true })
+      .click();
+    await expect(
+      navigation.getByText(`Page ${pages - 1}`, { exact: true }),
+    ).toBeVisible();
+    await navigation.getByRole("button", { name: "Next", exact: true }).click();
+    await expect(
+      navigation.getByText(`Page ${pages}`, { exact: true }),
+    ).toBeVisible();
   });

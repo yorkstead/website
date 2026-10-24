@@ -1,5 +1,7 @@
 # Verification evidence
 
+The original-head results below are retained as historical evidence. PR #63 review corrections and current local results (447 tests, 40 browser scenarios, admission-failure and complete-history regressions) are recorded in [review-corrections.md](review-corrections.md); exact final-head CI/check evidence is maintained on the same PR.
+
 Base verified 2026-10-24: authoritative GitHub main `b8e317b408ea8fd1c818d9d43fa15c33e1e49ff8`. First normal Git request failed connecting to configured proxy:8080. Required single retry through runtime escalation succeeded, as did fetch. Branch `feat/cc-012-customer-email-recovery` starts at that exact merge with a clean initial worktree.
 
 ## Local evidence
