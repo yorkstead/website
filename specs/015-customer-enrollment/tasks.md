@@ -5,5 +5,6 @@
 - [x] Implement invitation-controlled proof and account bootstrap.
 - [x] Implement narrow authentication controller, UX and portal shell.
 - [x] Verify security, concurrency, rollback, actual authentication and disabled routes.
-- [ ] Run full matrix and record evidence, limitations, handoff and local commit.
-- [ ] Push feature branch, open unmerged PR and observe CI if network permits.
+- [x] Run full matrix and record evidence, limitations, handoff and local commit.
+- [x] Push feature branch and open unmerged draft PR #58.
+- [x] Establish GitHub Actions tracking; final results are authoritative on the PR checks tab.

@@ -14,12 +14,12 @@
 - Dedicated isolated enrollment browser suite: 2/2 pass after final changes. Mobile form -> synthetic mailbox delivery -> real proof -> actual Better Auth sign-in -> CC-006 provisioning -> authorized synthetic shell -> sign-out -> sign-in. Separate missing-session/recovery/unavailable application-delivery checks pass. Delivery adapter is installed only in a loopback fixture process; Next runtime uses unavailable delivery.
 - Standard `bun run build`: pass with production gate closed; generated `next-env.d.ts` returns to its tracked state.
 - Local production-build smoke without runtime credentials: all seven customer pages, six narrow POST endpoints and raw Better Auth signup returned 404 (14 requests); pages also returned no-store.
-- `git diff --check`: pass. Historical 0009–0012 files remain byte-for-byte unchanged. Final clean-worktree check follows commit.
+- `git diff --check`: pass. Historical 0009–0012 files remain byte-for-byte unchanged. The worktree was clean after implementation commit `974aa335118f698e122649cefb39f99a7c4eea09`; documentation publication metadata is committed separately.
 
 ## Connectivity and external verification
 The initial sandbox fetch failed connecting to proxy:8080. The subsequent authorized fetch with required execution access succeeded and updated `origin/main` to the verified PR #57 merge. This resolved the observed fetch/proxy failure; no reset was performed.
 
-PR publication and GitHub Actions are pending at this local checkpoint. No remote CI result or PR success is claimed until observed.
+Published unmerged draft PR: https://github.com/yorkstead/website/pull/58. Branch push and PR creation succeeded. GitHub Actions was triggered; final status for the latest commit is authoritative on the PR checks tab. This documentation snapshot precedes completion of that asynchronous run and does not claim a final remote CI result.
 
 ## Remaining activation blockers
 Production remains hard-disabled; no production delivery provider is installed. Separately approved delivery/sender configuration, security/release review, secret readiness, normal migration rollout, abuse-capacity/retention review, recovery policy and real-data adapter integration are still required. No customer documents, downloads, approvals, payments or real project records are exposed. See release-gates.md.
