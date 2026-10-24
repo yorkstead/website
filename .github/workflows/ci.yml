@@ -90,6 +90,11 @@ jobs:
           NODE_ENV: development
         run: bunx playwright test -c playwright.cc009.config.ts
 
+      - name: Verify isolated Client Access browser workflow
+        env:
+          NODE_ENV: development
+        run: bunx playwright test -c playwright.cc010.config.ts
+
       - name: Build without production runtime secrets
         run: bun run build
 

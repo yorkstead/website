@@ -16,6 +16,13 @@ const nextConfig: NextConfig = {
         headers: applicationSecurityHeaders(),
       },
       {
+        source: "/:area(dashboard|api)/client-access",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
         source: "/sw.js",
         headers: [
           { key: "Content-Type", value: "application/javascript; charset=utf-8" },
