@@ -95,6 +95,11 @@ jobs:
           NODE_ENV: development
         run: bunx playwright test -c playwright.cc010.config.ts
 
+      - name: Verify isolated Portal Readiness workflow
+        env:
+          NODE_ENV: development
+        run: bunx playwright test -c playwright.cc011.config.ts
+
       - name: Build without production runtime secrets
         run: bun run build
 

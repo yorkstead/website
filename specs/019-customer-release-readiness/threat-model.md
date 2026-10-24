@@ -1,0 +1,9 @@
+# Threat model
+
+Browser statuses, actors, evidence contents, hashes and selectors are untrusted. Accept only allowlisted operation and manual requirement IDs, expected revision/context/assessment digests and explicit confirmation. Digests are preconditions, never authority. Verify the existing owner session at page/API/service; derive actor and timestamps on server. No activation/public signup/recovery endpoint exists.
+
+Trusted adapter results are independently recomputed on reads and decisions. Store only projected enum/hash identifiers, never arbitrary exception text or adapter metadata. Validate/normalize adapter observations fail-closed; duplicate/unknown/future/expired/absent results cannot pass. Bound evidence to exact context and observation fingerprint. Owner manual attestations cannot populate technical slots; mandatory unknown/blocked/stale cannot be acknowledged into passed. Critical N/A prohibited. Time supplied by trusted injected clock, never client.
+
+CAS and per-context advisory/row locks serialize verification, attestations and decisions. Append-only evidence/audit and immutable context protect history; transitions and audit commit atomically. Read recomputation invalidates approvals on evidence/fact/context changes or expiry even without a mutation. An approval is no feature permission and no customer identity is auto-qualified. Old contexts remain visible as stale history.
+
+Production is readonly. Reuse reviewed plain-loopback disposable gate; reject all query options/fragments. Bound JSON and pagination, configured same-origin/Fetch Metadata checks and no-store/no-referrer protect owner HTTP. Error/log responses are generic. Database credentials/schema owners remain trusted as in prior migrations; triggers do not defend against a malicious DBA disabling them. No new secrets or live providers. Security/production facts unavailable to this milestone remain unverified rather than inferred from builds or environment presence.

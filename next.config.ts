@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
         headers: applicationSecurityHeaders(),
       },
       {
-        source: "/:area(dashboard|api)/client-access",
+        source: "/:area(dashboard|api)/:workspace(client-access|portal-readiness)",
         headers: [
           { key: "Cache-Control", value: "private, no-store" },
           { key: "Referrer-Policy", value: "no-referrer" },
