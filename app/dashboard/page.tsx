@@ -22,6 +22,7 @@ export default async function DashboardPage() {
             <Link href="/dashboard/marketing" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><ClipboardList className="size-4" /> Marketing</Link>
             <Link href="/dashboard/customer-portal-preview" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><PanelsTopLeft className="size-4" /> Portal preview</Link>
             <Link href="/dashboard/client-publishing" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><PanelsTopLeft className="size-4" /> Client Publishing</Link>
+            <Link href="/dashboard/client-access" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><PanelsTopLeft className="size-4" /> Client Access</Link>
             <a href="https://cal.yorkstead.com/command" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-foreground hover:bg-accent"><CalendarDays className="size-4" /> Daily operations <ExternalLink className="size-3" /></a>
           </nav>
         </div>
