@@ -4,10 +4,7 @@ import { headers } from "next/headers";
 import { customerEnrollmentEnabled } from "@/lib/customer-enrollment";
 import { getCustomerAuth } from "@/lib/customer-auth";
 import { getEnrollmentPool } from "@/lib/customer-enrollment-runtime";
-import {
-  customerProjectAuthorizationQuery,
-  getCustomerProjectAccess,
-} from "@/lib/customer-portal-authorization";
+import { getCustomerProjectSelection } from "@/lib/customer-portal-authorization";
 import { customerAuthBoundary } from "@/lib/customer-auth-config";
 import { CustomerEnrollmentForm } from "@/components/customer-enrollment-form";
 export const dynamic = "force-dynamic";
@@ -51,20 +48,13 @@ export default async function CustomerPage({
         provider: customerAuthBoundary.identityProvider,
         subject: session.user.id,
       };
-      // Same full active authorization join, scoped by the verified subject; no workspace data read.
-      const query = customerProjectAuthorizationQuery
-        .replace("  AND project.project_id = $3\n", "")
-        .replace(
-          "LIMIT 1",
-          "ORDER BY membership.tenant_id, project.project_id LIMIT 100",
-        );
-      projects = (
-        await pool.query(query, [credentials.provider, credentials.subject])
-      ).rows;
-      const selected = (await searchParams).project ?? projects[0]?.projectId;
-      authorized =
-        !!selected &&
-        !!(await getCustomerProjectAccess(pool, credentials, selected));
+      const selection = await getCustomerProjectSelection(
+        pool,
+        credentials,
+        (await searchParams).project,
+      );
+      projects = selection.projects;
+      authorized = selection.selected !== null;
     }
   }
   return (

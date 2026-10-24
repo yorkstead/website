@@ -23,3 +23,12 @@ Published unmerged draft PR: https://github.com/yorkstead/website/pull/58. Branc
 
 ## Remaining activation blockers
 Production remains hard-disabled; no production delivery provider is installed. Separately approved delivery/sender configuration, security/release review, secret readiness, normal migration rollout, abuse-capacity/retention review, recovery policy and real-data adapter integration are still required. No customer documents, downloads, approvals, payments or real project records are exposed. See release-gates.md.
+
+## PR #58 authorization-list corrections
+- Removed SQL `.replace()` construction from the customer page. Added a dedicated parameterized list query with explicit identity, tenant, membership, project and grant requirements, plus selected-project reauthorization with no fallback for an explicit unauthorized selector.
+- New disposable PostgreSQL regressions: 7/7 pass. Cover one identity across multiple tenants, another customer's grants excluded, removed grants, suspended memberships, unknown/empty/injection-like selectors, every active lifecycle requirement and revocation between list and selection checks. Added actual-shell browser denial for another customer's project.
+- Full `bun test` against disposable PostgreSQL 16: 340 pass, zero fail, zero skips (84 files). Fresh/repeat migrations, scaffold, migration validation and critical dependency audit pass.
+- Full standard Playwright run: 28/28 pass in one run using one local worker and the previously established 90-second local CLI timeout; assertions and repository CI timeouts are unchanged. Dedicated isolated enrollment suite: 2/2 pass including the new unauthorized project selector assertion.
+- Typecheck passes. Lint has zero errors and the existing owner login-panel warning. Standard production build passes. Generated Next environment declarations returned to their tracked state; `git diff --check` passes.
+- Rate-limit capacity/operations are documented in threat-model.md and referenced by release-gates.md. No limits, activation gates, historical migrations, production configuration or owner authentication changed.
+- Corrections are published to the existing PR #58 branch; the PR checks and description record the final remote CI result for the new head. This local snapshot does not claim that asynchronous result in advance or reuse the old a71213b CI result.

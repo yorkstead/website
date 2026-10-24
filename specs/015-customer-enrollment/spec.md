@@ -19,3 +19,6 @@ Underlying public Better Auth signup and user-create hooks stay blocked. Custome
 
 ## Non-goals
 Real customers or Adorned, production configuration/secrets/data/migrations, live delivery, recovery delivery, live-data adapter, documents/downloads/approvals, merge or deploy.
+
+## PR #58 review corrections
+The customer shell must call a dedicated parameterized authorization-list function, without rewriting another SQL query. Listing and selected-project checks require active identity, tenant, membership, tenant project and explicit identity/project grant, with tenant-consistent joins. An explicit unauthorized selector must deny rather than fall back to an authorized project. Regression coverage must exercise one identity across multiple tenants, removed grants, suspended memberships and unauthorized project selection against disposable PostgreSQL. Document the existing rate-limit capacity and operational tradeoffs without changing limits or activation gates.

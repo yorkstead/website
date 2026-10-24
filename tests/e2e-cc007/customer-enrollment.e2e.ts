@@ -49,6 +49,20 @@ test("mobile invitation, independent mailbox proof, account, session, synthetic 
       }),
     ),
   ).not.toContain(fixture.token);
+  const otherCustomer = await (
+    await request.get("http://127.0.0.1:3102/fixture")
+  ).json();
+  await page.goto(
+    `/customer/portal?project=${encodeURIComponent(otherCustomer.project)}`,
+  );
+  await expect(page.getByRole("status")).toContainText("access is unavailable");
+  await expect(
+    page.getByRole("navigation", { name: "Authorized projects" }),
+  ).toHaveCount(0);
+  await page.goto("/customer/portal");
+  await expect(
+    page.getByRole("navigation", { name: "Authorized projects" }),
+  ).toContainText(fixture.project);
   await page.getByRole("link", { name: "Sign out", exact: true }).click();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/customer\/sign-in/);
