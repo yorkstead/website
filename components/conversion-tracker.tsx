@@ -9,7 +9,7 @@ import { attributionFromLocation } from "@/lib/analytics-attribution";
 import type { AnalyticsAttribution, AnalyticsEventName, AnalyticsEventProperties } from "@/lib/analytics-contract";
 
 const sessionStorageKey = "yorkstead.analytics.session.v1";
-const privatePaths = ["/api", "/account", "/dashboard", "/login"];
+const privatePaths = ["/api", "/customer", "/account", "/dashboard", "/login"];
 
 export type BrowserAnalyticsSession = { sessionId: string; attribution: AnalyticsAttribution };
 

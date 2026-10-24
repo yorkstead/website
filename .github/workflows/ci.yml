@@ -79,6 +79,12 @@ jobs:
       - name: Run browser tests
         run: bun run test:e2e
 
+      - name: Verify isolated customer enrollment browser flow
+        env:
+          NODE_ENV: development
+          CUSTOMER_ENROLLMENT_DISPOSABLE: enabled
+        run: bunx playwright test -c playwright.cc007.config.ts
+
       - name: Build without production runtime secrets
         run: bun run build
 
