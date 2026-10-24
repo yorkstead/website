@@ -1,7 +1,7 @@
 # Customer portal interface
 
 **Assignment:** CC-004  
-**Status:** In progress  
+**Status:** Complete  
 **Date:** 2026-10-23
 
 ## User value
@@ -49,3 +49,11 @@ Yorkstead can review a polished, reusable customer project experience before any
 - Production client linkage, Adorned data access, or production record changes.
 - A new database table, API, UI framework, or parallel delivery source of truth.
 - Editing project delivery data from the preview.
+
+## Verification
+
+- GitHub Actions CI run #215 passed scaffold validation and dependency audit.
+- The migration plan validated and all migrations applied to disposable PostgreSQL.
+- Unit and PostgreSQL integration tests, lint, typecheck, Playwright, production build, and generated-worktree cleanliness passed.
+- Vercel's GitHub integration reported the branch preview ready; the portal path still requires the existing owner session.
+- No production data or configuration was accessed or changed, and no manual deployment was initiated.
