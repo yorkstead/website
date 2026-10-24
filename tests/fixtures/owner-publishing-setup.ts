@@ -19,4 +19,3 @@ export async function setupOwnerPublishingFixture() {
     return {projectId};
   } finally {await pool.end();}
 }
-
