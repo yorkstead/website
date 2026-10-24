@@ -69,15 +69,17 @@ function SectionHeading({
   eyebrow,
   title,
   description,
+  titleId,
 }: {
   eyebrow: string;
   title: string;
   description: string;
+  titleId: string;
 }) {
   return (
     <header className="max-w-2xl">
       <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">{eyebrow}</p>
-      <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
+      <h2 id={titleId} className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
     </header>
   );
@@ -212,7 +214,7 @@ export function PortalTimeline({ milestones }: Pick<CustomerPortalView, "milesto
   return (
     <section id="timeline" aria-labelledby="timeline-title" className="scroll-mt-20 border-b border-border/70">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-16">
-        <SectionHeading eyebrow="Project timeline" title="A clear path through delivery" description="Milestones show what is complete, what is active now, and what comes next." />
+        <SectionHeading eyebrow="Project timeline" title="A clear path through delivery" titleId="timeline-title" description="Milestones show what is complete, what is active now, and what comes next." />
         {milestones.length === 0 ? (
           <div className="mt-8"><EmptyState title="Timeline is being prepared" detail="Milestones will appear here after the delivery sequence is confirmed." /></div>
         ) : (
@@ -254,7 +256,7 @@ export function PortalDeliverables({ deliverables }: Pick<CustomerPortalView, "d
   return (
     <section id="deliverables" aria-labelledby="deliverables-title" className="scroll-mt-20 border-b border-border/70">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-16">
-        <SectionHeading eyebrow="Deliverables" title="The work taking shape" description="Status and review metadata are visible here. Files and downloads remain intentionally unavailable." />
+        <SectionHeading eyebrow="Deliverables" title="The work taking shape" titleId="deliverables-title" description="Status and review metadata are visible here. Files and downloads remain intentionally unavailable." />
         {deliverables.length === 0 ? (
           <div className="mt-8"><EmptyState title="No deliverables yet" detail="Scoped deliverables will appear here once the project plan is ready." /></div>
         ) : (
@@ -296,7 +298,7 @@ export function PortalActivity({ activity }: Pick<CustomerPortalView, "activity"
   return (
     <section id="updates" aria-labelledby="updates-title" className="scroll-mt-20">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-16">
-        <SectionHeading eyebrow="Project activity" title="Progress with context" description="Updates, decisions, and reviews remain distinct, with approval state visible at a glance." />
+        <SectionHeading eyebrow="Project activity" title="Progress with context" titleId="updates-title" description="Updates, decisions, and reviews remain distinct, with approval state visible at a glance." />
         {activity.length === 0 ? (
           <div className="mt-8"><EmptyState title="No project updates yet" detail="Meaningful progress, decisions, and review changes will appear here in chronological order." /></div>
         ) : (
