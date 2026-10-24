@@ -22,7 +22,19 @@ for (const width of [390, 1440])
         })
       ).status(),
     ).toBe(200);
-    await page.goto("/dashboard/client-access");
+    await page.goto("/dashboard");
+    await expect(
+      page.getByRole("link", { name: "Client Access", exact: true }).first(),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: width < 768 ? "More" : /Commands/ })
+      .click();
+    const palette = page.getByRole("dialog", { name: "Command palette" });
+    await palette
+      .getByRole("textbox", { name: "Search commands and projects" })
+      .fill("Client Access");
+    await palette.getByRole("button", { name: /Client Access/ }).click();
+    await expect(page).toHaveURL(/dashboard\/client-access/);
     const selector = page.getByRole("combobox", { name: "Organization" });
     await expect(selector).toBeEnabled();
     for (
@@ -129,7 +141,9 @@ for (const width of [390, 1440])
       ).status(),
     ).toBe(200);
     await dialog.getByRole("button", { name: "Confirm operation" }).click();
-    await expect(page.getByRole("alert", { name: "Client Access error" })).toContainText("Records changed");
+    await expect(
+      page.getByRole("alert", { name: "Client Access error" }),
+    ).toContainText("Records changed");
     await expect(
       page.getByRole("region", { name: "Project grants" }),
     ).toHaveCount(0);
@@ -143,8 +157,8 @@ for (const width of [390, 1440])
       }),
     );
     await page.getByRole("button", { name: "Refresh access records" }).click();
-    await expect(page.getByRole("alert", { name: "Client Access error" })).toContainText(
-      "Administration unavailable",
-    );
+    await expect(
+      page.getByRole("alert", { name: "Client Access error" }),
+    ).toContainText("Administration unavailable");
     await expect(selector).toHaveCount(0);
   });

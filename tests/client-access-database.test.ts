@@ -105,6 +105,41 @@ dbtest(
         recipientEmail: "changed@example.test",
       }),
     ).rejects.toThrow("changed");
+    // Disposable-only clock fixture, matching the existing CC-006 expiration tests.
+    const clock = await pool.connect();
+    try {
+      await clock.query("BEGIN");
+      await clock.query(
+        "ALTER TABLE customer_invitations DISABLE TRIGGER customer_invitation_write",
+      );
+      await clock.query(
+        "ALTER TABLE customer_invitations DISABLE TRIGGER customer_invitation_audit_event",
+      );
+      await clock.query(
+        "UPDATE customer_invitations SET created_at=clock_timestamp()-interval '2 days',expires_at=clock_timestamp()-interval '1 day' WHERE tenant_id=$1 AND status='pending'",
+        [a.tenant],
+      );
+      await clock.query(
+        "ALTER TABLE customer_invitations ENABLE TRIGGER customer_invitation_write",
+      );
+      await clock.query(
+        "ALTER TABLE customer_invitations ENABLE TRIGGER customer_invitation_audit_event",
+      );
+      await clock.query("COMMIT");
+    } catch (error) {
+      await clock.query("ROLLBACK");
+      throw error;
+    } finally {
+      clock.release();
+    }
+    const aged = (await service.inspect(headers, { tenantId: a.tenant }))
+      .selected!;
+    expect(aged.invitations.find((i) => i.status === "pending")?.expired).toBe(
+      true,
+    );
+    expect(
+      aged.invitations.find((i) => i.status === "superseded")?.expired,
+    ).toBe(false);
     const readonly = createClientAccessAdminService(pool, owner);
     await expect(readonly.mutate(headers, input)).rejects.toThrow(
       "unavailable",
@@ -331,24 +366,95 @@ dbtest(
   20000,
 );
 
-dbtest('mapping create validates persisted project, global uniqueness and disabled state without grants', async () => {
-  const a=await fixture(),b=await fixture(),project=`map-${crypto.randomUUID()}`;
-  const previous=(await pool.query("SELECT data FROM workspaces WHERE id='primary'")).rows[0];
-  try {
-    await pool.query("INSERT INTO workspaces(id,data) VALUES ('primary',$1) ON CONFLICT(id) DO UPDATE SET data=excluded.data",[{projects:[{id:project,name:'Fictional mapped project',status:'Active',kind:'Software',eyebrow:'Internal',stack:[],note:'',updatedAt:'2026-10-01T00:00:00Z',updatedLabel:'Fictional',progress:0,accent:'cyan'}],tasks:[],activity:[],notes:[]}]);
-    const input={action:'createMapping',tenantId:a.tenant,projectId:project};
-    await service.mutate(headers,input);
-    await expect(service.mutate(headers,input)).rejects.toThrow('changed');
-    await expect(service.mutate(headers,{...input,tenantId:b.tenant})).rejects.toThrow('changed');
-    await expect(service.mutate(headers,{...input,projectId:'missing-source-project'})).rejects.toThrow('unavailable');
-    expect((await pool.query('SELECT status,admin_revision FROM customer_tenant_projects WHERE project_id=$1',[project])).rows[0]).toEqual({status:'disabled',admin_revision:1});
-    expect((await pool.query('SELECT identity_id FROM customer_project_grants WHERE project_id=$1',[project])).rows).toHaveLength(0);
-    expect((await pool.query('SELECT id FROM customer_invitations WHERE tenant_id=$1',[a.tenant])).rows).toHaveLength(0);
-    const v=(await service.inspect(headers,{tenantId:a.tenant})).selected!;
-    expect(v.projects.find(p=>p.id===project)?.blockers).toContain('Mapping inactive');
-    expect(v.projects.find(p=>p.id===project)?.blockers).toContain('No active identity, membership and view grant configuration');
-  } finally {
-    if(previous) await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'",[previous.data]);
-    else await pool.query("DELETE FROM workspaces WHERE id='primary'");
-  }
-});
+dbtest(
+  "mapping create validates persisted project, global uniqueness and disabled state without grants",
+  async () => {
+    const a = await fixture(),
+      b = await fixture(),
+      project = `map-${crypto.randomUUID()}`;
+    const previous = (
+      await pool.query("SELECT data FROM workspaces WHERE id='primary'")
+    ).rows[0];
+    try {
+      await pool.query(
+        "INSERT INTO workspaces(id,data) VALUES ('primary',$1) ON CONFLICT(id) DO UPDATE SET data=excluded.data",
+        [
+          {
+            projects: [
+              {
+                id: project,
+                name: "Fictional mapped project",
+                status: "Active",
+                kind: "Software",
+                eyebrow: "Internal",
+                stack: [],
+                note: "",
+                updatedAt: "2026-10-01T00:00:00Z",
+                updatedLabel: "Fictional",
+                progress: 0,
+                accent: "cyan",
+              },
+            ],
+            tasks: [],
+            activity: [],
+            notes: [],
+          },
+        ],
+      );
+      const input = {
+        action: "createMapping",
+        tenantId: a.tenant,
+        projectId: project,
+      };
+      await service.mutate(headers, input);
+      await expect(service.mutate(headers, input)).rejects.toThrow("changed");
+      await expect(
+        service.mutate(headers, { ...input, tenantId: b.tenant }),
+      ).rejects.toThrow("changed");
+      await expect(
+        service.mutate(headers, {
+          ...input,
+          projectId: "missing-source-project",
+        }),
+      ).rejects.toThrow("unavailable");
+      expect(
+        (
+          await pool.query(
+            "SELECT status,admin_revision FROM customer_tenant_projects WHERE project_id=$1",
+            [project],
+          )
+        ).rows[0],
+      ).toEqual({ status: "disabled", admin_revision: 1 });
+      expect(
+        (
+          await pool.query(
+            "SELECT identity_id FROM customer_project_grants WHERE project_id=$1",
+            [project],
+          )
+        ).rows,
+      ).toHaveLength(0);
+      expect(
+        (
+          await pool.query(
+            "SELECT id FROM customer_invitations WHERE tenant_id=$1",
+            [a.tenant],
+          )
+        ).rows,
+      ).toHaveLength(0);
+      const v = (await service.inspect(headers, { tenantId: a.tenant }))
+        .selected!;
+      expect(v.projects.find((p) => p.id === project)?.blockers).toContain(
+        "Mapping inactive",
+      );
+      expect(v.projects.find((p) => p.id === project)?.blockers).toContain(
+        "No active identity, membership and view grant configuration",
+      );
+    } finally {
+      if (previous)
+        await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'", [
+          previous.data,
+        ]);
+      else await pool.query("DELETE FROM workspaces WHERE id='primary'");
+    }
+  },
+);
