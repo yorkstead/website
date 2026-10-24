@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Eye } from "lucide-react";
+import { DocumentFoundationPreview } from "@/components/customer-portal/document-foundation-preview";
 import { CustomerPortal } from "@/components/customer-portal/customer-portal";
 import { customerPortalDemo } from "@/lib/customer-portal-demo";
 import { getOwnerSession } from "@/lib/owner-session";
@@ -31,6 +32,7 @@ export default async function CustomerPortalPreviewPage() {
         </div>
       </aside>
       <CustomerPortal portal={customerPortalDemo} />
+      <DocumentFoundationPreview />
     </div>
   );
 }
