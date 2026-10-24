@@ -54,3 +54,10 @@ test("forged document and approval writes have no customer endpoint", async ({ r
     expect(response.status()).toBe(404);
   }
 });
+
+test("invitation registration and redemption are not public", async ({ request }) => {
+  for (const path of ["/api/customer-invitations/redeem", "/api/customer-register", "/invitations/fictional", "/register"]) {
+    expect((await request.get(path)).status()).toBe(404);
+    expect((await request.post(path, { data: { token: "fictional-disposable" } })).status()).toBe(404);
+  }
+});
