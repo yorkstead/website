@@ -40,6 +40,8 @@ SELECT
 FROM customer_identities AS identity
 INNER JOIN customer_tenant_memberships AS membership
   ON membership.identity_id = identity.id
+INNER JOIN customer_tenants AS tenant
+  ON tenant.id = membership.tenant_id
 INNER JOIN customer_tenant_projects AS project
   ON project.tenant_id = membership.tenant_id
 INNER JOIN customer_project_grants AS grant_record
@@ -51,6 +53,7 @@ WHERE identity.auth_provider = $1
   AND project.project_id = $3
   AND identity.status = 'active'
   AND membership.status = 'active'
+  AND tenant.status = 'active'
   AND project.status = 'active'
   AND grant_record.status = 'active'
 LIMIT 1
