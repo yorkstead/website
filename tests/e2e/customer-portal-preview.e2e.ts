@@ -61,3 +61,13 @@ test("invitation registration and redemption are not public", async ({ request }
     expect((await request.post(path, { data: { token: "fictional-disposable" } })).status()).toBe(404);
   }
 });
+
+test("source projection preview remains owner-only and project APIs remain absent", async ({ page, request }) => {
+  await page.goto("/dashboard/customer-portal-preview?projection=fictional");
+  await expect(page).toHaveURL(/\/login\?next=/);
+  await expect(page.getByText("Fictional delivery integration")).toHaveCount(0);
+  for (const path of ["/api/customer-projects/fictional", "/api/client-project-publications/fictional"]) {
+    expect((await request.get(path)).status()).toBe(404);
+    expect((await request.post(path, { headers: { "x-role": "owner" }, data: { state: "approved" } })).status()).toBe(404);
+  }
+});
