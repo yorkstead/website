@@ -14,11 +14,21 @@ export function canonicalMigrationSource(source: string) {
   return source.replace(/\r\n?/g, "\n");
 }
 
+// Historic 0011 groups one-line trigger declarations in one breakpoint block.
+// Neon HTTP prepares each execution item and rejects multi-command items. Expand
+// only this unambiguous form; never split semicolons inside PL/pgSQL bodies or
+// quoted SQL. Keep the checksum based on the original, unchanged source bytes.
+function expandTriggerBlock(statement: string): string[] {
+  const lines = statement.split("\n").map(line => line.trim());
+  if (lines.length > 1 && lines.every(line => /^CREATE TRIGGER [^\r\n]+;$/.test(line))) return lines;
+  return [statement];
+}
+
 export function parseMigration(fileName: string, source: string): Migration {
   const match = migrationFilePattern.exec(fileName);
   if (!match) throw new Error(`Invalid migration filename: ${fileName}`);
   const canonicalSource = canonicalMigrationSource(source);
-  const statements = canonicalSource.split(statementBreakpoint).map((statement) => statement.trim()).filter(Boolean);
+  const statements = canonicalSource.split(statementBreakpoint).map((statement) => statement.trim()).filter(Boolean).flatMap(expandTriggerBlock);
   if (!statements.length) throw new Error(`Migration ${fileName} contains no SQL statements`);
   return {
     version: match[1],
