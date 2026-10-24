@@ -22,7 +22,7 @@ The customer authenticator is an independent Better Auth configuration mounted a
 
 - `CUSTOMER_AUTH_SECRET`, never the owner `BETTER_AUTH_SECRET`;
 - the `yorkstead-customer` cookie prefix, never the owner `better-auth` prefix;
-- dedicated `customer_auth_*` user, session, account, and verification tables;
+- a dedicated `customer_auth` PostgreSQL schema containing Better Auth's user, session, account, and verification tables;
 - an eight-hour database session lifetime with normal Better Auth validation and revocation;
 - email/password provider support with public signup disabled, as a vetted session foundation for a later invitation/passwordless flow.
 
