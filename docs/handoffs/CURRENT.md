@@ -1,16 +1,15 @@
 # Current handoff
 
-- Active feature: CC-004 — Customer Portal Interface.
-- Active spec: `specs/012-customer-portal-interface/`.
-- Branch: `feat/cc-004-customer-portal-interface`; implementation and verification complete; PR #54 is open for technical-lead review and remains unmerged.
-- Interface: Reusable overview, timeline, deliverables, activity, and navigation components use Yorkstead's existing tokens and primitives with responsive, accessible, dark-first presentation.
-- Preview: `/dashboard/customer-portal-preview` requires the existing server-verified owner session and renders a clearly labeled fictional fixture. Unauthenticated requests redirect to owner login.
-- Data architecture: The portal contract is a read-only presentation adapter target for existing Project and ClientDelivery concepts, not a persistence source. The fixture has no database, workspace, CRM, tenant, network, or Adorned dependency.
-- Disabled scope: Customer login, invitations, published updates, document sharing, downloads, customer routes, and public document routes remain unavailable.
-- Internal compatibility: Existing owner authentication, CRM, workspace persistence, public website, and customer authorization infrastructure are unchanged. No migration is required.
-- Production data/configuration: Not accessed or modified. No customer account, invitation, live project link, Adorned record, secret, or production configuration was created.
-- Verification: GitHub Actions CI run #215 passed scaffold validation, dependency audit, migration validation and disposable PostgreSQL application, unit/PostgreSQL integration tests, lint, typecheck, Playwright, production build, and clean-worktree verification.
-- Preview reference: The repository's Vercel integration reported the branch preview ready at `https://website-git-feat-cc-004-customer-portal-interface-yorkstead.vercel.app/dashboard/customer-portal-preview`. It still requires owner authentication; no deployment was initiated manually.
-- Review: The automated handoff finding was addressed by this update. No unresolved implementation limitation changes the disabled customer-facing boundary.
-- Rollback: Revert the presentation files, preview route, tests, dashboard link, and documentation. There is no schema or production-data rollback.
-- Pull request: https://github.com/yorkstead/website/pull/54
+- Active feature: CC-005 — Secure Documents & Client Approvals.
+- Active spec: `specs/013-document-approval-foundation/` (spec, plan, tasks and verification evidence).
+- Branch: `feat/cc-005-document-approval-foundation`, based on latest main `1d95589` including merged PR #54. Implementation complete; final verification and PR preparation in progress. Do not merge or deploy manually.
+- Discovery: Project/ClientDelivery remain the project-management source of truth. Existing links and informal decisions are not reinterpreted as consent. 0009 tenant/project mappings and 0010 isolated customer authentication remain unchanged.
+- Schema: additive 0011 registry, immutable metadata versions, version-bound internal approval requests, append-only generated audit. Composite foreign keys preserve scope/history. New versions supersede open requests and reset lifecycle. Document row locks serialize decisions and revisions; audit writes share the mutation transaction.
+- Services: `lib/document-approval.ts` verifies existing owner sessions, derives actor identity and tenant ownership server-side, requires active mappings, validates strict inputs, and exposes no HTTP routes or Server Actions. Owner authority is independent of customer grants; future customer access must use existing CC-003 session/grant checks and a reviewed redacted projection.
+- Customer boundary: document read/approval/upload/download/publish capabilities are immutable false. All existing portal/login/invitation/sharing gates remain unchanged and disabled. No customer can submit a decision.
+- Preview: existing owner-only `/dashboard/customer-portal-preview` adds explicitly fictional version history, pending internal-review status and read-only audit examples. No persistence, real tenant/project, account, content, network or Adorned dependency.
+- Security tradeoffs: approvals are explicitly owner-internal evidence, never customer consent. Trusted database credentials/schema administrators can alter triggers or transaction actor context; audit is not cryptographic protection against a DBA. No RLS claim. Metadata/comments are confidential owner-only free text; comments and metadata never enter audit payloads. Restrictive history FKs intentionally prevent deleting mapped tenants/projects with retained documents.
+- Verification so far: 301 unit/integration tests pass on disposable PostgreSQL 18.4 in `/tmp`; migrations apply and rerun safely; upgrade preservation test passes; scaffold/migration checks, typecheck, dependency audit and production build pass. Lint has zero errors and one existing login-panel navigation warning. Browser rerun and final clean-worktree/CI evidence pending.
+- Production data/configuration: not accessed or changed. No account/invitation/publication/download/manual deployment/merge. Testing uses fictional records and a local disposable database only.
+- Rollback: revert application/preview changes and retain additive schema/history. No destructive downgrade. Any later removal requires explicit backup/recovery review.
+- Pull request: pending creation.

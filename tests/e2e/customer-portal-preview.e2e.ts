@@ -44,3 +44,13 @@ test("customer authentication remains disabled", async ({ request }) => {
   expect(getResponse.headers()["cache-control"]).toContain("no-store");
   expect(postResponse.headers()["cache-control"]).toContain("no-store");
 });
+
+test("forged document and approval writes have no customer endpoint", async ({ request }) => {
+  for (const path of ["/api/customer-documents/fictional", "/api/customer-approvals/fictional"]) {
+    const response = await request.post(path, {
+      headers: { "x-user-id": "forged", "x-role": "owner", "x-tenant-id": "other" },
+      data: { status: "approved", versionId: "forged" },
+    });
+    expect(response.status()).toBe(404);
+  }
+});
