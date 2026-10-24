@@ -730,6 +730,7 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
       { id: "leads", section: "Navigate", label: "Client leads", hint: "Lead pipeline & inquiries", icon: <Inbox />, run: () => router.push("/dashboard/leads") },
       { id: "client-publishing", section: "Navigate", label: "Client Publishing", hint: "Review customer visibility", icon: <ClipboardCheck />, run: () => router.push("/dashboard/client-publishing") },
       { id: "client-access", section: "Navigate", label: "Client Access", hint: "Inspect client onboarding", icon: <ClipboardCheck />, run: () => router.push("/dashboard/client-access") },
+      { id: "portal-readiness", section: "Navigate", label: "Portal Readiness", hint: "Review release prerequisites", icon: <ClipboardCheck />, run: () => router.push("/dashboard/portal-readiness") },
       { id: "analytics", section: "Navigate", label: "Analytics", hint: "Traffic, funnels & demand", icon: <BarChart3 />, run: () => router.push("/dashboard/analytics") },
       { id: "marketing", section: "Navigate", label: "Marketing operations", hint: "Acquisition engine", icon: <Megaphone />, run: () => router.push("/dashboard/marketing") },
       { id: "consultations", section: "Navigate", label: "Consultation playbooks", hint: "Discovery playbooks", icon: <ClipboardCheck />, run: () => router.push("/dashboard/consultations") },
@@ -856,6 +857,7 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
             <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/consultations"><ClipboardCheck className="size-4" />Consultations</Link>
             <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/client-publishing"><ClipboardCheck className="size-4" />Client Publishing</Link>
             <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/client-access"><ClipboardCheck className="size-4" />Client Access</Link>
+            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/portal-readiness"><ClipboardCheck className="size-4" />Portal Readiness</Link>
           </nav>
           <div className="mt-auto space-y-3">
             <div className="space-y-1">
