@@ -65,3 +65,23 @@ describe("application migration plan", () => {
     expect(buildScript.indexOf('"db:migrate"')).toBeLessThan(buildScript.indexOf('"build"'));
   });
 });
+
+describe("prepared-query migration compatibility", () => {
+  test("expands grouped trigger declarations while preserving historical checksum", async () => {
+    const source = await readFile(resolve(migrationsDirectory, "0011_document-approval-foundation.sql"), "utf8");
+    const migration = parseMigration("0011_document-approval-foundation.sql", source);
+    expect(migration.checksum).toBe("5aa9ad363a1315b3ce4b34ba622387d25e38ad835b81e8dd80d51c9ff1067915");
+    const triggers = migration.statements.filter(sql => sql.startsWith("CREATE TRIGGER "));
+    expect(triggers).toHaveLength(17);
+    expect(triggers.every(sql => sql.split("CREATE TRIGGER ").length === 2)).toBe(true);
+    expect(triggers.some(sql => sql.includes("audit_immutable"))).toBe(true);
+  });
+  test("does not split function bodies, quoted text or unsupported SQL blocks", () => {
+    const functionSQL = "CREATE FUNCTION example() RETURNS text LANGUAGE plpgsql AS $$\nBEGIN\n RETURN 'first;second';\nEND;\n$$;";
+    const quotedSQL = "SELECT 'first;\nCREATE TRIGGER not a declaration';";
+    const mixedSQL = "CREATE TRIGGER example;\n-- comment between statements\nSELECT 1;";
+    for (const sql of [functionSQL, quotedSQL, mixedSQL]) {
+      expect(parseMigration("0001_example.sql", sql).statements).toEqual([sql]);
+    }
+  });
+});
