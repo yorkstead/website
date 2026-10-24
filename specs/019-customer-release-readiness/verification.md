@@ -10,7 +10,9 @@ Fresh fetch verified base `4bba15a7a24864bef058e318df45f607b21f280e` (PR #61 mer
 - New actual-owner Portal Readiness browsers: **2/2**, 390px/1440px. Navigation/palette, verification, labeled attestation, acknowledgment without bypass, withdrawal, conflicts/refresh, error state, Tab/Escape/focus, privacy headers and no overflow.
 - Existing standard browsers: **30/30**, one worker, 90-second local timeout, no retries.
 - Scaffold (19 specs), critical dependency audit, lint and typecheck pass; one existing login-panel navigation warning.
-- Remaining isolated regression suites, final build/production negatives and final CI are recorded below or in the final PR delivery summary; these earlier results do not imply unrun checks passed.
+- Final isolated browser regressions: enrollment **2/2**, owner publishing **2/2**, Client Access **2/2**, Portal Readiness **2/2**. Together with 30 standard scenarios: **38/38**, no retries. Final targeted suite **18/18** after the history projection refinement.
+- Standard production build passes without runtime secrets. Production-mode negative smoke: **18 customer GET/POST requests return 404**, **4 readonly owner API GET/POST requests fail closed** without owner configuration and retain no-store/no-referrer, **2 nonexistent activation endpoints return 404**. No production database/provider configured.
+- Delivery: [unmerged PR #62](https://github.com/yorkstead/website/pull/62). The implementation CI and final evidence-commit CI are tracked in PR checks; final exact head, run URL and conclusion are recorded in the PR delivery summary after this evidence commit to avoid recursive documentation-only CI commits. No merge or manual deployment.
 
 ## Security review and boundaries
 
