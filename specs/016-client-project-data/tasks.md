@@ -7,5 +7,5 @@
 - [x] Integrate isolated fictional preview and safe presentation states.
 - [x] Verify tenant isolation, source invalidation, concurrency and migrations.
 - [x] Complete local application checks and handoff.
-- [ ] Commit/push feature branch and record delivery.
+- [x] Commit/push feature branch and record delivery.
 - [ ] Create unmerged PR and inspect GitHub CI (GitHub API blocked; user authorized branch-only delivery if it remains blocked).

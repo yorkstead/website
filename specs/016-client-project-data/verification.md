@@ -33,3 +33,7 @@ A separate reviewed change must provide owner publishing UX/transport and custom
 ## Remote access blocker
 
 Git fetch works with the supported network execution access. GitHub CLI API calls to `api.github.com` return `Forbidden`; auth readiness also reports the supplied GH token invalid. The environment exposes no ready GitHub outbound identity. PR creation and GitHub Actions inspection require working GitHub API access/credentials. This is an environment restriction, not an application test failure. The user explicitly instructed continuation without requesting credentials or changing production settings: finish local verification, commit and attempt the existing Git remote push, and report branch/SHA/access blocker if the API remains unavailable. No further access request will be made.
+
+## Delivery
+
+Implementation commit `6cce66a7b3050cf1d709d4be6efc0e41651007b8` was pushed successfully through the existing remote to `feat/cc-008-client-project-data`; tracking is configured. The worktree was clean after that commit. A documentation-only follow-up records this status; final HEAD is reported in chat. The branch is available at https://github.com/yorkstead/website/tree/feat/cc-008-client-project-data and GitHub supplied the PR creation link https://github.com/yorkstead/website/pull/new/feat/cc-008-client-project-data . No PR was created because API access remains blocked; GitHub Actions CI is unverified. No merge or deployment occurred.
