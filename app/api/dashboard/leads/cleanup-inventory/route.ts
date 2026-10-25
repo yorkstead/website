@@ -17,11 +17,9 @@ export async function GET(){
    id:Number(row.id),name:String(row.name||""),company:row.company?String(row.company):null,
    status:String(row.status||""),createdAt:String(row.created_at||""),
    hasConvertedProject:Boolean(row.converted_project_id),
-   adornedMatch:/adorned/i.test(String(row.name||"")+" "+String(row.company||"")),
   }));
   return NextResponse.json({
    mode:"read_only",total:records.length,
-   adornedMatches:records.filter(row=>row.adornedMatch).length,
    records,
    note:"No lead records are changed by this endpoint. Review exact IDs before a separate backup and cleanup.",
   },{headers:noStore});

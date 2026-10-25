@@ -1,5 +1,16 @@
 # Current handoff
 
+## Active cleanup — 2026-10-25
+
+- User authorized an Adorned termination audit, safe website repository cleanup, verification, commit and review PR only. No production writes, QuickBooks access, merge or deployment. Adorned must not be treated as an active engagement or future activation candidate. Historical restrictions and evidence below remain retained.
+- Verified live `origin/main` and fetched base: `43454cd46b19b9480ceb61851f89261f59861890`. PR #64 is MERGED; its former head is `ae12e81aa1d944a0d6addff800e1235860bf09aa`. The old handoff below is historical. Existing `.gitignore` work on `docs/session-initialization` is preserved in the original checkout.
+- Dedicated branch `chore/adorned-engagement-cleanup`, isolated worktree `/tmp/yorkstead-adorned-cleanup`. Findings, plan, operational IDs, coverage limits and verification: [termination audit](../audits/2026-10-25-adorned.md).
+- State: repository cleanup implemented, locally verified and published as [PR #65](https://github.com/yorkstead/website/pull/65), open for review against main. Read-only Neon observations confirm website inquiry #8, a CRM client company/won opportunity/active project, eight open milestones and three draft portal updates. Production records are unchanged; separate operational approval is required. Automation Hub repository findings are inventoried only, with no edits there.
+
+- Current cleanup verification: focused 19/19; scaffold, 17 migration plans, lint (one existing login warning), typecheck, full unit suite (342 pass / 105 database skips / zero failures) and production build pass. Database integration lacks TEST_DATABASE_URL; browser suite is not applicable. No production writes or deployment. Delivery: [PR #65](https://github.com/yorkstead/website/pull/65) contains the cleanup and audit. Local checks apply to its source changes; final handoff delivery edits are documentation only. Check live GitHub for PR-head CI. Next: review the PR and separately authorize any operational cleanup; no merge or deployment performed.
+
+## Retained prior handoffs
+
 ## Verified current state — 2026-10-25
 
 - GitHub verification on 2026-10-25: [CC-012 PR #63](https://github.com/yorkstead/website/pull/63) is **MERGED**, merged at `2026-10-24T22:05:33Z` into `main`, merge commit `4c5f48749d01600f6382a4425ffaf5c715132c63`. Final feature head: `d5cfd507ae8166443cf6861f13be79ed33663189`. Live `git ls-remote origin refs/heads/main`, freshly fetched `origin/main` and starting local HEAD all matched that merge commit. CC-012 is merged repository work, not an active unmerged implementation.
