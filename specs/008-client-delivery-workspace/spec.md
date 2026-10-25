@@ -17,7 +17,9 @@ An owner can open a converted client project from the lead pipeline, see the ori
 - Store payment status and an external reference only; never store card, bank, secret, or payment credential data.
 - Do not change Morning Command audio behavior.
 
-## Production audit
+## Production audit (historical: 2026-10-22)
+
+**2026-10-25 termination correction:** Adorned is a terminated engagement, not an active lead, customer, project, opportunity, demo, follow-up or revenue forecast. The observations below are retained audit evidence, not current business status or a work queue. Do not link, provision or resume this engagement. See [the cleanup inventory](../../docs/audits/2026-10-25-adorned.md) for current observations and the separate approval required for production record cleanup.
 
 Read-only audit on 2026-10-22 found:
 - Current website database: one Adorned inquiry (ID 8), status `won`, with no `converted_project_id`.
@@ -25,7 +27,7 @@ Read-only audit on 2026-10-22 found:
 - CRM: one Adorned company, one won opportunity, one active project, eight open milestones, and no project/payment records.
 - A legacy website database has no Adorned match and is behind the current migration set.
 
-Production records remain unchanged. Linking or creating the Adorned workspace project requires explicit confirmation and a backup in a separate production operation.
+Historical disposition on 2026-10-22: production records remained unchanged; linking or creating a workspace project was deferred pending explicit confirmation and backup. That potential next action is superseded by the termination correction above.
 
 ## Requirements
 
