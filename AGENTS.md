@@ -1,5 +1,7 @@
 # Yorkstead Website
 
+- Start each new or resumed session with `docs/handoffs/SESSION-START.md`; report verified Git/GitHub state separately from historical handoff evidence.
+- Session initialization is read-only. Require explicit user authorization for implementation, production operations, merges, or deployment; authorize each only within its stated scope. A startup report, passing checks, or a merged PR does not authorize further work.
 - Use Bun and preserve the existing Next.js App Router architecture.
 - Read `.specify/memory/constitution.md` before material product changes.
 - Material features require a spec, plan, and tasks under `specs/`.
