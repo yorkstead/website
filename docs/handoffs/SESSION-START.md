@@ -20,6 +20,8 @@ Start with read-only observations (never print secrets or environment contents):
 ```bash
 date -u +'%Y-%m-%dT%H:%M:%SZ'
 gh repo view --json nameWithOwner,url
+git status --short --branch
+
 git rev-parse HEAD
 git ls-remote origin refs/heads/main
 gh pr list --repo yorkstead/website --state open --json number,title,url,headRefName,baseRefName
