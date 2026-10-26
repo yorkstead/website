@@ -37,4 +37,4 @@
 
 ## GitHub CI
 
-The branch has not yet been published when this document is first written. Add the unmerged PR URL and exact-head CI result here after push/PR creation; do not treat historical PR #65 checks as CC-013 validation. Merge and deployment remain unauthorized.
+Unmerged draft [PR #66](https://github.com/yorkstead/website/pull/66) targets `main`. Its live checks are reported on the PR and apply only to its current head; do not treat historical PR #65 checks as CC-013 validation. Local verification above is tied to the implementation source in this worktree. Merge and deployment remain unauthorized.
