@@ -1,5 +1,12 @@
 # Current handoff
 
+## Operational cleanup preparation — 2026-10-26 (2026-10-27 UTC)
+
+- Verified base/main `51a52abc676c575dc46b2e06b82f4d3cd2bf43bb`; [PR #65](https://github.com/yorkstead/website/pull/65) is MERGED at 2026-10-25T18:44:48Z. Hub main `f501fe26e474ab1be62a6bef0a1dbee7456981e8`. Historical status below is superseded only by this dated evidence.
+- Isolated branch `chore/terminated-engagement-retirement`, `/tmp/yorkstead-retirement-website`. Original `.gitignore` work preserved. Procedures and blockers: [retirement plan](../audits/2026-10-26-retirement-plan.md). Fresh exact production inventory is in the restricted owner artifact `/tmp/yorkstead-retirement-private/record-inventory-and-retirement-plan.md`, not committed to this public repository. Transfer that temporary artifact to approved private custody before ending the workspace lifecycle.
+- State: preparation complete, ready for review PR; production retirement blocked. No production write/delete, QuickBooks, configuration change, merge or manual deployment. Current lifecycle cannot safely cancel milestones or permanently lock drafts; archive retention and historical-win decisions require resolution and explicit production authorization.
+- Validation: Bun 1.4.2 / Node 26.10.0; frozen install unchanged (website packageManager remains 1.3.14). Focused retention/lead rules 6 pass; scaffold, 17 migration plans, lint (one existing login warning), typecheck pass. Full suite 342 pass, 105 database skips, 0 failures (3,839 assertions). No database environment was configured or used for tests. Default build blocked: initial Google Fonts networking failure; escalated retry fails Turbopack worker port binding (`Operation not permitted`). Webpack fallback also fails on unchanged `node:crypto` import through workflow-lead/form. Build is NOT passed. No browser interaction/navigation changed; browser checks skipped. No production test, migration or live UI verification. Diff/security/link review passed; exact-head CI must be evaluated separately.
+
 ## Active cleanup — 2026-10-25
 
 - User authorized an Adorned termination audit, safe website repository cleanup, verification, commit and review PR only. No production writes, QuickBooks access, merge or deployment. Adorned must not be treated as an active engagement or future activation candidate. Historical restrictions and evidence below remain retained.
