@@ -14,7 +14,7 @@ export async function GET(){
   const database=new URL(raw);
   const sql=await contactDatabase();
   const rows=await sql`SELECT COUNT(*)::int total,
-    COUNT(*) FILTER (WHERE status NOT IN ('won','lost','archived'))::int active
+    COUNT(*) FILTER (WHERE status NOT IN ('won','lost','archived') AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id))::int active
     FROM contact_inquiries`;
   const counts=rows[0]||{};
   return NextResponse.json({hostname:database.hostname,database:database.pathname.slice(1),total:Number(counts.total||0),active:Number(counts.active||0)},

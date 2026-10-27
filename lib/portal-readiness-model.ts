@@ -12,7 +12,7 @@ export const releaseContextSchema = z
       .string()
       .regex(/^[a-f0-9]{40}$/)
       .nullable(),
-    schemaVersion: z.enum(["0016", "0017"]),
+    schemaVersion: z.enum(["0016", "0017", "0018"]),
     schemaIdentity: digestSchema,
     configurationIdentity: digestSchema.nullable(),
     environment: z.enum(["disposable", "unverified"]),

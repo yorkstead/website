@@ -13,6 +13,7 @@ WITH claimed AS (
   UPDATE contact_inquiries
   SET status = 'won', archived_at = NULL, converted_project_id = $2, updated_at = NOW()
   WHERE id = $1 AND converted_project_id IS NULL
+    AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)
   RETURNING name, email, company, message
 ), project_data AS (
   SELECT jsonb_build_object(
@@ -45,7 +46,7 @@ function resultRows(result: unknown): Array<Record<string, unknown>> {
 
 export async function convertLeadRecord(client: LeadConversionQueryClient, leadId: number, ids: ConversionIds) {
   await client.query(claimLeadConversionQuery, [leadId, ids.projectId, ids.now, ids.activityId]);
-  const result = await client.query("SELECT converted_project_id FROM contact_inquiries WHERE id = $1 LIMIT 1", [leadId]);
+  const result = await client.query("SELECT converted_project_id FROM contact_inquiries WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) LIMIT 1", [leadId]);
   const destinationId = resultRows(result)[0]?.converted_project_id;
   if (typeof destinationId !== "string" || !destinationId) throw new Error("Project conversion was not confirmed");
   return destinationId;

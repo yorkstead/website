@@ -22,7 +22,8 @@ export async function loadOpportunitySource(): Promise<SourceResult<BriefingOppo
     const rows = await sql`
       SELECT id, name, company, project_type, status, qualification_status, follow_up_at, created_at
       FROM contact_inquiries
-      WHERE status NOT IN ('won', 'lost', 'archived')
+      WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)
+        AND status NOT IN ('won', 'lost', 'archived')
         AND (
           status IN ('qualified', 'proposal')
           OR qualification_status = 'qualified'

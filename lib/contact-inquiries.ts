@@ -61,30 +61,30 @@ export const LEAD_PAGE_SIZE = 20;
 export async function listContactInquiryPage({ status, due = false, page = 1 }: { status?: LeadStatus; due?: boolean; page?: number } = {}) {
   const sql = await contactDatabase();
   const countRows = due
-    ? await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived')`
+    ? await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived')`
     : status
-      ? await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE status = ${status}`
-      : await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries`;
+      ? await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND status = ${status}`
+      : await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)`;
   const pagination = createPagination(countRows[0]?.count, page, LEAD_PAGE_SIZE);
   const offset = (pagination.page - 1) * pagination.pageSize;
   const rows = due
-    ? await sql`SELECT * FROM contact_inquiries WHERE (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived') ORDER BY follow_up_at ASC, id ASC LIMIT ${pagination.pageSize} OFFSET ${offset}`
+    ? await sql`SELECT * FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived') ORDER BY follow_up_at ASC, id ASC LIMIT ${pagination.pageSize} OFFSET ${offset}`
     : status
-      ? await sql`SELECT * FROM contact_inquiries WHERE status = ${status} ORDER BY created_at DESC, id DESC LIMIT ${pagination.pageSize} OFFSET ${offset}`
-      : await sql`SELECT * FROM contact_inquiries ORDER BY created_at DESC, id DESC LIMIT ${pagination.pageSize} OFFSET ${offset}`;
+      ? await sql`SELECT * FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND status = ${status} ORDER BY created_at DESC, id DESC LIMIT ${pagination.pageSize} OFFSET ${offset}`
+      : await sql`SELECT * FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) ORDER BY created_at DESC, id DESC LIMIT ${pagination.pageSize} OFFSET ${offset}`;
   return { records: rows.map(mapInquiry) satisfies ContactInquiry[], pagination };
 }
 
 export async function getContactInquiry(id: number) {
   if (!Number.isSafeInteger(id) || id < 1) return null;
   const sql = await contactDatabase();
-  const rows = await sql`SELECT * FROM contact_inquiries WHERE id = ${id} LIMIT 1`;
+  const rows = await sql`SELECT * FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND id = ${id} LIMIT 1`;
   return rows.length ? mapInquiry(rows[0]) : null;
 }
 
 export async function countDueFollowUps() {
   const sql = await contactDatabase();
-  const rows = await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived')`;
+  const rows = await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived')`;
   return Number(rows[0]?.count ?? 0);
 }
 
@@ -97,7 +97,7 @@ export async function getLeadSummary() {
         AND status NOT IN ('won', 'lost', 'archived')
     )::int AS due_count,
     COUNT(*) FILTER (WHERE status = 'won')::int AS won_count
-    FROM contact_inquiries`;
+    FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)`;
   return normalizeLeadSummary(rows[0] ?? {});
 }
 

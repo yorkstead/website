@@ -1,5 +1,10 @@
 # Current handoff
 
+## Permanent retirement — 2026-10-27
+
+- Authorized application/specification work only, branch `feat/permanent-engagement-retirement`, isolated worktree. Existing PRs #67 (website) and #87 (Hub) remain unmerged. No production mutation, migration, deployment, credential change or merge.
+- State: implementation and synthetic verification complete; review PR delivery pending. Encrypted inventory and published historical documents recovered successfully from protected archives outside Git; the temporary plaintext inventory is gone and the old temporary path in the previous dated handoff is historical. Independent off-device backup and production role separation remain release blockers. Specification: `specs/021-engagement-retirement/`. Fresh inventory stays encrypted outside Git; logs/reports contain no production record identifiers.
+
 ## Active cleanup — 2026-10-25
 
 - User authorized an Adorned termination audit, safe website repository cleanup, verification, commit and review PR only. No production writes, QuickBooks access, merge or deployment. Adorned must not be treated as an active engagement or future activation candidate. Historical restrictions and evidence below remain retained.
