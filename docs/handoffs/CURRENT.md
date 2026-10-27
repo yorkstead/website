@@ -1,5 +1,11 @@
 # Current handoff
 
+## PR #67 CI audit fix — 2026-10-27
+
+- Verified PR-head [CI run #269](https://github.com/yorkstead/website/actions/runs/40589317052), job `122491607203`, failed at `bun audit --audit-level=critical`. The lockfile resolved `better-auth` and `@better-auth/passkey` to 1.6.26; `better-auth` before 1.7.7 is affected by critical GHSA-965c-763c-88jm.
+- Updated both direct dependency ranges to `^1.7.7`; Bun resolved the compatible pair to 1.7.14. GitHub advisory lookup reports no vulnerabilities for these versions; `bun audit --audit-level=critical` and frozen-lockfile install pass. Focused auth tests pass (14); scaffold and all 17 migration checks pass; typecheck passes; lint has one existing warning; full unit suite reports 349 pass, 105 database-dependent skips and zero failures.
+- Build remains blocked fetching Google Fonts. The local browser suite, run on an alternate port because the session’s Playwright service occupies 3100, reported 25 pass and 7 timeouts while PostgreSQL was unavailable on 5432; this is not CI-equivalent because CI provisions PostgreSQL. Recheck exact-head Actions after delivery. PR #67 was observed open at head `1134e814cb7f83220e31294afa495e18fe411c5f`, not draft. No production operations, merge, or deployment.
+
 ## PR #67 branch sync — 2026-10-27
 
 - Updated `chore/terminated-engagement-retirement` with live `main` `d43e582ef825fb5dd926d355688602fb74ea14f9`; merge base `51a52abc676c575dc46b2e06b82f4d3cd2bf43bb`. PR #66 merged at `2026-10-27T21:36:22Z` into that main. PR #67 remains open and draft; this was a branch sync, not a PR-to-main merge.
