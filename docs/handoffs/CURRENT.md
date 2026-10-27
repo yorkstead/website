@@ -1,5 +1,14 @@
 # Current handoff
 
+## Active CC-013 work — 2026-10-26
+
+- Live GitHub main verified at `2026-10-26T06:31:50Z`: `51a52abc676c575dc46b2e06b82f4d3cd2bf43bb`; CC-012 merge `4c5f48749d01600f6382a4425ffaf5c715132c63` is an ancestor. PR #65 (`chore/adorned-engagement-cleanup`) merged at `2026-10-25T18:44:48Z` to that main with successful CI/Vercel/review checks. No open PRs. The task branch is `feat/cc-013-operations-observability` in `/tmp/yorkstead-cc013`.
+- User authorizes implementing CC-013 and asks for an unmerged branch/PR report. No customer production activation, actual customer invitation/email/recovery, Adorned provisioning, alert delivery, production mutation/restore/backup/migration/rollback, environment/secret change, auth weakening, arbitrary URL probing, merge or manual deployment.
+- Spec/plan/tasks/verification: `specs/021-production-operations-observability/`. Implementation is owner-only, explicitly refreshed, read-only dependency checks and current failure alerts. No persistent incident registry/migration or live provider calls. External scheduler delivery, reminder/retention executions, backups/restores, paging and named incident ownership are unverified.
+- Local verification on CC-013 branch/worktree: scaffold check, 17 migration plans, lint (one pre-existing login-panel warning), typecheck, full unit suite (349 passed / 105 DB-dependent skips / zero failures, 3,869 assertions), production build and 2 CC-013 browser checks pass. E2E browser transport/auth tests used local dev only. No production observations or calls, no migrations, no production state changes. Tests/full evidence recorded in the feature verification doc.
+- Draft [PR #66](https://github.com/yorkstead/website/pull/66), base `main`, branch `feat/cc-013-operations-observability`; no merge/deploy authorization. Current live PR check states and exact head are authoritative in GitHub; local evidence above is not production evidence.
+- Original checkout stays on `docs/session-initialization` with its pre-existing `.gitignore` modification untouched. Do not use PR #65 historical CI as CC-013 evidence.
+
 ## Active cleanup — 2026-10-25
 
 - User authorized an Adorned termination audit, safe website repository cleanup, verification, commit and review PR only. No production writes, QuickBooks access, merge or deployment. Adorned must not be treated as an active engagement or future activation candidate. Historical restrictions and evidence below remain retained.
