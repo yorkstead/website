@@ -24,12 +24,12 @@
     "yorkstead:check": "node scripts/yorkstead-check.mjs"
   },
   "dependencies": {
-    "@better-auth/passkey": "^1.6.26",
+    "@better-auth/passkey": "1.7.14",
     "@neondatabase/serverless": "^1.0.2",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-slot": "^1.2.3",
     "@react-three/fiber": "^9.8.2",
-    "better-auth": "^1.6.26",
+    "better-auth": "1.7.14",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",

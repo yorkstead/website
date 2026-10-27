@@ -2,6 +2,7 @@
 
 ## Permanent retirement — 2026-10-27
 
+- Security follow-up for draft PR #68: pin `better-auth` and `@better-auth/passkey` to patched 1.7.14 after the critical OAuth-state/Magic-Link advisory. `bun audit --audit-level=critical` reports no critical findings; typecheck, build, focused auth tests, scaffold, migration check, lint, and the full suite pass (342 pass, 105 database skips in this follow-up run). The dependency change is review-only; no production deployment or credential change occurred.
 - Authorized application/specification work only, branch `feat/permanent-engagement-retirement`, isolated worktree. Existing PRs #67 (website) and #87 (Hub) remain unmerged. No production mutation, migration, deployment, credential change or merge.
 - State: implementation and synthetic verification complete in [draft PR #68](https://github.com/yorkstead/website/pull/68). Encrypted inventory and published historical documents recovered successfully from protected archives outside Git; the temporary plaintext inventory is gone and the old temporary path in the previous dated handoff is historical. Independent off-device backup and production role separation remain release blockers. Specification: `specs/021-engagement-retirement/`. Fresh inventory stays encrypted outside Git; logs/reports contain no production record identifiers.
 
