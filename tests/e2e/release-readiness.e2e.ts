@@ -183,3 +183,25 @@ test.describe("Release Readiness: Browser & Customer Journey Verification", () =
     expect(thirdPartyLeakDetected).toBe(false);
   });
 });
+
+test.describe("CC-013 Operations access boundaries", () => {
+  test("public health response reveals liveness only", async ({ request }) => {
+    const response = await request.get("/api/health");
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual({ status: "ok" });
+  });
+
+  test("operations page and health API deny anonymous access without exposing internals", async ({ page }) => {
+    const pageResponse = await page.goto("/dashboard/operations");
+    expect(pageResponse?.status()).toBeLessThan(400);
+    await expect(page).toHaveURL(/\/login\?next=\/dashboard\/operations$/);
+
+    const response = await page.request.get("/api/operations");
+    expect(response.status()).toBe(401);
+    expect(response.headers()["cache-control"]).toContain("no-store");
+    expect(response.headers()["referrer-policy"]).toBe("no-referrer");
+    const body = await response.text();
+    expect(body).not.toContain("DATABASE_URL");
+    expect(body).not.toContain("postgres://");
+  });
+});
