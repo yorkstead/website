@@ -64,6 +64,9 @@ jobs:
           bun run db:migrate
           bun run db:migrate
 
+      - name: Prepare Better Auth schema in disposable PostgreSQL
+        run: bun run auth:migrate
+
       - name: Run deterministic and database integration tests
         run: bun test
 
