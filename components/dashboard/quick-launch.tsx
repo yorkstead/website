@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   BarChart3,
+  Activity,
   ClipboardCheck,
   Database,
   ExternalLink,
@@ -111,6 +112,13 @@ export function QuickLaunch({
   ];
 
   const operationsLinks = [
+    {
+      id: "operations",
+      label: "Operations",
+      href: "/dashboard/operations",
+      icon: <Activity className="size-4 text-rose-400" />,
+      hint: "Service health, incidents & recovery gaps",
+    },
     {
       id: "analytics",
       label: "Analytics",
