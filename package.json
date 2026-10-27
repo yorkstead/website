@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit --incremental false",
     "test": "bun test",
     "test:e2e": "playwright test",
-    "auth:migrate": "bun x @better-auth/cli migrate --yes",
+    "auth:migrate": "bun x --package @better-auth/cli@1.4.22 better-auth migrate --yes",
     "db:migrate": "bun scripts/migrate.ts",
     "db:migrate:check": "bun scripts/migrate.ts --check",
     "yorkstead:check": "node scripts/yorkstead-check.mjs"
@@ -48,7 +48,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@better-auth/cli": "1.4.22",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/bun": "^1.3.4",
