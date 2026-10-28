@@ -10,6 +10,12 @@ import {
 
 let pool: Pool | undefined;
 
+function runtimeEnvironment(): "production" | "preview" | "development" | "unknown" {
+  const value = process.env.VERCEL_ENV;
+  if (value === "production" || value === "preview" || value === "development") return value;
+  return process.env.NODE_ENV === "development" ? "development" : "unknown";
+}
+
 async function inspectDependencies() {
   let authConfigurationValid = false;
   try {
@@ -20,6 +26,7 @@ async function inspectDependencies() {
   }
 
   const databaseURL = process.env.DATABASE_URL;
+  const databaseConnectionConfigured = Boolean(databaseURL && databaseURL !== "[SENSITIVE]");
   if (!databaseURL || databaseURL === "[SENSITIVE]") {
     return buildOperationsOverview({
       now: new Date(),
@@ -28,6 +35,8 @@ async function inspectDependencies() {
       authSchemaPresent: null,
       briefing: null,
       briefingReadAvailable: false,
+      runtimeEnvironment: runtimeEnvironment(),
+      databaseConnectionConfigured,
     });
   }
 
@@ -112,6 +121,8 @@ async function inspectDependencies() {
     authSchemaPresent,
     briefing,
     briefingReadAvailable,
+    runtimeEnvironment: runtimeEnvironment(),
+    databaseConnectionConfigured,
   });
 }
 

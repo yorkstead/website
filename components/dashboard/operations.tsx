@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Activity, AlertTriangle, CircleCheck, Clock3, RefreshCw, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Activity, AlertTriangle, CircleCheck, RefreshCw, ShieldAlert } from "lucide-react";
 import type { OperationsCheck, OperationsOverview } from "@/lib/operations-observability";
+import { OperationsReadiness } from "@/components/dashboard/operations-readiness";
 
 const panel = "rounded-xl border border-border bg-card p-5";
 const statusText: Record<OperationsCheck["status"], string> = {
@@ -13,7 +14,6 @@ const statusText: Record<OperationsCheck["status"], string> = {
   not_verified: "Not verified",
   unknown: "Unknown",
 };
-
 function checkStyle(status: OperationsCheck["status"]) {
   if (status === "healthy") return "border-emerald-500/25 bg-emerald-500/5";
   if (status === "degraded" || status === "not_configured") return "border-amber-500/30 bg-amber-500/5";
@@ -62,7 +62,7 @@ export function OperationsWorkspace() {
       <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" />Command Center</Link>
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary"><Activity className="size-4" />CC-013 · Operations</div>
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary"><Activity className="size-4" />CC-014 · Operations</div>
           <h1 className="mt-2 text-3xl font-semibold">Operations</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Current service checks, detected issues and recovery evidence. This page is read-only and checks dependencies only when you open or refresh it.</p>
         </div>
@@ -93,10 +93,7 @@ export function OperationsWorkspace() {
           <div className={`${panel} mt-3`}><h3 className="font-medium">Declared scheduler intent</h3><p className="mt-1 text-sm text-muted-foreground">These expressions are checked into the repository. They do not confirm the deployed scheduler is active.</p><ul className="mt-3 space-y-2">{overview.cronSchedules.map((job) => <li key={job.id} className="grid gap-1 text-xs sm:grid-cols-[220px_1fr_160px]"><span>{job.id}</span><code className="break-all text-muted-foreground">{job.path}</code><code className="text-muted-foreground">{job.schedule}</code></li>)}</ul></div>
         </section>
 
-        <section className="mt-7" aria-labelledby="recovery-controls">
-          <div className="mb-3 flex items-center gap-2"><Clock3 className="size-4 text-primary" /><h2 id="recovery-controls" className="text-lg font-semibold">Recovery controls</h2></div>
-          <div className={`${panel} space-y-4`}><p className="text-sm text-muted-foreground">No production recovery actions are available here. Unknown controls remain blockers until supported by independent evidence.</p>{overview.recoveryControls.map((control) => <div key={control.id} className="grid gap-1 border-t border-border pt-3 sm:grid-cols-[230px_130px_1fr]"><h3 className="text-sm font-medium">{control.label}</h3><span className="text-xs text-amber-400">{statusText[control.status]}</span><p className="text-sm text-muted-foreground">Evidence needed: {control.evidenceNeeded}</p></div>)}<div className="border-t border-border pt-3 text-xs text-muted-foreground">Review related controls in <Link className="text-primary underline" href="/dashboard/portal-readiness">Portal Readiness</Link> and <Link className="text-primary underline" href="/dashboard/customer-communications">Customer Communications</Link>.</div></div>
-        </section>
+        <OperationsReadiness overview={overview} />
         <p className="mt-5 text-xs text-muted-foreground">Incidents are derived from this refresh and are not retained as incident history. No email, push notification, restart, migration, restore, rollback or customer action is available from this page.</p>
       </>}
     </main>

@@ -1,5 +1,14 @@
 # Current handoff
 
+## CC-014 Production Readiness & Recovery Hardening — 2026-10-28
+
+- User authorizes implementation, tests, required repository checks and opening a PR for CC-014. Do not merge, deploy, or modify production infrastructure or data. Existing checkout only; no worktree.
+- Live `origin/main` was verified after transient DNS failure at `3c37dc43118fbd3c4c38b7fd457c3c6418640567`. Feature branch `feat/cc-014-production-readiness-recovery` starts from that exact SHA in this checkout. The pre-existing local `main` ref remains preserved at `11cdd93cfb8af187c8e6a75d805dbe799b2febf5` (one commit ahead of verified remote main); its work was not copied or discarded.
+- Active spec/plan/tasks: `specs/022-production-readiness-recovery/`. CC-013's owner-only, read-only Operations API/page is the foundation. Scope adds deterministic production-readiness validation and safe recovery guidance; production Neon org/project identifiers are documentation context only. Never include connection strings, credential values, or customer data.
+- Backups and restore verification remain separate evidence controls. No external backup state or restore capability may be labeled verified without current independent evidence; implementation must not contact or mutate Neon/control-plane infrastructure.
+- Status: implementation, spec/plan/tasks, recovery guidance and local verification are complete. Build remains environment-blocked; details are in `specs/022-production-readiness-recovery/verification.md`. Preparing and opening the authorized unmerged PR is next. No merge, deployment or production action.
+- Historical PR #68 and CC-013 details below are not live status evidence for this task.
+
 ## PR #68 E2E CI investigation — 2026-10-28
 
 - Exact failed head `e0812d28d3be681caa82f11722e419ce115857b4`, CI run [#272](https://github.com/yorkstead/website/actions/runs/40593160159). The downloaded Playwright traces and screenshots show five owner-only tests rendered the Next error boundary after Better Auth 1.7.14 raised `SCHEMA_MISMATCH` for absent owner auth tables; the URL stayed on the protected route. The operations auth test failed for the same exception. Server startup was healthy; this was not a webServer readiness timeout.

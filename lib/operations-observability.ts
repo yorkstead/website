@@ -32,14 +32,38 @@ export type OperationsOverview = {
   readOnly: true;
   liveAlertDelivery: false;
   checks: OperationsCheck[];
+  readinessChecks: OperationsReadinessCheck[];
+  deploymentContext: {
+    environment: "production" | "preview" | "development" | "unknown";
+    neonOrganizationId: "org-aged-leaf-21920027";
+    neonProjectId: "old-boat-18584731";
+    neonIdentityStatus: "not_verified";
+  };
   cronSchedules: { id: string; path: string; schedule: string }[];
   incidents: OperationsIncident[];
   recoveryControls: {
     id: string;
     label: string;
-    status: "not_verified";
+    status: "verified" | "stale" | "not_verified" | "unknown";
+    evidenceSource: "provider-console" | "independent-restore-log" | null;
+    lastVerifiedAt: string | null;
     evidenceNeeded: string;
   }[];
+};
+
+export type OperationsReadinessCheck = {
+  id: string;
+  label: string;
+  status: OperationsCheckStatus;
+  summary: string;
+  source: string;
+  impact: string;
+  ownerAction: string;
+};
+
+export type RecoveryEvidence = {
+  observedAt: Date;
+  source: "provider-console" | "independent-restore-log";
 };
 
 export type BriefingObservation = {
@@ -55,6 +79,8 @@ export type OperationsInput = {
   authSchemaPresent: boolean | null;
   briefing: BriefingObservation;
   briefingReadAvailable: boolean;
+  runtimeEnvironment: "production" | "preview" | "development" | "unknown";
+  databaseConnectionConfigured: boolean;
 };
 
 export const cronScheduleIntent = [
@@ -211,15 +237,76 @@ export function buildOperationsOverview(input: OperationsInput): OperationsOverv
     readOnly: true,
     liveAlertDelivery: false,
     checks,
+    readinessChecks: [
+      {
+        id: "runtime-environment",
+        label: "Production runtime",
+        status: input.runtimeEnvironment === "production" ? "healthy" : input.runtimeEnvironment === "unknown" ? "unknown" : "not_verified",
+        source: "Platform runtime metadata (VERCEL_ENV or local NODE_ENV)",
+        summary: input.runtimeEnvironment === "production"
+          ? "The application reports a production runtime; this does not identify its database project."
+          : input.runtimeEnvironment === "unknown"
+            ? "The runtime environment could not be identified."
+            : "This request is running outside the production environment.",
+        impact: "A preview or local observation does not establish production runtime configuration.",
+        ownerAction: "Review the selected production deployment through the approved owner workflow.",
+      },
+      {
+        id: "database-configuration",
+        label: "Database configuration",
+        status: input.databaseConnectionConfigured ? "healthy" : "not_configured",
+        source: "Server-side database setting presence only",
+        summary: input.databaseConnectionConfigured
+          ? "A database connection setting is present; its value is withheld and target identity is not inferred."
+          : "The database connection setting is missing; no value is displayed.",
+        impact: "Database-backed operations require a correctly scoped production connection.",
+        ownerAction: "Review secret configuration through the approved release process; never paste the value into this workspace.",
+      },
+      {
+        id: "neon-target-identity",
+        label: "Neon production target identity",
+        status: "not_verified",
+        source: "Documented deployment context below; no live provider identity observation",
+        summary: "The expected organization and project are documented below. This application cannot independently verify the deployed Neon target.",
+        impact: "A working connection may point to a different organization, project, branch or environment.",
+        ownerAction: "Compare the documented IDs in an approved owner-only provider session before any production operation.",
+      },
+    ],
+    deploymentContext: {
+      environment: input.runtimeEnvironment,
+      neonOrganizationId: "org-aged-leaf-21920027",
+      neonProjectId: "old-boat-18584731",
+      neonIdentityStatus: "not_verified",
+    },
     cronSchedules: cronScheduleIntent.map(({ id, path, schedule }) => ({ id, path, schedule })),
     incidents,
-    recoveryControls: [
-      { id: "backup", label: "Current backup or restore point", status: "not_verified", evidenceNeeded: "A current provider backup observation with its retention boundary." },
-      { id: "restore-test", label: "Restore rehearsal", status: "not_verified", evidenceNeeded: "A dated, scoped restore rehearsal with integrity and recovery-time results." },
-      { id: "rollback", label: "Release rollback rehearsal", status: "not_verified", evidenceNeeded: "A reviewed rollback procedure verified against a specific release." },
-      { id: "incident-owner", label: "Named incident owner and escalation", status: "not_verified", evidenceNeeded: "A named responder, escalation path and tested contact procedure." },
-    ],
+    recoveryControls: buildRecoveryControls(),
   };
+}
+
+export function buildRecoveryControls(evidence: {
+  backup?: RecoveryEvidence | null;
+  restoreTest?: RecoveryEvidence | null;
+} = {}, asOf = new Date()): OperationsOverview["recoveryControls"] {
+  const control = (id: string, label: string, observed: RecoveryEvidence | null | undefined, source: RecoveryEvidence["source"], maxAgeMs: number, evidenceNeeded: string) => {
+    const validObservation = observed && observed.source === source && Number.isFinite(observed.observedAt.getTime());
+    const age = validObservation ? asOf.getTime() - observed.observedAt.getTime() : Number.NaN;
+    const status = !validObservation ? "not_verified" as const : age < 0 ? "unknown" as const : age > maxAgeMs ? "stale" as const : "verified" as const;
+    return {
+      id,
+      label,
+      status,
+      evidenceSource: validObservation ? observed.source : null,
+      lastVerifiedAt: validObservation ? observed.observedAt.toISOString() : null,
+      evidenceNeeded,
+    };
+  };
+  return [
+    control("backup", "Backup or restore point availability", evidence.backup, "provider-console", 24 * 60 * 60 * 1000, "A dated provider observation for an available recovery point and its retention boundary."),
+    control("restore-test", "Restore verification", evidence.restoreTest, "independent-restore-log", 90 * 24 * 60 * 60 * 1000, "A separate, dated isolated restore rehearsal with integrity checks and measured recovery time. A backup listing is not restore verification."),
+    { id: "rollback", label: "Release rollback rehearsal", status: "not_verified", evidenceSource: null, lastVerifiedAt: null, evidenceNeeded: "A reviewed rollback procedure verified against a specific release." },
+    { id: "incident-owner", label: "Named incident owner and escalation", status: "not_verified", evidenceSource: null, lastVerifiedAt: null, evidenceNeeded: "A named responder, escalation path and tested contact procedure." },
+  ];
 }
 
 export function operationsJSON(value: unknown, status = 200) {
