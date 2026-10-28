@@ -10,7 +10,7 @@ export async function setupOwnerPublishingFixture() {
     for (const table of ['user','session','account','verification']) await pool.query(`CREATE TABLE IF NOT EXISTS public."${table}" (LIKE customer_auth."${table}" INCLUDING ALL)`);
     const hash=await (await getAuth().$context).password.hash(publishingOwner.password);
     await pool.query('INSERT INTO public."user"(id,name,email,"emailVerified") VALUES (\'cc009-browser-owner\',\'Fictional publishing owner\',$1,true) ON CONFLICT(id) DO NOTHING',[publishingOwner.email]);
-    await pool.query('INSERT INTO public."account"(id,"userId","accountId","providerId",password) VALUES (\'cc009-browser-owner\',\'cc009-browser-owner\',\'cc009-browser-owner\',\'credential\',$1) ON CONFLICT(id) DO UPDATE SET password=excluded.password',[hash]);
+    await pool.query('INSERT INTO public."account"(id,"userId","accountId","providerId",password,"updatedAt") VALUES (\'cc009-browser-owner\',\'cc009-browser-owner\',\'cc009-browser-owner\',\'credential\',$1,now()) ON CONFLICT(id) DO UPDATE SET password=excluded.password,"updatedAt"=now()',[hash]);
     const suffix=crypto.randomUUID(),projectId=`cc009-${suffix}`,tenant=`cc009-tenant-${suffix}`;
     await pool.query("INSERT INTO customer_tenants(id,name,status) VALUES ($1,'Fictional publishing tenant','active')",[tenant]);
     await pool.query("INSERT INTO customer_tenant_projects(tenant_id,project_id,status) VALUES ($1,$2,'active')",[tenant,projectId]);
