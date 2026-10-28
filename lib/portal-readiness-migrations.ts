@@ -21,4 +21,5 @@ export const readinessMigrationManifest0016 = [
 // Append-only release manifest; the historical 0016 identity remains available.
 export const readinessMigrationManifest = [...readinessMigrationManifest0016,
   ["0017", "7497a8aca888799bce8f6f6ea6ea278ebc1216ae9dadecbd6a554ed78b76e9de"],
+  ["0018", "d2239bd96fd45b96c7f4d41245de282fd2d7077491fec570a16f7f49ba91d834"],
 ] as const;

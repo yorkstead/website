@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const purgeBefore = archivedInquiryPurgeBefore().toISOString();
     const briefingPurgeBefore = morningBriefingPurgeBefore().toISOString();
     const [inquiries, snapshots, briefings] = await withOperationTimeout(Promise.all([
-      sql`DELETE FROM contact_inquiries WHERE status = 'archived' AND archived_at < ${purgeBefore}::timestamptz RETURNING id`,
+      sql`DELETE FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND status = 'archived' AND archived_at < ${purgeBefore}::timestamptz RETURNING id`,
       sql`
         DELETE FROM workspace_snapshots
         WHERE id IN (

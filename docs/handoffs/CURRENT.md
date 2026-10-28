@@ -1,5 +1,12 @@
 # Current handoff
 
+## PR #68 E2E CI investigation — 2026-10-28
+
+- Exact failed head `e0812d28d3be681caa82f11722e419ce115857b4`, CI run [#272](https://github.com/yorkstead/website/actions/runs/40593160159). The downloaded Playwright traces and screenshots show five owner-only tests rendered the Next error boundary after Better Auth 1.7.14 raised `SCHEMA_MISMATCH` for absent owner auth tables; the URL stayed on the protected route. The operations auth test failed for the same exception. Server startup was healthy; this was not a webServer readiness timeout.
+- Public navigation trace shows traversal reached many public pages before the 30-second test deadline while two CI workers ran; it does not show a blocked startup or redirect. The server concurrently emitted the auth schema exception from other protected pages. PR #67’s separately merged fix adds Better Auth schema setup to CI’s disposable PostgreSQL; it passed the same complete browser and isolated workflow suite on PR #67 head `82591b78e8f927ed94b6805492e29879c68b8f28`, CI run [#277](https://github.com/yorkstead/website/actions/runs/40604616782).
+- Synchronized PR #68’s existing branch with live `main` `9fb143f704131a27c34ad75f8f9ce9621e7d5b1b` to bring in that shared CI fix and resolve base conflicts. Auth checks and test timeouts are unchanged. The PR #68 exact-head CI result is pending; no production action, merge, or deployment.
+- Permanent retirement spec remains `specs/021-engagement-retirement/`. Encrypted inventory recovery was verified, but independent off-device backup and production role separation remain release blockers. PR #67 is merged; Hub PR #87 is also merged. No record lifecycle operation is authorized.
+
 ## PR #67 CI audit fix — 2026-10-27
 
 - Verified PR-head [CI run #269](https://github.com/yorkstead/website/actions/runs/40589317052), job `122491607203`, failed at `bun audit --audit-level=critical`. The lockfile resolved `better-auth` and `@better-auth/passkey` to 1.6.26; `better-auth` before 1.7.7 is affected by critical GHSA-965c-763c-88jm.

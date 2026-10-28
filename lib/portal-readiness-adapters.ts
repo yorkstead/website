@@ -23,7 +23,7 @@ export function createReadinessInspector(
     const context = {
       releaseId: "customer-portal-v1" as const,
       codeRevision: code && /^[a-f0-9]{40}$/.test(code) ? code : null,
-      schemaVersion: "0017" as const,
+      schemaVersion: "0018" as const,
       schemaIdentity: readinessDigest(readinessMigrationManifest),
       configurationIdentity:
         configuration && /^[a-f0-9]{64}$/.test(configuration)
@@ -121,7 +121,7 @@ export function createReadinessInspector(
       try {
         const rows = (
           await client.query<{ version: string; checksum: string }>(
-            "SELECT version,checksum FROM application_migrations ORDER BY version LIMIT 18",
+            "SELECT version,checksum FROM application_migrations ORDER BY version LIMIT 19",
           )
         ).rows;
         const ledger = rows.map((r) => [r.version, r.checksum]);
