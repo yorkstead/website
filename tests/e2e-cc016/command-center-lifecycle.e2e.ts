@@ -137,6 +137,17 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await expect(page.getByText("CC-016 synthetic milestone", { exact: true })).toBeVisible();
   await expect(page.getByText("CC-016 synthetic decision", { exact: true })).toBeVisible();
 
+  await expect.poll(async () => {
+    const response = await context.request.get("/api/workspace");
+    if (!response.ok()) return false;
+    const payload = await response.json() as { workspace?: { projects?: Array<{ id: string; delivery?: { milestones?: Array<{ title: string }>; decisions?: Array<{ title: string }> } }> } };
+    const savedProject = payload.workspace?.projects?.find((project) => project.id === projectId);
+    return Boolean(
+      savedProject?.delivery?.milestones?.some((item) => item.title === "CC-016 synthetic milestone") &&
+      savedProject.delivery.decisions?.some((item) => item.title === "CC-016 synthetic decision")
+    );
+  }, { timeout: 15_000 }).toBe(true);
+
   const projectRows = await context.request.get(`/api/dashboard/project-linkage?projectId=${encodeURIComponent(projectId!)}`);
   expect(projectRows.status()).toBe(200);
   await expect(page.getByRole("link", { name: `${company} · Open inquiry` })).toHaveAttribute("href", `/dashboard/leads?lead=${leadId}`);
