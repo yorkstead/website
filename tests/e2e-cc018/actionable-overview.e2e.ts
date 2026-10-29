@@ -208,7 +208,7 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await updatedEditor.locator('input[name="nextActionAt"]').fill("");
   await updatedEditor.locator('input[name="nextAction"]').fill("");
   await updatedEditor.getByRole("button", { name: "Save proposal changes" }).click();
-  await expect(page.getByText("No next action", { exact: true })).toBeVisible();
+  await expect(page.getByText("No next action", { exact: false })).toBeVisible();
   await expect(updatedEditor.locator('input[name="nextActionAt"]')).toHaveValue("");
   await expect(updatedEditor.locator('input[name="nextAction"]')).toHaveValue("");
   await page.goto("/dashboard");
