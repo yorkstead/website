@@ -11,6 +11,12 @@
 - Verification: scaffold and all 18 migration checks pass; lint passes with the pre-existing `login-panel.tsx:62` warning; typecheck passes; 362 tests pass, 107 database-dependent tests skip because `TEST_DATABASE_URL` is unavailable. The production build passes using Next's webpack builder; default Turbopack cannot bind its worker port in this sandbox. Browser suite has 31/32 on the default timeout; its slow public navigation crawl passed independently with a command-line 90-second timeout (32.3s). Details and rollback guidance: `specs/023-cc-015-crm-project-workflow/verification.md`.
 - Delivery: open [PR #70](https://github.com/yorkstead/website/pull/70), `CC-015: CRM & Project Workflow Completion`, head `64ec8445a0d8599ca5d50d5446e50a6d11b0589f`, against verified `main` `9c5c94681ed03eab45641673696ca20b9fbe7d5b`. PR is open and unmerged. No deployment or production-data write.
 
+## PR #70 database integration test correction — 2026-10-29
+
+- Live GitHub verification: PR #70 remains open/unmerged at head `b58b5ece8f1cbcacaa0af78866f2e0e2f7193aee`; CI run [#40794371585](https://github.com/yorkstead/website/actions/runs/40794371585) for that exact PR head failed only in the database integration test step.
+- Root cause and correction: the archived fixture omitted required `archived_at`; PostgreSQL `BIGSERIAL` result IDs are strings, but the follow-up test typed them as numbers. The app helper correctly rejected string IDs before executing SQL. Fixtures now set `archived_at=NOW()` and convert/check all IDs as safe numbers, retaining retirement and authorization checks.
+- Local scaffold, migration plan, lint, typecheck and full unit suite pass (362 pass / 107 DB-dependent skips / 0 failures). The sandbox has no `TEST_DATABASE_URL`; Docker daemon access is denied. `bun audit --audit-level=critical` could not reach npm registry because DNS is unavailable. Push correction to the existing PR branch, then use the new CI run's disposable PostgreSQL service to verify both integration tests and remaining CI jobs. No production database, data, merge, or deployment.
+
 ## CC-014 Production Readiness & Recovery Hardening — 2026-10-28 (historical; PR #69 merged)
 
 ## CC-014 Production Readiness & Recovery Hardening — 2026-10-28
