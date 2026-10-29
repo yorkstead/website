@@ -151,6 +151,59 @@ test("Automations keeps owner-only access and shows the existing Hub workflow li
   }
 });
 
+test("Automations renders source-labelled Hub records, empty queues, and partial failures", async ({ page, context }) => {
+  expect((await context.request.get(`${origin}/api/dashboard/automation-hub`)).status()).toBe(401);
+  expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).status()).toBe(200);
+
+  const checkedAt = "2026-10-29T16:00:00.000Z";
+  let responseBody: unknown = {
+    state: "available",
+    checkedAt,
+    data: {
+      contractVersion: 1,
+      source: "Automation Hub",
+      generatedAt: checkedAt,
+      captures: { source: "Automation Hub · captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [{ id: "capture-123", createdAt: checkedAt, status: "pending", classification: { kind: "task", title: "Replace filter", summary: "Replace the filter by Friday", dueDate: "2026-10-30", requiresConfirmation: true } }] },
+      activity: { source: "Automation Hub · execution history", state: "available", checkedAt, truncated: false, errorCode: null, items: [{ id: "run-456", createdAt: checkedAt, automation: "morning-briefing", runId: "run-456", level: "info", stage: "briefing-generated", outcome: "succeeded", durationMs: 800, errorCode: null }] },
+      integrationHealth: { source: "Automation Hub · integrations", state: "available", checkedAt, database: "healthy", googleTasks: "healthy", errorCode: null },
+      reviewQueue: { source: "Automation Hub · pending captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      tasks: { source: "Google Tasks via Automation Hub", state: "available", checkedAt, truncated: false, errorCode: null, items: [{ id: "task-789", listId: "list-100", title: "Call supplier", status: "needsAction", dueAt: checkedAt, updatedAt: checkedAt }] },
+    },
+  };
+  await page.route("**/api/dashboard/automation-hub", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(responseBody) }));
+
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/dashboard/automations");
+  await expect(page.getByRole("heading", { name: "Recent voice captures" })).toBeVisible();
+  await expect(page.getByText("Replace the filter by Friday")).toBeVisible();
+  await expect(page.getByText("Source: Automation Hub · captures")).toBeVisible();
+  await expect(page.getByText("ID: capture-123")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Activity history" })).toBeVisible();
+  await expect(page.getByText("ID: run-456")).toBeVisible();
+  await expect(page.getByText("No captures currently need review.")).toBeVisible();
+  await expect(page.getByText("Call supplier")).toBeVisible();
+  await expect(page.getByText("List ID: list-100")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+  responseBody = {
+    state: "available",
+    checkedAt,
+    data: {
+      contractVersion: 1,
+      source: "Automation Hub",
+      generatedAt: checkedAt,
+      captures: { source: "Automation Hub · captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      activity: { source: "Automation Hub · execution history", state: "unavailable", checkedAt, truncated: false, errorCode: "source_unavailable", items: [] },
+      integrationHealth: { source: "Automation Hub · integrations", state: "available", checkedAt, database: "healthy", googleTasks: "degraded", errorCode: "google_api_unavailable" },
+      reviewQueue: { source: "Automation Hub · pending captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      tasks: { source: "Google Tasks via Automation Hub", state: "unavailable", checkedAt, truncated: false, errorCode: "google_api_unavailable", items: [] },
+    },
+  };
+  await page.reload();
+  await expect(page.getByText("This source did not return data (source_unavailable). An unavailable source is not an empty queue.")).toBeVisible();
+  await expect(page.getByText("No open Google Tasks were returned.")).toHaveCount(0);
+});
+
 test("print media hides dashboard navigation and preserves marketing one-sheet pages", async ({ page, context }) => {
   expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).status()).toBe(200);
   await page.setViewportSize({ width: 1440, height: 1000 });

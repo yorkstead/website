@@ -7,6 +7,7 @@ import { ArrowLeft, Activity, AlertTriangle, CircleCheck, RefreshCw, ShieldAlert
 import type { OperationsCheck, OperationsOverview } from "@/lib/operations-observability";
 import type { AutomationHubHealth } from "@/lib/automation-hub-health";
 import { OperationsReadiness } from "@/components/dashboard/operations-readiness";
+import { AutomationHubRecords } from "@/components/dashboard/automation-hub-records";
 
 const panel = "rounded-xl border border-border bg-card p-5";
 const statusText: Record<OperationsCheck["status"], string> = {
@@ -100,6 +101,7 @@ export function OperationsWorkspace({ automationHub }: { automationHub?: Automat
       </div>
 
       {automationHub ? <AutomationHubPanel overview={automationHub} /> : null}
+      {automationHub ? <AutomationHubRecords /> : null}
 
       {loading && <p role="status" className="mt-6">Checking current service health…</p>}
       {error && <p role="alert" className="mt-6 rounded-lg border border-destructive/40 p-4 text-sm">{error}</p>}
