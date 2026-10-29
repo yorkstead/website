@@ -7,6 +7,7 @@ const captures = [
   { id: "11111111-1111-4111-8111-111111111111", createdAt: checkedAt, status: "pending", classification: { kind: "task", title: "Replace air filter", summary: "Replace the air filter before Friday.", dueDate: "2026-10-30", requiresConfirmation: true } },
   { id: "55555555-5555-4555-8555-555555555555", createdAt: checkedAt, status: "pending", classification: { kind: "lead", title: "Review prospect", summary: "A synthetic lead stays in Hub review.", dueDate: null, requiresConfirmation: true } },
   { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", createdAt: checkedAt, status: "pending", classification: { kind: "note", title: "Review note", summary: "Synthetic note for reclassification.", dueDate: null, requiresConfirmation: true } },
+  { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", createdAt: checkedAt, status: "needs_review", classification: { kind: "task", title: "Unreconciled task", summary: "Legacy provider result needs review.", dueDate: null, requiresConfirmation: true } },
 ];
 let workspaceSnapshot: Awaited<ReturnType<typeof setupCc016Owner>>["workspace"] | null = null;
 let fixtureInitialized = false;
@@ -61,6 +62,8 @@ test("owner-only Automations supports responsive capture review, confirmed actio
     await expect(page.getByRole("heading", { name: "Capture inbox" })).toBeVisible();
     await expect(page.getByLabel("Capture inbox").getByRole("heading", { name: "Replace air filter" })).toBeVisible();
     await expect(page.getByText("Automation Hub · captures").first()).toBeVisible();
+    await expect(page.getByText("Manual reconciliation is required in Automation Hub before changing this capture’s review state.")).toBeVisible();
+    await expect(page.getByRole("listitem").filter({ hasText: "Unreconciled task" }).getByRole("button")).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     if (width === 390) {
       await page.getByRole("button", { name: "Approve task" }).click();
@@ -104,6 +107,10 @@ test("uncertain command recovery survives unavailable refresh and remount with t
     commandBodies.push(route.request().postDataJSON());
     recordsAvailable = false;
     const command = commandBodies.at(-1)!;
+    if (commandBodies.length === 1) {
+      await route.fulfill({ status: 503, json: { error: "hub_unavailable" } });
+      return;
+    }
     await route.fulfill({ status: 202, json: { contractVersion: 1, commandId: "33333333-3333-4333-8333-333333333333", captureId: captures[2].id, action: command.action, status: "processing", destination: "hub_capture_inbox", resultCode: "command_pending", externalWriteStarted: false, retrySafe: false } });
   });
   await page.setViewportSize({ width: 390, height: 900 });
@@ -111,7 +118,7 @@ test("uncertain command recovery survives unavailable refresh and remount with t
   await page.getByRole("button", { name: "Reclassify" }).click();
   const dialog = page.getByRole("dialog", { name: "Confirm reclassify" });
   await dialog.getByRole("button", { name: "Confirm reclassify" }).click();
-  await expect(page.getByText("still processing", { exact: false })).toBeVisible();
+  await expect(page.getByText("did not return a command result", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Check Hub command status" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "Capture source unavailable" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Review note" })).toBeVisible();
