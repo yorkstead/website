@@ -133,7 +133,7 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await decisionSection.getByRole("button", { name: "Add" }).click();
   await page.getByLabel("Decision title").fill("CC-016 synthetic decision");
   await page.getByLabel("Decision notes").fill("Synthetic owner-only decision context");
-  await page.getByRole("button", { name: "Save delivery" }).click();
+  await page.getByRole("button", { name: "Save delivery" }).first().click();
   await expect(page.getByText("CC-016 synthetic milestone", { exact: true })).toBeVisible();
   await expect(page.getByText("CC-016 synthetic decision", { exact: true })).toBeVisible();
 
