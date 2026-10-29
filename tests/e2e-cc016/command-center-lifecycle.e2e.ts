@@ -92,7 +92,8 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await expect(page.locator(`#lead-${leadId}`)).toBeVisible();
   await page.locator(`#lead-${leadId}`).getByRole("button", { name: "Mark follow-up complete" }).click();
   await page.goto(`/dashboard/leads?lead=${leadId}`);
-  await expect(page.getByLabel("Follow-up date", { exact: true })).toHaveValue("");
+  const leadFollowUpForm = page.getByRole("button", { name: "Save notes & follow-up" }).locator("xpath=..");
+  await expect(leadFollowUpForm.locator('input[name="followUpAt"]')).toHaveValue("");
   const completed = await context.request.get(`/dashboard/leads?lead=${leadId}`);
   expect(completed.status()).toBe(200);
 
