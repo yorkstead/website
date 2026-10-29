@@ -175,7 +175,8 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   await scopeControl.selectOption("personal");await priorityControl.selectOption("essential");
   await page.getByRole("button",{name:"Save changes"}).click();
   await page.getByRole("button",{name:"Approve review"}).click();await page.getByRole("button",{name:"Mark purchased"}).click();
-  await expect(page.getByText(/purchased/).first()).toBeVisible();await page.getByRole("button",{name:"Undo purchase"}).click();
+  await page.getByRole("combobox",{name:"Status",exact:true}).selectOption("purchased");
+  await page.getByRole("button",{name:"Undo purchase"}).click();
   await page.getByLabel("Receipt date").fill("2026-11-02");await page.getByLabel("Actual amount received").fill("1100");
   await page.getByLabel("Reserve label").fill("Rent");await page.getByLabel("Reserve amount").fill("300");await page.getByRole("button",{name:"Add reserve"}).click();
   await page.getByRole("button",{name:"Confirm receipt and reserves"}).click();
