@@ -7,4 +7,4 @@
 - [x] T005 — Add conversion/archive/retirement and follow-up lifecycle regressions.
 - [x] T006 — Verify project detail next steps and existing milestones, decisions, and activity stay connected to the project.
 - [x] T007 — Run the complete requested checks and document environmental limits and rollback plan.
-- [ ] T008 — Update current handoff and open PR `CC-015: CRM & Project Workflow Completion` without merging or deploying.
+- [x] T008 — Update current handoff and open PR `CC-015: CRM & Project Workflow Completion` without merging or deploying.
