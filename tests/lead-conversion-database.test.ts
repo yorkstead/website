@@ -82,4 +82,36 @@ describe("lead conversion persistence", () => {
       clientConnection.release();
     }
   });
+
+  databaseTest("appends to an existing workspace without replacing delivery data", async () => {
+    const connection = await pool!.connect();
+    await connection.query("BEGIN");
+    const email = `conversion-existing-${randomUUID()}@example.test`;
+    const existingProjectId = `existing-${randomUUID()}`;
+    const existingTaskId = `task-${randomUUID()}`;
+    const projectId = randomUUID();
+    try {
+      await connection.query(
+        `INSERT INTO workspaces (id, data) VALUES ('primary', $1::jsonb)
+         ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`,
+        [JSON.stringify({ projects: [{ id: existingProjectId }], tasks: [{ id: existingTaskId }], activity: [] })],
+      );
+      const inserted = await connection.query<{ id: string }>(
+        "INSERT INTO contact_inquiries (name,email,company,message,ip_hash) VALUES ('Synthetic conversion',$1,'Existing workspace company','Retain existing delivery data',$2) RETURNING id",
+        [email, randomUUID()],
+      );
+      const leadId = Number(inserted.rows[0]!.id);
+      const client = { query: (query: string, params?: unknown[]) => connection.query(query, params) };
+      await convertLeadRecord(client, leadId, { projectId, activityId: randomUUID(), now: new Date().toISOString() });
+      const workspace = await connection.query<{ data: { projects: Array<{ id: string }>; tasks: Array<{ id: string }> } }>(
+        "SELECT data FROM workspaces WHERE id='primary'",
+      );
+      expect(workspace.rows[0]?.data.projects.map((project) => project.id)).toContain(existingProjectId);
+      expect(workspace.rows[0]?.data.projects.map((project) => project.id)).toContain(projectId);
+      expect(workspace.rows[0]?.data.tasks).toEqual([{ id: existingTaskId }]);
+    } finally {
+      await connection.query("ROLLBACK");
+      connection.release();
+    }
+  });
 });

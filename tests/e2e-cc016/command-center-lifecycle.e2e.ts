@@ -64,6 +64,10 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await queueLead.click();
   await expect(page).toHaveURL(new RegExp(`/dashboard/leads\\?lead=${leadId}`));
 
+  const workspaceResponse = await context.request.get("/api/workspace");
+  expect(workspaceResponse.status()).toBe(200);
+  expect(await workspaceResponse.json()).toHaveProperty("workspace");
+
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   const lead = page.locator(`#lead-${leadId}`);
   await expect(lead).toContainText("CC-016 Synthetic Inquiry");

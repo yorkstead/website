@@ -1,7 +1,6 @@
 import { neon } from "@neondatabase/serverless";
-import { Pool } from "pg";
 import { createPagination } from "@/lib/pagination";
-import { isLoopbackDisposableDatabase, postgresQueryFunction } from "@/lib/contact-database";
+import { disposablePostgresQueryFunction, isLoopbackDisposableDatabase } from "@/lib/contact-database";
 import type { WorkflowAuditIntake } from "@/lib/workflow-audit";
 import type { ProductInquiryIntake } from "@/lib/product-inquiry";
 
@@ -19,8 +18,6 @@ export type LeadSummary = {
 export type FollowUpFilter = "overdue" | "today" | "upcoming";
 
 export type ContactInquiryIntake = Partial<WorkflowAuditIntake> & Partial<ProductInquiryIntake> & Record<string, unknown>;
-
-let disposablePool: Pool | undefined;
 
 export type ContactInquiry = {
   id: number;
@@ -61,10 +58,7 @@ export type ContactInquiry = {
 export async function contactDatabase() {
   const databaseURL = process.env.DATABASE_URL;
   if (!databaseURL || databaseURL === "[SENSITIVE]") throw new Error("DATABASE_URL is not configured");
-  if (isLoopbackDisposableDatabase(databaseURL)) {
-    disposablePool ??= new Pool({ connectionString: databaseURL });
-    return postgresQueryFunction(disposablePool);
-  }
+  if (isLoopbackDisposableDatabase(databaseURL)) return disposablePostgresQueryFunction(databaseURL);
   return neon(databaseURL);
 }
 

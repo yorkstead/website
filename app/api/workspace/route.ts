@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { NextResponse } from "next/server";
+import { disposablePostgresQueryFunction, isLoopbackDisposableDatabase } from "@/lib/contact-database";
 import { parseWorkspace } from "@/lib/workspace-validation";
 import { requireOwner } from "@/lib/owner-session";
 import { readRequestTextWithLimit } from "@/lib/request-body";
@@ -13,6 +14,7 @@ const snapshotRestoreBodyLimit = 1_000;
 function getSql() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error("DATABASE_URL is not configured");
+  if (isLoopbackDisposableDatabase(databaseUrl)) return disposablePostgresQueryFunction(databaseUrl);
   return neon(databaseUrl);
 }
 

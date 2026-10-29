@@ -3,6 +3,7 @@ import type { NeonQueryFunction } from "@neondatabase/serverless";
 
 type NeonSql = NeonQueryFunction<false, false>;
 type QueryPool = Pick<Pool, "query">;
+const disposablePools = new Map<string, Pool>();
 
 export function isLoopbackDisposableDatabase(databaseURL: string, nodeEnv = process.env.NODE_ENV) {
   if (nodeEnv !== "development") return false;
@@ -31,4 +32,13 @@ export function postgresQueryFunction(pool: QueryPool) {
       return result.rows;
     },
   }) as unknown as NeonSql;
+}
+
+export function disposablePostgresQueryFunction(databaseURL: string) {
+  let pool = disposablePools.get(databaseURL);
+  if (!pool) {
+    pool = new Pool({ connectionString: databaseURL });
+    disposablePools.set(databaseURL, pool);
+  }
+  return postgresQueryFunction(pool);
 }
