@@ -159,7 +159,7 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
 
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   await expect(page.getByRole("heading", { name: "CC-019 Sales Workflow" })).toBeVisible();
-  await page.locator("summary:visible", { hasText: "Qualification, consultations & proposals" }).click();
+  await page.locator(`#lead-${leadId}`).getByText("Qualification, consultations & proposals").click();
   await expect(page.getByText("Reduce manual reconciliation", { exact: false })).toBeVisible();
   await page.getByLabel("Industry").selectOption("manufacturing");
   await page.getByLabel("Company size").fill("120 employees");
@@ -197,7 +197,7 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await expect(page.getByText("Active proposal value").locator(".." )).toContainText("$3,250");
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   await expect(page.getByRole("heading", { name: "CC-019 Sales Workflow" })).toBeVisible();
-  await page.locator("summary:visible", { hasText: "Qualification, consultations & proposals" }).click();
+  await page.locator(`#lead-${leadId}`).getByText("Qualification, consultations & proposals").click();
   const updatedEditor = page.locator('form[aria-label="Edit system proposal"]');
   await updatedEditor.locator('input[name="nextActionAt"]').fill(offsetDateKey(6));
   await updatedEditor.locator('input[name="nextAction"]').fill("Review system scope after reschedule");
@@ -217,7 +217,7 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
 
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   await expect(page.getByRole("heading", { name: "CC-019 Sales Workflow" })).toBeVisible();
-  await page.locator("summary:visible", { hasText: "Qualification, consultations & proposals" }).click();
+  await page.locator(`#lead-${leadId}`).getByText("Qualification, consultations & proposals").click();
   const proposalCard = page.locator("article").filter({ has: page.locator('form[aria-label="Edit system proposal"]') });
   await proposalCard.locator('select[name="state"]').selectOption("accepted");
   await proposalCard.getByRole("button", { name: "Update state" }).click();
