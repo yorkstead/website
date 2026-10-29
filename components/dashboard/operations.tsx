@@ -29,25 +29,18 @@ const hubStateLabel: Record<AutomationHubHealth["state"], string> = {
   unavailable: "Hub unavailable",
 };
 
-function AutomationHubPanel({ overview }: { overview: AutomationHubHealth }) {
+function AutomationHubPanel({ overview, writeEnabled }: { overview: AutomationHubHealth; writeEnabled: boolean }) {
   return <section className={`${panel} mt-6`} aria-labelledby="automation-hub-status">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div><div className="text-xs uppercase tracking-[0.16em] text-primary">Automation Hub · separate service</div><h2 id="automation-hub-status" className="mt-1 text-lg font-semibold">Voice capture controls</h2></div>
       <span className="rounded-full border border-border px-3 py-1 text-xs">{hubStateLabel[overview.state]}</span>
     </div>
-    <p className="mt-3 text-sm text-muted-foreground">Voice capture ingestion, classification, and review records stay in the Hub. The status badge checks only its existing static health endpoint; it does not verify capture ingestion, Google actions, Tasker delivery, or playback. Checked {new Date(overview.checkedAt).toLocaleString()}.</p>
-    <div className="mt-4 flex flex-wrap gap-2">
-      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/command#ys-actions" target="_blank" rel="noopener noreferrer">Open Hub capture controls</a>
-      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/command#ys-health" target="_blank" rel="noopener noreferrer">Open Hub integration health</a>
-      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/command#ys-logs" target="_blank" rel="noopener noreferrer">Open Hub activity history</a>
-      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/crm/interactions" target="_blank" rel="noopener noreferrer">Review Hub interactions</a>
-      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/crm/review" target="_blank" rel="noopener noreferrer">Review Hub leads</a>
-    </div>
-    <p className="mt-3 text-xs text-muted-foreground">These links use the Hub’s own sign-in. Keep the Pixel Tasker local capture file until Hub ingestion is confirmed; no capture is submitted from this page.</p>
+    <p className="mt-3 text-sm text-muted-foreground">Voice capture ingestion, classification, Google Tasks, CRM and audit records stay in the Hub. This page sends reviewed commands through the Hub&apos;s independent server authentication and does not require opening its owner interface. The status badge checks only the existing static health endpoint; it does not verify capture ingestion, Tasker delivery, or playback. Checked {new Date(overview.checkedAt).toLocaleString()}.</p>
+    <p className="mt-3 text-xs text-muted-foreground">{writeEnabled ? "Hub write integration is configured for server-side commands." : "Hub write integration is not configured; capture controls remain disabled."} Keep the Pixel Tasker local capture fallback intact. No capture is submitted automatically.</p>
   </section>;
 }
 
-export function OperationsWorkspace({ automationHub }: { automationHub?: AutomationHubHealth }) {
+export function OperationsWorkspace({ automationHub, writeEnabled = false }: { automationHub?: AutomationHubHealth; writeEnabled?: boolean }) {
   const router = useRouter();
   const [overview, setOverview] = useState<OperationsOverview | null>(null);
   const [error, setError] = useState("");
@@ -100,8 +93,8 @@ export function OperationsWorkspace({ automationHub }: { automationHub?: Automat
         </button>
       </div>
 
-      {automationHub ? <AutomationHubPanel overview={automationHub} /> : null}
-      {automationHub ? <AutomationHubRecords /> : null}
+      {automationHub ? <AutomationHubPanel overview={automationHub} writeEnabled={writeEnabled} /> : null}
+      {automationHub ? <AutomationHubRecords writeEnabled={writeEnabled} /> : null}
 
       {loading && <p role="status" className="mt-6">Checking current service health…</p>}
       {error && <p role="alert" className="mt-6 rounded-lg border border-destructive/40 p-4 text-sm">{error}</p>}

@@ -57,11 +57,25 @@ const Task = z.object({
   updatedAt: isoTimestamp,
 });
 
+const CaptureAction = z.object({
+  id: identifier,
+  commandId: identifier,
+  captureId: identifier,
+  createdAt: isoTimestamp,
+  action: z.string().max(40),
+  event: z.string().max(40),
+  priorStatus: z.string().max(40).nullable(),
+  resultingStatus: z.string().max(40).nullable(),
+  destination: z.string().max(40).nullable(),
+  resultCode: z.string().max(80).nullable(),
+});
+
 const AutomationHubSnapshot = z.object({
   contractVersion: z.literal(1),
   source: z.literal("Automation Hub"),
   generatedAt: isoTimestamp,
   captures: SectionBase.extend({ items: z.array(Capture).max(20) }),
+  captureActions: SectionBase.extend({ items: z.array(CaptureAction).max(20) }).optional(),
   activity: SectionBase.extend({ items: z.array(Activity).max(20) }),
   integrationHealth: z.object({
     source: z.string().min(1).max(120),

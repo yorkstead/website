@@ -16,6 +16,8 @@ export default defineConfig({
       OWNER_EMAIL: "cc016-owner@example.test",
       BETTER_AUTH_SECRET: "fictional-cc017-browser-key-381d51b987ac",
       PASSKEY_RP_ID: "127.0.0.1",
+      YORKSTEAD_AUTOMATIONS_WRITE_SECRET: "synthetic-cc022-browser-write-secret-not-for-any-deployment",
+      YORKSTEAD_AUTOMATIONS_ACTIONS_ENABLED: "true",
     },
   },
 });

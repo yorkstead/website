@@ -1,6 +1,17 @@
 # Current handoff
 
-## CC-021 Automation Hub Data Integration — 2026-10-29
+## Active work — CC-022 Unified Automation Actions & Capture Management — 2026-10-29
+
+- User authorizes implementation, checks/tests/builds, coordinated commits/pushes and Hub-first plus Website-second PR creation. No merge, manual deploy, production env/secret modification, production write, live capture action, customer message or endpoint retirement.
+- Verified 2026-10-29: Website `main` `94fc79aaa294532987526e9a50f82aff335cf1ec`; Hub `main` `689bd5d716bd3912c73d4f8841b0e0f7c01ea733`. New branches `feat/cc-022-automation-capture-management` in both existing checkouts. Existing untracked `website.code-workspace` is preserved.
+- CC-021 merged read contract remains GET-only/version 1 and backward compatible; optional safe `captureActions` adds Hub audit metadata. Website independent Better Auth owner gate and Hub dedicated read auth remain.
+- Hub implementation adds a separate disabled-by-default write command contract/secret, additive idempotency and append-only redacted audit schema, atomic state changes and reuse of the existing Google Tasks capture claim. Ambiguous Google mutations remain `needs_review` without automatic retry. Leads stay staged in Hub CRM; no Website CRM copy.
+- Website adds owner-only write BFF and confirmed responsive capture controls. Controls remain disabled unless `YORKSTEAD_AUTOMATIONS_ACTIONS_ENABLED=true` and a 32+ character server-side write secret are present. Transcript/device credentials are not added to the browser DTO.
+- Current verification: Website scaffold, 19-migration check, typecheck, focused Hub data/action/BFF tests (8), full Bun suite (391 pass / 110 DB-dependent skips), lint (one pre-existing login-panel warning), and diff check pass. Hub full test suite (16), typecheck, production build, and diff/script syntax checks pass. Exact evidence and constraints are in each repository's `specs/031-cc-022-unified-automation-capture-management/verification.md`.
+- Browser test discovery finds 6 CC-017 scenarios including desktop/mobile capture actions, but local execution is blocked by missing disposable DB and loopback `listen EPERM`. Website local build is blocked by Turbopack port-binding EPERM (also on elevated retry); alternate webpack build failed parsing TypeScript showConfig. Hub disposable PG migration/concurrency script is not run locally because no DB URL/server/Docker access. PR CI must provide these outstanding exact-head checks before delivery is complete.
+- Hub PR [#91](https://github.com/yorkstead/yorkstead-automation-hub/pull/91) is open at `fe7bdad`; its PostgreSQL and verify jobs are pending, and Vercel deployment checks are complete. Website PR creation is held until Hub exact-head CI passes. No production endpoint/configuration/data was accessed or changed.
+
+## Previous handoff — CC-021 Automation Hub Data Integration — 2026-10-29
 
 - User authorizes the website integration, a coordinated Hub API PR if needed, tests/checks/build/CI, docs, commits/pushes, and CC-021 PR delivery. Do not merge, manually deploy, alter production configuration/secrets, mutate production data, send customer messages, or retire APIs.
 - Verified 2026-10-29 16:18 UTC: website PR #76 merged; GitHub `main` is `17fa88bf502157d513ee98b981e6b61ae191065c`. Fetched that tip and created `feat/cc-021-automation-hub-data-integration` from it. Local repository `yorkstead/website`; original `website.code-workspace` remains untracked and untouched. Shell GitHub API/DNS was unavailable at first; connected GitHub source verified the merge and Vercel metadata verified the Hub deployment.
