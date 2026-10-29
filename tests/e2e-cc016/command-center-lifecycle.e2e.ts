@@ -95,7 +95,10 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   const beforeInvalid = await context.request.get("/api/dashboard/project-linkage?projectId=");
   expect(beforeInvalid.status()).toBe(400);
   await page.getByRole("button", { name: "Convert to project" }).click();
-  await expect(page).toHaveURL(/\/dashboard\?project=/);
+  await expect.poll(async () => {
+    if (/\/dashboard\?project=/.test(page.url())) return "converted";
+    return (await page.getByRole("alert").allTextContents()).join(" | ") || "conversion pending";
+  }, { timeout: 15_000 }).toBe("converted");
   const projectId = new URL(page.url()).searchParams.get("project");
   expect(projectId).toBeTruthy();
   await expect(page.getByRole("heading", { name: company })).toBeVisible();
