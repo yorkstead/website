@@ -49,12 +49,15 @@ test("owner navigation covers destinations, active state, collapse, and persiste
     if (label === "CRM" || label === "Overdue follow-ups" || label === "Due today" || label === "Upcoming follow-ups") {
       await expect(nav.getByRole("link", { name: "CRM", exact: true })).toHaveAttribute("aria-current", "page");
       if (label !== "CRM") await expect(link).toHaveAttribute("aria-current", "page");
+    } else if (label === "Account & passkeys") {
+      // The account destination intentionally lives outside the dashboard layout.
     } else if (label === "Insights" || label === "Marketing" || label === "Operations") {
       await expect(nav.getByRole("link", { name: "Insights", exact: true })).toHaveAttribute("aria-current", "page");
     } else {
       await expect(link).toHaveAttribute("aria-current", "page");
     }
   }
+  await page.goto("/dashboard");
   await expect(nav.getByRole("link", { name: "Daily Operations", exact: true })).toHaveAttribute("href", "https://cal.yorkstead.com/command");
   await expect(nav.getByRole("link", { name: "Daily Operations", exact: true })).toHaveAttribute("target", "_blank");
 
@@ -108,7 +111,7 @@ test("mobile drawer supports keyboard focus, Escape, backdrop, and route selecti
   await expect(page.getByRole("dialog", { name: "Yorkstead navigation" })).toBeHidden();
 
   await opener.click();
-  await page.locator('button[tabindex="-1"][aria-label="Close navigation drawer"]').click();
+  await page.getByRole("button", { name: "Dismiss navigation backdrop" }).click();
   await expect(page.getByRole("dialog", { name: "Yorkstead navigation" })).toBeHidden();
   await expect(opener).toBeFocused();
 });
