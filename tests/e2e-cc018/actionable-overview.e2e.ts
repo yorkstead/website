@@ -224,7 +224,7 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await expect(page.getByText("won", { exact: true }).first()).toBeVisible();
 
   await page.goto("/dashboard");
-  await expect(page.getByText("Won proposals: $3,250.75")).toBeVisible();
+  await expect(page.getByText("Won proposals: $3,250.75").locator("visible=true").first()).toBeVisible();
   await expect(page.getByText("$8,000", { exact: false })).not.toBeVisible();
   const verifyPool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
   try {
