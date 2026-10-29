@@ -123,9 +123,9 @@ test("uncertain command recovery survives unavailable refresh and remount with t
   await expect(page.getByRole("alert").filter({ hasText: "Automation Hub records could not be loaded" })).toBeVisible();
   recordsAvailable = true;
   await page.getByRole("button", { name: "Refresh Hub records" }).click();
-  await expect(page.getByRole("heading", { name: "Review note" })).toBeVisible();
+  await expect(page.getByLabel("Capture inbox").getByRole("heading", { name: "Review note" })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Review note" })).toBeVisible();
+  await expect(page.getByLabel("Capture inbox").getByRole("heading", { name: "Review note" })).toBeVisible();
   await page.getByRole("button", { name: "Check Hub command status" }).click();
   await expect.poll(() => commandBodies.length).toBe(3);
   expect(commandBodies.map((body) => body.idempotencyKey)).toEqual([commandBodies[0].idempotencyKey, commandBodies[0].idempotencyKey, commandBodies[0].idempotencyKey]);
