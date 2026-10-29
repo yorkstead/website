@@ -57,7 +57,7 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   expect((await context.request.get("/api/dashboard/project-linkage?projectId=missing")).status()).toBe(401);
   expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).status()).toBe(200);
 
-  await page.goto("/dashboard");
+  await page.goto("/dashboard/leads");
   const queue = page.getByRole("region", { name: "Unified follow-up queue" });
   const queueLead = queue.locator(`a[href="/dashboard/leads?lead=${leadId}"]`);
   await expect(queueLead).toBeVisible();
