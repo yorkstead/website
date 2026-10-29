@@ -6,5 +6,5 @@
 - [x] T004 — Add bounded owner Overview CRM read and safe follow-up reschedule path using existing storage.
 - [x] T005 — Implement and test deterministic prioritization and pipeline summary.
 - [x] T006 — Redesign Overview with prioritized actions, pipeline snapshot, persisted activity, existing mutations, and empty/error/mobile states.
-- [ ] T007 — Add browser and authorization/mutation regression coverage; run requested checks.
-- [ ] T008 — Complete security/spec convergence review, update evidence and handoff, and open CC-018 PR without merge/deployment.
+- [x] T007 — Add browser and authorization/mutation regression coverage; run requested checks.
+- [x] T008 — Complete security/spec convergence review, update evidence and handoff, and open CC-018 PR without merge/deployment.
