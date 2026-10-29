@@ -47,14 +47,21 @@ test("navigation preserves initial focus, supports mobile keyboard access, and s
   });
   expect(mobileLogoSize).toEqual({ width: 32, height: 32 });
 
+  await page.keyboard.press("Escape");
+  await expect(drawer).toBeHidden();
+  await expect(opener).toBeFocused();
+
   await page.locator("header").getByRole("button", { name: "Toggle color theme" }).click();
   await expect(page.locator("header img[src*='logo-dark-transparent.png']")).toBeHidden();
   await expect(page.locator("header img[src*='logo-light-transparent.png']")).toBeVisible();
   await expect(darkSurfaceLogo).toHaveCount(2);
 
+  await opener.click();
+  await expect(drawer).toBeVisible();
+  await expect(darkSurfaceLogo.nth(0)).toBeVisible();
+  await expect(darkSurfaceLogo.nth(1)).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(drawer).toBeHidden();
-  await expect(opener).toBeFocused();
 
   await page.setViewportSize({ width: 1440, height: 1000 });
   const desktopLogo = page.locator('#dashboard-navigation img[src*="logo-light-transparent.png"]');
