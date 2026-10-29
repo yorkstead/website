@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation branch: `feat/cc-018-actionable-command-center`, based on CC-017 merge `ef39c7a11e0ce706a18e6cb099da9893f0b3c5de`. Local checks were run in the managed sandbox on 2026-10-29. Exact PR head and CI evidence will be appended after delivery.
+Implementation branch: `feat/cc-018-actionable-command-center`, source commit `0310c14a521a0ea66fb435104a74ebe87088f6d2`, based on CC-017 merge `ef39c7a11e0ce706a18e6cb099da9893f0b3c5de`. Local checks were run in the managed sandbox on 2026-10-29. Exact PR head and CI evidence will be appended after delivery.
 
 ## Local results
 
