@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Activity, AlertTriangle, CircleCheck, RefreshCw, ShieldAlert } from "lucide-react";
 import type { OperationsCheck, OperationsOverview } from "@/lib/operations-observability";
+import type { AutomationHubHealth } from "@/lib/automation-hub-health";
 import { OperationsReadiness } from "@/components/dashboard/operations-readiness";
 
 const panel = "rounded-xl border border-border bg-card p-5";
@@ -20,7 +22,32 @@ function checkStyle(status: OperationsCheck["status"]) {
   return "border-border bg-background/35";
 }
 
-export function OperationsWorkspace() {
+const hubStateLabel: Record<AutomationHubHealth["state"], string> = {
+  responding: "Hub API responding",
+  degraded: "Hub health check failed",
+  unavailable: "Hub unavailable",
+};
+
+function AutomationHubPanel({ overview }: { overview: AutomationHubHealth }) {
+  return <section className={`${panel} mt-6`} aria-labelledby="automation-hub-status">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><div className="text-xs uppercase tracking-[0.16em] text-primary">Automation Hub · separate service</div><h2 id="automation-hub-status" className="mt-1 text-lg font-semibold">Voice capture controls</h2></div>
+      <span className="rounded-full border border-border px-3 py-1 text-xs">{hubStateLabel[overview.state]}</span>
+    </div>
+    <p className="mt-3 text-sm text-muted-foreground">Voice capture ingestion, classification, and review records stay in the Hub. The status badge checks only its existing static health endpoint; it does not verify capture ingestion, Google actions, Tasker delivery, or playback. Checked {new Date(overview.checkedAt).toLocaleString()}.</p>
+    <div className="mt-4 flex flex-wrap gap-2">
+      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/command#ys-actions" target="_blank" rel="noopener noreferrer">Open Hub capture controls</a>
+      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/command#ys-health" target="_blank" rel="noopener noreferrer">Open Hub integration health</a>
+      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/command#ys-logs" target="_blank" rel="noopener noreferrer">Open Hub activity history</a>
+      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/crm/interactions" target="_blank" rel="noopener noreferrer">Review Hub interactions</a>
+      <a className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="https://cal.yorkstead.com/crm/review" target="_blank" rel="noopener noreferrer">Review Hub leads</a>
+    </div>
+    <p className="mt-3 text-xs text-muted-foreground">These links use the Hub’s own sign-in. Keep the Pixel Tasker local capture file until Hub ingestion is confirmed; no capture is submitted from this page.</p>
+  </section>;
+}
+
+export function OperationsWorkspace({ automationHub }: { automationHub?: AutomationHubHealth }) {
+  const router = useRouter();
   const [overview, setOverview] = useState<OperationsOverview | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -55,6 +82,7 @@ export function OperationsWorkspace() {
     setError("");
     setLoading(true);
     setRefresh((value) => value + 1);
+    if (automationHub) router.refresh();
   }
 
   return (
@@ -62,14 +90,16 @@ export function OperationsWorkspace() {
       <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" />Command Center</Link>
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary"><Activity className="size-4" />CC-014 · Operations</div>
-          <h1 className="mt-2 text-3xl font-semibold">Operations</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Current service checks, detected issues and recovery evidence. This page is read-only and checks dependencies only when you open or refresh it.</p>
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary"><Activity className="size-4" />{automationHub ? "Automations · integration health" : "CC-014 · Operations"}</div>
+          <h1 className="mt-2 text-3xl font-semibold">{automationHub ? "Automations" : "Operations"}</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{automationHub ? "Review voice-capture entry points, Hub route availability, and website routine monitoring in one owner-only view. Checks run when you open or refresh the page." : "Current service checks, detected issues and recovery evidence. This page is read-only and checks dependencies only when you open or refresh it."}</p>
         </div>
         <button className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-accent disabled:opacity-40" onClick={reload} disabled={loading}>
           <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />Refresh checks
         </button>
       </div>
+
+      {automationHub ? <AutomationHubPanel overview={automationHub} /> : null}
 
       {loading && <p role="status" className="mt-6">Checking current service health…</p>}
       {error && <p role="alert" className="mt-6 rounded-lg border border-destructive/40 p-4 text-sm">{error}</p>}
@@ -94,7 +124,7 @@ export function OperationsWorkspace() {
         </section>
 
         <OperationsReadiness overview={overview} />
-        <p className="mt-5 text-xs text-muted-foreground">Incidents are derived from this refresh and are not retained as incident history. No email, push notification, restart, migration, restore, rollback or customer action is available from this page.</p>
+        <p className="mt-5 text-xs text-muted-foreground">Incidents are derived from this refresh and are not retained as incident history. No email, push notification, restart, migration, restore, rollback or customer action is available from this page. The website briefing monitor and the Hub briefing/Tasker playback are separate systems; this view does not verify Tasker delivery, Bluetooth, LIFX, or TV routines.</p>
       </>}
     </main>
   );
