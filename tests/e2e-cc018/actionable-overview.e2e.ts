@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { Pool } from "pg";
-import { cc018Company, cc018LeadEmail, cc018Owner, cc018ProjectId, cc018TaskId, cc018TodayLeadEmail, disposeCc018Overview, offsetDateKey, setupCc018Overview } from "../fixtures/cc018-overview";
+import { cc018Company, cc018LeadEmail, cc018Owner, cc018ProjectId, cc018TaskId, cc018TodayLeadEmail, cc019LeadEmail, disposeCc018Overview, offsetDateKey, setupCc018Overview } from "../fixtures/cc018-overview";
 
 const origin = "http://127.0.0.1:3111";
 type WorkspaceSnapshot = { data: Record<string, unknown>; updated_at: Date } | null;
@@ -101,7 +101,7 @@ test("owner overview prioritizes persisted work and supports exact links and act
 
   const proposalStage = page.locator("a[href='/dashboard/leads?status=proposal']").first();
   await expect(proposalStage).toContainText("1");
-  await expect(page.getByText("Not tracked", { exact: true })).toBeVisible();
+  await expect(page.getByText("Active proposal value", { exact: true })).toBeVisible();
 
   const stalledRow = actions.locator("article").filter({ hasText: "Stalled qualified" });
   await expect(stalledRow.getByRole("link", { name: "Open lead" })).toHaveAttribute("href", /lead=/);
@@ -144,4 +144,58 @@ test("owner overview prioritizes persisted work and supports exact links and act
       return saved.tasks.find((task) => task.id === cc018TaskId)?.done === true && saved.tasks.some((task) => task.title === "CC-018 Browser-created task");
     }, { timeout: 15_000 }).toBe(true);
   } finally { await pool.end(); }
+});
+
+test("owner can qualify a lead, manage an explicit proposal, and see won pipeline value", async ({ page, context }) => {
+  await page.goto("/dashboard/leads");
+  await expect(page).toHaveURL(/\/login/);
+  expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc018Owner })).status()).toBe(200);
+  const pool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
+  let leadId: number;
+  try {
+    const lead = await pool.query<{ id: string }>("SELECT id FROM contact_inquiries WHERE email=$1", [cc019LeadEmail]);
+    leadId = Number(lead.rows[0]!.id);
+  } finally { await pool.end(); }
+
+  await page.goto(`/dashboard/leads?lead=${leadId}`);
+  await expect(page.getByRole("heading", { name: "CC-019 Sales Workflow" })).toBeVisible();
+  await page.getByText("Qualification, consultations & proposals").click();
+  await expect(page.getByText("Reduce manual reconciliation", { exact: false })).toBeVisible();
+  await page.getByLabel("Industry").selectOption("manufacturing");
+  await page.getByLabel("Company size").fill("120 employees");
+  await page.getByLabel("Urgency").fill("Before peak season");
+  await page.getByLabel("Decision-maker").fill("Operations director");
+  await page.getByLabel("Budget indication").fill("Unconfirmed: $8,000");
+  await page.getByLabel("Pain / requirements").fill("Inventory reconciliation takes two days each week.");
+  await page.getByLabel("Next step", { exact: true }).fill("Schedule workflow mapping with operations director.");
+  await page.getByLabel("Won reason").fill("Accepted sprint scope and timeline");
+  await page.getByLabel("Lost reason").fill("Budget timing did not align");
+  await page.getByRole("button", { name: "Save qualification" }).click();
+  await expect(page.getByLabel("Industry")).toHaveValue("manufacturing");
+
+  await page.getByLabel("Explicit proposal amount ($)").fill("2500.00");
+  await page.getByLabel("Next action", { exact: true }).fill("Review sprint scope");
+  await page.getByLabel("Next action date").fill(offsetDateKey(2));
+  await page.getByLabel("State", { exact: true }).selectOption("sent");
+  await page.getByRole("button", { name: "Record proposal" }).click();
+  await expect(page.getByText("$2,500.00")).toBeVisible();
+  await page.goto("/dashboard");
+  const proposalAction = page.getByRole("link").filter({ hasText: "Review sprint scope" });
+  await expect(proposalAction).toHaveAttribute("href", `/dashboard/leads?lead=${leadId}`);
+  await expect(page.getByText("Active proposal value").locator(".." )).toContainText("$2,500");
+  await page.goto(`/dashboard/leads?lead=${leadId}`);
+  await page.getByText("Qualification, consultations & proposals").click();
+  const proposal = page.locator("form").filter({ has: page.getByRole("button", { name: "Update state" }) });
+  await proposal.getByLabel("Proposal state").selectOption("accepted");
+  await proposal.getByRole("button", { name: "Update state" }).click();
+  await expect(page.getByText("won", { exact: true }).first()).toBeVisible();
+
+  await page.goto("/dashboard");
+  await expect(page.getByText("Won proposals: $2,500")).toBeVisible();
+  await expect(page.getByText("$8,000", { exact: false })).not.toBeVisible();
+  const verifyPool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
+  try {
+    const persisted = await verifyPool.query<{ status: string; industry: string; amount_cents: string; proposal_state: string }>(`SELECT i.status,i.industry,p.amount_cents,p.state AS proposal_state FROM contact_inquiries i JOIN crm_proposals p ON p.lead_id=i.id WHERE i.id=$1`, [leadId]);
+    expect(persisted.rows[0]).toMatchObject({ status: "won", industry: "manufacturing", amount_cents: "250000", proposal_state: "accepted" });
+  } finally { await verifyPool.end(); }
 });

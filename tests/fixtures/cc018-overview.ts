@@ -12,6 +12,7 @@ export const cc018Owner = cc016Owner;
 export const cc018LeadEmail = `cc018-overview-${crypto.randomUUID()}@example.test`;
 export const cc018TodayLeadEmail = `cc018-today-${crypto.randomUUID()}@example.test`;
 export const cc018StalledLeadEmail = `cc018-stalled-${crypto.randomUUID()}@example.test`;
+export const cc019LeadEmail = `cc019-sales-${crypto.randomUUID()}@example.test`;
 export const cc018ProjectId = `cc018-project-${crypto.randomUUID()}`;
 export const cc018TaskId = `cc018-task-${crypto.randomUUID()}`;
 export const cc018Company = `CC-018 Example ${crypto.randomUUID().slice(0, 8)}`;
@@ -44,8 +45,12 @@ export async function setupCc018Overview() {
       VALUES
         ('CC-018 Overdue Follow-up',$1,$4,'Synthetic owner-only test inquiry','new',$5,$6),
         ('CC-018 Due Today',$2,$4,'Synthetic owner-only test inquiry','proposal',$7,$8),
-        ('CC-018 Stalled Opportunity',$3,$4,'Synthetic owner-only test inquiry','qualified',$9,NULL)
-    `, [cc018LeadEmail, cc018TodayLeadEmail, cc018StalledLeadEmail, cc018Company, ip(), followUpTimestamp(offsetDateKey(-1)), ip(), followUpTimestamp(offsetDateKey(0)), ip()]);
+        ('CC-018 Stalled Opportunity',$3,$4,'Synthetic owner-only test inquiry','qualified',$9,NULL),
+        ('CC-019 Sales Workflow',$10,$4,'Synthetic owner-only test inquiry with budget context $5000+','new',$11,NULL)
+    `, [cc018LeadEmail, cc018TodayLeadEmail, cc018StalledLeadEmail, cc018Company, ip(), followUpTimestamp(offsetDateKey(-1)), ip(), followUpTimestamp(offsetDateKey(0)), ip(), cc019LeadEmail, ip()]);
+    const crmLead = await pool.query<{ id: string }>("SELECT id FROM contact_inquiries WHERE email=$1", [cc019LeadEmail]);
+    await pool.query(`INSERT INTO consultations(id,lead_id,service_slug,client_name,business,email,status,responses)
+      VALUES ($1,$2,'workflow-rescue','CC-019 Sales Workflow', $3, $4, 'scoped', $5::jsonb)`, [crypto.randomUUID(), crmLead.rows[0]!.id, cc018Company, cc019LeadEmail, JSON.stringify({ industry: "manufacturing", trigger: "Inventory reconciliation takes two days each week.", outcome: "Reduce manual reconciliation" })]);
     await pool.query("UPDATE contact_inquiries SET updated_at=NOW()-INTERVAL '21 days' WHERE email=$1", [cc018StalledLeadEmail]);
     return { workspace: owner.workspace, workspaceSnapshot: snapshot.rows[0] ?? null };
   } finally { await pool.end(); }
@@ -54,7 +59,8 @@ export async function setupCc018Overview() {
 export async function disposeCc018Overview(workspace: { data: Record<string, unknown>; updated_at: Date } | null) {
   const pool = new Pool({ connectionString: databaseURL });
   try {
-    await pool.query("DELETE FROM contact_inquiries WHERE email = ANY($1::text[])", [[cc018LeadEmail, cc018TodayLeadEmail, cc018StalledLeadEmail]]);
+    await pool.query("DELETE FROM consultations WHERE lead_id IN (SELECT id FROM contact_inquiries WHERE email=ANY($1::text[]))", [[cc018LeadEmail, cc018TodayLeadEmail, cc018StalledLeadEmail, cc019LeadEmail]]);
+    await pool.query("DELETE FROM contact_inquiries WHERE email = ANY($1::text[])", [[cc018LeadEmail, cc018TodayLeadEmail, cc018StalledLeadEmail, cc019LeadEmail]]);
   } finally { await pool.end(); }
   await disposeCc016Inquiry("cc018-fixture-cleanup@example.test", workspace);
 }

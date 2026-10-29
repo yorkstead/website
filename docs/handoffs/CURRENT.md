@@ -1,5 +1,16 @@
 # Current handoff
 
+## CC-019 CRM Pipeline & Sales Workflow — 2026-10-29
+
+- User authorizes CC-019 implementation, compatible migrations, disposable PostgreSQL/browser tests, required checks, documentation, branch commits/push, and opening PR `CC-019: CRM Pipeline & Sales Workflow`. Do not merge, manually deploy, perform production mutations, create fake production records, send customer messages, request payment, or publish portal content.
+- Session initialization found a pre-existing untracked `website.code-workspace`; preserve it. Initial branch was CC-018 and live GitHub reads failed due DNS. A subsequent successful fetch updated `origin/main` to `c6bdba2db78fafcb6f1745f30132ac82a55c7933`; branch `feat/cc-019-crm-sales-workflow` was created from that fetched tip. A second `ls-remote` comparison remains unavailable.
+- Active spec/plan/tasks/verification: `specs/028-cc-019-crm-sales-workflow/`.
+- Scope audit confirms existing `contact_inquiries`, consultations, Denver follow-up scheduling/completion, atomic idempotent lead conversion, and CC-018 Overview. Structured qualification, proposal amounts/status, and close reasons are not represented by existing schema, so CC-019 plans an additive migration; existing public intake and lead budget remain unchanged.
+- Current state: implementation and local verification are complete. Migration 0019 adds bounded qualification/close reasons and explicit proposal records. Owner-only lead UI captures qualification, shows linked consultation outcomes/requirements, creates and updates proposal states, and retains existing follow-up/status/conversion controls. CC-018 Overview shows active explicit proposal value, won proposal value, won/lost conversion, and exact proposal next-action links. No public intake, automated message, payment, portal publication, or production data flow changed.
+- Local checks: scaffold, 19-migration validation, typecheck, lint (one pre-existing login-panel warning), full unit suite (380 pass / 110 PostgreSQL skips / 0 fail), Playwright discovery (3 scenarios), and diff check pass. Local PostgreSQL/browser execution is unavailable: disposable URL not configured, Docker runtime is blocked, PostgreSQL server binaries are absent, and localhost:5432 has no server. Production build is blocked by Turbopack worker port `EPERM`. Exact-head CI must verify migration apply-twice, PostgreSQL tests, browser workflows, build, and clean generated worktree.
+- No production operation, customer message, publication, merge, or deployment performed. Pre-existing `website.code-workspace` remains untracked and untouched.
+- Next action: commit/push only CC-019 paths on this branch, open `CC-019: CRM Pipeline & Sales Workflow`, and record exact PR-head CI outcome without merging or manually deploying.
+
 ## CC-018 Actionable Command Center — 2026-10-29
 
 - User authorizes CC-018 implementation, tests, checks, documentation, feature branch delivery, and opening PR `CC-018: Actionable Command Center`. Do not merge, manually deploy, contact customers, publish content, or change production data.

@@ -103,6 +103,17 @@ export async function deleteConsultation(id: string) {
   return rows.length > 0;
 }
 
+export async function listLeadConsultationSummaries(leadId: number) {
+  if (!Number.isSafeInteger(leadId) || leadId < 1) return [];
+  const sql = await contactDatabase();
+  const rows = await sql`SELECT id, service_slug, consultation_date, status, responses, updated_at FROM consultations WHERE lead_id = ${leadId} AND status <> 'archived' AND EXISTS (SELECT 1 FROM contact_inquiries i WHERE i.id=consultations.lead_id AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)) ORDER BY updated_at DESC LIMIT 8`;
+  return rows.map((row) => {
+    const responses = row.responses && typeof row.responses === "object" ? row.responses as Record<string, unknown> : {};
+    return { id: String(row.id), serviceSlug: String(row.service_slug), date: row.consultation_date ? new Date(String(row.consultation_date)).toISOString().slice(0, 10) : "", status: String(row.status), requirementCount: Object.keys(responses).length,
+      requirements: Object.entries(responses).filter((entry): entry is [string, string] => typeof entry[1] === "string" && Boolean(entry[1].trim())).slice(0, 5).map(([key, value]) => `${key}: ${value.trim().slice(0, 180)}`) };
+  });
+}
+
 function mapConsultation(row: Record<string, unknown>): ConsultationRecord {
   return {
     id: String(row.id),
