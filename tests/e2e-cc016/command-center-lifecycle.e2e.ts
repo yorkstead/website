@@ -94,7 +94,16 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
 
   const beforeInvalid = await context.request.get("/api/dashboard/project-linkage?projectId=");
   expect(beforeInvalid.status()).toBe(400);
-  await page.getByRole("button", { name: "Convert to project" }).click();
+  const conversionPool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
+  try {
+    const eligible = await conversionPool.query<{ status: string; converted_project_id: string | null; retired: boolean }>(
+      `SELECT status,converted_project_id,
+         EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AS retired
+       FROM contact_inquiries WHERE id=$1`, [leadId],
+    );
+    expect(eligible.rows[0]).toEqual({ status: "qualified", converted_project_id: null, retired: false });
+  } finally { await conversionPool.end(); }
+  await lead.getByRole("button", { name: "Convert to project" }).click();
   await expect.poll(async () => {
     if (/\/dashboard\?project=/.test(page.url())) return "converted";
     return (await page.getByRole("alert").allTextContents()).join(" | ") || "conversion pending";
