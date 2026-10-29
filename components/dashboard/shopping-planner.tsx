@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AutomationHubSnapshot } from "@/lib/automation-hub-data";
 import type { AutomationHubShoppingCommandInput } from "@/lib/automation-hub-shopping-schema";
 
@@ -23,8 +23,9 @@ function pretty(value:string){return value.replaceAll("_"," ");}
 export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enabled:boolean;onRefresh:()=>void}){
  const [scope,setScope]=useState("all"),[priority,setPriority]=useState("all"),[timing,setTiming]=useState("all"),[state,setState]=useState("open");
  const [editing,setEditing]=useState<string>(""),[form,setForm]=useState<Record<string,string>>({}),[busy,setBusy]=useState(""),[message,setMessage]=useState(""),[pending,setPending]=useState<Record<string,ItemCommand>>({}),[selectedItems,setSelectedItems]=useState<string[]>([]),[mergeName,setMergeName]=useState("");
+ const commandInFlight=useRef(false),pendingPayday=useRef<PaydayCommand|null>(null);
  const [paydayDraft,setPaydayDraft]=useState<{enabled:boolean;expectedAmount:string;currency:string;nextPayday:string}|null>(null),[receiptForm,setReceiptForm]=useState({date:"",amount:"",currency:"USD",variableIncome:false}),[reserveLabel,setReserveLabel]=useState(""),[reserveAmount,setReserveAmount]=useState(""),[reserves,setReserves]=useState<ReserveInput[]>([]);
- useEffect(()=>{try{const saved=sessionStorage.getItem(pendingKey);if(saved)queueMicrotask(()=>setPending(JSON.parse(saved) as Record<string,ItemCommand>));}catch{/* Keep planner read-only if session recovery storage is unavailable. */}},[]);
+ useEffect(()=>{try{const saved=sessionStorage.getItem(pendingKey);if(saved)queueMicrotask(()=>setPending(JSON.parse(saved) as Record<string,ItemCommand>));const paydaySaved=sessionStorage.getItem(pendingKey+"-payday");if(paydaySaved)pendingPayday.current=JSON.parse(paydaySaved) as PaydayCommand;}catch{/* In-memory recovery remains available for this page session. */}},[]);
  function rememberPending(next:Record<string,ItemCommand>){setPending(next);try{sessionStorage.setItem(pendingKey,JSON.stringify(next));}catch{/* In-memory retry remains available. */}}
  const shopping=data.shopping,payday=data.payday?.items[0],audit=data.shoppingAudit;
  const paydayForm=paydayDraft??{enabled:payday?.enabled??false,expectedAmount:payday?.expectedAmount==null?"":String(payday.expectedAmount),currency:payday?.currency||"USD",nextPayday:payday?.nextPayday||""};
@@ -35,7 +36,9 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
  const lastConfirmed=confirmed[0];
  const sunday=new Intl.DateTimeFormat("en-US",{weekday:"long",timeZone:"America/Denver"}).format(new Date())==="Sunday";
  async function sendCommand(item:Item,command:ItemCommand,retry=false){
+  if(commandInFlight.current){setMessage("Another shopping command is still in progress. Wait for its result before submitting a new command.");return;}
   if(pending[item.id]&&!retry){setMessage("A command for this item has an uncertain result. Retry the same command key before starting another action.");return;}
+  commandInFlight.current=true;
   const req=retry&&pending[item.id]?pending[item.id]:command;
   rememberPending({...pending,[item.id]:req});setBusy(item.id);setMessage("");
   try{
@@ -47,7 +50,7 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
    if(!response.ok)throw new Error(body.resultCode||body.error||"The Hub could not confirm this update.");
    const completed={...pending};delete completed[item.id];rememberPending(completed);setMessage(body.idempotentReplay?"The Hub confirmed the original command.":"Shopping record updated in Automation Hub.");setEditing("");setSelectedItems([]);onRefresh();
   }catch(error){setMessage(error instanceof Error?`Update needs review: ${error.message}`:"Update needs review. Refresh the Hub record before retrying.");}
-  finally{setBusy("");}
+  finally{commandInFlight.current=false;setBusy("");}
  }
  function send(item:Item,action:Extract<ItemCommand,{changes?:ItemChanges}>["action"],changes?:ItemChanges){
   return sendCommand(item,{contractVersion:2,idempotencyKey:crypto.randomUUID(),action,itemId:item.id,expectedRevision:item.revision,...(changes?{changes}:{})} as ItemCommand);
@@ -64,21 +67,24 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
   void sendCommand(primary,{contractVersion:2,idempotencyKey:crypto.randomUUID(),action:"merge",itemId:primary.id,expectedRevision:primary.revision,name,otherItems:rest.map(item=>({id:item.id,revision:item.revision}))} as ItemCommand);
  }
  async function sendPayday(command:PaydayCommand){
+  if(commandInFlight.current){setMessage("Another shopping command is still in progress. Wait for its result before submitting a new command.");return;}
+  commandInFlight.current=true;
   setBusy("payday");setMessage("");const key=pendingKey+"-payday";let previous:PaydayCommand|undefined;
-  try{const stored=sessionStorage.getItem(key);if(stored)previous=JSON.parse(stored) as PaydayCommand;}catch{/* Continue with the new command. */}
-  if(previous){setMessage("A payday command has an uncertain result. Retrying its same key before starting another command.");await executePayday(previous,key,true);return;}
-  try{sessionStorage.setItem(key,JSON.stringify(command));}catch{/* Continue; the command key remains in this page session. */}
-  await executePayday(command,key);
+  try{previous=pendingPayday.current??undefined;if(!previous){try{const stored=sessionStorage.getItem(key);if(stored)previous=JSON.parse(stored) as PaydayCommand;}catch{/* Use the new command; execution will retain it in memory. */}}
+   if(previous){pendingPayday.current=previous;setMessage("A payday command has an uncertain result. Retrying its same key before starting another command.");await executePayday(previous,key);return;}
+   pendingPayday.current=command;try{sessionStorage.setItem(key,JSON.stringify(command));}catch{/* The ref retains the exact command for this page session. */}
+   await executePayday(command,key);
+  }finally{commandInFlight.current=false;setBusy("");}
  }
- async function executePayday(command:PaydayCommand,key=pendingKey+"-payday",retry=false){
-  const request=retry?(()=>{try{return JSON.parse(sessionStorage.getItem(key)||"null") as PaydayCommand|null;}catch{return null;}})()||command:command;
+ async function executePayday(command:PaydayCommand,key=pendingKey+"-payday"){
+  const request=command;
   setBusy("payday");setMessage("");
   try{const response=await fetch("/api/dashboard/shopping",{method:"POST",cache:"no-store",headers:{"content-type":"application/json"},body:JSON.stringify(request)});const body=await response.json() as {status?:string;resultCode?:string;error?:string;idempotentReplay?:boolean};
-   if(response.status===409||body.status==="conflict"){sessionStorage.removeItem(key);throw new Error(body.resultCode||"Payday data changed. Refresh and review it.");}
+   if(response.status===409||body.status==="conflict"){pendingPayday.current=null;try{sessionStorage.removeItem(key);}catch{/* The in-memory command is already cleared. */}throw new Error(body.resultCode||"Payday data changed. Refresh and review it.");}
    if(response.status===202||body.status==="processing"){setMessage("This payday command is still processing. Its original key is saved; retry it after the Hub reconciles the result.");onRefresh();return;}
-   if(response.status===400||response.status===415||response.status===422){sessionStorage.removeItem(key);setMessage("The Hub rejected this payday input. Correct the values and submit a new command.");return;}
+   if(response.status===400||response.status===415||response.status===422){pendingPayday.current=null;try{sessionStorage.removeItem(key);}catch{/* The in-memory command is already cleared. */}setMessage("The Hub rejected this payday input. Correct the values and submit a new command.");return;}
    if(!response.ok)throw new Error(body.resultCode||body.error||"The Hub could not confirm this payday command.");
-   sessionStorage.removeItem(key);setPaydayDraft(null);setMessage(body.idempotentReplay?"The Hub confirmed the original payday command.":"Payday planning updated in Automation Hub.");onRefresh();
+   pendingPayday.current=null;try{sessionStorage.removeItem(key);}catch{/* The in-memory command is already cleared. */}setPaydayDraft(null);setMessage(body.idempotentReplay?"The Hub confirmed the original payday command.":"Payday planning updated in Automation Hub.");onRefresh();
   }catch(error){setMessage(error instanceof Error?`Payday update needs review: ${error.message}`:"Payday update needs review. Retry the same command key.");}
   finally{setBusy("");}
  }
@@ -122,7 +128,7 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
       <label className="grid gap-1 text-xs">Currency<input className={inputClass} maxLength={3} value={form.currency||"USD"} onChange={e=>setForm({...form,currency:e.target.value})}/></label>
       <label className="grid gap-1 text-xs sm:col-span-2 lg:col-span-3">Split into separate items (comma separated)<input className={inputClass} placeholder="Part one, part two" value={form.splitNames||""} onChange={e=>setForm({...form,splitNames:e.target.value})}/></label>
       <label className="grid gap-1 text-xs">Repeat rule<select className={selectClass} value={form.recurrenceRule||""} onChange={e=>setForm({...form,recurrenceRule:e.target.value})}><option value="">No repeat</option><option value="week">Weekly</option><option value="month">Monthly</option><option value="quarter">Quarterly</option><option value="year">Yearly</option></select></label>
-      <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3"><button className={actionClass} disabled={!enabled||busy===item.id} onClick={()=>save(item)}>Save changes</button><button className={actionClass} disabled={!enabled||!!busy} onClick={()=>void split(item)}>Split into items</button><button className={actionClass} onClick={()=>setEditing("")}>Cancel edit</button></div>
+      <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3"><button className={actionClass} disabled={!enabled||!!busy} onClick={()=>save(item)}>Save changes</button><button className={actionClass} disabled={!enabled||!!busy} onClick={()=>void split(item)}>Split into items</button><button className={actionClass} onClick={()=>setEditing("")}>Cancel edit</button></div>
     </div>:null}
     {enabled?<div className="mt-3 flex flex-wrap gap-2">{pending[item.id]?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>void sendCommand(item,pending[item.id],true)}>Retry same command key</button>:null}{item.reviewState==="needs_review"?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>startEdit(item)}>Correct and review</button>:<button type="button" className={actionClass} disabled={!!busy} onClick={()=>startEdit(item)}>Edit</button>}{item.reviewState==="needs_review"&&item.scope&&item.scopeConfirmed&&item.priorityConfirmed?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>void send(item,"review")}>Approve review</button>:null}{item.reviewState==="approved"&&item.state!=="cancelled"?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>void send(item,"repeat")}>Repeat once</button>:null}{item.state==="purchased"?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>void send(item,"unpurchase")}>Undo purchase</button>:<button type="button" className={actionClass} disabled={!!busy||item.reviewState!=="approved"} onClick={()=>void send(item,"purchase")}>Mark purchased</button>}{item.state!=="postponed"&&item.state!=="cancelled"?<><button type="button" className={actionClass} disabled={!!busy||item.reviewState!=="approved"} onClick={()=>void send(item,"postpone",{timingIntent:"next_payday",targetDate:null})}>Postpone to next payday</button><button type="button" className={actionClass} disabled={!!busy||item.reviewState!=="approved"} onClick={()=>void send(item,"skip")}>Skip this payday</button></>:null}{item.state!=="cancelled"&&item.state!=="purchased"?<button type="button" className={actionClass} disabled={!!busy||item.reviewState!=="approved"} onClick={()=>void send(item,"cancel")}>Cancel item</button>:null}</div>:null}
    </li>)}</ul>}
