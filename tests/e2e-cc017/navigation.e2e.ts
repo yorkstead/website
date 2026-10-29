@@ -139,12 +139,11 @@ test("print media hides dashboard navigation and preserves marketing one-sheet p
   const navigation = page.getByRole("navigation", { name: "Primary and tools navigation" });
   const pages = page.locator(".print-page");
   await expect(navigation).toBeVisible();
-  await expect(pages).toHaveCount(2);
+  await expect(pages).toHaveCount(3);
 
   await page.emulateMedia({ media: "print" });
   await expect(page.locator("#dashboard-navigation")).toBeHidden();
-  await expect(pages.nth(0)).toBeVisible();
-  await expect(pages.nth(1)).toBeVisible();
+  for (const printPage of await pages.all()) await expect(printPage).toBeVisible();
 
   await page.emulateMedia({ media: "screen" });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -160,6 +159,5 @@ test("print media hides dashboard navigation and preserves marketing one-sheet p
   await expect(drawer).toBeHidden();
   await expect(backdrop).toBeHidden();
   await expect(opener).toBeHidden();
-  await expect(pages.nth(0)).toBeVisible();
-  await expect(pages.nth(1)).toBeVisible();
+  for (const printPage of await pages.all()) await expect(printPage).toBeVisible();
 });
