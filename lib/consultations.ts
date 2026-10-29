@@ -103,6 +103,15 @@ export async function deleteConsultation(id: string) {
   return rows.length > 0;
 }
 
+export async function getLeadConsultation(leadId: number, consultationId: string) {
+  if (!Number.isSafeInteger(leadId) || leadId < 1 || !consultationId) return null;
+  const sql = await contactDatabase();
+  const rows = await sql`SELECT c.* FROM consultations c JOIN contact_inquiries i ON i.id=c.lead_id
+    WHERE c.id=${consultationId} AND c.lead_id=${leadId}
+      AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id) LIMIT 1`;
+  return rows.length ? mapConsultation(rows[0]) : null;
+}
+
 export async function listLeadConsultationSummaries(leadId: number) {
   if (!Number.isSafeInteger(leadId) || leadId < 1) return [];
   const sql = await contactDatabase();

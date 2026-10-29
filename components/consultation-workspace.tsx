@@ -98,12 +98,12 @@ function PlaybookGuide({ playbook }: { playbook: ConsultationPlaybook }) {
   </aside>;
 }
 
-export function ConsultationWorkspace({ initialConsultations, initialActiveTotal, initialLead, pagination, storageAvailable }: { initialConsultations: ConsultationRecord[]; initialActiveTotal: number; initialLead: ContactInquiry | null; pagination: Pagination; storageAvailable: boolean }) {
+export function ConsultationWorkspace({ initialConsultations, initialActiveTotal, initialLead, initialConsultation = null, pagination, storageAvailable }: { initialConsultations: ConsultationRecord[]; initialActiveTotal: number; initialLead: ContactInquiry | null; initialConsultation?: ConsultationRecord | null; pagination: Pagination; storageAvailable: boolean }) {
   const leadDraft = initialLead ? newDraft(playbookForLead(initialLead), initialLead) : null;
   const [consultations, setConsultations] = useState(initialConsultations);
   const [activeTotal, setActiveTotal] = useState(initialActiveTotal);
   const [total, setTotal] = useState(pagination.total);
-  const [draft, setDraft] = useState<Draft | null>(leadDraft);
+  const [draft, setDraft] = useState<Draft | null>(initialConsultation ?? leadDraft);
   const [sectionId, setSectionId] = useState("context");
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(storageAvailable ? null : "Run the database migration before saving consultation records.");
