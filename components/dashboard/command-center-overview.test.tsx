@@ -22,6 +22,7 @@ const baseProps = {
 describe("Command Center Overview states", () => {
   test("shows clear empty states without adding activity", () => {
     const html = renderToStaticMarkup(createElement(CommandCenterOverview, baseProps));
+    expect(html).toContain('id="focus"');
     expect(html).toContain("You’re clear for now");
     expect(html).toContain("No saved activity yet.");
     expect(html).toContain("No open inquiries in the pipeline.");

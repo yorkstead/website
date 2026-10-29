@@ -11,8 +11,8 @@
 - No production operation, customer communication, publication, merge, or manual deployment occurred. Rollback is reverting CC-018 branch commits; no data cleanup or migration rollback is required.
 - Final review is complete: scoped server DTO excludes email, message, intake, and notes; status/date mutations revalidate owner authority and active/non-retired state; no extra table, publication path, external communication, or production access was introduced. Spec and checks match implementation.
 - Commit `0310c14a521a0ea66fb435104a74ebe87088f6d2` is pushed to `origin/feat/cc-018-actionable-command-center`. The pre-existing `website.code-workspace` remains untracked and untouched. Local verification limitations are recorded in the CC-018 verification file.
-- PR [#74](https://github.com/yorkstead/website/pull/74), `CC-018: Actionable Command Center`, is open against `main` and unmerged. Verified head is `2e3c5f766ed7092d461cbc6073e4af5ff309f68f`; CI run 40850752539 is queued and Vercel preview is pending as of 2026-10-29 09:35 UTC. No merge or manual deployment occurred.
-- Next exact action: inspect exact-head CI results, repair any branch failures, and record final PR/check state without merging or deploying.
+- PR [#74](https://github.com/yorkstead/website/pull/74), `CC-018: Actionable Command Center`, remains open/unmerged against `main`. CI [40850840486](https://github.com/yorkstead/website/actions/runs/40850840486) failed only when the existing CC-016 lifecycle test could not find its removed `#focus` anchor. The anchor is restored on the new action section and has a regression assertion; the fix is pending push/re-run. Earlier CI jobs including full tests, lint, typecheck, and standard browser suite passed. No merge or manual deployment occurred.
+- Next exact action: run the targeted local checks, commit/push the anchor compatibility fix, then inspect the new exact-head CI including CC-018 browser and build steps.
 
 ## CC-017 Command Center Navigation & Interface Simplification — 2026-10-29
 

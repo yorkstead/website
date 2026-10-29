@@ -37,7 +37,7 @@ export function CommandCenterOverview({
   const recent = activity.filter((item) => Number.isFinite(Date.parse(item.createdAt))).slice().sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 5);
 
   return <div className="space-y-4">
-    <section aria-labelledby="command-center-actions-heading" className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+    <section id="focus" aria-labelledby="command-center-actions-heading" className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
       <Card className="min-w-0 overflow-hidden"><CardContent className="p-4 sm:p-5">
         <div className="mb-4 flex items-start justify-between gap-3"><div><div className="mb-1 flex items-center gap-2"><Target className="size-4 text-primary" /><h2 id="command-center-actions-heading" className="text-sm font-semibold">Today’s actions</h2></div><p className="text-xs text-muted-foreground">Sorted by due date, stalled work, and priority · Denver time</p></div><Badge className="shrink-0 border-primary/20 bg-primary/10 text-primary">{ready ? actions.length : "…"} shown</Badge></div>
         {!ready ? <div className="space-y-2" aria-label="Loading workspace actions"><div className="h-11 animate-pulse rounded-lg bg-secondary/60" /><div className="h-11 animate-pulse rounded-lg bg-secondary/60" /></div>

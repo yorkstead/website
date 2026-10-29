@@ -6,6 +6,8 @@ Implementation branch: `feat/cc-018-actionable-command-center`, source commit `0
 
 PR [#74](https://github.com/yorkstead/website/pull/74) is open and unmerged against `main`. At exact head `2e3c5f766ed7092d461cbc6073e4af5ff309f68f`, CI run [40850752539](https://github.com/yorkstead/website/actions/runs/40850752539) was queued and the Vercel preview was pending at 2026-10-29 09:35 UTC. This is an initial status; final exact-head outcomes will be recorded before closeout.
 
+At exact head `1b05d3a9c698f73a3c00e014c68713d8f30f386a`, CI [40850840486](https://github.com/yorkstead/website/actions/runs/40850840486) passed unit/database tests, lint, typecheck, the standard browser suite, and all earlier isolated owner browser workflows, then failed in the existing CC-016 lifecycle browser test because the new Overview had removed the `#focus` anchor used by that test. Restored the anchor on the prioritized actions section and added a regression assertion. The CC-017 and CC-018 browser steps/build were skipped by `if: success()` after the earlier failure; rerun is pending.
+
 ## Local results
 
 - `bun run yorkstead:check` — PASS; 28 active spec directories.
