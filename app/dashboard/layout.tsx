@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { DashboardNavigation } from "@/components/dashboard/dashboard-navigation";
 
 export const metadata: Metadata = {
   title: "Owner command center",
@@ -7,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return children;
+  return (
+    <Suspense fallback={children}>
+      <DashboardNavigation>{children}</DashboardNavigation>
+    </Suspense>
+  );
 }

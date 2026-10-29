@@ -29,20 +29,17 @@ for (const width of [390, 1440])
       ).status(),
     ).toBe(200);
     await page.goto("/dashboard");
+    if (width < 768) {
+      await page.getByRole("button", { name: "Open navigation menu" }).click();
+    }
     await expect(
       page
         .getByRole("link", { name: "Customer Communications", exact: true })
         .first(),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: width < 768 ? "More" : /Commands/ })
-      .click();
-    const palette = page.getByRole("dialog", { name: "Command palette" });
-    await palette
-      .getByRole("textbox", { name: "Search commands and projects" })
-      .fill("Customer Communications");
-    await palette
-      .getByRole("button", { name: /Customer Communications/ })
+      .getByRole("link", { name: "Customer Communications", exact: true })
+      .first()
       .click();
     await expect(page).toHaveURL(/dashboard\/customer-communications/);
     await expect(

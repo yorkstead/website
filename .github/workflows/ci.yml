@@ -113,6 +113,11 @@ jobs:
           NODE_ENV: development
         run: bunx playwright test -c playwright.cc016.config.ts
 
+      - name: Verify Command Center navigation
+        env:
+          NODE_ENV: development
+        run: bunx playwright test -c playwright.cc017.config.ts
+
       - name: Build without production runtime secrets
         run: bun run build
 
