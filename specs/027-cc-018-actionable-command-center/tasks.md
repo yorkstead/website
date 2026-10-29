@@ -8,3 +8,4 @@
 - [x] T006 — Redesign Overview with prioritized actions, pipeline snapshot, persisted activity, existing mutations, and empty/error/mobile states.
 - [x] T007 — Add browser and authorization/mutation regression coverage; run requested checks.
 - [x] T008 — Complete security/spec convergence review, update evidence and handoff, and open CC-018 PR without merge/deployment.
+- [x] T009 — Replace generic navigation marks with the theme-aware Yorkstead logo, prevent mount-time hamburger focus, and add mobile/focus/logo browser regressions.

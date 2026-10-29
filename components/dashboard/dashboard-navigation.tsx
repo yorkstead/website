@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -11,7 +12,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
-  Command,
   ExternalLink,
   FileText,
   FolderKanban,
@@ -70,6 +70,29 @@ const toolLinks: NavigationLink[] = [
 
 function routeIsActive(link: NavigationLink, pathname: string, query: URLSearchParams) {
   return link.active?.(pathname, query) ?? false;
+}
+
+function NavigationLogo({ size }: { size: "size-8" | "size-9" }) {
+  return (
+    <span className={cn("relative inline-block shrink-0", size)} aria-hidden="true">
+      <Image
+        src="/brand/logo/1x/logo-dark-transparent.png"
+        alt=""
+        width={36}
+        height={36}
+        sizes="36px"
+        className="size-full object-contain dark:hidden"
+      />
+      <Image
+        src="/brand/logo/1x/logo-light-transparent.png"
+        alt=""
+        width={36}
+        height={36}
+        sizes="36px"
+        className="hidden size-full object-contain dark:block"
+      />
+    </span>
+  );
 }
 
 function LinkItem({
@@ -155,10 +178,7 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    if (!mobileOpen) {
-      if (document.activeElement === document.body) openerRef.current?.focus();
-      return;
-    }
+    if (!mobileOpen) return;
     const firstControl = drawerRef.current?.querySelector<HTMLElement>("button:not([disabled]), a[href]");
     firstControl?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
@@ -224,7 +244,7 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
         aria-modal={mobileOpen ? "true" : undefined}
       >
         <div className={cn("flex h-12 items-center gap-3 px-2", compact && "lg:justify-center lg:px-0")}>
-          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><Command aria-hidden="true" className="size-[18px]" /></div>
+          <NavigationLogo size="size-9" />
           <div className={cn("min-w-0", compact && "lg:hidden")}><div className="truncate text-sm font-semibold tracking-tight">YORKSTEAD</div><div className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">Command Center</div></div>
           <button type="button" onClick={() => closeDrawer()} className="ml-auto grid size-9 place-items-center rounded-lg text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden" aria-label="Close navigation drawer"><X className="size-4" /></button>
         </div>
@@ -266,7 +286,7 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
           <button ref={openerRef} type="button" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-controls="dashboard-navigation" aria-label="Open navigation menu" className="grid size-10 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Menu className="size-5" />
           </button>
-          <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground"><Command aria-hidden="true" className="size-4" /></div>
+          <NavigationLogo size="size-8" />
           <span className="text-sm font-semibold tracking-tight">YORKSTEAD</span>
           <div className="ml-auto"><ThemeToggle /></div>
         </header>

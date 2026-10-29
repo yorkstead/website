@@ -16,6 +16,59 @@ test.afterAll(async () => {
   if (initialized) await disposeCc018Overview(workspaceSnapshot);
 });
 
+test("navigation preserves initial focus, supports mobile keyboard access, and shows the theme-aware Yorkstead logo", async ({ page, context }) => {
+  await context.addInitScript(() => localStorage.setItem("yorkstead-theme", "light"));
+  expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc018Owner })).status()).toBe(200);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { name: "What needs attention today?" })).toBeVisible();
+
+  const opener = page.getByRole("button", { name: "Open navigation menu" });
+  const drawer = page.getByRole("dialog", { name: "Yorkstead navigation" });
+  await expect(drawer).toBeHidden();
+  await expect.poll(() => opener.evaluate((element) => element === document.activeElement)).toBe(false);
+  await page.keyboard.press("Tab");
+  await expect(opener).toBeFocused();
+  await expect(opener).toHaveCSS("outline-style", "solid");
+  await page.keyboard.press("Enter");
+  await expect(drawer).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close navigation drawer" })).toBeFocused();
+
+  const lightSurfaceLogo = page.locator("img[src*='logo-dark-transparent.png']");
+  const darkSurfaceLogo = page.locator("img[src*='logo-light-transparent.png']");
+  await expect(lightSurfaceLogo).toHaveCount(2);
+  await expect(lightSurfaceLogo.nth(0)).toBeVisible();
+  await expect(lightSurfaceLogo.nth(1)).toBeVisible();
+  await expect(page.locator("header img[src*='logo-dark-transparent.png']")).toBeVisible();
+  await expect(page.locator("header img[src*='logo-light-transparent.png']")).toBeHidden();
+  const mobileLogoSize = await page.locator("header img[src*='logo-dark-transparent.png']").evaluate((element) => {
+    const { width, height } = element.getBoundingClientRect();
+    return { width, height };
+  });
+  expect(mobileLogoSize).toEqual({ width: 32, height: 32 });
+
+  await page.locator("header").getByRole("button", { name: "Toggle color theme" }).click();
+  await expect(page.locator("header img[src*='logo-dark-transparent.png']")).toBeHidden();
+  await expect(page.locator("header img[src*='logo-light-transparent.png']")).toBeVisible();
+  await expect(darkSurfaceLogo).toHaveCount(2);
+
+  await page.keyboard.press("Escape");
+  await expect(drawer).toBeHidden();
+  await expect(opener).toBeFocused();
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const desktopLogo = page.locator('#dashboard-navigation img[src*="logo-light-transparent.png"]');
+  await expect(desktopLogo).toBeVisible();
+  const desktopLogoSize = await desktopLogo.evaluate((element) => {
+    const { width, height } = element.getBoundingClientRect();
+    return { width, height };
+  });
+  expect(desktopLogoSize).toEqual({ width: 36, height: 36 });
+  await page.getByRole("button", { name: "Collapse navigation" }).click();
+  await expect(page.getByRole("button", { name: "Expand navigation" })).toBeVisible();
+  await expect(desktopLogo).toBeVisible();
+});
+
 test("owner overview prioritizes persisted work and supports exact links and actions", async ({ page, context }) => {
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/login/);
