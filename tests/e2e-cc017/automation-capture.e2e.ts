@@ -59,7 +59,7 @@ test("owner-only Automations supports responsive capture review, confirmed actio
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/dashboard/automations");
     await expect(page.getByRole("heading", { name: "Capture inbox" })).toBeVisible();
-    await expect(page.getByText("Replace air filter")).toBeVisible();
+    await expect(page.getByLabel("Capture inbox").getByRole("heading", { name: "Replace air filter" })).toBeVisible();
     await expect(page.getByText("Automation Hub · captures").first()).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     if (width === 390) {

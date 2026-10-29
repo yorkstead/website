@@ -172,7 +172,7 @@ test("Automations renders source-labelled Hub records, empty queues, and partial
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto("/dashboard/automations");
   await expect(page.getByRole("heading", { name: "Recent voice captures" })).toBeVisible();
-  await expect(page.getByText("Replace the filter by Friday")).toBeVisible();
+  await expect(page.getByLabel("Recent voice captures").getByText("Replace the filter by Friday")).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "ID: capture-123" }).getByText("Source: Automation Hub · captures")).toBeVisible();
   await expect(page.getByText("ID: capture-123")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Activity history" })).toBeVisible();
