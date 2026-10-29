@@ -17,7 +17,7 @@
 
 `tests/contact-persistence-database.test.ts` calls the same insertion helper used by the contact server action. It asserts the migration-created partial index exists, verifies the new inquiry's fields by selecting the row, then submits the same unique key again and verifies no second row was created. The fixture runs in a transaction and rolls back.
 
-CI status and exact PR-head database/build evidence will be appended after the urgent PR run completes.
+Urgent PR [#71](https://github.com/yorkstead/website/pull/71) is open at source head `0a79489ab68f20983090799579d4d2276fe4a217`. Exact-head CI run [#40800574098](https://github.com/yorkstead/website/actions/runs/40800574098) was queued at the last observation; append the completed disposable PostgreSQL, build, audit, browser, and other CI results after it finishes.
 
 ## Rollback
 

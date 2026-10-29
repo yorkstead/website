@@ -8,5 +8,5 @@
 ## Handoff state
 - Current task: T004 — verification and delivery.
 - Last verified: `origin/main` at `075a6b5a189696ab5842ff5a4e13a53052af5e62`; PR #70 merged at that revision; audited `app/actions/contact.ts`, `app/actions/nonprofit.ts`, `app/actions/workflow-audit.ts`, `app/actions/workflow.ts`, and `app/actions/restaurant-trial.ts`.
-- Next action: Run build/CI checks, push the focused branch, open the urgent PR, and verify exact-head CI.
+- Next action: Verify the PR-head CI result and record exact disposable PostgreSQL/build/audit outcomes.
 - Blockers: Local PostgreSQL is unavailable (no `TEST_DATABASE_URL`; Docker daemon denies API access). Disposable PostgreSQL integration evidence must come from CI.
