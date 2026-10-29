@@ -114,7 +114,8 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   }, { timeout: 15_000 }).toBe("converted");
   const projectId = new URL(page.url()).searchParams.get("project");
   expect(projectId).toBeTruthy();
-  await expect(page.getByRole("heading", { name: company })).toBeVisible();
+  const projectWorkspace = page.getByLabel("Project workspace");
+  await expect(projectWorkspace.getByRole("heading", { name: company })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Project tasks" })).toBeVisible();
   await expect(page.getByText("No project tasks yet.")).toBeVisible();
 
@@ -141,7 +142,7 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await expect(page.getByRole("link", { name: `${company} · Open inquiry` })).toHaveAttribute("href", `/dashboard/leads?lead=${leadId}`);
 
   await page.reload();
-  await expect(page.getByRole("heading", { name: company })).toBeVisible();
+  await expect(projectWorkspace.getByRole("heading", { name: company })).toBeVisible();
   await expect(page.locator("#focus").getByText(taskTitle, { exact: true })).toBeVisible();
   await expect(page.getByText("CC-016 synthetic milestone", { exact: true })).toBeVisible();
   await expect(page.getByText("CC-016 synthetic decision", { exact: true })).toBeVisible();
