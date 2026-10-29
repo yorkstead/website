@@ -25,17 +25,16 @@ for (const width of [390, 1440])
       ).status(),
     ).toBe(200);
     await page.goto("/dashboard");
+    if (width < 768) {
+      await page.getByRole("button", { name: "Open navigation menu" }).click();
+    }
     await expect(
       page.getByRole("link", { name: "Portal Readiness", exact: true }).first(),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: width < 768 ? "More" : /Commands/ })
+      .getByRole("link", { name: "Portal Readiness", exact: true })
+      .first()
       .click();
-    const palette = page.getByRole("dialog", { name: "Command palette" });
-    await palette
-      .getByRole("textbox", { name: "Search commands and projects" })
-      .fill("Portal Readiness");
-    await palette.getByRole("button", { name: /Portal Readiness/ }).click();
     await expect(page).toHaveURL(/dashboard\/portal-readiness/);
     const overall = page.getByRole("region", { name: /Global review/ }),
       technical = page.getByRole("region", {
