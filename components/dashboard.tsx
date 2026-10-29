@@ -5,10 +5,10 @@ import Link from "next/link";
 import type { GoogleOperations } from "@/lib/dashboard-google-operations";
 import { useRouter } from "next/navigation";
 import {
-  Activity, AlertCircle, Archive, ArrowRightCircle, BarChart3, CalendarDays, CheckCircle2, CircleDot, Clock3, Command,
-  DatabaseBackup, Download, Flame, Inbox, KeyRound, CornerDownLeft, Grid2X2, Keyboard, LayoutDashboard,
+  Activity, AlertCircle, Archive, ArrowRightCircle, BarChart3, CalendarDays, CheckCircle2, CircleDot, Clock3,
+  DatabaseBackup, Download, Flame, Inbox, KeyRound, CornerDownLeft, Grid2X2, Keyboard,
   Lightbulb, ListChecks, ListFilter, Pencil, BookOpenCheck, ClipboardCheck, DownloadCloud, Gauge, Megaphone, Plus,
-  RefreshCw, RotateCcw, RotateCw, Search, Settings, Sparkles, Square, Target, TerminalSquare, Trash2, Upload, X,
+  RefreshCw, RotateCcw, RotateCw, Search, Settings, Sparkles, Square, Target, Trash2, Upload, X,
 } from "lucide-react";
 import type { Project, ProjectKind } from "@/lib/projects";
 import type { ClientDelivery } from "@/lib/client-delivery";
@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DialogBoundary } from "@/components/ui/dialog-boundary";
 import { SyncConflictDialog } from "@/components/ui/sync-conflict-dialog";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { readVersionedWorkspace, saveVersionedWorkspace } from "@/lib/versioned-workspace-client";
 import { createWorkspaceSnapshotRequester, requestWorkspaceSnapshotRestore } from "@/lib/workspace-snapshot-client";
 import { fetchProjectIntelligence, markProjectIntelligenceRefreshing, mergeProjectIntelligenceResults, type ProjectIntelligenceEntry } from "@/lib/project-intelligence-client";
@@ -843,38 +842,8 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
       )}
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_-10%,color-mix(in_oklab,var(--primary)_10%,transparent),transparent_32%)]" />
       <div className="relative mx-auto flex min-h-screen w-full min-w-0 max-w-[1600px]">
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/70 bg-card/30 p-4 backdrop-blur lg:flex">
-          <div className="flex h-14 items-center gap-3 px-2"><div className="grid size-9 place-items-center rounded-lg border border-primary/30 bg-primary/10 text-primary"><Command className="size-5" /></div><div><div className="text-sm font-bold tracking-tight">WORK//CTRL</div><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground">Project operating system</div></div></div>
-          <nav className="mt-6 space-y-1 text-sm">
-            <div className="px-3 py-1 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">Workspace</div>
-            <a className="flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2.5 font-medium text-primary" href="#"><LayoutDashboard className="size-4" />Command center</a>
-            <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="#projects"><Grid2X2 className="size-4" />Projects<span className="ml-auto font-mono text-[10px]">{workspace.projects.length}</span></a>
-            <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="#tasks"><ListChecks className="size-4" />Tasks<span className="ml-auto font-mono text-[10px]">{combinedTaskCount}</span></a>
-            <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="#activity"><Activity className="size-4" />Activity</a>
-
-            <div className="pt-4 px-3 py-1 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">Operations</div>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/leads"><Inbox className="size-4" />Client leads</Link>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/analytics"><BarChart3 className="size-4" />Analytics</Link>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/marketing"><Megaphone className="size-4" />Marketing</Link>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/consultations"><ClipboardCheck className="size-4" />Consultations</Link>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/client-publishing"><ClipboardCheck className="size-4" />Client Publishing</Link>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/client-access"><ClipboardCheck className="size-4" />Client Access</Link>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/portal-readiness"><ClipboardCheck className="size-4" />Portal Readiness</Link>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/customer-communications"><ClipboardCheck className="size-4" />Customer Communications</Link>
-            <Link className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition hover:bg-accent hover:text-foreground" href="/dashboard/operations"><Activity className="size-4" />Operations</Link>
-          </nav>
-          <div className="mt-auto space-y-3">
-            <div className="space-y-1">
-              <button type="button" onClick={() => setSettingsOpen(true)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-muted-foreground transition hover:bg-accent hover:text-foreground"><Settings className="size-4" />Workspace settings</button>
-              <Link href="/account" className="flex items-center gap-3 rounded-lg px-3 py-2 text-xs text-muted-foreground transition hover:bg-accent hover:text-foreground"><KeyRound className="size-4" />Account & passkeys</Link>
-            </div>
-            <div className="rounded-xl border border-border bg-background/60 p-3"><div className="mb-2 flex items-center gap-2 text-xs font-medium"><TerminalSquare className="size-4 text-primary" />Cloud workspace</div><div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-wider text-muted-foreground"><span className={cn("size-1.5 rounded-full", syncState === "saved" ? "bg-emerald-400" : syncState === "offline" || syncState === "conflict" ? "bg-amber-400" : "animate-pulse bg-primary")} />{syncState === "loading" ? "Loading cloud data" : syncState === "saving" ? "Saving changes" : syncState === "offline" ? "Offline · Saved locally" : syncState === "conflict" ? "Cloud conflict · Resolution required" : "Synced across devices"}</div></div>
-          </div>
-        </aside>
-
-
-        <main className="min-w-0 flex-1 px-4 pb-16 sm:px-6 xl:px-10">
-          <header className="flex h-20 min-w-0 items-center justify-between border-b border-border/60"><div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground"><CircleDot className={cn("size-3 shrink-0", syncState === "offline" || syncState === "conflict" ? "text-amber-400" : "text-emerald-400")} /><span className="hidden truncate sm:inline">{syncState === "offline" ? "Working offline" : syncState === "conflict" ? "Resolve the cloud conflict" : syncState === "saving" ? "Saving…" : "Workspace ready"}</span></div><div className="flex shrink-0 items-center gap-2"><Button variant="outline" className="hidden text-muted-foreground md:flex" onClick={() => setCommandOpen(true)}><Search />Commands <kbd className="ml-4 rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[9px]">Ctrl K</kbd></Button><Button variant="outline" size="icon" onClick={() => void refreshIntelligence()} aria-label="Refresh project status" disabled={refreshing}><RefreshCw className={cn(refreshing && "animate-spin")} /></Button><ThemeToggle /><Button onClick={() => setComposer("project")}><Plus /><span className="hidden sm:inline">New project</span></Button></div></header>
+        <main className="min-w-0 flex-1 px-4 pb-8 sm:px-6 xl:px-10">
+          <header className="flex h-20 min-w-0 items-center justify-between border-b border-border/60"><div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground"><CircleDot className={cn("size-3 shrink-0", syncState === "offline" || syncState === "conflict" ? "text-amber-400" : "text-emerald-400")} /><span className="hidden truncate sm:inline">{syncState === "offline" ? "Working offline" : syncState === "conflict" ? "Resolve the cloud conflict" : syncState === "saving" ? "Saving…" : "Workspace ready"}</span></div><div className="flex shrink-0 items-center gap-2"><Button variant="outline" className="hidden text-muted-foreground md:flex" onClick={() => setCommandOpen(true)}><Search />Commands <kbd className="ml-4 rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[9px]">Ctrl K</kbd></Button><Button variant="outline" size="icon" onClick={() => void refreshIntelligence()} aria-label="Refresh project status" disabled={refreshing}><RefreshCw className={cn(refreshing && "animate-spin")} /></Button><Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)} aria-label="Workspace settings"><Settings className="size-4" /></Button><Button variant="outline" size="icon" onClick={() => setComposer("task")} aria-label="New task"><ListChecks className="size-4" /></Button><Button onClick={() => setComposer("project")}><Plus /><span className="hidden sm:inline">New project</span></Button></div></header>
 
           {projectLinkNotFound && <section role="alert" className="mt-5 flex flex-col justify-between gap-3 rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 sm:flex-row sm:items-center"><div><div className="text-sm font-semibold">Project link not found</div><p className="mt-1 text-xs text-muted-foreground">The requested project <span className="font-mono">{projectLinkNotFound}</span> is not in the current workspace. No records were changed.</p></div><div className="flex shrink-0 gap-2"><Button size="sm" variant="outline" asChild><Link href="/dashboard/leads">Review leads</Link></Button><Button size="sm" onClick={clearProjectDeepLink}>View current projects</Button></div></section>}
 
@@ -923,7 +892,6 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
             <div className="mt-4 border-t border-border pt-4"><div className="mb-2 flex items-center justify-between gap-3"><div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">{lastSnapshotAt ? `Last cloud snapshot · ${new Date(lastSnapshotAt).toLocaleString()}` : "No cloud snapshot yet"}</div>{snapshots.length ? <span className="text-[10px] text-muted-foreground">Newest {snapshots.length}</span> : null}</div>{snapshots.length ? <div className="grid gap-2 sm:grid-cols-2">{snapshots.map((snapshot) => <div key={snapshot.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/40 px-3 py-2"><span className="text-xs text-muted-foreground">{new Date(snapshot.createdAt).toLocaleString()}</span><Button size="sm" variant="ghost" disabled={Boolean(restoringSnapshotId) || snapshotting} onClick={() => confirmSnapshotRestore(snapshot)}><RotateCcw className={cn(restoringSnapshotId === snapshot.id && "animate-spin")} />{restoringSnapshotId === snapshot.id ? "Restoring…" : "Restore"}</Button></div>)}</div> : null}</div>
           </CardContent></Card></section>
         </main>
-        <nav className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-5 rounded-2xl border border-border bg-card/95 p-1.5 shadow-2xl backdrop-blur-xl lg:hidden"><button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex flex-col items-center gap-1 rounded-xl py-2 text-[9px] text-muted-foreground hover:bg-accent hover:text-foreground"><LayoutDashboard className="size-4" />Home</button><button onClick={() => document.querySelector("#focus")?.scrollIntoView()} className="flex flex-col items-center gap-1 rounded-xl py-2 text-[9px] text-muted-foreground hover:bg-accent hover:text-foreground"><Target className="size-4" />Focus</button><button onClick={() => setComposer("task")} className="mx-auto grid size-11 -translate-y-3 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg" aria-label="New task"><Plus className="size-5" /></button><button onClick={() => document.querySelector("#projects")?.scrollIntoView()} className="flex flex-col items-center gap-1 rounded-xl py-2 text-[9px] text-muted-foreground hover:bg-accent hover:text-foreground"><Grid2X2 className="size-4" />Projects</button><button onClick={() => setCommandOpen(true)} className="flex flex-col items-center gap-1 rounded-xl py-2 text-[9px] text-muted-foreground hover:bg-accent hover:text-foreground"><Command className="size-4" />More</button></nav>
       </div>
     </div>
   );

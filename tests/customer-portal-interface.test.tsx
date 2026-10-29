@@ -83,12 +83,17 @@ describe("customer portal presentation", () => {
     expect(normalizePortalProgress(Number.NaN)).toBe(0);
   });
 
-  test("renders dashboard navigation without escaped newline text", async () => {
+  test("uses shared dashboard navigation without duplicate homepage or WORK//CTRL navigation", async () => {
     const source = await Bun.file("app/dashboard/page.tsx").text();
+    const layout = await Bun.file("app/dashboard/layout.tsx").text();
+    const navigation = await Bun.file("components/dashboard/dashboard-navigation.tsx").text();
+    const workspace = await Bun.file("components/dashboard.tsx").text();
 
-    expect(source).toContain(`Marketing</Link>
-            <Link href="/dashboard/customer-portal-preview"`);
-    expect(source).not.toContain("Marketing</Link>\\n");
+    expect(layout).toContain("<DashboardNavigation>{children}</DashboardNavigation>");
+    expect(navigation).toContain('aria-label="Primary and tools navigation"');
+    expect(source).not.toContain('aria-label="Workspace sections"');
+    expect(workspace).not.toContain("WORK//CTRL</div>");
+    expect(workspace).not.toContain("grid-cols-5 rounded-2xl");
   });
 
   test("includes the established responsive layout and focus conventions", async () => {

@@ -3,14 +3,13 @@ import { AutomationLeads } from "@/components/dashboard/automation-leads";
 import { LeadPriorityQueue } from "@/components/dashboard/lead-priority-queue";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, BellRing, BriefcaseBusiness, CalendarClock, CircleDollarSign, ClipboardCheck, Mail, Megaphone, Reply, Send, UserRound } from "lucide-react";
+import { ArrowLeft, BellRing, BriefcaseBusiness, CalendarClock, CircleDollarSign, ClipboardCheck, Mail, Reply, Send, UserRound } from "lucide-react";
 import { saveLeadDetails, updateLeadStatus } from "@/app/actions/leads";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { PaginationControls } from "@/components/pagination-controls";
 import { brand } from "@/lib/brand";
 import { getContactInquiry, getLeadSummary, listContactInquiryPage, type ContactInquiry, type FollowUpFilter, type LeadStatus } from "@/lib/contact-inquiries";
@@ -75,7 +74,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const nextHref = !leadParam && leadPage.pagination.hasNext ? leadPageHref(leadPage.pagination.page + 1, stage, followUp) : null;
 
   return <main className="min-h-screen min-w-0 bg-background px-4 py-6 text-foreground sm:px-8"><div className="mx-auto w-full min-w-0 max-w-7xl">
-    <header className="mb-7 flex flex-col justify-between gap-5 border-b border-border pb-6 sm:flex-row sm:items-end"><div><Link href="/dashboard" className="mb-5 inline-flex items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground"><ArrowLeft className="size-3.5" />Command Center</Link><div className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Client pipeline</div><h1 className="mt-2 text-3xl font-semibold tracking-tight">Client Leads</h1><p className="mt-2 text-sm text-muted-foreground">From first message to a scoped, active project.</p></div><div className="flex flex-wrap items-center gap-2"><Button variant="ghost" asChild><Link href="/dashboard/marketing"><Megaphone />Marketing</Link></Button><Button variant="outline" asChild><Link href="/dashboard/consultations"><ClipboardCheck />Consultation playbooks</Link></Button><ThemeToggle /></div></header>
+    <header className="mb-7 flex flex-col justify-between gap-5 border-b border-border pb-6 sm:flex-row sm:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Client pipeline</div><h1 className="mt-2 text-3xl font-semibold tracking-tight">Client Leads</h1><p className="mt-2 text-sm text-muted-foreground">From first message to a scoped, active project.</p></div></header>
 
     <section aria-label="Lead pipeline counts" className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5"><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Open pipeline</div><div className="mt-1 text-2xl font-semibold">{summary.open}</div></div><BriefcaseBusiness className="size-5 text-primary" /></CardContent></Card><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Overdue follow-ups</div><div className="mt-1 text-2xl font-semibold">{summary.overdue}</div></div><BellRing className="size-5 text-red-400" /></CardContent></Card><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Due today</div><div className="mt-1 text-2xl font-semibold">{summary.dueToday}</div></div><CalendarClock className="size-5 text-amber-400" /></CardContent></Card><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Upcoming</div><div className="mt-1 text-2xl font-semibold">{summary.upcoming}</div></div><CalendarClock className="size-5 text-primary" /></CardContent></Card><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Won</div><div className="mt-1 text-2xl font-semibold">{summary.won}</div></div><BriefcaseBusiness className="size-5 text-emerald-400" /></CardContent></Card></section>
 

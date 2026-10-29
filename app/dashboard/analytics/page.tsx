@@ -1,10 +1,9 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Activity, AlertTriangle, ArrowLeft, BarChart3, Gauge, MousePointerClick, RefreshCw, Users } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, Gauge, MousePointerClick, RefreshCw, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { analyticsRanges, getAnalyticsDashboard, parseAnalyticsRange, type AnalyticsDashboardData } from "@/lib/analytics-dashboard";
 import { getOwnerSession } from "@/lib/owner-session";
 import { cn } from "@/lib/utils";
@@ -31,7 +30,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
   try { data = await getAnalyticsDashboard(range); } catch (error) { console.error("Analytics dashboard unavailable", error instanceof Error ? error.message : "unknown error"); }
 
   return <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-8"><div className="mx-auto max-w-7xl">
-    <header className="mb-7 flex flex-col justify-between gap-5 border-b border-border pb-6 sm:flex-row sm:items-end"><div><Link href="/dashboard" className="mb-5 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="size-3.5" />Command Center</Link><div className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Owner intelligence</div><h1 className="mt-2 text-3xl font-semibold tracking-tight">Analytics</h1><p className="mt-2 text-sm text-muted-foreground">Traffic to qualified demand, with privacy-safe first-party measurement.</p></div><div className="flex items-center gap-2"><Link href={`/dashboard/analytics?days=${range}`} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-xs hover:bg-accent"><RefreshCw className="size-3.5" />Refresh</Link><ThemeToggle /></div></header>
+    <header className="mb-7 flex flex-col justify-between gap-5 border-b border-border pb-6 sm:flex-row sm:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Owner intelligence</div><h1 className="mt-2 text-3xl font-semibold tracking-tight">Analytics</h1><p className="mt-2 text-sm text-muted-foreground">Traffic to qualified demand, with privacy-safe first-party measurement.</p></div><div className="flex items-center gap-2"><Link href={`/dashboard/analytics?days=${range}`} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-xs hover:bg-accent"><RefreshCw className="size-3.5" />Refresh</Link></div></header>
     <nav aria-label="Analytics date range" className="mb-6 flex w-fit gap-1 rounded-lg border border-border bg-card p-1">{analyticsRanges.map((days) => <Link key={days} href={`/dashboard/analytics?days=${days}`} className={cn("rounded-md px-3 py-2 text-xs", range === days ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent")}>{days === 1 ? "24 hours" : `${days} days`}</Link>)}</nav>
     {!data ? <Card><CardContent className="grid min-h-72 place-items-center text-center"><div><AlertTriangle className="mx-auto size-8 text-amber-400" /><h2 className="mt-4 font-medium">Analytics storage is unavailable</h2><p className="mt-1 text-sm text-muted-foreground">No values are being substituted. Check the database and migration status.</p></div></CardContent></Card> : <>
       {data.alerts.length ? <section aria-label="Analytics alerts" className="mb-5 grid gap-2">{data.alerts.map((alert) => <div key={alert.message} className={cn("flex items-start gap-2 rounded-lg border px-3 py-2.5 text-xs", alert.level === "attention" ? "border-amber-500/25 bg-amber-500/10 text-amber-300" : "border-blue-500/25 bg-blue-500/10 text-blue-300")}><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />{alert.message}</div>)}</section> : null}

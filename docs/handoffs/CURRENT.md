@@ -1,5 +1,15 @@
 # Current handoff
 
+## CC-017 Command Center Navigation & Interface Simplification — 2026-10-29
+
+- User authorizes CC-017 implementation, browser tests, repository checks, spec/handoff updates, branch delivery, and opening PR `CC-017: Simplify Command Center Navigation`. Do not merge, manually deploy, or modify production data.
+- Verified GitHub repository `yorkstead/website`; live `main` and local `origin/main` are `077f2709116324f540280233936e6d1480d20f07`, the CC-016 PR #72 merge commit. PR #72 is closed/merged. Shell DNS could not reach GitHub, so GitHub connector evidence was used; local checkout contains the matching main commit/tree.
+- Branch `feat/cc-017-command-center-navigation` was created from the verified `origin/main` tip. The pre-existing untracked `website.code-workspace` remains preserved.
+- Active specification, plan, tasks, and verification: `specs/026-cc-017-command-center-navigation/`. Scope replaces the horizontal dashboard destination strip, WORK//CTRL desktop sidebar, dashboard mobile bottom bar, and duplicate page-header destination shortcuts with a single shared, responsive Yorkstead navigation. Preserve existing routes/auth/data/business logic, CRM query strings, project deep links, tenant isolation, and publication gates.
+- Implementation is in progress on `feat/cc-017-command-center-navigation`. Shared responsive navigation is in the `/dashboard` layout; duplicate dashboard route strips/sidebars/mobile bottom nav are removed. CRM query handling, project deep links, page auth, business logic, data widgets, tenant isolation, and publication gates remain unchanged. Authenticated browser tests cover destinations, active state, persistence, drawer, keyboard focus, Escape/backdrop, CRM parameters, and a project deep link; CI has a dedicated disposable-DB workflow step.
+- Local verification so far: scaffold (27 specs), migration check (18 migrations), typecheck, lint (one pre-existing login-panel warning), unit suite (369 pass / 109 DB skips / 0 fail), existing Playwright suite (32/32), and diff check pass. The CC-017 owner browser tests could not run locally because identical loopback disposable DB URLs are unavailable. Build remains sandbox-limited: Turbopack worker port `EPERM`; webpack fallback cannot parse TypeScript `--showConfig`.
+- Next exact action: complete review and diff check, commit/push the branch, open the requested PR, then inspect exact-head CI and preview evidence. No production operation.
+
 ## CC-016 Command Center Operational Validation — 2026-10-29
 
 - User authorized CC-016 implementation, disposable PostgreSQL/browser tests, requested checks/documentation, branch commits/push, and opening a PR titled `CC-016: Command Center Operational Validation`. Do not merge, manually deploy, or mutate production data. The real production inquiry remains untouched.
