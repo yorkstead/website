@@ -29,6 +29,7 @@ test("owner navigation covers destinations, active state, collapse, and persiste
     ["Consultations", "/dashboard/consultations", /\/dashboard\/consultations$/],
     ["Projects", "/dashboard#projects", /\/dashboard#projects$/],
     ["Tasks", "/dashboard#tasks", /\/dashboard#tasks$/],
+    ["Automations", "/dashboard/automations", /\/dashboard\/automations$/],
     ["Insights", "/dashboard/analytics", /\/dashboard\/analytics$/],
     ["Marketing", "/dashboard/marketing", /\/dashboard\/marketing$/],
     ["Operations", "/dashboard/operations", /\/dashboard\/operations$/],
@@ -59,8 +60,8 @@ test("owner navigation covers destinations, active state, collapse, and persiste
     }
   }
   await page.goto("/dashboard");
-  await expect(nav.getByRole("link", { name: "Daily Operations", exact: true })).toHaveAttribute("href", "https://cal.yorkstead.com/command");
-  await expect(nav.getByRole("link", { name: "Daily Operations", exact: true })).toHaveAttribute("target", "_blank");
+  await expect(nav.getByRole("link", { name: "Automations", exact: true })).toHaveAttribute("href", "/dashboard/automations");
+  await expect(nav.getByRole("link", { name: "Daily Operations", exact: true })).toHaveCount(0);
 
   await page.goto("/dashboard/leads?lead=731&followUp=upcoming");
   await expect(page).toHaveURL(/\/dashboard\/leads\?lead=731&followUp=upcoming/);
@@ -129,6 +130,25 @@ test("mobile drawer supports keyboard focus, Escape, backdrop, and route selecti
     .click({ position: { x: 350, y: 200 } });
   await expect(page.getByRole("dialog", { name: "Yorkstead navigation" })).toBeHidden();
   await expect(opener).toBeFocused();
+});
+
+test("Automations keeps owner-only access and shows the existing Hub workflow links", async ({ page, context }) => {
+  await page.goto("/dashboard/automations");
+  await expect(page).toHaveURL(/\/login\?next=%2Fdashboard%2Fautomations|\/login\?next=\/dashboard\/automations/);
+  expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).status()).toBe(200);
+
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dashboard/automations");
+    await expect(page.getByRole("heading", { name: "Voice capture controls" })).toBeVisible();
+    await expect(page.getByText(/Hub API responding|Hub health check failed|Hub unavailable/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open Hub capture controls" })).toHaveAttribute("href", "https://cal.yorkstead.com/command#ys-actions");
+    await expect(page.getByRole("link", { name: "Open Hub integration health" })).toHaveAttribute("href", "https://cal.yorkstead.com/command#ys-health");
+    await expect(page.getByRole("link", { name: "Review Hub interactions" })).toHaveAttribute("href", "https://cal.yorkstead.com/crm/interactions");
+    await expect(page.getByRole("link", { name: "Review Hub leads" })).toHaveAttribute("href", "https://cal.yorkstead.com/crm/review");
+    await expect(page.getByText(/does not verify capture ingestion/)).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  }
 });
 
 test("print media hides dashboard navigation and preserves marketing one-sheet pages", async ({ page, context }) => {

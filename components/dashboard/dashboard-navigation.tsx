@@ -42,6 +42,7 @@ const primaryLinks: NavigationLink[] = [
   { label: "CRM", href: "/dashboard/leads", icon: Users, active: (path) => path.startsWith("/dashboard/leads") || path.startsWith("/dashboard/consultations") },
   { label: "Projects", href: "/dashboard#projects", icon: FolderKanban, active: (path) => path === "/dashboard" },
   { label: "Tasks", href: "/dashboard#tasks", icon: ListChecks, active: (path) => path === "/dashboard" },
+  { label: "Automations", href: "/dashboard/automations", icon: Activity, active: (path) => path.startsWith("/dashboard/automations") },
   { label: "Insights", href: "/dashboard/analytics", icon: Gauge, active: (path) => ["/dashboard/analytics", "/dashboard/marketing", "/dashboard/operations"].some((prefix) => path.startsWith(prefix)) },
 ];
 
@@ -65,7 +66,6 @@ const toolLinks: NavigationLink[] = [
   { label: "Customer Communications", href: "/dashboard/customer-communications", icon: ClipboardCheck, active: (path) => path.startsWith("/dashboard/customer-communications") },
   { label: "Marketing one-sheet", href: "/dashboard/marketing/one-sheet", icon: FileText, active: (path) => path.startsWith("/dashboard/marketing/one-sheet") },
   { label: "Account & passkeys", href: "/account", icon: BriefcaseBusiness, active: (path) => path === "/account" },
-  { label: "Daily Operations", href: "https://cal.yorkstead.com/command", icon: CalendarDays, external: true },
 ];
 
 function routeIsActive(link: NavigationLink, pathname: string, query: URLSearchParams) {
