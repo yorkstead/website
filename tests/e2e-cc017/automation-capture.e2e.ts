@@ -105,12 +105,12 @@ test("uncertain command recovery survives unavailable refresh and remount with t
   });
   await page.route("**/api/dashboard/automation-hub/actions", async (route) => {
     commandBodies.push(route.request().postDataJSON());
-    recordsAvailable = false;
     const command = commandBodies.at(-1)!;
     if (commandBodies.length === 1) {
       await route.fulfill({ status: 503, json: { error: "hub_unavailable" } });
       return;
     }
+    recordsAvailable = false;
     await route.fulfill({ status: 202, json: { contractVersion: 1, commandId: "33333333-3333-4333-8333-333333333333", captureId: captures[2].id, action: command.action, status: "processing", destination: "hub_capture_inbox", resultCode: "command_pending", externalWriteStarted: false, retrySafe: false } });
   });
   await page.setViewportSize({ width: 390, height: 900 });
@@ -120,7 +120,9 @@ test("uncertain command recovery survives unavailable refresh and remount with t
   await dialog.getByRole("button", { name: "Confirm reclassify" }).click();
   await expect(page.getByText("did not return a command result", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Check Hub command status" }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "Capture source unavailable" })).toBeVisible();
+  await expect(page.getByRole("alert").filter({ hasText: "Automation Hub records could not be loaded" })).toBeVisible();
+  recordsAvailable = true;
+  await page.getByRole("button", { name: "Refresh Hub records" }).click();
   await expect(page.getByRole("heading", { name: "Review note" })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: "Review note" })).toBeVisible();
