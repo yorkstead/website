@@ -7,15 +7,16 @@
 - [x] T005 — Fix only confirmed integration/usability defects; preserve auth, tenant isolation, retirement and publication gates.
 - [x] T006 — Run all requested repository checks and review security, hardening, database and spec convergence; record environment-specific blocks.
 - [x] T007 — Complete validation matrix, production smoke checklist, rollback, verification evidence and handoff.
-- [ ] T008 — Open `CC-016: Command Center Operational Validation` PR. Do not merge or deploy.
+- [x] T008 — Open `CC-016: Command Center Operational Validation` PR. Do not merge or deploy.
+- [ ] T009 — Re-run exact-head CI after adapting development-only loopback disposable database access; repair any remaining lifecycle failure.
 
 ## Handoff state
 
-- Current task: T008, publish the reviewed branch and open the requested PR; exact-head CI review follows.
+- Current task: T009, re-run exact-head CI and reconcile the matrix; PR #72 is open as a draft.
 - Branch: `feat/cc-016-command-center-validation`, based on the exact verified main tree (`819a1572607ef8c265cf77aa28df50eb7cb729d7`).
 - A focused application fix routes owner status changes through a tombstone-aware SQL helper. The conversion DB regression now requires a disposable URL and rolls back instead of deleting `workspaces.primary`.
-- Added the isolated `playwright.cc016.config.ts` browser flow and database integration safety guard. Local database and full lifecycle browser execution are pending hosted CI because no local test URL/service is available.
-- Local: scaffold, 18 migration checks, lint (one pre-existing warning), typecheck, unit suite (366 pass / 108 DB skips / 0 fail), focused CC-016 unit tests (14 pass / 3 DB skips), standard browser suite (31/32; existing 30s crawl timeout), standalone crawl (1/1), and diff check pass. Standard Turbopack/webpack builds are blocked by the sandbox worker port and Next TypeScript config parsing issues.
+- Added the isolated `playwright.cc016.config.ts` browser flow and database integration safety guard. The first exact-head CI showed the public form used Neon HTTP and therefore could not write to the loopback disposable PostgreSQL. Added a development-only adapter for loopback databases explicitly named test/disposable, with parameterization unit coverage. Exact-head rerun pending.
+- Local: scaffold, 18 migration checks, lint (one pre-existing warning), typecheck, unit suite (368 pass / 108 DB skips / 0 fail), focused adapter/lifecycle/safety tests (5 pass), standard browser suite (31/32; existing 30s crawl timeout), standalone crawl (1/1), and diff check pass. Standard Turbopack/webpack builds are blocked by the sandbox worker port and Next TypeScript config parsing issues.
 - Final review: `git diff --check` passes and the generated Next.js env file is clean. The only unrelated working-tree file is the pre-existing untracked `website.code-workspace`; leave it untouched.
-- Next action: publish the branch/open the requested PR; then verify exact-head CI and repair any browser or PostgreSQL regressions it finds. No production action.
+- Next action: commit/push the adapter and CI finding; verify exact-head CI; update the matrix. No production action.
 - Production inquiry remains untouched.
