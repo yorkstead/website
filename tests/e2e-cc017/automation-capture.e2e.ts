@@ -169,8 +169,10 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   await page.screenshot({path:testInfo.outputPath("cc022b-shopping-mobile.png"),fullPage:true});
   const shoppingItem=page.locator('section[aria-labelledby="shopping-planner-title"] li').filter({has:page.getByRole("heading",{name:"Dog food",exact:true})});
   await shoppingItem.getByRole("button",{name:"Correct and review"}).click();
-  await expect(shoppingItem.getByLabel("Scope",{exact:true})).toBeVisible();
-  await shoppingItem.getByLabel("Scope",{exact:true}).selectOption("personal");await shoppingItem.getByLabel("Priority",{exact:true}).selectOption("essential");
+  const scopeControl=shoppingItem.getByRole("combobox",{name:"Scope",exact:true});
+  const priorityControl=shoppingItem.getByRole("combobox",{name:"Priority",exact:true});
+  await expect(scopeControl).toBeVisible();
+  await scopeControl.selectOption("personal");await priorityControl.selectOption("essential");
   await page.getByRole("button",{name:"Save changes"}).click();
   await page.getByRole("button",{name:"Approve review"}).click();await page.getByRole("button",{name:"Mark purchased"}).click();
   await expect(page.getByText(/purchased/).first()).toBeVisible();await page.getByRole("button",{name:"Undo purchase"}).click();
