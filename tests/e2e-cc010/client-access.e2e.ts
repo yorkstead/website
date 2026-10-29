@@ -29,17 +29,10 @@ for (const width of [390, 1440])
     await expect(
       page.getByRole("link", { name: "Client Access", exact: true }).first(),
     ).toBeVisible();
-    if (width < 768) {
-      await page.getByRole("button", { name: "Close navigation drawer" }).click();
-    }
     await page
-      .getByRole("button", { name: width < 768 ? "More" : /Commands/ })
+      .getByRole("link", { name: "Client Access", exact: true })
+      .first()
       .click();
-    const palette = page.getByRole("dialog", { name: "Command palette" });
-    await palette
-      .getByRole("textbox", { name: "Search commands and projects" })
-      .fill("Client Access");
-    await palette.getByRole("button", { name: /Client Access/ }).click();
     await expect(page).toHaveURL(/dashboard\/client-access/);
     const selector = page.getByRole("combobox", { name: "Organization" });
     await expect(selector).toBeEnabled();
