@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { GoogleOperations } from "@/lib/dashboard-google-operations";
 import type { CommandCenterCrmSnapshot } from "@/lib/contact-inquiries";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Activity, AlertCircle, Archive, ArrowRightCircle, BarChart3, CalendarDays, CheckCircle2, CircleDot,
   DatabaseBackup, Download, Inbox, KeyRound, CornerDownLeft, Grid2X2, Keyboard,
@@ -52,6 +52,7 @@ type UndoToast = { label: string; canUndo: boolean; canRedo: boolean; actionType
 
 export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable }: { googleOperations: GoogleOperations | null; crmSnapshot: CommandCenterCrmSnapshot | null; crmUnavailable: boolean }) {
   const router = useRouter();
+  const requestedProjectId = useSearchParams().get("project");
   const [workspace, setWorkspace] = useState<Workspace>(emptyWorkspace);
   const [googleDone,setGoogleDone]=useState<string[]>([]);
   const [googleBusy,setGoogleBusy]=useState<string|null>(null);
@@ -69,7 +70,7 @@ export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable }: { g
   const [projectLinkNotFound, setProjectLinkNotFound] = useState<string | null>(null);
   useEffect(() => {
     if (!ready) return;
-    const resolution = resolveProjectDeepLink(workspace.projects, new URLSearchParams(window.location.search).get("project"));
+    const resolution = resolveProjectDeepLink(workspace.projects, requestedProjectId);
     const timer = window.setTimeout(() => {
       if (resolution.status === "found") {
         setViewingProjectId(resolution.projectId);
@@ -78,11 +79,12 @@ export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable }: { g
         setViewingProjectId(null);
         setProjectLinkNotFound(resolution.projectId);
       } else {
+        setViewingProjectId(null);
         setProjectLinkNotFound(null);
       }
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [ready, workspace.projects]);
+  }, [ready, workspace.projects, requestedProjectId]);
   const clearProjectDeepLink = useCallback(() => {
     setViewingProjectId(null);
     setProjectLinkNotFound(null);

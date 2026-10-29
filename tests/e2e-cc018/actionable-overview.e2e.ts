@@ -54,7 +54,7 @@ test("owner overview prioritizes persisted work and supports exact links and act
   await expect(projectLink).toBeVisible();
   await projectLink.click();
   await expect(page).toHaveURL(new RegExp(`project=${cc018ProjectId}`));
-  await expect(page.getByRole("heading", { name: "CC-018 Active Project" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Project workspace" }).getByRole("heading", { name: "CC-018 Active Project" })).toBeVisible();
 
   await page.goto("/dashboard");
   const taskRow = page.locator("section[aria-labelledby='command-center-actions-heading'] article").filter({ hasText: "CC-018 Complete workspace task" });
