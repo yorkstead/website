@@ -34,6 +34,18 @@ export type ContactSubmissionResult =
   | { status: "spam"; message: string }
   | { status: "server_error"; message: string; error?: unknown };
 
+export function contactEmailFallbackResult(emailDelivered: boolean) {
+  return emailDelivered
+    ? {
+        status: "success" as const,
+        message: "Your message was emailed to our team, but it was not saved in the CRM. We’ll follow up with you directly.",
+      }
+    : {
+        status: "error" as const,
+        message: `The contact channel is temporarily unavailable. Your message was not saved in the CRM. Email ${brand.email} instead.`,
+      };
+}
+
 export type ContactStore = {
   countRecent: () => Promise<number>;
   insert: (

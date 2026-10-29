@@ -1,5 +1,14 @@
 # Current handoff
 
+## Urgent contact inquiry persistence fix — 2026-10-29
+
+- User authorizes a focused implementation, disposable PostgreSQL integration testing, required checks, push, and an urgent fix PR. Do not modify production data/schema, merge, or manually deploy.
+- Verified live `main` is `075a6b5a189696ab5842ff5a4e13a53052af5e62`, the merge commit for PR #70. PR #70 is therefore merged (this supersedes earlier handoff text saying it remained open). The new branch `fix/contact-inquiry-persistence` was created from that exact tip. The pre-existing untracked `website.code-workspace` remains untouched.
+- Production SQLSTATE 42P10 came from `app/actions/contact.ts` inferring `(submission_key)` without the predicate required by the migration-created partial unique index. The audit found the same invalid target in `app/actions/nonprofit.ts`; workflow audit, workflow lead, and restaurant trial already use untargeted `ON CONFLICT DO NOTHING` and need no changes.
+- Contact intake now uses a shared parameterized insert helper with `ON CONFLICT (submission_key) WHERE submission_key IS NOT NULL DO NOTHING`. A disposable PostgreSQL regression checks the migration-created index, row persistence, and duplicate idempotency in a rolled-back transaction. Email-only recovery now says that CRM persistence failed; when delivery cannot be confirmed, the form directs the visitor to email and does not claim receipt.
+- Local checks: scaffold, all 18 migration validations, typecheck, lint (one pre-existing warning), focused contact tests (10 pass), full unit suite (363 pass, 108 database-dependent skips, 0 failures), and diff check pass. Local DB integration is unverified because no test URL/server is configured and Docker socket access is denied. Normal Turbopack build cannot bind its worker port; webpack fallback fails parsing TypeScript `--showConfig` despite successful typecheck. Critical dependency audit is blocked by npm registry DNS.
+- Current spec/plan/tasks and verification: `specs/024-contact-inquiry-persistence/`. No schema migration or production operation. Rollback is a source revert; no data/schema cleanup is needed. Next action: commit/push, open urgent PR, then use exact-head GitHub CI (which provisions disposable PostgreSQL 16, migrates twice, runs DB tests, lint/typecheck/browser suites/build/audit) as final verification.
+
 ## CC-015 CRM & Project Workflow Completion — 2026-10-29
 
 - User authorizes implementation, repository checks, tests, current-handoff/spec documentation, and opening PR `CC-015: CRM & Project Workflow Completion`. Do not merge, deploy manually, or modify production data. Use the existing checkout; no worktree.

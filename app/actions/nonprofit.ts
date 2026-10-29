@@ -28,7 +28,7 @@ export async function submitNonprofit(data: FormData) {
       },
       insert: async (validated) => {
         const key = createHash("sha256").update(`nonprofit|${validated.email}|${message}`).digest("hex");
-        const rows = await withOperationTimeout(sql`INSERT INTO contact_inquiries (name, email, company, project_type, budget, message, ip_hash, submission_key) VALUES (${validated.name}, ${validated.email}, ${validated.company}, ${validated.projectType}, ${validated.budget}, ${message}, ${ipHash}, ${key}) ON CONFLICT (submission_key) DO NOTHING RETURNING id`);
+        const rows = await withOperationTimeout(sql`INSERT INTO contact_inquiries (name, email, company, project_type, budget, message, ip_hash, submission_key) VALUES (${validated.name}, ${validated.email}, ${validated.company}, ${validated.projectType}, ${validated.budget}, ${message}, ${ipHash}, ${key}) ON CONFLICT (submission_key) WHERE submission_key IS NOT NULL DO NOTHING RETURNING id`);
         return rows[0]?.id ? Number(rows[0].id) : null;
       },
     });
