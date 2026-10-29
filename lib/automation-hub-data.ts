@@ -95,9 +95,27 @@ const MAX_RESPONSE_BYTES = 256 * 1024;
 async function readJsonLimited(response: Response): Promise<unknown> {
   const declaredLength = Number(response.headers.get("content-length") || 0);
   if (declaredLength > MAX_RESPONSE_BYTES) throw new Error("response_too_large");
-  const text = await response.text();
-  if (new TextEncoder().encode(text).byteLength > MAX_RESPONSE_BYTES) throw new Error("response_too_large");
-  return JSON.parse(text);
+  if (!response.body) throw new Error("empty_response");
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let receivedBytes = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    receivedBytes += value.byteLength;
+    if (receivedBytes > MAX_RESPONSE_BYTES) {
+      await reader.cancel().catch(() => undefined);
+      throw new Error("response_too_large");
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(receivedBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return JSON.parse(new TextDecoder().decode(body));
 }
 
 export async function getAutomationHubData(): Promise<AutomationHubDataResult> {
