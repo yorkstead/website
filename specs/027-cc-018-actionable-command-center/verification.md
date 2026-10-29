@@ -4,6 +4,8 @@
 
 Implementation branch: `feat/cc-018-actionable-command-center`, source commit `0310c14a521a0ea66fb435104a74ebe87088f6d2`, based on CC-017 merge `ef39c7a11e0ce706a18e6cb099da9893f0b3c5de`. Local checks were run in the managed sandbox on 2026-10-29. Exact PR head and CI evidence will be appended after delivery.
 
+PR [#74](https://github.com/yorkstead/website/pull/74) is open and unmerged against `main`. At exact head `2e3c5f766ed7092d461cbc6073e4af5ff309f68f`, CI run [40850752539](https://github.com/yorkstead/website/actions/runs/40850752539) was queued and the Vercel preview was pending at 2026-10-29 09:35 UTC. This is an initial status; final exact-head outcomes will be recorded before closeout.
+
 ## Local results
 
 - `bun run yorkstead:check` — PASS; 28 active spec directories.
