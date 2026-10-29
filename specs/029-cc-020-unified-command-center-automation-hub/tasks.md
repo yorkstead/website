@@ -7,6 +7,6 @@
 - [x] T005 — Add owner-only Automations page using existing website health logic and the Hub's existing side-effect-free `/api/health` liveness route; do not call briefing generation as a health probe.
 - [x] T006 — Add links to existing Hub capture/review workflows and honest states for Hub/API failures.
 - [x] T007 — Add/adjust health-probe unit and owner/authorization/responsive browser coverage.
-- [ ] T008 — Run focused checks and all checks in `docs/verification.md`; run relevant CI/browser validation and build.
+- [x] T008 — Run focused checks and all checks in `docs/verification.md`; run exact-head CI/browser validation and build.
 - [x] T009 — Complete spec convergence, privacy/authorization review, external-dependency and rollback notes; update `CURRENT.md`.
-- [ ] T010 — Commit/push authorized branch and open `CC-020: Unified Command Center & Automation Hub`; do not merge or deploy.
+- [x] T010 — Commit/push authorized branch and open draft `CC-020: Unified Command Center & Automation Hub`; do not merge or deploy.
