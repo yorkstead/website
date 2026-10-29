@@ -26,7 +26,7 @@ test("owner overview prioritizes persisted work and supports exact links and act
   await page.goto("/dashboard");
   await expect(page.getByRole("heading", { name: "What needs attention today?" })).toBeVisible();
   const actions = page.locator("section[aria-labelledby='command-center-actions-heading']");
-  const overdueLink = actions.locator(`a[href^="/dashboard/leads?lead="]`).filter({ hasText: cc018Company }).first();
+  const overdueLink = actions.locator("article").filter({ hasText: cc018Company }).filter({ hasText: "Overdue" }).getByRole("link", { name: "Open lead" }).first();
   await expect(overdueLink).toBeVisible();
   const overdueRow = overdueLink.locator("xpath=ancestor::article");
   await expect(overdueRow).toContainText("Overdue");
