@@ -40,7 +40,9 @@ Record local environment limitations and exact-head CI evidence after running ch
 - `bun run build` — blocked in both normal and escalated runs by Turbopack failing to start a worker (`binding to a port: Operation not permitted`).
 - `bunx playwright test -c playwright.cc017.config.ts --list` — pass; lists the 3 navigation, drawer, and print tests.
 - `git diff --check` — pass after edits.
-- Exact-head CI and preview deployment evidence for the pushed review follow-up will be recorded below after GitHub reports completion.
+- The first review-follow-up run [#319](https://github.com/yorkstead/website/actions/runs/40836519874) passed migration, database/unit, lint, typecheck, standard browser tests, all isolated owner workflows, and the CC-016 lifecycle. The existing navigation and mobile-drawer cases passed. The new print case correctly caught all dashboard chrome hidden, but its test expected two one-sheet pages while the page renders three. Corrected the regression to require and verify all three print sections on the next pushed head.
+- GitHub Actions run [#320](https://github.com/yorkstead/website/actions/runs/40837471633) is running on corrected code head `5a811c6f35996b6a535698fbe8aa0f154c1dcd5a`; await final isolated navigation, build, and clean-worktree results.
+- A Vercel preview for code head `a145b283803c7f5ec72b6b8306bbf9af50cfeb12` reached `READY`: [preview](https://website-g3s400aep-yorkstead.vercel.app), [deployment inspector](https://vercel.com/yorkstead/website/27Y577eZDTVXghs3DaETw4v27MQ3). Its access-protected preview prevents browser print inspection without an authenticated user session; CI browser coverage performs media emulation and asserts navigation is hidden while all print sections remain visible.
 
 ## Remote evidence
 
