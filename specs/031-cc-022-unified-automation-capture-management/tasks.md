@@ -7,4 +7,4 @@
 - [x] T005 Implement Website owner BFF and confirmed action inbox while retaining CC-021 read compatibility.
 - [x] T006 Add Website auth/contract and responsive Playwright tests; browser execution awaits CI due local test DB/port restrictions.
 - [ ] T007 Run Hub and Website checks; record limits, convergence, rollback and exact revision evidence.
-- [ ] T008 Create Hub PR first and Website PR second; no merges/deploys.
+- [x] T008 Create Hub PR #91 first and Website PR #78 second; no merges/deploys.
