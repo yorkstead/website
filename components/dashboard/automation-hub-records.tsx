@@ -81,7 +81,7 @@ function HubSnapshotView({ data }: { data: AutomationHubSnapshot }) {
     <SectionFrame title="Google Tasks" {...data.tasks} count={data.tasks.items.length}>
       {data.tasks.items.length ? <ul className="mt-4 space-y-4">{data.tasks.items.map((item) => <li key={`${item.listId}:${item.id}`} className="border-t border-border pt-3 first:border-0 first:pt-0">
         <div className="flex flex-wrap items-center gap-2"><h3 className="font-medium">{item.title}</h3><span className="text-xs text-muted-foreground">{item.status}</span></div>
-        <p className="mt-2 text-sm text-muted-foreground">Due: {item.dueAt ? formatTimestamp(item.dueAt) : "Not set"}</p>
+        <p className="mt-2 text-sm text-muted-foreground">Due: {item.dueAt ? item.dueAt.slice(0, 10) : "Not set"}</p>
         <RecordMeta source={data.tasks.source} id={item.id} timestamp={item.updatedAt} />
         <p className="mt-1 break-all text-xs text-muted-foreground">List ID: {item.listId}</p>
       </li>)}</ul> : <Empty>No open Google Tasks were returned.</Empty>}
