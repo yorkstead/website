@@ -72,7 +72,8 @@ beforeAll(async () => {
   leadActions = [
     { name: "update lead status", action: leads.updateLeadStatus },
     { name: "save lead details", action: leads.saveLeadDetails },
-    { name: "convert lead to project", action: leads.convertLeadToProject },
+    { name: "complete lead follow-up", action: (formData) => leads.completeLeadFollowUp({ error: null }, formData).then(() => undefined) },
+    { name: "convert lead to project", action: (formData) => leads.convertLeadToProject({ error: null }, formData).then(() => undefined) },
   ];
 });
 

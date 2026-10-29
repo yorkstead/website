@@ -8,9 +8,13 @@ export type NotificationStatus = "not_configured" | "queued" | "sent" | "deliver
 
 export type LeadSummary = {
   open: number;
-  due: number;
+  overdue: number;
+  dueToday: number;
+  upcoming: number;
   won: number;
 };
+
+export type FollowUpFilter = "overdue" | "today" | "upcoming";
 
 export type ContactInquiryIntake = Partial<WorkflowAuditIntake> & Partial<ProductInquiryIntake> & Record<string, unknown>;
 
@@ -58,20 +62,42 @@ export async function contactDatabase() {
 
 export const LEAD_PAGE_SIZE = 20;
 
-export async function listContactInquiryPage({ status, due = false, page = 1 }: { status?: LeadStatus; due?: boolean; page?: number } = {}) {
+type InquiryPageQueryOptions = { status?: LeadStatus; followUp?: FollowUpFilter; page?: number; pageSize?: number };
+
+export function buildContactInquiryPageQueries({ status, followUp, page = 1, pageSize = LEAD_PAGE_SIZE }: InquiryPageQueryOptions) {
+  const conditions = ["NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)"];
+  const countParams: unknown[] = [];
+  if (followUp) {
+    const operator = followUp === "overdue" ? "<" : followUp === "today" ? "=" : ">";
+    conditions.push(`follow_up_at IS NOT NULL AND (follow_up_at AT TIME ZONE 'America/Denver')::date ${operator} (NOW() AT TIME ZONE 'America/Denver')::date`);
+    conditions.push("status NOT IN ('won', 'lost', 'archived')");
+  } else if (status) {
+    countParams.push(status);
+    conditions.push(`status = $${countParams.length}`);
+  }
+  const where = conditions.join(" AND ");
+  const ordering = followUp ? "follow_up_at ASC, id ASC" : "created_at DESC, id DESC";
+  const pageParams = [...countParams, pageSize, (Math.max(1, page) - 1) * pageSize];
+  const limitPosition = countParams.length + 1;
+  const offsetPosition = countParams.length + 2;
+  return {
+    count: { text: `SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE ${where}`, params: countParams },
+    records: {
+      text: `SELECT * FROM contact_inquiries WHERE ${where} ORDER BY ${ordering} LIMIT $${limitPosition} OFFSET $${offsetPosition}`,
+      params: pageParams,
+    },
+  };
+}
+
+export async function listContactInquiryPage({ status, due = false, followUp, page = 1 }: { status?: LeadStatus; due?: boolean; followUp?: FollowUpFilter; page?: number } = {}) {
   const sql = await contactDatabase();
-  const countRows = due
-    ? await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived')`
-    : status
-      ? await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND status = ${status}`
-      : await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)`;
+  const followUpView = followUp ?? (due ? "today" : undefined);
+  const queries = buildContactInquiryPageQueries({ status: followUpView ? undefined : status, followUp: followUpView, page, pageSize: LEAD_PAGE_SIZE });
+  const countRows = await sql.query(queries.count.text, queries.count.params);
   const pagination = createPagination(countRows[0]?.count, page, LEAD_PAGE_SIZE);
   const offset = (pagination.page - 1) * pagination.pageSize;
-  const rows = due
-    ? await sql`SELECT * FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived') ORDER BY follow_up_at ASC, id ASC LIMIT ${pagination.pageSize} OFFSET ${offset}`
-    : status
-      ? await sql`SELECT * FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND status = ${status} ORDER BY created_at DESC, id DESC LIMIT ${pagination.pageSize} OFFSET ${offset}`
-      : await sql`SELECT * FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) ORDER BY created_at DESC, id DESC LIMIT ${pagination.pageSize} OFFSET ${offset}`;
+  const pageQueries = buildContactInquiryPageQueries({ status: followUpView ? undefined : status, followUp: followUpView, page: pagination.page, pageSize: pagination.pageSize });
+  const rows = await sql.query(pageQueries.records.text, [...pageQueries.records.params.slice(0, -2), pagination.pageSize, offset]);
   return { records: rows.map(mapInquiry) satisfies ContactInquiry[], pagination };
 }
 
@@ -84,7 +110,13 @@ export async function getContactInquiry(id: number) {
 
 export async function countDueFollowUps() {
   const sql = await contactDatabase();
-  const rows = await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived')`;
+  const rows = await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND follow_up_at IS NOT NULL AND (follow_up_at AT TIME ZONE 'America/Denver')::date = (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived')`;
+  return Number(rows[0]?.count ?? 0);
+}
+
+export async function countOverdueFollowUps() {
+  const sql = await contactDatabase();
+  const rows = await sql`SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND follow_up_at IS NOT NULL AND (follow_up_at AT TIME ZONE 'America/Denver')::date < (NOW() AT TIME ZONE 'America/Denver')::date AND status NOT IN ('won', 'lost', 'archived')`;
   return Number(rows[0]?.count ?? 0);
 }
 
@@ -93,9 +125,17 @@ export async function getLeadSummary() {
   const rows = await sql`SELECT
     COUNT(*) FILTER (WHERE status NOT IN ('won', 'lost', 'archived'))::int AS open_count,
     COUNT(*) FILTER (
-      WHERE (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date
+      WHERE follow_up_at IS NOT NULL AND (follow_up_at AT TIME ZONE 'America/Denver')::date < (NOW() AT TIME ZONE 'America/Denver')::date
         AND status NOT IN ('won', 'lost', 'archived')
-    )::int AS due_count,
+    )::int AS overdue_count,
+    COUNT(*) FILTER (
+      WHERE follow_up_at IS NOT NULL AND (follow_up_at AT TIME ZONE 'America/Denver')::date = (NOW() AT TIME ZONE 'America/Denver')::date
+        AND status NOT IN ('won', 'lost', 'archived')
+    )::int AS due_today_count,
+    COUNT(*) FILTER (
+      WHERE follow_up_at IS NOT NULL AND (follow_up_at AT TIME ZONE 'America/Denver')::date > (NOW() AT TIME ZONE 'America/Denver')::date
+        AND status NOT IN ('won', 'lost', 'archived')
+    )::int AS upcoming_count,
     COUNT(*) FILTER (WHERE status = 'won')::int AS won_count
     FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)`;
   return normalizeLeadSummary(rows[0] ?? {});
@@ -104,7 +144,9 @@ export async function getLeadSummary() {
 export function normalizeLeadSummary(row: Record<string, unknown>): LeadSummary {
   return {
     open: normalizeCount(row.open_count),
-    due: normalizeCount(row.due_count),
+    overdue: normalizeCount(row.overdue_count),
+    dueToday: normalizeCount(row.due_today_count),
+    upcoming: normalizeCount(row.upcoming_count),
     won: normalizeCount(row.won_count),
   };
 }

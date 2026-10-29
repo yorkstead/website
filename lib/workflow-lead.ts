@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { isValidEmailAddress } from "@/lib/semantic-validation";
 
 export const workflowProblemAreas = [
@@ -138,10 +137,11 @@ export function validateWorkflowLead(values: WorkflowLeadValues): WorkflowLeadEr
   return errors;
 }
 
-export function workflowLeadSubmissionKey(values: WorkflowLeadValues, date = new Date()) {
+export async function workflowLeadSubmissionKey(values: WorkflowLeadValues, date = new Date()) {
   const day = date.toISOString().slice(0, 10);
   const canonical = [day, values.email.toLowerCase(), values.company.toLowerCase(), values.description.toLowerCase()].join("|");
-  return createHash("sha256").update(canonical).digest("hex");
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(canonical));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export type WorkflowLeadResult =
@@ -163,7 +163,7 @@ export async function processWorkflowLead(payload: WorkflowLeadPayload, store: W
   if (Object.keys(errors).length) return { status: "invalid", errors };
   try {
     if (await store.countRecent() >= 3) return { status: "rate_limited" };
-    const id = await store.insert(payload, workflowLeadSubmissionKey(payload));
+    const id = await store.insert(payload, await workflowLeadSubmissionKey(payload));
     return id ? { status: "success", id, values: payload } : { status: "duplicate" };
   } catch (error) {
     return { status: "server_error", error };

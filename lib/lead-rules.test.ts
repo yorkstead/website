@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { followUpTimestamp, leadStatuses } from "@/lib/lead-rules";
+import { followUpTimestamp, leadStatuses, parseLeadId } from "@/lib/lead-rules";
 
 describe("lead rules", () => {
   test("normalizes a follow-up day without a daylight-saving offset", () => {
@@ -16,5 +16,12 @@ describe("lead rules", () => {
   test("only exposes supported pipeline stages", () => {
     expect(leadStatuses.has("proposal")).toBeTrue();
     expect(leadStatuses.has("deleted" as never)).toBeFalse();
+  });
+
+  test("accepts only positive decimal inquiry IDs", () => {
+    expect(parseLeadId("42")).toBe(42);
+    for (const value of [null, "", "0", "-2", "1.5", "1e3", "9007199254740992"]) {
+      expect(parseLeadId(value)).toBeNull();
+    }
   });
 });

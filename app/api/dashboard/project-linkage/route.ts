@@ -40,6 +40,7 @@ export async function GET(request: Request) {
       SELECT id, name, company, status
       FROM contact_inquiries
       WHERE converted_project_id = ${projectId}
+        AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)
       ORDER BY id ASC
       LIMIT 2
     `;
@@ -60,7 +61,7 @@ export async function GET(request: Request) {
       id: lead.id,
       label: lead.company || lead.name || `Website inquiry #${lead.id}`,
       status: lead.status,
-      href: "/dashboard/leads",
+      href: `/dashboard/leads?lead=${encodeURIComponent(String(lead.id))}`,
     };
 
     const secret = process.env.YORKSTEAD_DASHBOARD_BRIDGE_SECRET;

@@ -23,7 +23,7 @@ import {
   type ConsultationIndustryId,
   type ConsultationPlaybook,
 } from "@/lib/consultation-playbooks";
-import { consultationStatuses, type ConsultationInput, type ConsultationRecord, type ConsultationStatus } from "@/lib/consultations";
+import { consultationStatuses, type ConsultationInput, type ConsultationRecord, type ConsultationStatus } from "@/lib/consultation-model";
 import type { ContactInquiry } from "@/lib/contact-inquiries";
 import { createPagination, type Pagination } from "@/lib/pagination";
 import { cn } from "@/lib/utils";

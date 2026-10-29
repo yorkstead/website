@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { processWorkflowLead, validateWorkflowLead, workflowLeadPayload } from "@/lib/workflow-lead";
+import { processWorkflowLead, validateWorkflowLead, workflowLeadPayload, workflowLeadSubmissionKey } from "@/lib/workflow-lead";
 
 const valid = {
   name: "Alex Rivera",
@@ -40,6 +40,13 @@ describe("workflow lead funnel", () => {
     expect(errors.phone).toBeDefined();
     expect(errors.description).toBeDefined();
     expect(errors.problemAreas).toBeDefined();
+  });
+
+  test("creates a stable daily SHA-256 submission key with Web Crypto", async () => {
+    const date = new Date("2026-10-28T20:00:00.000Z");
+    const first = await workflowLeadSubmissionKey(valid, date);
+    expect(first).toMatch(/^[a-f0-9]{64}$/);
+    expect(await workflowLeadSubmissionKey({ ...valid, email: valid.email.toLowerCase() }, date)).toBe(first);
   });
 
   test("covers successful, duplicate, spam, rate-limited, and server-error paths", async () => {
