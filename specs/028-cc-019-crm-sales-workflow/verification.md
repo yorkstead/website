@@ -14,7 +14,7 @@
 
 ## CI evidence
 
-Pending after the CC-019 PR is opened. CI must pass migration apply-twice, database integration tests, standard browser tests, the isolated CC-018/019 owner workflow, production build, and generated-worktree check before this verification is complete.
+PR [#75](https://github.com/yorkstead/website/pull/75) is open against `main`. Its initial exact head `29e0708c8da836e0f6ed9566948727358ec66daa` queued CI run [40867875202](https://github.com/yorkstead/website/actions/runs/40867875202); Vercel preview comments passed and the preview was created. CI must pass migration apply-twice, database integration tests, standard browser tests, the isolated CC-018/019 owner workflow, production build, and generated-worktree check before this verification is complete. Do not merge or manually deploy.
 
 ## Acceptance evidence map
 
