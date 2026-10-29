@@ -44,6 +44,7 @@ export function buildCommandCenterQueries() {
       text: `SELECT id, name, company, project_type, status, follow_up_at, updated_at
         FROM contact_inquiries WHERE ${active}
           AND status IN ('qualified', 'proposal')
+          AND follow_up_at IS NULL
           AND updated_at < NOW() - INTERVAL '14 days'
         ORDER BY updated_at ASC, id ASC LIMIT 5`,
       params: [],

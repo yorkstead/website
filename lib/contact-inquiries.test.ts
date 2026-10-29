@@ -57,6 +57,7 @@ describe("Command Center CRM snapshot", () => {
     }
     expect(queries.due.text).toContain("AT TIME ZONE 'America/Denver'");
     expect(queries.stalled.text).toContain("status IN ('qualified', 'proposal')");
+    expect(queries.stalled.text).toContain("AND follow_up_at IS NULL");
     expect(queries.stalled.text).toContain("LIMIT 5");
     expect(queries.due.text).toContain("LIMIT 8");
   });
