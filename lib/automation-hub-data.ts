@@ -70,12 +70,33 @@ const CaptureAction = z.object({
   resultCode: z.string().max(80).nullable(),
 });
 
+const ShoppingItem = z.object({
+  id: identifier, captureId: identifier, name: z.string().max(160), category: z.string().max(80).nullable(),
+  estimatedAmount: z.number().nonnegative().nullable(), currency: z.string().max(3).nullable(),
+  priority: z.enum(["essential", "need", "want"]), priorityConfirmed: z.boolean(),
+  scope: z.enum(["personal", "business"]).nullable(), scopeConfirmed: z.boolean(),
+  timingIntent: z.enum(["next_payday", "this_week", "specific_date", "unscheduled"]), targetDate: z.string().max(10).nullable(),
+  recurrenceRule: z.string().max(16).nullable(), state: z.enum(["planned", "purchased", "postponed", "cancelled"]),
+  reviewState: z.enum(["needs_review", "approved"]), reviewReason: z.string().max(80).nullable(), revision: z.number().int().positive(),
+  createdAt: isoTimestamp, completedAt: isoTimestamp.nullable(),
+});
+const Payday = z.object({
+  timezone: z.string().max(40), weekday: z.number().int().min(1).max(7), enabled: z.boolean(),
+  expectedAmount: z.number().nonnegative().nullable(), currency: z.string().max(3).nullable(), nextPayday: z.string().max(10).nullable(),
+  revision: z.number().int().positive(), updatedAt: isoTimestamp.nullable(),
+  records: z.array(z.object({id:identifier,date:z.string().max(10),status:z.enum(["expected","confirmed","skipped"]),expectedAmount:z.number().nonnegative().nullable(),confirmedAmount:z.number().nonnegative().nullable(),currency:z.string().max(3).nullable(),variableIncome:z.boolean(),receivedAt:isoTimestamp.nullable(),reservesConfirmed:z.boolean(),reserveAmount:z.number().nonnegative(),reserveCount:z.number().int().nonnegative(),revision:z.number().int().positive(),createdAt:isoTimestamp.nullable()})).max(13),
+});
+const ShoppingAudit = z.object({id:identifier,itemId:identifier.nullable(),paydayId:identifier.nullable(),actor:z.string().max(40),event:z.string().max(80),priorRevision:z.number().int().nullable(),resultingRevision:z.number().int().nullable(),priorState:z.string().max(24).nullable(),resultingState:z.string().max(24).nullable(),metadata:z.record(z.string(),z.unknown()),createdAt:isoTimestamp});
+
 const AutomationHubSnapshot = z.object({
   contractVersion: z.literal(1),
   source: z.literal("Automation Hub"),
   generatedAt: isoTimestamp,
   captures: SectionBase.extend({ items: z.array(Capture).max(20) }),
   captureActions: SectionBase.extend({ items: z.array(CaptureAction).max(20) }).optional(),
+  shopping: SectionBase.extend({ items: z.array(ShoppingItem).max(20) }).optional(),
+  payday: SectionBase.extend({ items: z.array(Payday).max(20) }).optional(),
+  shoppingAudit: SectionBase.extend({ items: z.array(ShoppingAudit).max(20) }).optional(),
   activity: SectionBase.extend({ items: z.array(Activity).max(20) }),
   integrationHealth: z.object({
     source: z.string().min(1).max(120),

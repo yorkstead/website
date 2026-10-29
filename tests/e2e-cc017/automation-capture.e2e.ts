@@ -130,3 +130,58 @@ test("uncertain command recovery survives unavailable refresh and remount with t
   await expect.poll(() => commandBodies.length).toBe(3);
   expect(commandBodies.map((body) => body.idempotencyKey)).toEqual([commandBodies[0].idempotencyKey, commandBodies[0].idempotencyKey, commandBodies[0].idempotencyKey]);
 });
+
+test("shopping planner reviews, edits, purchases, confirms payday, recovers same key, and renders mobile/desktop", async ({ page, context }, testInfo) => {
+  const anonymousShopping=await context.request.post("/api/dashboard/shopping",{headers:{origin},data:{}});
+  expect(anonymousShopping.status()).toBe(401);
+  await expect(await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).toBeOK();
+  const itemId="c1c1c1c1-c1c1-41c1-81c1-c1c1c1c1c1c1";
+  const captureId="c2c2c2c2-c2c2-42c2-82c2-c2c2c2c2c2c2";
+  type ShoppingFixtureItem={id:string;captureId:string;name:string;category:string|null;estimatedAmount:number|null;currency:string|null;priority:"essential"|"need"|"want";priorityConfirmed:boolean;scope:"personal"|"business"|null;scopeConfirmed:boolean;timingIntent:"next_payday"|"this_week"|"specific_date"|"unscheduled";targetDate:string|null;recurrenceRule:string|null;state:"planned"|"purchased"|"postponed"|"cancelled";reviewState:"needs_review"|"approved";reviewReason:string|null;revision:number;createdAt:string;completedAt:string|null};
+  let item:ShoppingFixtureItem={id:itemId,captureId,name:"Dog food",category:null,estimatedAmount:null,currency:null,priority:"need",priorityConfirmed:false,scope:null,scopeConfirmed:false,timingIntent:"next_payday",targetDate:null,recurrenceRule:null,state:"planned",reviewState:"needs_review",reviewReason:"scope_needs_confirmation",revision:1,createdAt:checkedAt,completedAt:null};
+  let audits: Array<Record<string,unknown>>=[];
+  const bodies:Array<Record<string,unknown>>=[];let failNext=false;let readUnavailable=false;
+  const payday:{timezone:string;weekday:number;enabled:boolean;expectedAmount:number;currency:string;nextPayday:string;revision:number;updatedAt:string;records:Array<{id:string;date:string;status:string;expectedAmount:number;confirmedAmount:number;currency:string;variableIncome:boolean;receivedAt:string;reservesConfirmed:boolean;reserveAmount:number;reserveCount:number;revision:number;createdAt:string}>}={timezone:"America/Denver",weekday:1,enabled:true,expectedAmount:1200,currency:"USD",nextPayday:"2026-11-02",revision:1,updatedAt:checkedAt,records:[]};
+  await page.route("**/api/dashboard/automation-hub",async(route)=>{
+    if(readUnavailable){await route.fulfill({status:503,json:{error:"unavailable"}});return;}
+    await route.fulfill({json:{state:"available",checkedAt,data:{contractVersion:1,source:"Automation Hub",generatedAt:checkedAt,
+      captures:{source:"Automation Hub · captures",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},captureActions:{source:"Automation Hub · capture action audit",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},
+      shopping:{source:"Automation Hub · shopping planner",state:"available",checkedAt,truncated:false,errorCode:null,items:[item]},
+      payday:{source:"Automation Hub · payday planning",state:"available",checkedAt,truncated:false,errorCode:null,items:[payday]},
+      shoppingAudit:{source:"Automation Hub · shopping audit",state:"available",checkedAt,truncated:false,errorCode:null,items:audits},
+      activity:{source:"Automation Hub · execution history",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},integrationHealth:{source:"Automation Hub",state:"available",checkedAt,database:"healthy",googleTasks:"healthy",errorCode:null},reviewQueue:{source:"Automation Hub",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},tasks:{source:"Google Tasks",state:"available",checkedAt,truncated:false,errorCode:null,items:[]}}}});
+  });
+  await page.route("**/api/dashboard/shopping",async(route)=>{
+    const body=route.request().postDataJSON() as Record<string,unknown>;bodies.push(body);
+    if(failNext){failNext=false;await route.fulfill({status:503,json:{error:"hub_unavailable"}});return;}
+    if(body.action==="update"){const changes=body.changes as Record<string,string>;item={...item,scope:changes.scope as "personal"|"business"|null,scopeConfirmed:true,priority:changes.priority as "essential"|"need"|"want",priorityConfirmed:true,revision:item.revision+1};}
+    if(body.action==="review")item={...item,reviewState:"approved",reviewReason:null,revision:item.revision+1};
+    if(body.action==="purchase")item={...item,state:"purchased",revision:item.revision+1};
+    if(body.action==="unpurchase")item={...item,state:"planned",revision:item.revision+1};
+    if(body.action==="skip")item={...item,state:"postponed",revision:item.revision+1};
+    if(body.action==="confirm_payday")payday.records=[{id:"c3c3c3c3-c3c3-43c3-83c3-c3c3c3c3c3c3",date:String(body.paydayDate),status:"confirmed",expectedAmount:1200,confirmedAmount:1100,currency:"USD",variableIncome:false,receivedAt:checkedAt,reservesConfirmed:true,reserveAmount:300,reserveCount:1,revision:1,createdAt:checkedAt}];
+    if(body.action==="set_reserves")payday.records[0]={...payday.records[0],reserveAmount:350,reserveCount:1,revision:payday.records[0].revision+1};
+    audits=[{id:"c4c4c4c4-c4c4-44c4-84c4-c4c4c4c4c4c4",itemId:itemId,paydayId:null,actor:"website_owner",event:body.action,priorRevision:item.revision,resultingRevision:item.revision+1,priorState:"planned",resultingState:item.state,metadata:{},createdAt:checkedAt}];
+    await route.fulfill({status:200,json:{contractVersion:2,commandId:"c5c5c5c5-c5c5-45c5-85c5-c5c5c5c5c5c5",itemId:String(body.itemId||itemId),status:"succeeded",resultCode:"updated"}});
+  });
+  await page.setViewportSize({width:390,height:900});await page.goto("/dashboard/automations");
+  await expect(page.getByRole("heading",{name:"Shopping planner"})).toBeVisible();
+  await page.screenshot({path:testInfo.outputPath("cc022b-shopping-mobile.png"),fullPage:true});
+  await page.getByRole("button",{name:"Correct and review"}).click();
+  const shoppingItem=page.locator('section[aria-labelledby="shopping-planner-title"] li').filter({hasText:"Dog food"});
+  await shoppingItem.getByLabel("Scope",{exact:true}).selectOption("personal");await shoppingItem.getByLabel("Priority",{exact:true}).selectOption("essential");
+  await page.getByRole("button",{name:"Save changes"}).click();
+  await page.getByRole("button",{name:"Approve review"}).click();await page.getByRole("button",{name:"Mark purchased"}).click();
+  await expect(page.getByText(/purchased/).first()).toBeVisible();await page.getByRole("button",{name:"Undo purchase"}).click();
+  await page.getByLabel("Receipt date").fill("2026-11-02");await page.getByLabel("Actual amount received").fill("1100");
+  await page.getByLabel("Reserve label").fill("Rent");await page.getByLabel("Reserve amount").fill("300");await page.getByRole("button",{name:"Add reserve"}).click();
+  await page.getByRole("button",{name:"Confirm receipt and reserves"}).click();
+  await expect(page.getByText(/Available to plan after explicitly entered reserves/)).toBeVisible();
+  failNext=true;await page.getByRole("button",{name:"Repeat once"}).click();
+  await expect(page.getByText(/Update needs review/)).toBeVisible();
+  await page.getByRole("button",{name:"Retry same command key"}).click();
+  expect(bodies.at(-1)?.idempotencyKey).toBe(bodies.at(-2)?.idempotencyKey);
+  await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:testInfo.outputPath("cc022b-shopping-desktop.png"),fullPage:true});
+  readUnavailable=true;await page.getByRole("button",{name:"Refresh planner"}).click();
+  await expect(page.getByRole("alert").filter({hasText:"Automation Hub records could not be loaded"})).toBeVisible();
+});

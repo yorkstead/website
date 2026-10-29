@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AutomationHubDataResult, AutomationHubSnapshot } from "@/lib/automation-hub-data";
 import { AutomationCaptureActions } from "@/components/dashboard/automation-capture-actions";
+import { ShoppingPlanner } from "@/components/dashboard/shopping-planner";
 
 const card = "rounded-xl border border-border bg-card p-4 sm:p-5";
 
@@ -96,7 +97,7 @@ function unavailableMessage(state: Exclude<AutomationHubDataResult["state"], "av
   return "The Hub data service did not respond. Existing Hub records were not changed.";
 }
 
-export function AutomationHubRecords({ writeEnabled }: { writeEnabled: boolean }) {
+export function AutomationHubRecords({ writeEnabled, shoppingEnabled }: { writeEnabled: boolean; shoppingEnabled: boolean }) {
   const [result, setResult] = useState<AutomationHubDataResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -144,6 +145,6 @@ export function AutomationHubRecords({ writeEnabled }: { writeEnabled: boolean }
     {loading && !result ? <p role="status" className="mt-4 text-sm">Loading Hub records…</p> : null}
     {error ? <p role="alert" className="mt-4 text-sm text-amber-300">{error}</p> : null}
     {result && result.state !== "available" ? <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm" role="status"><p>{unavailableMessage(result.state)}</p><p className="mt-2 text-xs text-muted-foreground">Checked <time dateTime={result.checkedAt}>{formatTimestamp(result.checkedAt)}</time></p></div> : null}
-    {result?.state === "available" ? <><HubSnapshotView data={result.data} /><AutomationCaptureActions data={result.data} enabled={writeEnabled} onRefresh={() => void refresh()} /></> : null}
+    {result?.state === "available" ? <><HubSnapshotView data={result.data} /><ShoppingPlanner data={result.data} enabled={shoppingEnabled} onRefresh={() => void refresh()} /><AutomationCaptureActions data={result.data} enabled={writeEnabled} onRefresh={() => void refresh()} /></> : null}
   </section>;
 }

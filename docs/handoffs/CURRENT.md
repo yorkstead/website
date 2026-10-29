@@ -1,3 +1,12 @@
+## Active work — CC-022B Voice Shopping & Payday Planning — 2026-10-29
+
+- Authorized scope: implement the coordinated Hub-first and Website-second CC-022B feature, including additive migrations, specifications/plans/tasks/verification/operations notes, tests, commits, pushes, and one PR per repository. Do not merge, manually deploy, modify production settings/secrets/data, create real purchases, send external notifications, or enable scheduled automations.
+- Live GitHub state verified through the connected GitHub reader at 2026-10-29 19:58 UTC: Website `main` is `d2edef269ed4426a18401ba365296bfad1bb3800` (merged PR #78); Hub `main` is `a7d1c7751d7a3b3a80280e9ad429f5dce6fc102e` (merged PR #91). Both local `origin/main` refs were fetched and match those SHA values.
+- Feature branches created from those exact tips: `feat/cc-022b-voice-shopping-payday-planning` in each repository. Website pre-existing untracked `website.code-workspace` is preserved.
+- Session initialization and current state were rechecked against both repositories. Website now has an owner-gated `/api/dashboard/shopping` BFF, strict v2 schema, optional CC-021 read DTO fields, Automations planner, and synthetic browser scenario. Shopping actions remain disabled unless the dedicated Website flag and secret are explicitly configured.
+- Current local evidence: Website full Bun suite 396 passed / 110 PostgreSQL-dependent skipped; schema contract and BFF focused tests 5/5; lint 0 errors with one pre-existing `components/login-panel.tsx:62` warning; typecheck, scaffold and migration-order checks pass. The owner browser flow requires matching `DATABASE_URL` and `TEST_DATABASE_URL`; neither disposable DB is configured. Turbopack build is blocked by worker process/port `EPERM`, including escalation; Webpack production build passes. The new disposable PostgreSQL test is wired to Hub CI.
+- Hub-first PR [#92](https://github.com/yorkstead/yorkstead-automation-hub/pull/92) is open as draft at Hub head `ed6de8fe534fdf3e92cb31299ad77a11dadfdcd9`; its first check snapshot showed Vercel pending and GitHub workflow run not yet started. The Website branch will follow as a dependent PR after final review. Do not merge, deploy, provision secrets/change flags, alter production data, create purchases, notify anyone, or enable scheduled automation.
+
 # Current handoff
 
 ## Active work — CC-022 PR follow-up — 2026-10-29

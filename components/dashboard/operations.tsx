@@ -40,7 +40,7 @@ function AutomationHubPanel({ overview, writeEnabled }: { overview: AutomationHu
   </section>;
 }
 
-export function OperationsWorkspace({ automationHub, writeEnabled = false }: { automationHub?: AutomationHubHealth; writeEnabled?: boolean }) {
+export function OperationsWorkspace({ automationHub, writeEnabled = false, shoppingEnabled = false }: { automationHub?: AutomationHubHealth; writeEnabled?: boolean; shoppingEnabled?: boolean }) {
   const router = useRouter();
   const [overview, setOverview] = useState<OperationsOverview | null>(null);
   const [error, setError] = useState("");
@@ -94,7 +94,7 @@ export function OperationsWorkspace({ automationHub, writeEnabled = false }: { a
       </div>
 
       {automationHub ? <AutomationHubPanel overview={automationHub} writeEnabled={writeEnabled} /> : null}
-      {automationHub ? <AutomationHubRecords writeEnabled={writeEnabled} /> : null}
+      {automationHub ? <AutomationHubRecords writeEnabled={writeEnabled} shoppingEnabled={shoppingEnabled} /> : null}
 
       {loading && <p role="status" className="mt-6">Checking current service health…</p>}
       {error && <p role="alert" className="mt-6 rounded-lg border border-destructive/40 p-4 text-sm">{error}</p>}
