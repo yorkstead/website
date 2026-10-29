@@ -161,7 +161,7 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await expect(page.getByRole("heading", { name: "Inquiry unavailable" })).toBeVisible();
   await expect(page.getByRole("link", { name: "View all inquiries" })).toHaveAttribute("href", "/dashboard/leads");
   await page.goto("/dashboard?project=cc016-missing-project");
-  await expect(page.getByRole("alert")).toContainText("Project link not found");
+  await expect(page.getByRole("alert").filter({ hasText: "Project link not found" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Review leads" })).toHaveAttribute("href", "/dashboard/leads");
 
   const verifyPool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
