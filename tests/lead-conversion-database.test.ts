@@ -38,4 +38,36 @@ describe("lead conversion persistence", () => {
       await pool!.query("DELETE FROM contact_inquiries WHERE id = $1", [leadId]);
     }
   });
+
+  databaseTest("does not convert archived inquiries or inquiries with a retirement tombstone", async () => {
+    const clientConnection = await pool!.connect();
+    const archivedEmail = `archived-conversion-${randomUUID()}@example.com`;
+    const retiredEmail = `retired-conversion-${randomUUID()}@example.com`;
+    await clientConnection.query("BEGIN");
+    try {
+      const archived = await clientConnection.query<{ id: number }>(
+        "INSERT INTO contact_inquiries (name,email,message,status,ip_hash) VALUES ('Synthetic archived',$1,'Expired inquiry','archived',$2) RETURNING id",
+        [archivedEmail, randomUUID()],
+      );
+      const retired = await clientConnection.query<{ id: number }>(
+        "INSERT INTO contact_inquiries (name,email,message,ip_hash) VALUES ('Synthetic retired',$1,'Retained inquiry',$2) RETURNING id",
+        [retiredEmail, randomUUID()],
+      );
+      const retiredId = retired.rows[0]!.id;
+      const digest = await clientConnection.query<{ digest: string }>("SELECT inquiry_retirement_digest($1) AS digest", [retiredId]);
+      await clientConnection.query("SELECT retire_inquiry($1,$2,$3,$4)", [retiredId, digest.rows[0]!.digest, randomUUID(), "CC-015 test"]);
+      const transactionClient = { query: (query: string, params?: unknown[]) => clientConnection.query(query, params) };
+      const archivedProjectId = randomUUID();
+      const retiredProjectId = randomUUID();
+
+      await expect(convertLeadRecord(transactionClient, archived.rows[0]!.id, { projectId: archivedProjectId, activityId: randomUUID(), now: new Date().toISOString() })).rejects.toThrow("Restore this archived inquiry");
+      await expect(convertLeadRecord(transactionClient, retiredId, { projectId: retiredProjectId, activityId: randomUUID(), now: new Date().toISOString() })).rejects.toThrow("retired and cannot be converted");
+
+      const projects = await clientConnection.query<{ id: string }>("SELECT value->>'id' AS id FROM workspaces, jsonb_array_elements(data->'projects') value WHERE value->>'id' IN ($1,$2)", [archivedProjectId, retiredProjectId]);
+      expect(projects.rows).toEqual([]);
+    } finally {
+      await clientConnection.query("ROLLBACK");
+      clientConnection.release();
+    }
+  });
 });

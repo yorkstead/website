@@ -2,6 +2,13 @@ export type LeadConversionQueryClient = {
   query: (query: string, params?: unknown[]) => Promise<unknown>;
 };
 
+export class LeadConversionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "LeadConversionError";
+  }
+}
+
 type ConversionIds = {
   projectId: string;
   activityId: string;
@@ -11,8 +18,9 @@ type ConversionIds = {
 const claimLeadConversionQuery = `
 WITH claimed AS (
   UPDATE contact_inquiries
-  SET status = 'won', archived_at = NULL, converted_project_id = $2, updated_at = NOW()
+  SET status = 'won', archived_at = NULL, follow_up_at = NULL, converted_project_id = $2, updated_at = NOW()
   WHERE id = $1 AND converted_project_id IS NULL
+    AND status <> 'archived'
     AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)
   RETURNING name, email, company, message
 ), project_data AS (
@@ -46,8 +54,18 @@ function resultRows(result: unknown): Array<Record<string, unknown>> {
 
 export async function convertLeadRecord(client: LeadConversionQueryClient, leadId: number, ids: ConversionIds) {
   await client.query(claimLeadConversionQuery, [leadId, ids.projectId, ids.now, ids.activityId]);
-  const result = await client.query("SELECT converted_project_id FROM contact_inquiries WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) LIMIT 1", [leadId]);
-  const destinationId = resultRows(result)[0]?.converted_project_id;
-  if (typeof destinationId !== "string" || !destinationId) throw new Error("Project conversion was not confirmed");
+  const result = await client.query(`
+    SELECT i.converted_project_id, i.status, (r.inquiry_id IS NOT NULL) AS retired
+    FROM contact_inquiries i
+    LEFT JOIN inquiry_retirements r ON r.inquiry_id = i.id
+    WHERE i.id = $1
+    LIMIT 1
+  `, [leadId]);
+  const record = resultRows(result)[0];
+  const destinationId = record?.converted_project_id;
+  if (!record) throw new LeadConversionError("This inquiry was not found or has expired.");
+  if (record.retired === true) throw new LeadConversionError("This inquiry is retired and cannot be converted.");
+  if (record.status === "archived" && (typeof destinationId !== "string" || !destinationId)) throw new LeadConversionError("Restore this archived inquiry to an active stage before converting it.");
+  if (typeof destinationId !== "string" || !destinationId) throw new LeadConversionError("Project conversion could not be confirmed. Refresh the inquiry before retrying.");
   return destinationId;
 }

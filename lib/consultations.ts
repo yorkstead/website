@@ -1,29 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { contactDatabase } from "@/lib/contact-inquiries";
+import { consultationStatuses, type ConsultationInput, type ConsultationRecord, type ConsultationStatus } from "@/lib/consultation-model";
 import { consultationIndustryResponseKey, getConsultationPlaybook } from "@/lib/consultation-playbooks";
 import { isValidDateKey } from "@/lib/date-time";
 import { createPagination, normalizeCount } from "@/lib/pagination";
 import { isValidEmailAddress } from "@/lib/semantic-validation";
 import type { ServiceSlug } from "@/lib/services";
 
-export const consultationStatuses = ["draft", "discovery", "scoped", "archived"] as const;
-export type ConsultationStatus = typeof consultationStatuses[number];
-
-export type ConsultationRecord = {
-  id: string;
-  leadId: number | null;
-  serviceSlug: ServiceSlug;
-  clientName: string;
-  business: string;
-  email: string;
-  consultationDate: string;
-  status: ConsultationStatus;
-  responses: Record<string, string>;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type ConsultationInput = Omit<ConsultationRecord, "id" | "createdAt" | "updatedAt">;
+export { consultationStatuses } from "@/lib/consultation-model";
+export type { ConsultationInput, ConsultationRecord, ConsultationStatus } from "@/lib/consultation-model";
 
 function shortText(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";

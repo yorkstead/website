@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { getDashboardDueFollowUps } from "@/lib/dashboard-data";
+import { getDashboardDueFollowUps, getDashboardOverdueFollowUps } from "@/lib/dashboard-data";
 
 describe("dashboard auxiliary data", () => {
   test("returns a successful due follow-up count", async () => {
@@ -20,5 +20,10 @@ describe("dashboard auxiliary data", () => {
     expect(result).toBeNull();
     expect(messages).toEqual(["Dashboard due follow-up count unavailable"]);
     expect(messages.join(" ")).not.toContain("secret");
+  });
+
+  test("reports overdue counts separately from today", async () => {
+    expect(await getDashboardOverdueFollowUps(async () => 3)).toBe(3);
+    expect(await getDashboardOverdueFollowUps(async () => 0)).toBe(0);
   });
 });

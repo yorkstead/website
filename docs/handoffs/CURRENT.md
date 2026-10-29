@@ -1,5 +1,18 @@
 # Current handoff
 
+## CC-015 CRM & Project Workflow Completion — 2026-10-29
+
+- User authorizes implementation, repository checks, tests, current-handoff/spec documentation, and opening PR `CC-015: CRM & Project Workflow Completion`. Do not merge, deploy manually, or modify production data. Use the existing checkout; no worktree.
+- Verified repository is `yorkstead/website`; PR #48 is merged at `6799d7b821c4e8992cf2099b4b8593a05f91eb55`. Its current implementation already has atomic/idempotent lead conversion, exact project deep-link recovery, CRM read-only linkage, and project delivery models. Preserve those paths and storage.
+- Live GitHub connector observation at `2026-10-29T00:11Z`: `main` is `9c5c94681ed03eab45641673696ca20b9fbe7d5b` (PR #69/CC-014 merge); no open PRs were returned. Git SSH/DNS and `gh` API access are unavailable in this shell, but the GitHub connector verified the repository, latest commit, open PR search, and PR #48 state. Branch `feat/cc-015-crm-project-workflow` is based on that exact main SHA. A separate pre-existing `website.code-workspace` untracked file is preserved.
+- Active specification, plan and tasks: `specs/023-cc-015-crm-project-workflow/`. Audit identified the actual gaps: website lead follow-ups had only a combined due/overdue view and no completion action; the unified queue linked to a generic lead list; project source linkage also linked generically; archived inquiries could be converted. Existing project detail already displays milestones, decisions, delivery activity and project note; next action is being prioritized from pending decisions, open milestones and existing project tasks.
+- No migration is planned. Reuse `contact_inquiries.follow_up_at`, existing `workspaces.primary`, and current `ClientDelivery`; preserve owner-only access, retired engagement exclusion, and the customer tenant boundary. No production operation has been performed.
+- Implementation and verification are complete on `feat/cc-015-crm-project-workflow`. Follow-up views/counts now separate overdue, today, and future; rescheduling and guarded completion use existing storage. Conversion retains PR #48's atomic/idempotent persistence, rejects archived/retired records, reports safe errors, and reopens the resulting project. Queue/project links open the exact inquiry; project detail keeps existing milestones, decisions, and activity connected and shows supported notes/next steps. No migration or production operation.
+- Verification: scaffold and all 18 migration checks pass; lint passes with the pre-existing `login-panel.tsx:62` warning; typecheck passes; 362 tests pass, 107 database-dependent tests skip because `TEST_DATABASE_URL` is unavailable. The production build passes using Next's webpack builder; default Turbopack cannot bind its worker port in this sandbox. Browser suite has 31/32 on the default timeout; its slow public navigation crawl passed independently with a command-line 90-second timeout (32.3s). Details and rollback guidance: `specs/023-cc-015-crm-project-workflow/verification.md`.
+- Delivery: final review/commit and PR creation are in progress. No merge, deployment, or production-data write.
+
+## CC-014 Production Readiness & Recovery Hardening — 2026-10-28 (historical; PR #69 merged)
+
 ## CC-014 Production Readiness & Recovery Hardening — 2026-10-28
 
 - User authorizes implementation, tests, required repository checks and opening a PR for CC-014. Do not merge, deploy, or modify production infrastructure or data. Existing checkout only; no worktree.

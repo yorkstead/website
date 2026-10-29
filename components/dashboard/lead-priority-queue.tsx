@@ -37,7 +37,7 @@ export async function LeadPriorityQueue() {
   const [website, crm] = await Promise.allSettled([
     (async () => {
       const sql = await contactDatabase();
-      const rows = await sql`SELECT id,name,company,status,follow_up_at FROM contact_inquiries WHERE status NOT IN ('won','lost','archived') ORDER BY follow_up_at ASC NULLS LAST,created_at DESC LIMIT 100`;
+      const rows = await sql`SELECT id,name,company,status,follow_up_at FROM contact_inquiries WHERE status NOT IN ('won','lost','archived') AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) ORDER BY follow_up_at ASC NULLS LAST,created_at DESC LIMIT 100`;
       return rows.map((row): QueueItem => ({
         id: "web:" + row.id,
         source: "Website",
@@ -45,7 +45,7 @@ export async function LeadPriorityQueue() {
         stage: String(row.status || "new"),
         action: "Review website inquiry",
         due: row.follow_up_at ? dateKey(String(row.follow_up_at instanceof Date ? row.follow_up_at.toISOString() : row.follow_up_at)) : null,
-        href: "/dashboard/leads",
+        href: `/dashboard/leads?lead=${encodeURIComponent(String(row.id))}`,
       }));
     })(),
     (async () => {
@@ -81,10 +81,12 @@ export async function LeadPriorityQueue() {
     return rank(a) - rank(b) || (a.due || "9999").localeCompare(b.due || "9999") || a.label.localeCompare(b.label);
   });
   const due = items.filter((item) => item.due && item.due <= today);
+  const overdue = due.filter((item) => item.due! < today).length;
+  const dueToday = due.length - overdue;
   return <section aria-label="Unified follow-up queue" className="mb-6 rounded-xl border border-border bg-card p-5">
     <div className="flex flex-wrap items-start justify-between gap-2">
       <div><p className="font-mono text-[10px] uppercase tracking-widest text-primary">Across both lead sources</p><h2 className="mt-1 text-lg font-semibold">Follow-up priority queue</h2><p className="mt-1 text-xs text-muted-foreground">Due and overdue first, then scheduled, then unscheduled.</p></div>
-      <span className="rounded-lg bg-secondary px-3 py-2 text-xs">{due.length} due or overdue</span>
+      <span className="rounded-lg bg-secondary px-3 py-2 text-xs">{overdue} overdue · {dueToday} due today</span>
     </div>
     {(website.status === "rejected" || crm.status === "rejected") && <p className="mt-3 text-xs text-amber-600">One source is unavailable. This is a partial queue; existing data is unaffected.</p>}
     {items.length ? <div className="mt-4 divide-y divide-border/60">{items.slice(0, 20).map((item) =>
