@@ -23,9 +23,15 @@ for (const width of [390, 1440])
       ).status(),
     ).toBe(200);
     await page.goto("/dashboard");
+    if (width < 768) {
+      await page.getByRole("button", { name: "Open navigation menu" }).click();
+    }
     await expect(
       page.getByRole("link", { name: "Client Access", exact: true }).first(),
     ).toBeVisible();
+    if (width < 768) {
+      await page.getByRole("button", { name: "Close navigation drawer" }).click();
+    }
     await page
       .getByRole("button", { name: width < 768 ? "More" : /Commands/ })
       .click();
