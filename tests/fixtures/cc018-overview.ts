@@ -50,7 +50,7 @@ export async function setupCc018Overview() {
     `, [cc018LeadEmail, cc018TodayLeadEmail, cc018StalledLeadEmail, cc018Company, ip(), followUpTimestamp(offsetDateKey(-1)), ip(), followUpTimestamp(offsetDateKey(0)), ip(), cc019LeadEmail, ip()]);
     const crmLead = await pool.query<{ id: string }>("SELECT id FROM contact_inquiries WHERE email=$1", [cc019LeadEmail]);
     await pool.query(`INSERT INTO consultations(id,lead_id,service_slug,client_name,business,email,status,responses)
-      VALUES ($1,$2,'workflow-rescue','CC-019 Sales Workflow', $3, $4, 'scoped', $5::jsonb)`, [crypto.randomUUID(), crmLead.rows[0]!.id, cc018Company, cc019LeadEmail, JSON.stringify({ industry: "manufacturing", trigger: "Inventory reconciliation takes two days each week.", outcome: "Reduce manual reconciliation" })]);
+      VALUES ($1,$2,'workflow-automation','CC-019 Sales Workflow', $3, $4, 'scoped', $5::jsonb)`, [crypto.randomUUID(), crmLead.rows[0]!.id, cc018Company, cc019LeadEmail, JSON.stringify({ industry: "manufacturing", trigger: "Inventory reconciliation takes two days each week.", outcome: "Reduce manual reconciliation" })]);
     await pool.query("UPDATE contact_inquiries SET updated_at=NOW()-INTERVAL '21 days' WHERE email=$1", [cc018StalledLeadEmail]);
     return { workspace: owner.workspace, workspaceSnapshot: snapshot.rows[0] ?? null };
   } finally { await pool.end(); }
