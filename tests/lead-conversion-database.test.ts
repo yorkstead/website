@@ -24,6 +24,9 @@ describe("lead conversion persistence", () => {
       );
       const leadId = Number(inserted.rows[0]!.id);
       expect(Number.isSafeInteger(leadId)).toBe(true);
+      // Exercise a fresh disposable database where the primary workspace has not been initialized yet.
+      // This deletion is scoped to the rollback transaction and cannot affect persistent test data.
+      await connection.query("DELETE FROM workspaces WHERE id = 'primary'");
       const firstProjectId = randomUUID();
       const secondProjectId = randomUUID();
       const firstActivityId = randomUUID();
