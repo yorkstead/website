@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  contactEmailFallbackResult,
   processContactSubmission,
   validateContactPayload,
   contactSubmissionKey,
@@ -43,6 +44,17 @@ describe("Contact & Product Inquiry Form Outcomes", () => {
     productId: "rework-flow",
     message: "We need trailer-side count tracking and driver sign-off for our dock operations.",
   };
+
+  test("email fallback discloses that delivery did not persist the inquiry in CRM", () => {
+    const delivered = contactEmailFallbackResult(true);
+    expect(delivered.status).toBe("success");
+    expect(delivered.message).toContain("emailed to our team");
+    expect(delivered.message).toContain("not saved in the CRM");
+
+    const unavailable = contactEmailFallbackResult(false);
+    expect(unavailable.status).toBe("error");
+    expect(unavailable.message).toContain("not saved in the CRM");
+  });
 
   test("1. Server-side validation failure on invalid input or unapproved product", () => {
     // Missing/short name
