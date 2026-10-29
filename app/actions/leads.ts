@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { contactDatabase, type LeadStatus } from "@/lib/contact-inquiries";
 import { followUpTimestamp, leadStatuses, parseLeadId } from "@/lib/lead-rules";
 import { convertLeadRecord, LeadConversionError, type LeadConversionQueryClient } from "@/lib/lead-conversion";
-import { completeLeadFollowUpRecord, saveLeadDetailsRecord, updateLeadStatusRecord, type LeadFollowUpQueryClient } from "@/lib/lead-follow-up";
+import { completeLeadFollowUpRecord, rescheduleLeadFollowUpRecord, saveLeadDetailsRecord, updateLeadStatusRecord, type LeadFollowUpQueryClient } from "@/lib/lead-follow-up";
 import { getOwnerSession } from "@/lib/owner-session";
 
 async function ownerSql() {
@@ -56,6 +56,23 @@ export async function completeLeadFollowUp(_previousState: LeadActionState, form
     return { error: "Follow-up completion could not be confirmed. Refresh the inquiry and try again." };
   }
   if (!completed) return { error: "This inquiry has no open follow-up, or it is no longer active. Refresh the lead list before trying again." };
+  revalidatePath("/dashboard"); revalidatePath("/dashboard/leads");
+  return emptyLeadActionState;
+}
+
+export async function rescheduleLeadFollowUp(_previousState: LeadActionState, formData: FormData): Promise<LeadActionState> {
+  const sql = await ownerSql();
+  let id: number;
+  try { id = leadId(formData); } catch { return { error: "This inquiry ID is invalid. Refresh the lead list and try again." }; }
+  const timestamp = followUpTimestamp(formData.get("followUpAt"));
+  if (!timestamp) return { error: "Choose a valid follow-up date." };
+  let updated: boolean;
+  try {
+    updated = await rescheduleLeadFollowUpRecord(sql as unknown as LeadFollowUpQueryClient, id, timestamp);
+  } catch {
+    return { error: "The follow-up date could not be saved. Refresh the inquiry and try again." };
+  }
+  if (!updated) return { error: "This inquiry is no longer active. Refresh the lead list before trying again." };
   revalidatePath("/dashboard"); revalidatePath("/dashboard/leads");
   return emptyLeadActionState;
 }

@@ -2,7 +2,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
 import { buildContactInquiryPageQueries } from "@/lib/contact-inquiries";
-import { completeLeadFollowUpRecord, saveLeadDetailsRecord, updateLeadStatusRecord } from "@/lib/lead-follow-up";
+import { completeLeadFollowUpRecord, rescheduleLeadFollowUpRecord, saveLeadDetailsRecord, updateLeadStatusRecord } from "@/lib/lead-follow-up";
 import { followUpTimestamp } from "@/lib/lead-rules";
 import { disposableTestDatabaseURL } from "./fixtures/disposable-database";
 
@@ -58,6 +58,9 @@ describe("lead follow-up lifecycle persistence", () => {
       expect(await list("today")).not.toContain(retiredId);
       expect(await completeLeadFollowUpRecord(queryClient, retiredId)).toBe(false);
 
+      expect(await rescheduleLeadFollowUpRecord(queryClient, ids.get("Synthetic overdue")!, followUpTimestamp(dayKey(4))!)).toBe(true);
+      expect(await rescheduleLeadFollowUpRecord(queryClient, retiredId, followUpTimestamp(dayKey(4))!)).toBe(false);
+      expect(await rescheduleLeadFollowUpRecord(queryClient, closedId, followUpTimestamp(dayKey(4))!)).toBe(false);
       expect(await saveLeadDetailsRecord(queryClient, ids.get("Synthetic overdue")!, "private follow-up note", followUpTimestamp(dayKey(4)))).toBe(true);
       expect(await list("overdue")).toEqual([]);
       expect(await list("upcoming")).toEqual(expect.arrayContaining([ids.get("Synthetic future"), ids.get("Synthetic overdue")]));

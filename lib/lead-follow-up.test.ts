@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { updateLeadStatusRecord } from "@/lib/lead-follow-up";
+import { rescheduleLeadFollowUpRecord, updateLeadStatusRecord } from "@/lib/lead-follow-up";
 
 describe("owner lead status persistence", () => {
   test("rejects invalid IDs without querying storage", async () => {
@@ -16,5 +16,15 @@ describe("owner lead status persistence", () => {
     expect(await updateLeadStatusRecord(client, 42, "qualified")).toBe(false);
     expect(query).toContain("NOT EXISTS (SELECT 1 FROM inquiry_retirements");
     expect(query).toContain("RETURNING id");
+  });
+
+  test("reschedules only active non-retired inquiries with a valid date", async () => {
+    let query = "";
+    const client = { query: async (sql: string) => { query = sql; return { rows: [{ id: 42 }] }; } };
+    expect(await rescheduleLeadFollowUpRecord(client, 42, "2026-10-30T12:00:00.000Z")).toBe(true);
+    expect(query).toContain("status NOT IN ('won', 'lost', 'archived')");
+    expect(query).toContain("NOT EXISTS (SELECT 1 FROM inquiry_retirements");
+    expect(await rescheduleLeadFollowUpRecord(client, 0, "2026-10-30T12:00:00.000Z")).toBe(false);
+    expect(await rescheduleLeadFollowUpRecord(client, 42, "invalid")).toBe(false);
   });
 });

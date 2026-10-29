@@ -51,3 +51,15 @@ export async function completeLeadFollowUpRecord(client: LeadFollowUpQueryClient
   `, [id]);
   return resultRows(result).length > 0;
 }
+
+export async function rescheduleLeadFollowUpRecord(client: LeadFollowUpQueryClient, id: number, followUpAt: string) {
+  if (!Number.isSafeInteger(id) || id < 1 || !Number.isFinite(Date.parse(followUpAt))) return false;
+  const result = await client.query(`
+    UPDATE contact_inquiries
+    SET follow_up_at = $2::timestamptz, updated_at = NOW()
+    WHERE id = $1 AND status NOT IN ('won', 'lost', 'archived')
+      AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)
+    RETURNING id
+  `, [id, followUpAt]);
+  return resultRows(result).length > 0;
+}
