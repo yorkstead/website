@@ -13,5 +13,6 @@ export default async function AutomationsPage() {
   if (!(await getOwnerSession(await headers())))
     redirect("/login?next=/dashboard/automations");
   const automationHub = await getAutomationHubHealth();
-  return <OperationsWorkspace automationHub={automationHub} />;
+  const writeEnabled = process.env.YORKSTEAD_AUTOMATIONS_ACTIONS_ENABLED === "true" && Boolean(process.env.YORKSTEAD_AUTOMATIONS_WRITE_SECRET && process.env.YORKSTEAD_AUTOMATIONS_WRITE_SECRET.length >= 32);
+  return <OperationsWorkspace automationHub={automationHub} writeEnabled={writeEnabled} />;
 }

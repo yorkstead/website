@@ -132,7 +132,7 @@ test("mobile drawer supports keyboard focus, Escape, backdrop, and route selecti
   await expect(opener).toBeFocused();
 });
 
-test("Automations keeps owner-only access and shows the existing Hub workflow links", async ({ page, context }) => {
+test("Automations keeps owner-only access and runs Hub capture controls in the Website", async ({ page, context }) => {
   await page.goto("/dashboard/automations");
   await expect(page).toHaveURL(/\/login\?next=%2Fdashboard%2Fautomations|\/login\?next=\/dashboard\/automations/);
   expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).status()).toBe(200);
@@ -142,11 +142,8 @@ test("Automations keeps owner-only access and shows the existing Hub workflow li
     await page.goto("/dashboard/automations");
     await expect(page.getByRole("heading", { name: "Voice capture controls" })).toBeVisible();
     await expect(page.getByText(/Hub API responding|Hub health check failed|Hub unavailable/)).toBeVisible();
-    await expect(page.getByRole("link", { name: "Open Hub capture controls" })).toHaveAttribute("href", "https://cal.yorkstead.com/command#ys-actions");
-    await expect(page.getByRole("link", { name: "Open Hub integration health" })).toHaveAttribute("href", "https://cal.yorkstead.com/command#ys-health");
-    await expect(page.getByRole("link", { name: "Review Hub interactions" })).toHaveAttribute("href", "https://cal.yorkstead.com/crm/interactions");
-    await expect(page.getByRole("link", { name: "Review Hub leads" })).toHaveAttribute("href", "https://cal.yorkstead.com/crm/review");
-    await expect(page.getByText(/does not verify capture ingestion/)).toBeVisible();
+    await expect(page.getByRole("link", { name: /Open Hub|Review Hub/ })).toHaveCount(0);
+    await expect(page.getByText(/does not require opening its owner interface/)).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   }
 });
@@ -175,7 +172,7 @@ test("Automations renders source-labelled Hub records, empty queues, and partial
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto("/dashboard/automations");
   await expect(page.getByRole("heading", { name: "Recent voice captures" })).toBeVisible();
-  await expect(page.getByText("Replace the filter by Friday")).toBeVisible();
+  await expect(page.getByLabel("Recent voice captures").getByText("Replace the filter by Friday")).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "ID: capture-123" }).getByText("Source: Automation Hub · captures")).toBeVisible();
   await expect(page.getByText("ID: capture-123")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Activity history" })).toBeVisible();
