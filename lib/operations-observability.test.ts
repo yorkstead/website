@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   buildOperationsOverview,
+  buildRecoveryControls,
   createOperationsController,
   cronScheduleIntent,
   type OperationsInput,
@@ -13,6 +14,8 @@ const healthyInput = (overrides: Partial<OperationsInput> = {}): OperationsInput
   authSchemaPresent: true,
   briefing: { status: "ready", updatedAt: new Date("2026-10-26T11:00:00.000Z"), generatedAt: new Date("2026-10-26T11:00:00.000Z") },
   briefingReadAvailable: true,
+  runtimeEnvironment: "production",
+  databaseConnectionConfigured: true,
   ...overrides,
 });
 
@@ -55,6 +58,50 @@ describe("operations observability model", () => {
   test("keeps the checked-in cron schedule aligned with Vercel configuration", async () => {
     const config = await Bun.file("vercel.json").json();
     expect(cronScheduleIntent.map(({ path, schedule }) => ({ path, schedule }))).toEqual(config.crons);
+  });
+
+  test("documents the production Neon target without claiming its identity is verified", () => {
+    const result = buildOperationsOverview(healthyInput());
+    expect(result.deploymentContext).toEqual({
+      environment: "production",
+      neonOrganizationId: "org-aged-leaf-21920027",
+      neonProjectId: "old-boat-18584731",
+      neonIdentityStatus: "not_verified",
+    });
+    expect(result.readinessChecks.find((check) => check.id === "neon-target-identity")?.status).toBe("not_verified");
+    expect(result.readinessChecks.find((check) => check.id === "runtime-environment")?.status).toBe("healthy");
+    expect(result.readinessChecks.find((check) => check.id === "database-configuration")?.status).toBe("healthy");
+    expect(result.readinessChecks.find((check) => check.id === "database-configuration")?.summary).not.toContain("DATABASE_URL");
+  });
+
+  test("keeps backup availability and restore verification independent", () => {
+    const now = new Date();
+    const backupOnly = buildRecoveryControls({ backup: { observedAt: now, source: "provider-console" } }, now);
+    expect(backupOnly.find((control) => control.id === "backup")?.status).toBe("verified");
+    expect(backupOnly.find((control) => control.id === "restore-test")?.status).toBe("not_verified");
+    const restoreOnly = buildRecoveryControls({ restoreTest: { observedAt: now, source: "independent-restore-log" } }, now);
+    expect(restoreOnly.find((control) => control.id === "restore-test")?.status).toBe("verified");
+    expect(restoreOnly.find((control) => control.id === "backup")?.status).toBe("not_verified");
+    const expired = buildRecoveryControls({
+      backup: { observedAt: new Date(now.getTime() - 25 * 60 * 60 * 1000), source: "provider-console" },
+      restoreTest: { observedAt: new Date(now.getTime() - 91 * 24 * 60 * 60 * 1000), source: "independent-restore-log" },
+    }, now);
+    expect(expired.find((control) => control.id === "backup")?.status).toBe("stale");
+    expect(expired.find((control) => control.id === "restore-test")?.status).toBe("stale");
+  });
+
+  test("fails closed when runtime or database configuration is not established", () => {
+    const result = buildOperationsOverview(healthyInput({ runtimeEnvironment: "unknown", databaseConnectionConfigured: false }));
+    expect(result.readinessChecks.find((check) => check.id === "runtime-environment")?.status).toBe("unknown");
+    expect(result.readinessChecks.find((check) => check.id === "database-configuration")?.status).toBe("not_configured");
+    expect(result.deploymentContext.neonIdentityStatus).toBe("not_verified");
+  });
+
+  test("readiness and recovery output contains no connection strings, credentials, or customer records", () => {
+    const serialized = JSON.stringify(buildOperationsOverview(healthyInput()));
+    expect(serialized).not.toMatch(/postgres(?:ql)?:\/\//i);
+    expect(serialized).not.toMatch(/(?:password|secret|api[_-]?key)\s*[:=]\s*["'][^"']+["']/i);
+    expect(serialized).not.toMatch(/customer@example\.com/i);
   });
 });
 

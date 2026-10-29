@@ -203,5 +203,7 @@ test.describe("CC-013 Operations access boundaries", () => {
     const body = await response.text();
     expect(body).not.toContain("DATABASE_URL");
     expect(body).not.toContain("postgres://");
+    expect(body).not.toContain("org-aged-leaf-21920027");
+    expect(body).not.toContain("old-boat-18584731");
   });
 });
