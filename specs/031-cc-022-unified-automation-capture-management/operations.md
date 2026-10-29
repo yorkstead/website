@@ -10,7 +10,7 @@ No secret is committed, sent to browser code, printed, or changed in this PR. Th
 
 ## Rollout order
 
-1. Review and merge/release Hub PR first. Apply the additive `20261029_cc022_capture_commands.sql` migration through the approved Hub migration process. Keep `YORKSTEAD_AUTOMATIONS_ACTIONS_ENABLED=false`.
+1. Review and merge/release Hub PR first. Apply the additive `20261029_cc022_capture_commands.sql` and ordered `20261030_cc022_command_processing_lease.sql` migrations through the approved Hub migration process. Keep `YORKSTEAD_AUTOMATIONS_ACTIONS_ENABLED=false`.
 2. In separately authorized preview configuration, provision the independent read secret and write secret, leaving both action flags false. Verify CC-021 GET reads still work and the action POST responds `actions_disabled` with no records changed.
 3. Enable the Hub action flag in preview only. Test with disposable synthetic capture records and mocked Google providers. Verify idempotency, audit and ambiguous timeout behavior.
 4. Release Website PR after the Hub preview contract is verified. Keep its action flag false until owner-authenticated Website reads and disabled state are confirmed. Then enable Website preview actions and verify the BFF forwards only strict commands.
@@ -20,7 +20,7 @@ No secret is committed, sent to browser code, printed, or changed in this PR. Th
 
 To rotate the write secret, first disable actions on Website, then Hub; install the replacement in both server environments; verify it without exposing values; enable Hub, then Website. Rotate the read secret independently. Missing/mismatched secrets fail closed; reads continue if only the write secret is missing. A Hub 401/503, invalid response, timeout, stale capture or schema conflict is never rendered as success/empty data.
 
-Google Tasks failures before the remote POST are retry-safe through the same idempotency key. Once a Google POST begins, any timeout/provider/response/persistence ambiguity is held in `needs_review`; the UI does not offer automatic retry. The owner must inspect Hub state and task records using the approved reconciliation process before taking another action. Capture-level task claim and command idempotency prevent concurrent duplicate effects.
+Google Tasks failures before the remote POST are retry-safe through the same idempotency key. A command lease prevents duplicate requests from recovering a live command. After lease expiry, a durable `approve_task.external_write_started` marker determines recovery: marked commands become `needs_review` after an interrupted provider call; unmarked commands can return to `retryable` only when capture state permits. Once a Google POST begins, any timeout/provider/response/persistence ambiguity is held in `needs_review`; the UI keeps the same command key for status checks and blocks a new command until the owner reconciles the Hub task state.
 
 Lead commands only report or preserve a pending Hub CRM review draft. CRM approval remains in the existing Hub CRM lifecycle. Website CRM is not written. No customer messages are sent.
 

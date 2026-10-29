@@ -46,8 +46,8 @@ test("owner-only Automations supports responsive capture review, confirmed actio
       return;
     }
     if (body.action === "reclassify") {
-      expect(body.targetKind).toBe("lead");
-      latestCaptures = latestCaptures.map((item) => item.id === body.captureId ? { ...item, classification: { ...item.classification, kind: "lead" }, status: "pending" } : item);
+      expect(body.targetKind).toBe("task");
+      latestCaptures = latestCaptures.map((item) => item.id === body.captureId ? { ...item, classification: { ...item.classification, kind: "task" }, status: "pending" } : item);
       audits = [{ id: "88888888-8888-4888-8888-888888888888", commandId: "99999999-9999-4999-8999-999999999999", captureId: body.captureId, createdAt: checkedAt, action: body.action, event: "succeeded", priorStatus: "pending", resultingStatus: "pending", destination: "hub_capture_inbox", resultCode: "classification_updated" }];
       await route.fulfill({ status: 200, json: { contractVersion: 1, captureId: body.captureId, action: body.action, status: "pending", destination: "hub_capture_inbox", resultCode: "classification_updated", externalWriteStarted: false, retrySafe: false } });
       return;
@@ -73,7 +73,7 @@ test("owner-only Automations supports responsive capture review, confirmed actio
 
       await page.getByRole("button", { name: "Reclassify" }).last().click();
       const reclassify = page.getByRole("dialog", { name: "Confirm reclassify" });
-      await reclassify.getByLabel("New classification").selectOption("lead");
+      await expect(reclassify.getByLabel("New classification")).toHaveValue("task");
       await reclassify.getByRole("button", { name: "Confirm reclassify" }).click();
       await expect(page.getByRole("status").filter({ hasText: "Classification updated in Automation Hub" })).toBeVisible();
     }
@@ -83,4 +83,41 @@ test("owner-only Automations supports responsive capture review, confirmed actio
   await expect(leadConfirmation).toContainText("Automation Hub CRM review queue");
   await leadConfirmation.getByRole("button", { name: "Confirm stage for hub crm review" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Lead remains staged in the Hub CRM review queue" })).toBeVisible();
+});
+
+test("uncertain command recovery survives unavailable refresh and remount with the same idempotency key", async ({ page, context }) => {
+  await expect(await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).toBeOK();
+  let recordsAvailable = true;
+  const commandBodies: Array<Record<string, unknown>> = [];
+  await page.route("**/api/dashboard/automation-hub", async (route) => {
+    if (!recordsAvailable) { await route.fulfill({ status: 503, json: { error: "unavailable" } }); return; }
+    await route.fulfill({ json: { state: "available", checkedAt, data: { contractVersion: 1, source: "Automation Hub", generatedAt: checkedAt,
+      captures: { source: "Automation Hub · captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [captures[2]] },
+      captureActions: { source: "Automation Hub · capture action audit", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      activity: { source: "Automation Hub · execution history", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      integrationHealth: { source: "Automation Hub · database and Google Tasks", state: "available", checkedAt, database: "healthy", googleTasks: "healthy", errorCode: null },
+      reviewQueue: { source: "Automation Hub · pending captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      tasks: { source: "Google Tasks via Automation Hub", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+    } } });
+  });
+  await page.route("**/api/dashboard/automation-hub/actions", async (route) => {
+    commandBodies.push(route.request().postDataJSON());
+    recordsAvailable = false;
+    const command = commandBodies.at(-1)!;
+    await route.fulfill({ status: 202, json: { contractVersion: 1, commandId: "33333333-3333-4333-8333-333333333333", captureId: captures[2].id, action: command.action, status: "processing", destination: "hub_capture_inbox", resultCode: "command_pending", externalWriteStarted: false, retrySafe: false } });
+  });
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/dashboard/automations");
+  await page.getByRole("button", { name: "Reclassify" }).click();
+  const dialog = page.getByRole("dialog", { name: "Confirm reclassify" });
+  await dialog.getByRole("button", { name: "Confirm reclassify" }).click();
+  await expect(page.getByText("still processing", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Check Hub command status" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Capture source unavailable" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Review note" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Review note" })).toBeVisible();
+  await page.getByRole("button", { name: "Check Hub command status" }).click();
+  await expect.poll(() => commandBodies.length).toBe(3);
+  expect(commandBodies.map((body) => body.idempotencyKey)).toEqual([commandBodies[0].idempotencyKey, commandBodies[0].idempotencyKey, commandBodies[0].idempotencyKey]);
 });
