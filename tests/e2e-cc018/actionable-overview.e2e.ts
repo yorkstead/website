@@ -178,6 +178,7 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await page.getByLabel("Next action date").fill(offsetDateKey(2));
   const createProposalForm = page.locator("form").filter({ has: page.getByRole("button", { name: "Record proposal" }) });
   await createProposalForm.locator('select[name="engagementType"]').selectOption("sprint");
+  await expect(createProposalForm.locator('select[name="engagementType"]')).toHaveValue("sprint");
   await createProposalForm.locator('select[name="state"]').selectOption("sent");
   await expect(createProposalForm.locator('select[name="state"]')).toHaveValue("sent");
   await createProposalForm.getByRole("button", { name: "Record proposal" }).click();
