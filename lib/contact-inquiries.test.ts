@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildContactInquiryPageQueries, normalizeLeadSummary } from "@/lib/contact-inquiries";
+import { buildCommandCenterQueries, buildContactInquiryPageQueries, normalizeCommandCenterCrmSnapshot, normalizeLeadSummary } from "@/lib/contact-inquiries";
 
 describe("contact inquiry summaries", () => {
   test("normalizes separate overdue, today, and future counts", () => {
@@ -44,5 +44,31 @@ describe("contact inquiry follow-up query construction", () => {
     expect(queries.count.params).toEqual(["proposal"]);
     expect(queries.records.params).toEqual(["proposal", 20, 40]);
     expect(queries.records.text).toContain("status = $1");
+  });
+});
+
+describe("Command Center CRM snapshot", () => {
+  test("uses existing active inquiry stages and excludes retired and closed leads", () => {
+    const queries = buildCommandCenterQueries();
+    expect(queries.stages.text).toContain("GROUP BY status");
+    for (const query of Object.values(queries)) {
+      expect(query.text).toContain("NOT EXISTS (SELECT 1 FROM inquiry_retirements");
+      expect(query.text).toContain("status NOT IN ('won', 'lost', 'archived')");
+    }
+    expect(queries.due.text).toContain("AT TIME ZONE 'America/Denver'");
+    expect(queries.stalled.text).toContain("status IN ('qualified', 'proposal')");
+    expect(queries.stalled.text).toContain("LIMIT 5");
+    expect(queries.due.text).toContain("LIMIT 8");
+  });
+
+  test("normalizes only safe fields and initializes missing pipeline stages to zero", () => {
+    const result = normalizeCommandCenterCrmSnapshot(
+      [{ status: "proposal", count: "2" }, { status: "won", count: 3 }],
+      [{ id: "42", name: "Avery", company: "Example Co", project_type: "Audit", status: "proposal", follow_up_at: "2026-10-29T18:00:00.000Z", updated_at: "2026-10-28T18:00:00.000Z", email: "private@example.test", notes: "private" }],
+      [],
+    );
+    expect(result.stageCounts).toEqual({ new: 0, contacted: 0, qualified: 0, proposal: 2 });
+    expect(result.dueFollowUps[0]).not.toHaveProperty("email");
+    expect(result.dueFollowUps[0]).not.toHaveProperty("notes");
   });
 });

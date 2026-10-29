@@ -3,18 +3,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { GoogleOperations } from "@/lib/dashboard-google-operations";
+import type { CommandCenterCrmSnapshot } from "@/lib/contact-inquiries";
 import { useRouter } from "next/navigation";
 import {
-  Activity, AlertCircle, Archive, ArrowRightCircle, BarChart3, CalendarDays, CheckCircle2, CircleDot, Clock3,
-  DatabaseBackup, Download, Flame, Inbox, KeyRound, CornerDownLeft, Grid2X2, Keyboard,
-  Lightbulb, ListChecks, ListFilter, Pencil, BookOpenCheck, ClipboardCheck, DownloadCloud, Gauge, Megaphone, Plus,
-  RefreshCw, RotateCcw, RotateCw, Search, Settings, Sparkles, Square, Target, Trash2, Upload, X,
+  Activity, AlertCircle, Archive, ArrowRightCircle, BarChart3, CalendarDays, CheckCircle2, CircleDot,
+  DatabaseBackup, Download, Inbox, KeyRound, CornerDownLeft, Grid2X2, Keyboard,
+  Lightbulb, ListChecks, ListFilter, Pencil, BookOpenCheck, ClipboardCheck, DownloadCloud, Megaphone, Plus,
+  RefreshCw, RotateCcw, RotateCw, Search, Settings, Sparkles, Square, Trash2, Upload, X,
 } from "lucide-react";
 import type { Project, ProjectKind } from "@/lib/projects";
 import type { ClientDelivery } from "@/lib/client-delivery";
 import { resolveProjectDeepLink } from "@/lib/project-deep-link";
 import { defaultWorkspaceSettings, emptyWorkspace, workspaceStorageKey, type InboxItem, type ProjectNote, type Task, type WeeklyReview, type Workspace, type WorkspaceSettings } from "@/lib/workspace";
-import { selectFocusTasks, selectTasksForView } from "@/lib/planning";
+import { selectTasksForView } from "@/lib/planning";
 import { isWorkspaceData, normalizeWorkspace } from "@/lib/workspace-validation";
 import { createHistoryState, pushHistory, undoHistory, redoHistory, type WorkspaceHistoryState } from "@/lib/workspace-history";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ import {
 } from "@/components/dashboard/dashboard-dialogs";
 import { AnalyticsSection, CalendarTimeline, DevelopmentQueue, NotificationManager, ProjectCard, ProjectJournal } from "@/components/dashboard/dashboard-sections";
 import { QuickLaunch } from "@/components/dashboard/quick-launch";
+import { CommandCenterOverview } from "@/components/dashboard/command-center-overview";
 
 type SyncState = "loading" | "saved" | "saving" | "offline" | "conflict";
 type TaskView = "Today" | "Next" | "All";
@@ -48,7 +50,7 @@ type SnapshotNotice = { tone: "success" | "error"; message: string; authenticati
 type SnapshotHistoryItem = { id: string; createdAt: string };
 type UndoToast = { label: string; canUndo: boolean; canRedo: boolean; actionType: "mutate" | "undo" | "redo" };
 
-export function Dashboard({ googleOperations }: { googleOperations: GoogleOperations | null }) {
+export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable }: { googleOperations: GoogleOperations | null; crmSnapshot: CommandCenterCrmSnapshot | null; crmUnavailable: boolean }) {
   const router = useRouter();
   const [workspace, setWorkspace] = useState<Workspace>(emptyWorkspace);
   const [googleDone,setGoogleDone]=useState<string[]>([]);
@@ -753,9 +755,7 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
   const commandSections = useMemo(() => Array.from(new Set(filteredCommands.map((action) => action.section))), [filteredCommands]);
 
   const filtered = useMemo(() => workspace.projects.filter((project) => (kind === "All" || project.kind === kind) && `${project.name} ${project.description} ${project.stack.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [kind, query, workspace.projects]);
-  const openTasks = workspace.tasks.filter((task) => !task.done).length;
   const googleVisible=(googleOperations?.actionableTasks||[]).filter(t=>!googleDone.includes(t.listId+":"+t.id));
-  const combinedTaskCount=openTasks+googleVisible.length;
   async function finishGoogleTask(task:{id:string;listId:string;title:string}){
     if(!window.confirm("Complete Google Task: "+task.title+"?"))return;
     setGoogleBusy(task.id);setGoogleError("");
@@ -764,12 +764,7 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
   }
   const timeZone = normalizeTimeZone(workspace.settings?.timezone);
   const today = dateKeyInTimeZone(new Date(), timeZone);
-  const overdueTasks = workspace.tasks.filter((task) => !task.done && task.dueDate && task.dueDate < today);
-  const highPriorityTasks = workspace.tasks.filter((task) => !task.done && task.priority === "High");
-  const focusTasks = selectFocusTasks(workspace.tasks);
-  const todayTime = new Date(`${today}T12:00:00Z`).getTime();
-  const stalledProjects = workspace.projects.filter((project) => project.status !== "Shipped" && todayTime - new Date(project.updatedAt).getTime() > (workspace.settings?.staleProjectDays ?? 14) * 24 * 60 * 60 * 1000);
-  const averageMomentum = workspace.projects.length ? Math.round(workspace.projects.reduce((sum, project) => sum + project.progress, 0) / workspace.projects.length) : 0;
+  const commandCenterToday = dateKeyInTimeZone(new Date(), "America/Denver");
   const visibleTasks = selectTasksForView(workspace.tasks, taskView, today);
   const taskGroups = visibleTasks.reduce<Record<string, Task[]>>((groups, task) => { const name = workspace.projects.find((project) => project.id === task.projectId)?.name ?? "General"; (groups[name] ??= []).push(task); return groups; }, {});
   const kinds: Array<"All" | ProjectKind> = ["All", "Software", "CNC", "Business", "Experiment"];
@@ -847,12 +842,22 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
 
           {projectLinkNotFound && <section role="alert" className="mt-5 flex flex-col justify-between gap-3 rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 sm:flex-row sm:items-center"><div><div className="text-sm font-semibold">Project link not found</div><p className="mt-1 text-xs text-muted-foreground">The requested project <span className="font-mono">{projectLinkNotFound}</span> is not in the current workspace. No records were changed.</p></div><div className="flex shrink-0 gap-2"><Button size="sm" variant="outline" asChild><Link href="/dashboard/leads">Review leads</Link></Button><Button size="sm" onClick={clearProjectDeepLink}>View current projects</Button></div></section>}
 
-          <section className="py-10"><div className="mb-8"><div className="mb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-primary">Personal operations</div><h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Build what matters next.</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Projects, tasks, ideas, and movement—captured in one clean operating view.</p></div><div className="grid gap-3 sm:grid-cols-3"><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Projects</div><div className="mt-1 text-2xl font-semibold">{workspace.projects.length}</div></div><Grid2X2 className="size-5 text-primary" /></CardContent></Card><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Open tasks · both sources</div><div className="mt-1 text-2xl font-semibold">{combinedTaskCount}</div><div className="mt-1 text-[10px] text-muted-foreground">{openTasks} workspace · {googleVisible.length} Google due through tomorrow</div></div><ListChecks className="size-5 text-amber-400" /></CardContent></Card><Card><CardContent className="flex items-center justify-between p-4"><div><div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Signals logged</div><div className="mt-1 text-2xl font-semibold">{workspace.activity.length}</div></div><Activity className="size-5 text-emerald-400" /></CardContent></Card></div></section>
-
-          <section id="focus" className="mb-10 grid min-w-0 gap-4 xl:grid-cols-[1.35fr_1fr]">
-            <Card className="min-w-0 overflow-hidden"><CardContent className="p-5"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div className="min-w-0"><div className="mb-1 flex items-center gap-2"><Target className="size-4 shrink-0 text-primary" /><h2 className="text-sm font-semibold">Focus briefing</h2></div><p className="text-xs text-muted-foreground">The three most time-sensitive open actions.</p></div><Badge className="border-primary/20 bg-primary/10 text-primary">{focusTasks.length} queued</Badge></div>{googleOperations?.priority && <div className="mb-4 rounded-lg bg-primary/5 p-3"><p className="font-mono text-[9px] uppercase tracking-widest text-primary">Google-connected revenue priority</p><p className="mt-1 text-sm font-semibold">{googleOperations.priority.label}</p><p className="mt-1 text-xs text-muted-foreground">{googleOperations.priority.why}</p></div>}{googleOperations?.openTasks.today.length ? <div className="mb-4 space-y-1.5"><p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Google Tasks · Due today</p>{googleOperations.openTasks.today.slice(0,3).map((title,i)=><p key={i} className="rounded-md bg-secondary/60 px-3 py-2 text-xs">{title}</p>)}</div> : null}{focusTasks.length ? <div className="space-y-2">{focusTasks.map((task, index) => { const overdue = Boolean(task.dueDate && task.dueDate < today); const project = workspace.projects.find((item) => item.id === task.projectId); return <div key={task.id} className="flex min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-background/45 p-3 sm:gap-3"><button onClick={() => toggleTask(task.id)} className="grid size-7 shrink-0 place-items-center rounded-full border border-border font-mono text-[10px] text-muted-foreground hover:border-primary hover:text-primary">{index + 1}</button><div className="min-w-0 flex-1"><div className="truncate text-sm font-medium">{task.title}</div><div className="mt-1 flex min-w-0 items-center gap-2 text-[10px] text-muted-foreground">{project && <span className="truncate">{project.name}</span>}<span className={cn("shrink-0", overdue && "text-red-500")}>{task.dueDate ? `${overdue ? "Overdue" : "Due"} ${new Date(`${task.dueDate}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "No deadline"}</span></div></div><Badge className={cn("hidden border-border sm:inline-flex", task.priority === "High" ? "border-red-500/20 bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground")}>{task.priority ?? "Medium"}</Badge><Button className="shrink-0" variant="ghost" size="icon" onClick={() => setEditingTask(task)}><Pencil /></Button></div>})}</div> : <div className="grid min-h-32 place-items-center text-center"><div><CheckCircle2 className="mx-auto mb-2 size-6 text-emerald-400" /><div className="text-sm font-medium">The runway is clear</div><div className="mt-1 text-xs text-muted-foreground">Add a task when the next move becomes clear.</div></div></div>}</CardContent></Card>
-            <Card className="min-w-0 overflow-hidden"><CardContent className="p-5"><div className="mb-5"><h2 className="text-sm font-semibold">Pressure map</h2><p className="mt-1 text-xs text-muted-foreground">Signals that may need intervention.</p></div><div className="space-y-3"><div className="flex items-center justify-between rounded-lg bg-background/45 p-3"><div className="flex items-center gap-2 text-xs"><Flame className="size-4 text-red-500" />Overdue tasks</div><span className="font-mono text-sm font-semibold">{overdueTasks.length + (googleOperations?.openTasks.overdue.length ?? 0)}</span></div><div className="flex items-center justify-between rounded-lg bg-background/45 p-3"><div className="flex items-center gap-2 text-xs"><AlertCircle className="size-4 text-amber-500" />High priority</div><span className="font-mono text-sm font-semibold">{highPriorityTasks.length}</span></div><div className="flex items-center justify-between rounded-lg bg-background/45 p-3"><div className="flex items-center gap-2 text-xs"><Clock3 className="size-4 text-violet-400" />Stalled projects</div><span className="font-mono text-sm font-semibold">{stalledProjects.length}</span></div><div className="flex items-center justify-between rounded-lg bg-background/45 p-3"><div className="flex items-center gap-2 text-xs"><Gauge className="size-4 text-emerald-400" />Avg. momentum</div><span className="font-mono text-sm font-semibold">{averageMomentum}%</span></div></div>{stalledProjects.length > 0 && <div className="mt-4 border-t border-border pt-3"><div className="mb-2 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">Needs a pulse</div><div className="flex flex-wrap gap-1.5">{stalledProjects.slice(0, 4).map((project) => <button key={project.id} onClick={() => setEditingProject(project)}><Badge className="border-border bg-secondary text-muted-foreground hover:text-foreground">{project.name}</Badge></button>)}</div></div>}</CardContent></Card>
-          </section>
+          <section className="py-7 sm:py-9"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><div className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Command Center · Overview</div><h1 className="text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">What needs attention today?</h1><p className="mt-2 text-sm text-muted-foreground">Your follow-ups, delivery work, and next actions in one place.</p></div><Button className="self-start sm:self-auto" onClick={() => setComposer("task")}><Plus />Create task</Button></div></section>
+          <CommandCenterOverview
+            crm={crmSnapshot}
+            crmUnavailable={crmUnavailable}
+            projects={workspace.projects}
+            tasks={workspace.tasks}
+            googleTasks={googleVisible}
+            activity={workspace.activity}
+            today={commandCenterToday}
+            staleProjectDays={workspace.settings?.staleProjectDays ?? 14}
+            ready={ready}
+            onCompleteTask={toggleTask}
+            onOpenTask={setEditingTask}
+            onCompleteGoogleTask={(task) => void finishGoogleTask(task)}
+            onCreateTask={() => setComposer("task")}
+          />
 
           <ProjectJournal projects={workspace.projects} notes={workspace.notes ?? []} onAdd={addProjectNote} onDelete={deleteProjectNote} />
           <DevelopmentQueue projects={workspace.projects} intelligence={intelligence} />
@@ -881,7 +886,6 @@ export function Dashboard({ googleOperations }: { googleOperations: GoogleOperat
 
           <section id="inbox" className="mt-4 min-w-0"><Card className="min-w-0 overflow-hidden"><CardContent className="p-5"><div className="mb-5 flex items-center justify-between"><div><div className="flex items-center gap-2"><Inbox className="size-4 text-primary" /><h2 className="text-sm font-semibold">Capture inbox</h2></div><p className="mt-1 text-xs text-muted-foreground">Ideas stay loose until you decide what they should become.</p></div><Button variant="outline" size="sm" onClick={() => setComposer("idea")}><Plus />Capture</Button></div>{workspace.inbox?.length ? <div className="space-y-2">{workspace.inbox.map((item) => <div key={item.id} className="flex flex-col gap-3 rounded-lg border border-border/60 bg-background/45 p-3 sm:flex-row sm:items-center"><div className="min-w-0 flex-1"><p className="text-sm leading-5">{item.text}</p><p className="mt-1 font-mono text-[9px] text-muted-foreground">Captured {new Date(item.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</p></div><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => inboxToTask(item)}><ArrowRightCircle />Task</Button><Button variant="ghost" size="sm" onClick={() => inboxToProject(item)}><Grid2X2 />Project</Button><Button variant="ghost" size="icon" onClick={() => archiveInboxItem(item)} aria-label="Archive inbox item"><Archive /></Button></div></div>)}</div> : <div className="grid min-h-28 place-items-center text-center"><div><CheckCircle2 className="mx-auto mb-2 size-5 text-emerald-400" /><p className="text-xs text-muted-foreground">Inbox zero. Nothing waiting for a decision.</p></div></div>}</CardContent></Card></section>
 
-          <section id="activity" className="mt-4 min-w-0"><Card className="min-w-0 overflow-hidden"><CardContent className="p-5"><div className="mb-5"><h2 className="text-sm font-semibold">Activity</h2><p className="mt-1 text-xs text-muted-foreground">An automatic trail of meaningful workspace changes.</p></div>{workspace.activity.length ? <div className="space-y-1">{workspace.activity.map((item, index) => <div key={item.id} className="flex items-center gap-3 rounded-lg px-2 py-3 hover:bg-accent/50"><div className={cn("size-2 rounded-full", index === 0 ? "bg-emerald-400" : "bg-muted-foreground/40")} /><span className="min-w-0 flex-1 truncate text-xs">{item.message}</span><span className="shrink-0 font-mono text-[9px] text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</span></div>)}</div> : <div className="grid min-h-28 place-items-center text-xs text-muted-foreground">Activity appears as you work.</div>}</CardContent></Card></section>
           <section className="mt-4 min-w-0"><Card className="min-w-0 overflow-hidden"><CardContent className="p-5"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><div className="mb-2 flex items-center gap-2"><BookOpenCheck className="size-4 text-primary" /><h2 className="text-sm font-semibold">Weekly review</h2></div>{workspace.reviews?.[0] ? <div><p className="text-xs text-muted-foreground">Last completed {new Date(workspace.reviews[0].createdAt).toLocaleDateString(undefined, { month: "long", day: "numeric" })}</p><p className="mt-3 max-w-3xl whitespace-pre-line text-sm leading-6"><span className="font-medium">Next:</span> {workspace.reviews[0].nextPriorities || "No priorities recorded."}</p></div> : <p className="text-xs text-muted-foreground">No review yet. Close your first operating loop.</p>}</div><Button variant="outline" onClick={() => setReviewOpen(true)}><BookOpenCheck />{workspace.reviews?.length ? "New review" : "Start review"}</Button></div></CardContent></Card></section>
           <section className="mt-4 min-w-0"><NotificationManager /></section>
           <section className="mt-4 min-w-0"><Card className="min-w-0 overflow-hidden"><CardContent className="p-5">
