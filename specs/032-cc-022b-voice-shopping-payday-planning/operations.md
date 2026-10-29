@@ -18,3 +18,10 @@ Disable Website shopping mutations first, then Hub mutations. Retain Hub purchas
 ## Manual check
 
 Run the synthetic acceptance utterance in `verification.md` against a disposable environment with all external provider clients mocked. Never use real captures or enable purchases/notifications.
+
+## Review-correction recovery notes — 2026-10-29
+
+- A confirmed receipt requires an explicit nonblank finite amount of at least zero. Never fill a missing amount from the expected schedule or convert a blank field to zero.
+- No repeat is stored as a null recurrence rule. This supports both ordinary edits and clearing a recurrence.
+- Treat HTTP 202 or a network/provider failure as unresolved. Retain and retry the exact command payload and key; do not issue a conflicting action until Hub state is reconciled. A definitive 400/415/422 payday input/schema rejection is not an ambiguous commit: discard that rejected key, let the owner correct input, and submit a new command. Hub conflicts may be cleared after refreshing the current revision.
+- Keep Hub #92 first in the rollout order, then verify its deployed contract with synthetic data before releasing Website #79. This correction task does not authorize either merge, production configuration, migration, or deployment.

@@ -41,7 +41,9 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
   try{
    const response=await fetch("/api/dashboard/shopping",{method:"POST",cache:"no-store",headers:{"content-type":"application/json"},body:JSON.stringify(req)});
    const body=await response.json() as {status?:string;resultCode?:string;error?:string;idempotentReplay?:boolean};
+   if(response.status===202||body.status==="processing"){setMessage("This command is still processing. Its original key is saved; retry it after the Hub reconciles the result.");onRefresh();return;}
    if(response.status===409||body.status==="conflict"){const next={...pending};delete next[item.id];rememberPending(next);throw new Error(body.resultCode||body.error||"The item changed. Review the refreshed Hub record and confirm again.");}
+   if(response.status===400||response.status===415||response.status===422){const next={...pending};delete next[item.id];rememberPending(next);setMessage("The Hub rejected this input. Correct the highlighted or invalid values, then submit a new command.");return;}
    if(!response.ok)throw new Error(body.resultCode||body.error||"The Hub could not confirm this update.");
    const completed={...pending};delete completed[item.id];rememberPending(completed);setMessage(body.idempotentReplay?"The Hub confirmed the original command.":"Shopping record updated in Automation Hub.");setEditing("");setSelectedItems([]);onRefresh();
   }catch(error){setMessage(error instanceof Error?`Update needs review: ${error.message}`:"Update needs review. Refresh the Hub record before retrying.");}
@@ -73,21 +75,23 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
   setBusy("payday");setMessage("");
   try{const response=await fetch("/api/dashboard/shopping",{method:"POST",cache:"no-store",headers:{"content-type":"application/json"},body:JSON.stringify(request)});const body=await response.json() as {status?:string;resultCode?:string;error?:string;idempotentReplay?:boolean};
    if(response.status===409||body.status==="conflict"){sessionStorage.removeItem(key);throw new Error(body.resultCode||"Payday data changed. Refresh and review it.");}
+   if(response.status===202||body.status==="processing"){setMessage("This payday command is still processing. Its original key is saved; retry it after the Hub reconciles the result.");onRefresh();return;}
+   if(response.status===400||response.status===415||response.status===422){sessionStorage.removeItem(key);setMessage("The Hub rejected this payday input. Correct the values and submit a new command.");return;}
    if(!response.ok)throw new Error(body.resultCode||body.error||"The Hub could not confirm this payday command.");
    sessionStorage.removeItem(key);setPaydayDraft(null);setMessage(body.idempotentReplay?"The Hub confirmed the original payday command.":"Payday planning updated in Automation Hub.");onRefresh();
   }catch(error){setMessage(error instanceof Error?`Payday update needs review: ${error.message}`:"Payday update needs review. Retry the same command key.");}
   finally{setBusy("");}
  }
  function confirmPayday(){
-  const amount=Number(receiptForm.amount);if(!receiptForm.date||!Number.isFinite(amount)||amount<0){setMessage("Enter the actual receipt date and amount before confirming.");return;}
+  const rawAmount=receiptForm.amount.trim();const amount=Number(rawAmount);if(!receiptForm.date||rawAmount===""||!Number.isFinite(amount)||amount<0){setMessage("Enter the actual receipt date and a finite, nonnegative amount before confirming.");return;}
   const prior=payday?.records.find(record=>record.date===receiptForm.date);
   void sendPayday({contractVersion:2,idempotencyKey:crypto.randomUUID(),action:"confirm_payday",expectedRevision:prior?.revision||0,paydayDate:receiptForm.date,confirmedAmount:amount,currency:receiptForm.currency.toUpperCase(),variableIncome:receiptForm.variableIncome,reservesConfirmed:true,reserves});
  }
  function startEdit(item:Item){setEditing(item.id);setForm({name:item.name,category:item.category||"",estimatedAmount:item.estimatedAmount===null?"":String(item.estimatedAmount),currency:item.currency||"USD",scope:item.scope||"",priority:item.priority,timingIntent:item.timingIntent,targetDate:item.targetDate||"",recurrenceRule:item.recurrenceRule||"",splitNames:""});}
  function save(item:Item){
   const amount=form.estimatedAmount.trim();
-  const changes:ItemChanges={name:form.name.trim(),category:form.category.trim()||null,estimatedAmount:amount?Number(amount):null,currency:amount?form.currency.toUpperCase():null,scope:form.scope==="personal"||form.scope==="business"?form.scope:null,scopeConfirmed:form.scope==="personal"||form.scope==="business",priority:form.priority as "essential"|"need"|"want",priorityConfirmed:true,timingIntent:form.timingIntent as ItemChanges["timingIntent"],targetDate:form.targetDate||null,recurrenceRule:form.recurrenceRule as ItemChanges["recurrenceRule"]};
-  void send(item,"update",changes);
+  const changes:ItemChanges={name:form.name.trim(),category:form.category.trim()||null,estimatedAmount:amount?Number(amount):null,currency:amount?form.currency.toUpperCase():null,scope:form.scope==="personal"||form.scope==="business"?form.scope:null,scopeConfirmed:form.scope==="personal"||form.scope==="business",priority:form.priority as "essential"|"need"|"want",priorityConfirmed:true,timingIntent:form.timingIntent as ItemChanges["timingIntent"],targetDate:form.targetDate||null,recurrenceRule:(form.recurrenceRule||null) as ItemChanges["recurrenceRule"]};
+  void send(item,item.reviewState==="needs_review"?"review":"update",changes);
  }
  return <section className={`${panel} mt-6`} aria-labelledby="shopping-planner-title">
   <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs uppercase tracking-[0.16em] text-primary">Private · Hub is the source of truth</p><h2 id="shopping-planner-title" className="mt-1 text-xl font-semibold">Shopping planner</h2><p className="mt-1 max-w-3xl text-sm text-muted-foreground">Review purchase ideas, confirm scope and priority, and plan timing. Yorkstead will not place orders or read private amounts aloud.</p></div><button type="button" className={actionClass} onClick={onRefresh}>Refresh planner</button></div>

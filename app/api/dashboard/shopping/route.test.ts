@@ -13,4 +13,8 @@ describe('owner shopping command BFF',()=>{
     expect(route).toContain("private, no-store");expect(route).not.toContain('YORKSTEAD_SHOPPING_WRITE_SECRET');
     expect(route).not.toContain('request.headers.get(\'authorization\')');
   });
+  test('preserves Hub processing responses as HTTP 202 for browser reconciliation',()=>{
+    expect(route).toContain('outcome.httpStatus===202?202:outcome.httpStatus>=400?outcome.httpStatus:200');
+    expect(route).toContain('Response.json(outcome.result,{status,headers:privateHeaders})');
+  });
 });

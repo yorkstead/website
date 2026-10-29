@@ -1,3 +1,11 @@
+## CC-022B existing-PR review corrections — 2026-10-29 22:12 UTC
+
+- Authorized scope: fix unresolved findings on existing Hub PR #92 and Website PR #79, run tests/checks/builds, update evidence docs, push only those two branches, resolve threads after verified fixes, and mark Website #79 ready only after validation. No new PR, merge, manual deploy, production settings/secrets/data changes, or payment.
+- Live GitHub reader verified both PRs open/unmerged at Hub d1cc5ee4ea707e4979e81928d6ca0bf6b43d242c (PR #92, ready/not draft) and Website 1ed54a0e64af793f9ed0ef816b31fbbdbf15a81d (PR #79, draft). Existing exact-head runs passed before these corrections. Shell GitHub DNS is unavailable; use the GitHub connector for live state and branch updates.
+- Website corrections in progress: reject blank/non-finite/negative receipt input before command creation; serialize No repeat as recurrenceRule: null; retain keys and block conflicting actions for HTTP 202/ambiguous outcomes; clear rejected payday keys for HTTP 400/415/422 so corrected input can be submitted. Browser regressions cover those flows and BFF 202 forwarding.
+- Local verification so far: Yorkstead scaffold and 19-migration check pass; typecheck passes; 397 unit tests pass with 110 existing PostgreSQL-dependent skips; lint has 0 errors and one pre-existing login-panel warning. Local Playwright reached its disposable-database guard and did not run scenarios because matching DATABASE_URL/TEST_DATABASE_URL are absent. Turbopack build hit sandbox EPERM; webpack build failed parsing Next's TypeScript --showConfig. Exact PR CI is still required.
+- Website's pre-existing untracked website.code-workspace is preserved. Next action: finish Hub/Website code, PostgreSQL/browser CI and docs; push Hub #92 first, then Website #79; resolve only verified threads and mark Website ready after exact-head validation. No merge or deployment.
+
 ## Active work — CC-022B Voice Shopping & Payday Planning — 2026-10-29
 
 - Authorized scope: implement the coordinated Hub-first and Website-second CC-022B feature, including additive migrations, specifications/plans/tasks/verification/operations notes, tests, commits, pushes, and one PR per repository. Do not merge, manually deploy, modify production settings/secrets/data, create real purchases, send external notifications, or enable scheduled automations.

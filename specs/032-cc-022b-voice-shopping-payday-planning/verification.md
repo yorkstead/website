@@ -31,3 +31,11 @@ Record command, result, revision, environment, skips and exact CI run. Do not ac
 - `bunx next build --webpack` — passed. The standard Turbopack build hit host worker process/port `EPERM` both in the default sandbox and after escalation.
 - CC-017 browser execution started, then stopped in its shared fixture before running scenarios because identical disposable `DATABASE_URL` and `TEST_DATABASE_URL` values were not configured. The local disposable database is unavailable; no screenshots were generated. CI PostgreSQL and browser checks remain pending the PR.
 - No production system, data, credential, external provider, or scheduled automation was accessed or changed.
+
+## Review corrections — 2026-10-29
+
+- Receipt confirmation now requires an entered, finite, nonnegative amount; a blank value does not create a command or zero-income record.
+- No repeat sends recurrenceRule as null, including ordinary edits and removal of an existing recurrence.
+- HTTP 202 is rendered as pending. The original command and idempotency key remain stored, and another item action is blocked until that key is reconciled. Network/provider uncertainty keeps the same recovery key; definitive HTTP 400/415/422 input/schema rejection clears the rejected payday key so corrected input can be submitted with a new key.
+- Added BFF status-preservation coverage and expanded the CC-017 Playwright scenario for blank receipt, recurrence removal, corrected payday input, 503 same-key recovery, 202 pending/retry, and blocking another action.
+- Local evidence on the correction worktree: scaffold check and 19-migration check passed; typecheck passed; lint had 0 errors and one pre-existing login-panel warning; full Bun suite 397 passed, 110 PostgreSQL-dependent skipped, 0 failed; BFF/schema tests 6 passed. Playwright discovered all 3 tests, but the shopping browser scenario stopped at the shared fixture guard because identical disposable DATABASE_URL and TEST_DATABASE_URL are unavailable. Turbopack build hit sandbox EPERM; webpack build failed when Next parsed TypeScript --showConfig. Exact-head CI must provide PostgreSQL/browser/build evidence before Website #79 is marked ready.
