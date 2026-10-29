@@ -2,6 +2,8 @@ export type LeadFollowUpQueryClient = {
   query: (query: string, params?: unknown[]) => Promise<unknown>;
 };
 
+export type EditableLeadStatus = "new" | "contacted" | "qualified" | "proposal" | "won" | "lost" | "archived";
+
 function resultRows(result: unknown): Array<Record<string, unknown>> {
   if (Array.isArray(result)) return result as Array<Record<string, unknown>>;
   if (result && typeof result === "object" && "rows" in result && Array.isArray((result as { rows?: unknown }).rows)) {
@@ -20,6 +22,21 @@ export async function saveLeadDetailsRecord(client: LeadFollowUpQueryClient, id:
     WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)
     RETURNING id
   `, [id, notes, followUpAt]);
+  return resultRows(result).length > 0;
+}
+
+export async function updateLeadStatusRecord(client: LeadFollowUpQueryClient, id: number, status: EditableLeadStatus) {
+  if (!Number.isSafeInteger(id) || id < 1) return false;
+  const result = await client.query(`
+    UPDATE contact_inquiries
+    SET status = $2,
+      archived_at = CASE WHEN $2 = 'archived' THEN COALESCE(archived_at, NOW()) ELSE NULL END,
+      follow_up_at = CASE WHEN $2 IN ('won', 'lost', 'archived') THEN NULL ELSE follow_up_at END,
+      updated_at = NOW()
+    WHERE id = $1
+      AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id)
+    RETURNING id
+  `, [id, status]);
   return resultRows(result).length > 0;
 }
 
