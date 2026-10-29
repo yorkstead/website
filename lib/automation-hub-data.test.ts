@@ -54,6 +54,14 @@ describe("Automation Hub data client", () => {
     expect((await getAutomationHubData()).state).toBe("degraded");
     globalThis.fetch = (async () => new Response("x".repeat(270000), { headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
     expect((await getAutomationHubData()).state).toBe("unavailable");
+    const oversizedChunkedBody = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("x".repeat(270000)));
+        controller.close();
+      },
+    });
+    globalThis.fetch = (async () => new Response(oversizedChunkedBody, { headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+    expect((await getAutomationHubData()).state).toBe("unavailable");
     globalThis.fetch = (async () => { throw new Error("offline"); }) as unknown as typeof fetch;
     expect((await getAutomationHubData()).state).toBe("unavailable");
   });
