@@ -181,11 +181,11 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await expect(createProposalForm.locator('select[name="state"]')).toHaveValue("sent");
   await createProposalForm.getByRole("button", { name: "Record proposal" }).click();
   await expect(page.getByText("$2,500.00")).toBeVisible();
-  const proposalEditor = page.getByRole("form", { name: "Edit sprint proposal" });
-  await proposalEditor.getByLabel("Proposal engagement").selectOption("system");
-  await proposalEditor.getByLabel("Proposal amount").fill("3250.75");
-  await proposalEditor.getByLabel("Proposal next action date").fill(offsetDateKey(4));
-  await proposalEditor.getByLabel("Proposal next action").fill("Reschedule system scope review");
+  const proposalEditor = page.locator('form[aria-label="Edit sprint proposal"]');
+  await proposalEditor.locator('select[name="engagementType"]').selectOption("system");
+  await proposalEditor.locator('input[name="amount"]').fill("3250.75");
+  await proposalEditor.locator('input[name="nextActionAt"]').fill(offsetDateKey(4));
+  await proposalEditor.locator('input[name="nextAction"]').fill("Reschedule system scope review");
   await proposalEditor.getByRole("button", { name: "Save proposal changes" }).click();
   await expect(page.getByText("$3,250.75")).toBeVisible();
 
@@ -195,27 +195,27 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await expect(page.getByText("Active proposal value").locator(".." )).toContainText("$3,250");
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   await page.getByText("Qualification, consultations & proposals").click();
-  const updatedEditor = page.getByRole("form", { name: "Edit system proposal" });
-  await updatedEditor.getByLabel("Proposal next action date").fill(offsetDateKey(6));
-  await updatedEditor.getByLabel("Proposal next action").fill("Review system scope after reschedule");
+  const updatedEditor = page.locator('form[aria-label="Edit system proposal"]');
+  await updatedEditor.locator('input[name="nextActionAt"]').fill(offsetDateKey(6));
+  await updatedEditor.locator('input[name="nextAction"]').fill("Review system scope after reschedule");
   await updatedEditor.getByRole("button", { name: "Save proposal changes" }).click();
-  await expect(updatedEditor.getByLabel("Proposal next action date")).toHaveValue(offsetDateKey(6));
-  await expect(updatedEditor.getByLabel("Proposal next action")).toHaveValue("Review system scope after reschedule");
+  await expect(updatedEditor.locator('input[name="nextActionAt"]')).toHaveValue(offsetDateKey(6));
+  await expect(updatedEditor.locator('input[name="nextAction"]')).toHaveValue("Review system scope after reschedule");
   await expect(page.getByText("Review system scope after reschedule", { exact: false })).toBeVisible();
-  await updatedEditor.getByLabel("Proposal next action date").fill("");
-  await updatedEditor.getByLabel("Proposal next action").fill("");
+  await updatedEditor.locator('input[name="nextActionAt"]').fill("");
+  await updatedEditor.locator('input[name="nextAction"]').fill("");
   await updatedEditor.getByRole("button", { name: "Save proposal changes" }).click();
   await expect(page.getByText("No next action", { exact: true })).toBeVisible();
-  await expect(updatedEditor.getByLabel("Proposal next action date")).toHaveValue("");
-  await expect(updatedEditor.getByLabel("Proposal next action")).toHaveValue("");
+  await expect(updatedEditor.locator('input[name="nextActionAt"]')).toHaveValue("");
+  await expect(updatedEditor.locator('input[name="nextAction"]')).toHaveValue("");
   await page.goto("/dashboard");
   await expect(page.getByRole("link").filter({ hasText: "Review system scope after reschedule" })).toHaveCount(0);
   await expect(page.getByText("Active proposal value").locator("..")).toContainText("$3,250");
 
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   await page.getByText("Qualification, consultations & proposals").click();
-  const proposalCard = page.getByRole("form", { name: "Edit system proposal" }).locator("..");
-  await proposalCard.getByLabel("Proposal state").selectOption("accepted");
+  const proposalCard = page.locator("article").filter({ has: page.locator('form[aria-label="Edit system proposal"]') });
+  await proposalCard.locator('select[name="state"]').selectOption("accepted");
   await proposalCard.getByRole("button", { name: "Update state" }).click();
   await expect(page.getByText("won", { exact: true }).first()).toBeVisible();
 
