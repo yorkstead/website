@@ -9,5 +9,5 @@
 - [x] T007 Add Website BFF, same-key recovery, anonymous denial assertion, responsive/refresh/payday browser coverage.
 - [x] T008 Run local checks and full Bun suites; disposable PostgreSQL/browser checks are queued for the PR CI environment because no local disposable database is configured.
 - [x] T009 Complete specs, operations and current handoff updates. Browser screenshots are deferred because the local owner E2E requires its disposable PostgreSQL credentials.
-- [x] T010 Hub PR #92 and dependent Website PR #79 are open; Hub #92 is currently ready for review and Website #79 remains draft. Their latest passing checks predate the current review corrections.
-- [ ] T011 Resolve Website review findings for receipt validation, recurrence clearing, 202 recovery, and payday input rejection; run exact-head PostgreSQL/browser/build CI before resolving threads or marking PR #79 ready.
+- [x] T010 Hub PR #92 and dependent Website PR #79 remain open and unmerged; both are ready for review after exact-head validation.
+- [x] T011 Fix receipt validation, recurrence clearing, 202 recovery, and payday input rejection. Website exact-head PostgreSQL/browser/build CI passes; review threads are resolved. See `verification.md`.
