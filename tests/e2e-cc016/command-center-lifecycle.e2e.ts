@@ -119,9 +119,10 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await expect(page.getByText("No project tasks yet.")).toBeVisible();
 
   const taskTitle = "CC-016 synthetic first delivery task";
+  const projectTasks = page.locator("#tasks");
   await page.getByPlaceholder("Add a project task…").fill(taskTitle);
   await page.getByRole("button", { name: "Add", exact: true }).first().click();
-  await expect(page.getByText(taskTitle, { exact: true })).toBeVisible();
+  await expect(projectTasks.getByText(taskTitle, { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Edit delivery" }).click();
   const milestoneSection = page.getByRole("heading", { name: "Milestones", exact: true }).locator("..");
@@ -141,7 +142,7 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
 
   await page.reload();
   await expect(page.getByRole("heading", { name: company })).toBeVisible();
-  await expect(page.getByText(taskTitle, { exact: true })).toBeVisible();
+  await expect(page.locator("#tasks").getByText(taskTitle, { exact: true })).toBeVisible();
   await expect(page.getByText("CC-016 synthetic milestone", { exact: true })).toBeVisible();
   await expect(page.getByText("CC-016 synthetic decision", { exact: true })).toBeVisible();
   await page.goto("/dashboard/leads?lead=999999999");
