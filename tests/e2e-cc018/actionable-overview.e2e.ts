@@ -179,23 +179,51 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await page.getByLabel("State", { exact: true }).selectOption("sent");
   await page.getByRole("button", { name: "Record proposal" }).click();
   await expect(page.getByText("$2,500.00")).toBeVisible();
+  const proposalEditor = page.getByRole("form", { name: "Edit sprint proposal" });
+  await proposalEditor.getByLabel("Proposal engagement").selectOption("system");
+  await proposalEditor.getByLabel("Proposal amount").fill("3250.75");
+  await proposalEditor.getByLabel("Proposal next action date").fill(offsetDateKey(4));
+  await proposalEditor.getByLabel("Proposal next action").fill("Reschedule system scope review");
+  await proposalEditor.getByRole("button", { name: "Save proposal changes" }).click();
+  await expect(page.getByText("$3,250.75")).toBeVisible();
+
   await page.goto("/dashboard");
-  const proposalAction = page.getByRole("link").filter({ hasText: "Review sprint scope" });
+  const proposalAction = page.getByRole("link").filter({ hasText: "Reschedule system scope review" });
   await expect(proposalAction).toHaveAttribute("href", `/dashboard/leads?lead=${leadId}`);
-  await expect(page.getByText("Active proposal value").locator(".." )).toContainText("$2,500");
+  await expect(page.getByText("Active proposal value").locator(".." )).toContainText("$3,250");
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   await page.getByText("Qualification, consultations & proposals").click();
-  const proposal = page.locator("form").filter({ has: page.getByRole("button", { name: "Update state" }) });
-  await proposal.getByLabel("Proposal state").selectOption("accepted");
-  await proposal.getByRole("button", { name: "Update state" }).click();
+  const updatedEditor = page.getByRole("form", { name: "Edit system proposal" });
+  await updatedEditor.getByLabel("Proposal next action date").fill(offsetDateKey(6));
+  await updatedEditor.getByLabel("Proposal next action").fill("Review system scope after reschedule");
+  await updatedEditor.getByRole("button", { name: "Save proposal changes" }).click();
+  await expect(updatedEditor.getByLabel("Proposal next action date")).toHaveValue(offsetDateKey(6));
+  await expect(updatedEditor.getByLabel("Proposal next action")).toHaveValue("Review system scope after reschedule");
+  await expect(page.getByText("Review system scope after reschedule", { exact: false })).toBeVisible();
+  await updatedEditor.getByLabel("Proposal next action date").fill("");
+  await updatedEditor.getByLabel("Proposal next action").fill("");
+  await updatedEditor.getByRole("button", { name: "Save proposal changes" }).click();
+  await expect(page.getByText("No next action", { exact: true })).toBeVisible();
+  await expect(updatedEditor.getByLabel("Proposal next action date")).toHaveValue("");
+  await expect(updatedEditor.getByLabel("Proposal next action")).toHaveValue("");
+  await page.goto("/dashboard");
+  await expect(page.getByRole("link").filter({ hasText: "Review system scope after reschedule" })).toHaveCount(0);
+  await expect(page.getByText("Active proposal value").locator("..")).toContainText("$3,250");
+
+  await page.goto(`/dashboard/leads?lead=${leadId}`);
+  await page.getByText("Qualification, consultations & proposals").click();
+  const proposalCard = page.getByRole("form", { name: "Edit system proposal" }).locator("..");
+  await proposalCard.getByLabel("Proposal state").selectOption("accepted");
+  await proposalCard.getByRole("button", { name: "Update state" }).click();
   await expect(page.getByText("won", { exact: true }).first()).toBeVisible();
 
   await page.goto("/dashboard");
-  await expect(page.getByText("Won proposals: $2,500")).toBeVisible();
+  await expect(page.getByText("Won proposals: $3,250.75")).toBeVisible();
   await expect(page.getByText("$8,000", { exact: false })).not.toBeVisible();
   const verifyPool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
   try {
-    const persisted = await verifyPool.query<{ status: string; industry: string; amount_cents: string; proposal_state: string }>(`SELECT i.status,i.industry,p.amount_cents,p.state AS proposal_state FROM contact_inquiries i JOIN crm_proposals p ON p.lead_id=i.id WHERE i.id=$1`, [leadId]);
-    expect(persisted.rows[0]).toMatchObject({ status: "won", industry: "manufacturing", amount_cents: "250000", proposal_state: "accepted" });
+    const persisted = await verifyPool.query<{ status: string; industry: string; amount_cents: string; proposal_state: string; engagement_type: string; next_action: string; next_action_at: Date | null; proposal_count: string }>(`SELECT i.status,i.industry,p.amount_cents,p.state AS proposal_state,p.engagement_type,p.next_action,p.next_action_at,
+      (SELECT count(*)::text FROM crm_proposals WHERE lead_id=i.id) AS proposal_count FROM contact_inquiries i JOIN crm_proposals p ON p.lead_id=i.id WHERE i.id=$1`, [leadId]);
+    expect(persisted.rows[0]).toMatchObject({ status: "won", industry: "manufacturing", amount_cents: "325075", proposal_state: "accepted", engagement_type: "system", next_action: "", next_action_at: null, proposal_count: "1" });
   } finally { await verifyPool.end(); }
 });

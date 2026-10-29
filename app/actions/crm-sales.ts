@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getOwnerSession } from "@/lib/owner-session";
 import { parseLeadId } from "@/lib/lead-rules";
-import { parseLeadQualification, parseProposalInput, saveLeadQualification, saveProposal, proposalStates, updateProposalState } from "@/lib/crm-sales";
+import { parseLeadQualification, parseProposalInput, parseProposalUpdateInput, saveLeadQualification, saveProposal, proposalStates, updateProposal, updateProposalState } from "@/lib/crm-sales";
 
 async function requireOwner() {
   if (!await getOwnerSession(await headers())) throw new Error("Unauthorized");
@@ -35,5 +35,20 @@ export async function updateProposalStateAction(formData: FormData) {
   const state = String(formData.get("state") ?? "");
   if (!leadId || !proposalStates.includes(state as typeof proposalStates[number])) throw new Error("Invalid proposal update.");
   if (!await updateProposalState(leadId, proposalId, state as typeof proposalStates[number])) throw new Error("This proposal or inquiry is no longer available.");
+  revalidatePath("/dashboard"); revalidatePath("/dashboard/leads");
+}
+
+export async function updateProposalAction(formData: FormData) {
+  await requireOwner();
+  const input = parseProposalUpdateInput({
+    leadId: formData.get("leadId"),
+    proposalId: formData.get("proposalId"),
+    engagementType: formData.get("engagementType"),
+    amount: formData.get("amount"),
+    nextAction: formData.get("nextAction"),
+    nextActionAt: formData.get("nextActionAt"),
+  });
+  if (!input) throw new Error("Enter a valid proposal engagement, amount, and next action.");
+  if (!await updateProposal(input)) throw new Error("This proposal or inquiry is no longer available or has been retired.");
   revalidatePath("/dashboard"); revalidatePath("/dashboard/leads");
 }

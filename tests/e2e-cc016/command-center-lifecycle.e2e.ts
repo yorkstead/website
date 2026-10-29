@@ -92,7 +92,7 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await expect(page.locator(`#lead-${leadId}`)).toBeVisible();
   await page.locator(`#lead-${leadId}`).getByRole("button", { name: "Mark follow-up complete" }).click();
   await page.goto(`/dashboard/leads?lead=${leadId}`);
-  await expect(page.locator(`#lead-${leadId} input[name='followUpAt']`)).toHaveValue("");
+  await expect(page.getByLabel("Follow-up date", { exact: true })).toHaveValue("");
   const completed = await context.request.get(`/dashboard/leads?lead=${leadId}`);
   expect(completed.status()).toBe(200);
 
@@ -100,12 +100,12 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   expect(beforeInvalid.status()).toBe(400);
   const conversionPool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
   try {
-    const eligible = await conversionPool.query<{ status: string; converted_project_id: string | null; retired: boolean }>(
-      `SELECT status,converted_project_id,
+    const eligible = await conversionPool.query<{ status: string; converted_project_id: string | null; follow_up_at: Date | null; retired: boolean }>(
+      `SELECT status,converted_project_id,follow_up_at,
          EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AS retired
        FROM contact_inquiries WHERE id=$1`, [leadId],
     );
-    expect(eligible.rows[0]).toEqual({ status: "qualified", converted_project_id: null, retired: false });
+    expect(eligible.rows[0]).toEqual({ status: "qualified", converted_project_id: null, follow_up_at: null, retired: false });
   } finally { await conversionPool.end(); }
   await lead.getByRole("button", { name: "Convert to project" }).click();
   await expect.poll(async () => {

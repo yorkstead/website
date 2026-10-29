@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseLeadQualification, parseProposalInput, proposalStates } from "@/lib/crm-sales";
+import { parseLeadQualification, parseProposalInput, parseProposalUpdateInput, proposalStates } from "@/lib/crm-sales";
 
 describe("CRM sales input rules", () => {
   test("bounds qualification fields and accepts only supported industry keys", () => {
@@ -21,5 +21,14 @@ describe("CRM sales input rules", () => {
     expect(parseProposalInput({ leadId: 1, engagementType: "custom", amount: "100.25", state: "sent", nextActionAt: "tomorrow" })).toBeNull();
     expect(parseProposalInput({ leadId: 1, engagementType: "custom", amount: "100.25", state: "sent", nextActionAt: "2026-02-30" })).toBeNull();
     expect(parseProposalInput({ leadId: 1, engagementType: "custom", amount: "1000000000", state: "sent" })).toBeNull();
+  });
+
+  test("validates proposal edits and allows explicitly clearing the next action and date", () => {
+    expect(parseProposalUpdateInput({ leadId: "7", proposalId: "c7c93c25-8d38-4dd9-b45d-541f0fe7b848", engagementType: "system", amount: "7500.25", nextAction: "  Confirm architecture review  ", nextActionAt: "2026-11-05" })).toMatchObject({
+      leadId: 7, proposalId: "c7c93c25-8d38-4dd9-b45d-541f0fe7b848", engagementType: "system", amountCents: 750025, nextAction: "Confirm architecture review", nextActionAt: "2026-11-05T12:00:00.000Z",
+    });
+    expect(parseProposalUpdateInput({ leadId: 7, proposalId: "bad-id", engagementType: "system", amount: "7500", nextAction: "", nextActionAt: "" })).toBeNull();
+    expect(parseProposalUpdateInput({ leadId: 7, proposalId: "c7c93c25-8d38-4dd9-b45d-541f0fe7b848", engagementType: "system", amount: "7500", nextAction: "x".repeat(1001), nextActionAt: "" })).toBeNull();
+    expect(parseProposalUpdateInput({ leadId: 7, proposalId: "c7c93c25-8d38-4dd9-b45d-541f0fe7b848", engagementType: "system", amount: "7500", nextAction: "", nextActionAt: "" })).toMatchObject({ nextAction: "", nextActionAt: null });
   });
 });

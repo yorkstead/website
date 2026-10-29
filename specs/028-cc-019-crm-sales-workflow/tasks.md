@@ -8,3 +8,5 @@
 - [x] T006 — Add unit, disposable PostgreSQL, auth, retirement, conversion, empty-state, and browser regressions.
 - [x] T007 — Run local repository checks and review security/spec convergence; PostgreSQL/browser/build evidence remains pending CI where environment-blocked.
 - [x] T008 — Update CURRENT.md and open `CC-019: CRM Pipeline & Sales Workflow`; do not merge or manually deploy.
+- [x] T009 — Fix the CC-016 follow-up lifecycle locator while retaining the empty-field and database-null assertions; add owner-only proposal edits that preserve identity/state and validate engagement, amount, and optional next action/date.
+- [ ] T010 — Cover proposal edits, rescheduling/clearing, recalculated totals, owner authorization, retirement exclusion, and follow-up completion in unit, disposable PostgreSQL, and isolated browser tests; reconcile review findings and rerun full CI.

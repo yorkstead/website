@@ -69,11 +69,15 @@ beforeAll(async () => {
   );
 
   const leads = await import("@/app/actions/leads");
+  const crmSales = await import("@/app/actions/crm-sales");
   leadActions = [
     { name: "update lead status", action: leads.updateLeadStatus },
     { name: "save lead details", action: leads.saveLeadDetails },
     { name: "complete lead follow-up", action: (formData) => leads.completeLeadFollowUp({ error: null }, formData).then(() => undefined) },
     { name: "convert lead to project", action: (formData) => leads.convertLeadToProject({ error: null }, formData).then(() => undefined) },
+    { name: "create CRM proposal", action: crmSales.createProposalAction },
+    { name: "edit CRM proposal", action: crmSales.updateProposalAction },
+    { name: "update CRM proposal state", action: crmSales.updateProposalStateAction },
   ];
 });
 

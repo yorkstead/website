@@ -31,6 +31,18 @@ export type CrmProposal = {
   nextActionAt: string | null;
 };
 
+export type CrmSalesQueryClient = {
+  query: (query: string, params?: unknown[]) => Promise<unknown>;
+};
+
+function resultRows(result: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(result)) return result as Array<Record<string, unknown>>;
+  if (result && typeof result === "object" && "rows" in result && Array.isArray((result as { rows?: unknown }).rows)) {
+    return (result as { rows: Array<Record<string, unknown>> }).rows;
+  }
+  return [];
+}
+
 const fields: Array<[keyof LeadQualification, string]> = [
   ["industry", "industry"], ["pain", "pain"], ["companySize", "company_size"], ["urgency", "urgency"],
   ["decisionMaker", "decision_maker"], ["budgetIndication", "budget_indication"], ["nextStep", "next_step"],
@@ -61,6 +73,24 @@ export function parseProposalInput(value: Record<string, unknown>) {
   if (!Number.isSafeInteger(amountCents) || amountCents <= 0 || amountCents > 100000000000) return null;
   if (dateKey && (!nextActionAt || !Number.isFinite(nextActionAt.getTime()))) return null;
   return { leadId, engagementType: engagementType as EngagementType, state: state as ProposalState, amountCents, nextAction, nextActionAt: nextActionAt?.toISOString() ?? null };
+}
+
+export function parseProposalUpdateInput(value: Record<string, unknown>) {
+  const leadId = Number(value.leadId);
+  const proposalId = String(value.proposalId ?? "");
+  const amount = String(value.amount ?? "").trim();
+  const engagementType = String(value.engagementType ?? "");
+  const nextAction = typeof value.nextAction === "string" ? value.nextAction.trim() : "";
+  const dateKey = typeof value.nextActionAt === "string" ? value.nextActionAt : "";
+  const nextActionAt = dateKey ? isValidDateKey(dateKey) ? new Date(`${dateKey}T12:00:00Z`) : null : null;
+  if (!Number.isSafeInteger(leadId) || leadId < 1 || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(proposalId)) return null;
+  if (!engagementTypes.includes(engagementType as EngagementType) || !/^\d{1,9}(?:\.\d{1,2})?$/.test(amount)) return null;
+  if (nextAction.length > 1000) return null;
+  const [wholeDollars, fractionalDollars = ""] = amount.split(".");
+  const amountCents = Number(wholeDollars) * 100 + Number(fractionalDollars.padEnd(2, "0"));
+  if (!Number.isSafeInteger(amountCents) || amountCents <= 0 || amountCents > 100000000000) return null;
+  if (dateKey && (!nextActionAt || !Number.isFinite(nextActionAt.getTime()))) return null;
+  return { leadId, proposalId, engagementType: engagementType as EngagementType, amountCents, nextAction, nextActionAt: nextActionAt?.toISOString() ?? null };
 }
 
 export async function saveLeadQualification(leadId: number, qualification: LeadQualification) {
@@ -104,6 +134,17 @@ export async function updateProposalState(leadId: number, proposalId: string, st
     FROM changed p WHERE i.id=p.lead_id RETURNING i.id
   ) SELECT p.id FROM changed p JOIN touched t ON t.id=p.lead_id`, [leadId, proposalId, state]);
   return rows.length > 0;
+}
+
+export async function updateProposal(input: NonNullable<ReturnType<typeof parseProposalUpdateInput>>, client?: CrmSalesQueryClient) {
+  const sql = client ?? await contactDatabase();
+  const result = await sql.query(`UPDATE crm_proposals p SET engagement_type=$3, amount_cents=$4,
+      next_action=$5, next_action_at=$6::timestamptz, updated_at=NOW()
+    FROM contact_inquiries i
+    WHERE p.id=$2 AND p.lead_id=$1 AND i.id=p.lead_id AND i.status <> 'archived'
+      AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)
+    RETURNING p.id`, [input.leadId, input.proposalId, input.engagementType, input.amountCents, input.nextAction, input.nextActionAt]);
+  return resultRows(result).length > 0;
 }
 
 export async function listLeadProposals(leadId: number): Promise<CrmProposal[]> {
