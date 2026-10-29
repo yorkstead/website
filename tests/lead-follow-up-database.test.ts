@@ -45,9 +45,9 @@ describe("lead follow-up lifecycle persistence", () => {
       const list = async (followUp: "overdue" | "today" | "upcoming") => {
         const queries = buildContactInquiryPageQueries({ followUp, page: 1, pageSize: 100 });
         const count = await connection.query<{ count: number }>(queries.count.text, queries.count.params);
-        const rows = await connection.query<{ id: number }>(queries.records.text, queries.records.params);
+        const rows = await connection.query<{ id: string }>(queries.records.text, queries.records.params);
         expect(Number(count.rows[0]?.count ?? 0)).toBe(rows.rows.length);
-        return rows.rows.map((row) => row.id);
+        return rows.rows.map((row) => Number(row.id));
       };
 
       expect(await list("overdue")).toEqual([ids.get("Synthetic overdue")!]);
