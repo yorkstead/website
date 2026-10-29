@@ -2,10 +2,11 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
 import { buildContactInquiryPageQueries } from "@/lib/contact-inquiries";
-import { completeLeadFollowUpRecord, saveLeadDetailsRecord } from "@/lib/lead-follow-up";
+import { completeLeadFollowUpRecord, saveLeadDetailsRecord, updateLeadStatusRecord } from "@/lib/lead-follow-up";
 import { followUpTimestamp } from "@/lib/lead-rules";
+import { disposableTestDatabaseURL } from "./fixtures/disposable-database";
 
-const databaseURL = process.env.TEST_DATABASE_URL;
+const databaseURL = disposableTestDatabaseURL();
 const databaseTest = databaseURL ? test : test.skip;
 const pool = databaseURL ? new Pool({ connectionString: databaseURL }) : null;
 
@@ -65,6 +66,13 @@ describe("lead follow-up lifecycle persistence", () => {
       expect(await completeLeadFollowUpRecord(queryClient, closedId)).toBe(false);
       expect(await completeLeadFollowUpRecord(queryClient, 999999999)).toBe(false);
       expect(await list("today")).toEqual([]);
+
+      expect(await updateLeadStatusRecord(queryClient, retiredId, "qualified")).toBe(false);
+      const retiredStatus = await connection.query<{ status: string }>("SELECT status FROM contact_inquiries WHERE id=$1", [retiredId]);
+      expect(retiredStatus.rows[0]?.status).toBe("new");
+      expect(await updateLeadStatusRecord(queryClient, ids.get("Synthetic future")!, "won")).toBe(true);
+      const closed = await connection.query<{ status: string; follow_up_at: Date | null }>("SELECT status,follow_up_at FROM contact_inquiries WHERE id=$1", [ids.get("Synthetic future")!]);
+      expect(closed.rows[0]).toEqual({ status: "won", follow_up_at: null });
     } finally {
       await connection.query("ROLLBACK");
       connection.release();

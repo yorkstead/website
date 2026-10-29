@@ -108,6 +108,11 @@ jobs:
           NODE_ENV: development
         run: bunx playwright test -c playwright.cc012.config.ts
 
+      - name: Verify Command Center lead-to-project lifecycle
+        env:
+          NODE_ENV: development
+        run: bunx playwright test -c playwright.cc016.config.ts
+
       - name: Build without production runtime secrets
         run: bun run build
 

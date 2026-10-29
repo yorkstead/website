@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { contactDatabase, type LeadStatus } from "@/lib/contact-inquiries";
 import { followUpTimestamp, leadStatuses, parseLeadId } from "@/lib/lead-rules";
 import { convertLeadRecord, LeadConversionError, type LeadConversionQueryClient } from "@/lib/lead-conversion";
-import { completeLeadFollowUpRecord, saveLeadDetailsRecord, type LeadFollowUpQueryClient } from "@/lib/lead-follow-up";
+import { completeLeadFollowUpRecord, saveLeadDetailsRecord, updateLeadStatusRecord, type LeadFollowUpQueryClient } from "@/lib/lead-follow-up";
 import { getOwnerSession } from "@/lib/owner-session";
 
 async function ownerSql() {
@@ -27,13 +27,8 @@ export async function updateLeadStatus(formData: FormData) {
   const id = leadId(formData);
   const status = String(formData.get("status")) as LeadStatus;
   if (!leadStatuses.has(status)) throw new Error("Invalid lead update");
-  await sql`
-    UPDATE contact_inquiries
-    SET status = ${status}, archived_at = CASE WHEN ${status} = 'archived' THEN COALESCE(archived_at, NOW()) ELSE NULL END,
-      follow_up_at = CASE WHEN ${status} IN ('won', 'lost', 'archived') THEN NULL ELSE follow_up_at END,
-      updated_at = NOW()
-    WHERE id = ${id}
-  `;
+  const updated = await updateLeadStatusRecord(sql as unknown as LeadFollowUpQueryClient, id, status);
+  if (!updated) throw new Error("This inquiry is no longer available or has been retired.");
   revalidatePath("/dashboard"); revalidatePath("/dashboard/leads");
 }
 

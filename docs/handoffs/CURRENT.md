@@ -1,5 +1,16 @@
 # Current handoff
 
+## CC-016 Command Center Operational Validation — 2026-10-29
+
+- User authorized CC-016 implementation, disposable PostgreSQL/browser tests, requested checks/documentation, branch commits/push, and opening a PR titled `CC-016: Command Center Operational Validation`. Do not merge, manually deploy, or mutate production data. The real production inquiry remains untouched.
+- PR #72 is open and unmerged: `https://github.com/yorkstead/website/pull/72`. Exact PR-head CI #308 passed on `31ba7578f5540900435fabb2f033b5b26db87184`: scaffold, dependency audit, migration plan/apply, complete deterministic/PostgreSQL integration suite, lint/typecheck, standard browser tests, all five isolated owner/customer browser workflows, complete CC-016 lifecycle, production build, and clean generated-worktree check. Run evidence: `https://github.com/yorkstead/website/actions/runs/40822153419`.
+- Lifecycle exercised synthetic public submission and duplicate repeat, persisted one PostgreSQL inquiry, CRM visibility, status/notes, follow-up scheduling/completion/counts, duplicate-safe project conversion, workspace load, task/milestone/decision writes, exact source link, server persistence and reload, and missing lead/project recovery.
+- Confirmed integration fixes: owner status SQL refuses retired/tombstoned inquiries; conversion merges JSON into an existing workspace without nulling prior `data`. Database tests cover empty/populated workspace, idempotent conversion, and retired/archived/missing cases. Conversion tests use rollback rather than deleting the workspace row.
+- Browser fixture uses fictional `example.test` data only on an identical loopback disposable database; it snapshots/restores workspace and removes only exact synthetic inquiry/auth rows. No migration added. Owner-only authorization, tenant isolation, retirement protections and customer publication gates remain unchanged.
+- Local evidence: scaffold (26 active specs), all 18 migration checks, lint (one pre-existing `components/login-panel.tsx:62` warning), typecheck, `bun test` (369 passed / 109 DB-dependent skipped / 0 failed), standard Playwright (32/32), and `git diff --check`. Local DB/Docker unavailable; local build hits worker-port `EPERM` and webpack TypeScript-config parsing limitation. CI #308 successfully ran all PostgreSQL, browser and production-build checks.
+- Validation matrix, read-only production smoke checklist and rollback are in `specs/025-cc-016-command-center-validation/verification.md`. After a separately authorized deployment, inspect only: deployed SHA/health, public form fields without submitting, owner CRM/follow-up views without changing the inquiry, project/source/tasks/milestones/decisions without saving, recovery links, customer publication gates, and error metrics. Revert CC-016 code/test/docs commits for rollback; no migration or production data cleanup is required.
+- The unrelated untracked `website.code-workspace` remains preserved. No production operation, merge, or manual deployment was performed.
+
 ## Urgent contact inquiry persistence fix — 2026-10-29
 
 - User authorizes a focused implementation, disposable PostgreSQL integration testing, required checks, push, and an urgent fix PR. Do not modify production data/schema, merge, or manually deploy.

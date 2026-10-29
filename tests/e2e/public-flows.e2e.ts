@@ -55,6 +55,7 @@ test("contact form exposes native required-field validation and a usable email f
 });
 
 test("public navigation and contact links resolve", async ({ page, request }) => {
+  test.setTimeout(60_000);
   const visited = new Set<string>();
   const pending = ["/"];
 

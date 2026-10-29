@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { createPagination } from "@/lib/pagination";
+import { disposablePostgresQueryFunction, isLoopbackDisposableDatabase } from "@/lib/contact-database";
 import type { WorkflowAuditIntake } from "@/lib/workflow-audit";
 import type { ProductInquiryIntake } from "@/lib/product-inquiry";
 
@@ -57,6 +58,7 @@ export type ContactInquiry = {
 export async function contactDatabase() {
   const databaseURL = process.env.DATABASE_URL;
   if (!databaseURL || databaseURL === "[SENSITIVE]") throw new Error("DATABASE_URL is not configured");
+  if (isLoopbackDisposableDatabase(databaseURL)) return disposablePostgresQueryFunction(databaseURL);
   return neon(databaseURL);
 }
 
