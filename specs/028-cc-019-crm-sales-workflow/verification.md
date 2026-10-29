@@ -14,7 +14,7 @@
 
 ## CI evidence
 
-PR [#75](https://github.com/yorkstead/website/pull/75) is open against `main`. Its initial exact head `29e0708c8da836e0f6ed9566948727358ec66daa` queued CI run [40867875202](https://github.com/yorkstead/website/actions/runs/40867875202); Vercel preview comments passed and the preview was created. CI must pass migration apply-twice, database integration tests, standard browser tests, the isolated CC-018/019 owner workflow, production build, and generated-worktree check before this verification is complete. Do not merge or manually deploy.
+PR [#75](https://github.com/yorkstead/website/pull/75) is open against `main`. The Vercel review bot added corrections for saved-consultation deep links and the test fixture service slug; current PR head is `66bd6384caf5eb011131689f742ef340bf0dcc72`. Earlier CI run [40868543028](https://github.com/yorkstead/website/actions/runs/40868543028) reached the CC-018/019 owner workflow and failed because its fixture service slug violated `consultations_service_slug_check`; the current head corrects that fixture. Current exact-head CI run [40869440315](https://github.com/yorkstead/website/actions/runs/40869440315) concluded `action_required` with no jobs created. The Vercel status passed. GitHub workflow approval is therefore still needed before migration apply-twice, database integration, browser, build, and generated-worktree evidence can be completed. Do not merge or manually deploy.
 
 ## Acceptance evidence map
 
