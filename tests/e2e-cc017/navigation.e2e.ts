@@ -51,6 +51,7 @@ test("owner navigation covers destinations, active state, collapse, and persiste
       if (label !== "CRM") await expect(link).toHaveAttribute("aria-current", "page");
     } else if (label === "Account & passkeys") {
       // The account destination intentionally lives outside the dashboard layout.
+      await expect(page.getByRole("heading", { name: "Your passkeys" })).toBeVisible();
     } else if (label === "Insights" || label === "Marketing" || label === "Operations") {
       await expect(nav.getByRole("link", { name: "Insights", exact: true })).toHaveAttribute("aria-current", "page");
     } else {
@@ -65,6 +66,18 @@ test("owner navigation covers destinations, active state, collapse, and persiste
   await expect(page).toHaveURL(/\/dashboard\/leads\?lead=731&followUp=upcoming/);
   await expect(nav.getByRole("link", { name: "CRM", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Upcoming follow-ups", exact: true })).toHaveAttribute("aria-current", "page");
+
+  await page.goto("/dashboard/leads?followUp=overdue");
+  await expect(nav.getByRole("link", { name: "Overdue follow-ups", exact: true })).toHaveAttribute("aria-current", "page");
+  const documentTimeOrigin = await page.evaluate(() => performance.timeOrigin);
+  await page.locator("main nav").getByRole("link", { name: /Today/ }).click();
+  await expect(page).toHaveURL(/\/dashboard\/leads\?followUp=today/);
+  await expect(nav.getByRole("link", { name: "Due today", exact: true })).toHaveAttribute("aria-current", "page");
+  expect(await page.evaluate(() => performance.timeOrigin)).toBe(documentTimeOrigin);
+  await page.locator("main nav").getByRole("link", { name: /Upcoming/ }).click();
+  await expect(page).toHaveURL(/\/dashboard\/leads\?followUp=upcoming/);
+  await expect(nav.getByRole("link", { name: "Upcoming follow-ups", exact: true })).toHaveAttribute("aria-current", "page");
+
   await page.goto("/dashboard?project=cc017-navigation-deep-link");
   await expect(page).toHaveURL(/\/dashboard\?project=cc017-navigation-deep-link/);
   await expect(page.getByRole("alert").filter({ hasText: "Project link not found" })).toBeVisible();
@@ -116,4 +129,37 @@ test("mobile drawer supports keyboard focus, Escape, backdrop, and route selecti
     .click({ position: { x: 350, y: 200 } });
   await expect(page.getByRole("dialog", { name: "Yorkstead navigation" })).toBeHidden();
   await expect(opener).toBeFocused();
+});
+
+test("print media hides dashboard navigation and preserves marketing one-sheet pages", async ({ page, context }) => {
+  expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).status()).toBe(200);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/dashboard/marketing/one-sheet");
+
+  const navigation = page.getByRole("navigation", { name: "Primary and tools navigation" });
+  const pages = page.locator(".print-page");
+  await expect(navigation).toBeVisible();
+  await expect(pages).toHaveCount(2);
+
+  await page.emulateMedia({ media: "print" });
+  await expect(page.locator("#dashboard-navigation")).toBeHidden();
+  await expect(pages.nth(0)).toBeVisible();
+  await expect(pages.nth(1)).toBeVisible();
+
+  await page.emulateMedia({ media: "screen" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const opener = page.getByRole("button", { name: "Open navigation menu" });
+  await expect(opener).toBeVisible();
+  await opener.click();
+  const drawer = page.getByRole("dialog", { name: "Yorkstead navigation" });
+  const backdrop = page.getByRole("button", { name: "Dismiss navigation backdrop" });
+  await expect(drawer).toBeVisible();
+  await expect(backdrop).toBeVisible();
+
+  await page.emulateMedia({ media: "print" });
+  await expect(drawer).toBeHidden();
+  await expect(backdrop).toBeHidden();
+  await expect(opener).toBeHidden();
+  await expect(pages.nth(0)).toBeVisible();
+  await expect(pages.nth(1)).toBeVisible();
 });

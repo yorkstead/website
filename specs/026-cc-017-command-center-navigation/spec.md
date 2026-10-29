@@ -10,8 +10,9 @@ Give owners one predictable Yorkstead navigation system across the Command Cente
 - Provide expanded icon-and-label navigation and a persisted collapsed icon-only mode with accessible names and tooltips.
 - Provide a mobile drawer with menu, close, backdrop, Escape, focus handling, and route-change close behavior.
 - Primary destinations: Overview, CRM, Projects, Tasks, and Insights. CRM follow-ups and consultations; Insights analytics, marketing, and operations; existing admin/tools routes remain reachable in a secondary section.
-- Keep current route handlers, server authorization, tenant isolation, customer publication gates, CRM search parameters, and project deep links unchanged.
-- Add isolated authenticated browser coverage for active links, all navigation destinations, collapse and reload persistence, mobile drawer, and keyboard access.
+- Keep current route handlers, server authorization, tenant isolation, customer publication gates, CRM search parameters, and project deep links unchanged. Sidebar follow-up state must track App Router query-only navigation from CRM filters.
+- Hide the shared sidebar, mobile header, drawer, and backdrop from print while preserving the printable content on `/dashboard/marketing/one-sheet`.
+- Add isolated authenticated browser coverage for active links, all navigation destinations, query-only CRM filter transitions, collapse and reload persistence, mobile drawer, keyboard access, and print media.
 
 ## Acceptance criteria
 
@@ -20,10 +21,13 @@ Give owners one predictable Yorkstead navigation system across the Command Cente
 - A3: On narrow viewports the sidebar is available as an accessible slide-out drawer. It opens and closes by button, Escape, backdrop, and route selection; keyboard focus is visible and moves into/restores from the drawer.
 - A4: Overview, CRM, Projects, Tasks, and Insights destinations resolve to their existing pages or workspace anchors. Leads, follow-up query links, consultations, analytics, marketing, operations, Client Access, Client Publishing, Portal Preview, Portal Readiness, Customer Communications, account, workspace settings, and existing external operations tools remain reachable.
 - A5: Existing CRM query parameters and project deep links are preserved when loaded directly and continue to work with shared navigation present.
+- A5a: When a CRM in-page follow-up filter changes only the query string through App Router navigation, the matching sidebar filter becomes active without a full reload.
 - A6: Existing authentication, tenant checks, customer publication gates, business logic, workspace data and widgets are not rewritten.
 - A7: Browser tests cover active links and destinations, collapse, persistence, mobile drawer behavior, and keyboard operation.
 - A8: Scaffold, lint, typecheck, unit, browser, build, migration validation, and diff checks are recorded. No database change is introduced.
 - A9: Open `CC-017: Simplify Command Center Navigation`; do not merge, manually deploy, or modify production data.
+- A10: Print media hides the shared sidebar, mobile header, drawer, and backdrop. The one-sheet's intended print pages remain visible and free of dashboard navigation.
+- A11: The Account & Passkeys browser scenario verifies the `/account` destination separately because the account route is outside the dashboard layout, then returns to `/dashboard` before checking dashboard navigation again.
 
 ## Constraints and non-goals
 

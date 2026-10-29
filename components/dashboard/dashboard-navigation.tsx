@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Activity,
   BellRing,
@@ -113,18 +113,17 @@ function LinkItem({
 
 export function DashboardNavigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [collapsed, setCollapsed] = useState(false);
   const [preferenceReady, setPreferenceReady] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hash, setHash] = useState("");
-  const [search, setSearch] = useState("");
   const openerRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const closeDrawer = useCallback((href?: string) => {
     if (href) {
       const destination = new URL(href, window.location.origin);
       setHash(destination.hash);
-      setSearch(destination.search);
     }
     setMobileOpen(false);
     openerRef.current?.focus();
@@ -142,7 +141,6 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
   useEffect(() => {
     const closeOnHistoryNavigation = () => {
       setHash(window.location.hash);
-      setSearch(window.location.search);
       closeDrawer();
     };
     window.addEventListener("popstate", closeOnHistoryNavigation);
@@ -150,13 +148,10 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
   }, [closeDrawer]);
 
   useEffect(() => {
-    const syncLocation = () => {
-      setHash(window.location.hash);
-      setSearch(window.location.search);
-    };
-    syncLocation();
-    window.addEventListener("hashchange", syncLocation);
-    return () => window.removeEventListener("hashchange", syncLocation);
+    const syncHash = () => setHash(window.location.hash);
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
   }, []);
 
   useEffect(() => {
@@ -204,7 +199,7 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
     const active = onOverview && ["Overview", "Projects", "Tasks"].includes(item.label)
       ? () => item.label === "Overview" ? !["#projects", "#tasks"].includes(hash) : item.label === "Projects" ? hash === "#projects" : hash === "#tasks"
       : item.active;
-    return <LinkItem key={`${item.label}-${item.href}`} item={{ ...item, active }} pathname={pathname} query={new URLSearchParams(search)} collapsed={compact} onNavigate={closeDrawer} nested={nested} />;
+    return <LinkItem key={`${item.label}-${item.href}`} item={{ ...item, active }} pathname={pathname} query={new URLSearchParams(searchParams.toString())} collapsed={compact} onNavigate={closeDrawer} nested={nested} />;
   };
 
   return (
@@ -213,14 +208,14 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
         type="button"
         aria-label="Dismiss navigation backdrop"
         tabIndex={-1}
-        className={cn("fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[1px] lg:hidden", mobileOpen ? "block" : "hidden")}
+        className={cn("fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[1px] lg:hidden print:hidden", mobileOpen ? "block" : "hidden")}
         onClick={() => closeDrawer()}
       />
       <aside
         ref={drawerRef}
         id="dashboard-navigation"
         className={cn(
-          "z-50 flex w-72 max-w-[calc(100vw-1rem)] shrink-0 flex-col border-r border-border/70 bg-card/95 px-3 py-4 shadow-xl backdrop-blur-xl transition-[width,transform] duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none",
+          "z-50 flex w-72 max-w-[calc(100vw-1rem)] shrink-0 flex-col border-r border-border/70 bg-card/95 px-3 py-4 shadow-xl backdrop-blur-xl transition-[width,transform] duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none print:hidden",
           compact && "lg:w-[4.5rem]",
           mobileOpen ? "fixed inset-y-0 left-0 translate-x-0" : "hidden -translate-x-full lg:flex",
         )}
@@ -267,7 +262,7 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 bg-background/90 px-4 backdrop-blur lg:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 bg-background/90 px-4 backdrop-blur lg:hidden print:hidden">
           <button ref={openerRef} type="button" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-controls="dashboard-navigation" aria-label="Open navigation menu" className="grid size-10 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Menu className="size-5" />
           </button>

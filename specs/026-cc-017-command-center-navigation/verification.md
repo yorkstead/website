@@ -28,6 +28,20 @@ Record local environment limitations and exact-head CI evidence after running ch
 - `bun run build` — blocked by Turbopack worker-port `EPERM` in the sandbox; the webpack fallback (`bunx next build --webpack`) fails parsing TypeScript `--showConfig`. Typecheck passes. Exact-head CI is expected to provide build and isolated browser evidence.
 - `git diff --check` — pass before the final compatibility adjustment; repeat before commit.
 
+## PR #73 review follow-up
+
+- `bun run yorkstead:check` — pass; 27 active spec directories.
+- `bun run db:migrate:check` — pass; 18 migrations validated.
+- `bun run lint` — pass; one existing warning at `components/login-panel.tsx:62`.
+- `bun run typecheck` — pass.
+- `bun test` — 369 passed, 109 PostgreSQL-dependent skipped, 0 failed.
+- `bun run test:e2e` — 32/32 passed.
+- `bunx playwright test -c playwright.cc017.config.ts` — unable to start its local Next server (`listen EPERM` on `127.0.0.1:3110`). This environment also has no matching loopback disposable `DATABASE_URL` and `TEST_DATABASE_URL`, so the owner fixture cannot safely run locally. No database was contacted.
+- `bun run build` — blocked in both normal and escalated runs by Turbopack failing to start a worker (`binding to a port: Operation not permitted`).
+- `bunx playwright test -c playwright.cc017.config.ts --list` — pass; lists the 3 navigation, drawer, and print tests.
+- `git diff --check` — pass after edits.
+- Exact-head CI and preview deployment evidence for the pushed review follow-up will be recorded below after GitHub reports completion.
+
 ## Remote evidence
 
 - GitHub Actions run [#312](https://github.com/yorkstead/website/actions/runs/40826746490) used merge ref `f251f1fc36ea148858bfb4c22720c4c35fe969aa` (PR head `6e3a7fcffc003ed2b6ffcbc021c942da0bf30aed`). Disposable migrations, deterministic/database tests, lint, typecheck, standard browser tests, isolated enrollment, and owner publishing passed. The job stopped in the existing CC-010 Client Access browser scenario at 390px because it expected a sidebar link visible before opening the new mobile drawer. Later isolated workflows, CC-017 navigation browsers, production build, and clean-worktree check were skipped by CI after that failure.
