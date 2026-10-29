@@ -188,7 +188,7 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   await secondShoppingItem.getByRole("button",{name:"Edit",exact:true}).click();
   holdNextCommand=true;const beforeConcurrent=bodies.length;await shoppingItem.getByRole("button",{name:"Mark purchased"}).click();await commandStarted;
   await expect(secondShoppingItem.getByRole("button",{name:"Save changes"})).toBeDisabled();expect(bodies).toHaveLength(beforeConcurrent+1);
-  releaseHeldCommand();await expect(shoppingItem.getByRole("button",{name:"Undo purchase"})).toBeVisible();await shoppingItem.getByRole("button",{name:"Undo purchase"}).click();await secondShoppingItem.getByRole("button",{name:"Cancel edit"}).click();
+  releaseHeldCommand();await expect(shoppingItem.getByRole("button",{name:"Undo purchase"})).toBeVisible();await shoppingItem.getByRole("button",{name:"Undo purchase"}).click();
   await page.getByRole("combobox",{name:"Status",exact:true}).selectOption("open");
   await shoppingItem.getByRole("button",{name:"Edit",exact:true}).click();
   await shoppingItem.getByRole("combobox",{name:"Repeat rule",exact:true}).selectOption("");
