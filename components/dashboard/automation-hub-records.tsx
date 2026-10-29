@@ -144,10 +144,5 @@ export function AutomationHubRecords() {
     {error ? <p role="alert" className="mt-4 text-sm text-amber-300">{error}</p> : null}
     {result && result.state !== "available" ? <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm" role="status"><p>{unavailableMessage(result.state)}</p><p className="mt-2 text-xs text-muted-foreground">Checked <time dateTime={result.checkedAt}>{formatTimestamp(result.checkedAt)}</time></p></div> : null}
     {result?.state === "available" ? <HubSnapshotView data={result.data} /> : null}
-    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-      <a className="text-primary" href="https://cal.yorkstead.com/command#ys-actions" target="_blank" rel="noopener noreferrer">Open Hub capture controls ↗</a>
-      <a className="text-primary" href="https://cal.yorkstead.com/command#ys-health" target="_blank" rel="noopener noreferrer">Open Hub integration health ↗</a>
-      <a className="text-primary" href="https://cal.yorkstead.com/command#ys-logs" target="_blank" rel="noopener noreferrer">Open Hub activity history ↗</a>
-    </div>
   </section>;
 }
