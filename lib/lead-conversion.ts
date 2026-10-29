@@ -37,9 +37,10 @@ INSERT INTO workspaces (id, data, updated_at)
 SELECT 'primary', jsonb_build_object('projects', jsonb_build_array(project), 'tasks', '[]'::jsonb, 'activity', jsonb_build_array(activity)), NOW()
 FROM project_data
 ON CONFLICT (id) DO UPDATE SET
-  data = jsonb_set(
-    jsonb_set(workspaces.data, '{projects}', COALESCE(workspaces.data->'projects', '[]'::jsonb) || EXCLUDED.data->'projects'),
-    '{activity}', EXCLUDED.data->'activity' || COALESCE(workspaces.data->'activity', '[]'::jsonb)
+  data = workspaces.data || jsonb_build_object(
+    'projects', COALESCE(workspaces.data->'projects', '[]'::jsonb) || COALESCE(EXCLUDED.data->'projects', '[]'::jsonb),
+    'tasks', COALESCE(workspaces.data->'tasks', '[]'::jsonb),
+    'activity', COALESCE(EXCLUDED.data->'activity', '[]'::jsonb) || COALESCE(workspaces.data->'activity', '[]'::jsonb)
   ),
   updated_at = NOW()
 `;

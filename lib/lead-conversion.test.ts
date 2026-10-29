@@ -29,4 +29,13 @@ describe("lead conversion lifecycle", () => {
   test("returns the original project ID for an already converted inquiry", async () => {
     await expect(convertLeadRecord(client({ converted_project_id: "existing-project", status: "won", retired: false }), 1, ids)).resolves.toBe("existing-project");
   });
+
+  test("appends projects and activity while preserving existing tasks", async () => {
+    const database = client({ converted_project_id: ids.projectId, status: "won", retired: false });
+    await convertLeadRecord(database, 1, ids);
+    expect(database.statements[0]).toContain("data = workspaces.data || jsonb_build_object(");
+    expect(database.statements[0]).toContain("'projects', COALESCE(workspaces.data->'projects', '[]'::jsonb) || COALESCE(EXCLUDED.data->'projects', '[]'::jsonb)");
+    expect(database.statements[0]).toContain("'tasks', COALESCE(workspaces.data->'tasks', '[]'::jsonb)");
+    expect(database.statements[0]).toContain("'activity', COALESCE(EXCLUDED.data->'activity', '[]'::jsonb) || COALESCE(workspaces.data->'activity', '[]'::jsonb)");
+  });
 });
