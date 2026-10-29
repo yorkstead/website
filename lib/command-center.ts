@@ -42,7 +42,7 @@ export function selectCommandCenterActions(input: {
     if (!Number.isFinite(updated) || ageDays < (input.staleOpportunityDays ?? 14)) continue;
     actions.push({
       kind: "stalled-lead", id: lead.id, title: lead.company || lead.name,
-      detail: `Stalled ${lead.status} · no update for ${ageDays} days`, priority: 2,
+      detail: `Stalled ${lead.status} · no update for ${ageDays} days${lead.nextStep ? ` · Next: ${lead.nextStep}` : ""}`, priority: 2,
       date: lead.updatedAt, href: `/dashboard/leads?lead=${lead.id}`, lead,
     });
   }

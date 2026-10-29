@@ -4,7 +4,7 @@ import type { CommandCenterLead } from "@/lib/contact-inquiries";
 import type { Project } from "@/lib/projects";
 import type { Task } from "@/lib/workspace";
 
-const lead = (id: number, status: CommandCenterLead["status"], followUpAt: string | null, updatedAt = "2026-10-01T12:00:00.000Z"): CommandCenterLead => ({ id, name: `Lead ${id}`, company: null, projectType: null, status, followUpAt, updatedAt });
+const lead = (id: number, status: CommandCenterLead["status"], followUpAt: string | null, updatedAt = "2026-10-01T12:00:00.000Z"): CommandCenterLead => ({ id, name: `Lead ${id}`, company: null, projectType: null, status, followUpAt, updatedAt, nextStep: "" });
 const project = (id: string, updatedAt = "2026-10-28T12:00:00.000Z"): Project => ({ id, name: id, eyebrow: "Software", description: "", status: "Active", kind: "Software", stack: [], updatedAt, updatedLabel: "", note: "Review next milestone", progress: 20, accent: "cyan" });
 const task = (id: string, dueDate?: string, priority: Task["priority"] = "Medium"): Task => ({ id, title: id, dueDate, priority, done: false, createdAt: "2026-10-01T12:00:00.000Z" });
 

@@ -17,11 +17,16 @@ export type LeadSummary = {
 
 export type FollowUpFilter = "overdue" | "today" | "upcoming";
 
-export type CommandCenterLead = Pick<ContactInquiry, "id" | "name" | "company" | "projectType" | "status" | "followUpAt" | "updatedAt">;
+export type CommandCenterLead = Pick<ContactInquiry, "id" | "name" | "company" | "projectType" | "status" | "followUpAt" | "updatedAt" | "nextStep">;
 export type CommandCenterCrmSnapshot = {
   stageCounts: Record<Extract<LeadStatus, "new" | "contacted" | "qualified" | "proposal">, number>;
   dueFollowUps: CommandCenterLead[];
   stalledOpportunities: CommandCenterLead[];
+  pendingProposalCount: number;
+  pipelineValueCents: number;
+  wonValueCents: number;
+  conversionRate: number | null;
+  proposalNextActions: Array<{ leadId: number; name: string; company: string | null; state: string; nextAction: string; nextActionAt: string | null }>;
 };
 
 export function buildCommandCenterQueries() {
@@ -33,7 +38,7 @@ export function buildCommandCenterQueries() {
       params: [],
     },
     due: {
-      text: `SELECT id, name, company, project_type, status, follow_up_at, updated_at
+      text: `SELECT id, name, company, project_type, status, follow_up_at, updated_at, next_step
         FROM contact_inquiries WHERE ${active}
           AND follow_up_at IS NOT NULL
           AND (follow_up_at AT TIME ZONE 'America/Denver')::date <= (NOW() AT TIME ZONE 'America/Denver')::date
@@ -41,13 +46,29 @@ export function buildCommandCenterQueries() {
       params: [],
     },
     stalled: {
-      text: `SELECT id, name, company, project_type, status, follow_up_at, updated_at
+      text: `SELECT id, name, company, project_type, status, follow_up_at, updated_at, next_step
         FROM contact_inquiries WHERE ${active}
           AND status IN ('qualified', 'proposal')
           AND follow_up_at IS NULL
           AND updated_at < NOW() - INTERVAL '14 days'
         ORDER BY updated_at ASC, id ASC LIMIT 5`,
       params: [],
+    },
+    sales: {
+      text: `SELECT COUNT(*) FILTER (WHERE p.state IN ('draft','sent') AND i.status NOT IN ('won','lost','archived'))::int AS pending_count,
+        COALESCE(SUM(p.amount_cents) FILTER (WHERE p.state IN ('draft','sent') AND i.status NOT IN ('won','lost','archived')),0)::text AS pipeline_cents,
+        COALESCE(SUM(p.amount_cents) FILTER (WHERE p.state='accepted' AND i.status='won'),0)::text AS won_cents,
+        COUNT(DISTINCT i.id) FILTER (WHERE i.status='won')::int AS won_count,
+        COUNT(DISTINCT i.id) FILTER (WHERE i.status='lost')::int AS lost_count
+        FROM contact_inquiries i LEFT JOIN crm_proposals p ON p.lead_id=i.id
+        WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)`, params: [],
+    },
+    proposalActions: {
+      text: `SELECT i.id AS lead_id, i.name, i.company, p.state, p.next_action, p.next_action_at
+        FROM crm_proposals p JOIN contact_inquiries i ON i.id=p.lead_id
+        WHERE p.state IN ('draft','sent') AND i.status NOT IN ('won','lost','archived') AND p.next_action <> ''
+          AND NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)
+        ORDER BY p.next_action_at ASC NULLS FIRST, p.updated_at ASC, p.id ASC LIMIT 5`, params: [],
     },
   };
 }
@@ -56,6 +77,8 @@ export function normalizeCommandCenterCrmSnapshot(
   stageRows: Array<Record<string, unknown>>,
   dueRows: Array<Record<string, unknown>>,
   stalledRows: Array<Record<string, unknown>>,
+  salesRow: Record<string, unknown> = {},
+  proposalRows: Array<Record<string, unknown>> = [],
 ): CommandCenterCrmSnapshot {
   const stageCounts = { new: 0, contacted: 0, qualified: 0, proposal: 0 };
   for (const row of stageRows) {
@@ -70,11 +93,20 @@ export function normalizeCommandCenterCrmSnapshot(
     status: row.status as LeadStatus,
     followUpAt: row.follow_up_at ? new Date(String(row.follow_up_at)).toISOString() : null,
     updatedAt: new Date(String(row.updated_at)).toISOString(),
+    nextStep: String(row.next_step ?? "").slice(0, 500),
   });
   return {
     stageCounts,
     dueFollowUps: dueRows.filter((row) => Number.isSafeInteger(Number(row.id)) && !Number.isNaN(Date.parse(String(row.updated_at)))).map(map),
     stalledOpportunities: stalledRows.filter((row) => Number.isSafeInteger(Number(row.id)) && !Number.isNaN(Date.parse(String(row.updated_at)))).map(map),
+    pendingProposalCount: safeCount(salesRow.pending_count),
+    pipelineValueCents: safeCount(salesRow.pipeline_cents),
+    wonValueCents: safeCount(salesRow.won_cents),
+    conversionRate: safeCount(salesRow.won_count) + safeCount(salesRow.lost_count) ? Math.round(safeCount(salesRow.won_count) / (safeCount(salesRow.won_count) + safeCount(salesRow.lost_count)) * 100) : null,
+    proposalNextActions: proposalRows.filter((row) => Number.isSafeInteger(Number(row.lead_id)) && String(row.next_action ?? "").trim()).map((row) => ({
+      leadId: Number(row.lead_id), name: String(row.name ?? "Inquiry").slice(0, 120), company: row.company ? String(row.company).slice(0, 160) : null,
+      state: String(row.state ?? "").slice(0, 20), nextAction: String(row.next_action).slice(0, 300), nextActionAt: row.next_action_at ? new Date(String(row.next_action_at)).toISOString() : null,
+    })),
   };
 }
 
@@ -86,12 +118,14 @@ function safeCount(value: unknown) {
 export async function getCommandCenterCrmSnapshot(): Promise<CommandCenterCrmSnapshot> {
   const sql = await contactDatabase();
   const queries = buildCommandCenterQueries();
-  const [stages, due, stalled] = await Promise.all([
+  const [stages, due, stalled, sales, proposalActions] = await Promise.all([
     sql.query(queries.stages.text, queries.stages.params),
     sql.query(queries.due.text, queries.due.params),
     sql.query(queries.stalled.text, queries.stalled.params),
+    sql.query(queries.sales.text, queries.sales.params),
+    sql.query(queries.proposalActions.text, queries.proposalActions.params),
   ]);
-  return normalizeCommandCenterCrmSnapshot(stages, due, stalled);
+  return normalizeCommandCenterCrmSnapshot(stages, due, stalled, sales[0] ?? {}, proposalActions);
 }
 
 export type ContactInquiryIntake = Partial<WorkflowAuditIntake> & Partial<ProductInquiryIntake> & Record<string, unknown>;
@@ -121,6 +155,15 @@ export type ContactInquiry = {
   utmTerm: string | null;
   status: LeadStatus;
   qualificationStatus: string | null;
+  industry: string;
+  pain: string;
+  companySize: string;
+  urgency: string;
+  decisionMaker: string;
+  budgetIndication: string;
+  nextStep: string;
+  wonReason: string;
+  lostReason: string;
   notes: string;
   followUpAt: string | null;
   convertedProjectId: string | null;
@@ -265,6 +308,9 @@ function mapInquiry(row: Record<string, unknown>): ContactInquiry {
     utmTerm: row.utm_term ? String(row.utm_term) : null,
     status: row.status as LeadStatus,
     qualificationStatus: row.qualification_status ? String(row.qualification_status) : null,
+    industry: String(row.industry ?? ""), pain: String(row.pain ?? ""), companySize: String(row.company_size ?? ""),
+    urgency: String(row.urgency ?? ""), decisionMaker: String(row.decision_maker ?? ""), budgetIndication: String(row.budget_indication ?? ""),
+    nextStep: String(row.next_step ?? ""), wonReason: String(row.won_reason ?? ""), lostReason: String(row.lost_reason ?? ""),
     notes: String(row.notes ?? ""),
     followUpAt: row.follow_up_at ? new Date(String(row.follow_up_at)).toISOString() : null,
     convertedProjectId: row.converted_project_id ? String(row.converted_project_id) : null,

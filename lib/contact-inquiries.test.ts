@@ -51,7 +51,7 @@ describe("Command Center CRM snapshot", () => {
   test("uses existing active inquiry stages and excludes retired and closed leads", () => {
     const queries = buildCommandCenterQueries();
     expect(queries.stages.text).toContain("GROUP BY status");
-    for (const query of Object.values(queries)) {
+    for (const query of [queries.stages, queries.due, queries.stalled]) {
       expect(query.text).toContain("NOT EXISTS (SELECT 1 FROM inquiry_retirements");
       expect(query.text).toContain("status NOT IN ('won', 'lost', 'archived')");
     }
@@ -60,6 +60,9 @@ describe("Command Center CRM snapshot", () => {
     expect(queries.stalled.text).toContain("AND follow_up_at IS NULL");
     expect(queries.stalled.text).toContain("LIMIT 5");
     expect(queries.due.text).toContain("LIMIT 8");
+    expect(queries.sales.text).toContain("p.amount_cents");
+    expect(queries.sales.text).not.toContain("budget");
+    expect(queries.sales.text).toContain("NOT EXISTS (SELECT 1 FROM inquiry_retirements");
   });
 
   test("normalizes only safe fields and initializes missing pipeline stages to zero", () => {
@@ -67,9 +70,17 @@ describe("Command Center CRM snapshot", () => {
       [{ status: "proposal", count: "2" }, { status: "won", count: 3 }],
       [{ id: "42", name: "Avery", company: "Example Co", project_type: "Audit", status: "proposal", follow_up_at: "2026-10-29T18:00:00.000Z", updated_at: "2026-10-28T18:00:00.000Z", email: "private@example.test", notes: "private" }],
       [],
+      { pending_count: "2", pipeline_cents: "150000", won_cents: "35000", won_count: 1, lost_count: 3 },
+      [{ lead_id: "42", name: "Avery", company: "Example Co", state: "sent", next_action: "Review final scope", next_action_at: "2026-10-30T18:00:00.000Z", email: "private@example.test" }],
     );
     expect(result.stageCounts).toEqual({ new: 0, contacted: 0, qualified: 0, proposal: 2 });
     expect(result.dueFollowUps[0]).not.toHaveProperty("email");
     expect(result.dueFollowUps[0]).not.toHaveProperty("notes");
+    expect(result.pendingProposalCount).toBe(2);
+    expect(result.pipelineValueCents).toBe(150000);
+    expect(result.wonValueCents).toBe(35000);
+    expect(result.conversionRate).toBe(25);
+    expect(result.proposalNextActions[0]).toMatchObject({ leadId: 42, nextAction: "Review final scope", state: "sent" });
+    expect(result.proposalNextActions[0]).not.toHaveProperty("email");
   });
 });
