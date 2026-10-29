@@ -111,7 +111,9 @@ test("mobile drawer supports keyboard focus, Escape, backdrop, and route selecti
   await expect(page.getByRole("dialog", { name: "Yorkstead navigation" })).toBeHidden();
 
   await opener.click();
-  await page.getByRole("button", { name: "Dismiss navigation backdrop" }).click();
+  await page
+    .getByRole("button", { name: "Dismiss navigation backdrop" })
+    .click({ position: { x: 350, y: 200 } });
   await expect(page.getByRole("dialog", { name: "Yorkstead navigation" })).toBeHidden();
   await expect(opener).toBeFocused();
 });
