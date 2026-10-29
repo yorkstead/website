@@ -9,4 +9,4 @@
 - [x] T007 Add Website BFF, same-key recovery, anonymous denial assertion, responsive/refresh/payday browser coverage.
 - [x] T008 Run local checks and full Bun suites; disposable PostgreSQL/browser checks are queued for the PR CI environment because no local disposable database is configured.
 - [x] T009 Complete specs, operations and current handoff updates. Browser screenshots are deferred because the local owner E2E requires its disposable PostgreSQL credentials.
-- [ ] T010 Draft Hub PR #92 and dependent Website PR #79 are open; Hub PostgreSQL-backed CI passes on its implementation head. Website browser CI is rerunning after the planner scenario now selects Purchased history before undo and expands payday receipt details before entry.
+- [ ] T010 Draft Hub PR #92 and dependent Website PR #79 are open; Hub PostgreSQL-backed CI passes on its implementation head. Website browser CI is rerunning after the planner scenario selects Purchased for undo, opens payday receipt details, and returns to Open items before repeat recovery.

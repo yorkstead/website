@@ -182,6 +182,7 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   await page.getByLabel("Reserve label").fill("Rent");await page.getByLabel("Reserve amount").fill("300");await page.getByRole("button",{name:"Add reserve"}).click();
   await page.getByRole("button",{name:"Confirm receipt and reserves"}).click();
   await expect(page.getByText(/Available to plan after explicitly entered reserves/)).toBeVisible();
+  await page.getByRole("combobox",{name:"Status",exact:true}).selectOption("open");
   failNext=true;await page.getByRole("button",{name:"Repeat once"}).click();
   await expect(page.getByText(/Update needs review/)).toBeVisible();
   await page.getByRole("button",{name:"Retry same command key"}).click();
