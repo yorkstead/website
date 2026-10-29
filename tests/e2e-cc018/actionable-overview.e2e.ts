@@ -176,8 +176,10 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await page.getByLabel("Explicit proposal amount ($)").fill("2500.00");
   await page.getByLabel("Next action", { exact: true }).fill("Review sprint scope");
   await page.getByLabel("Next action date").fill(offsetDateKey(2));
-  await page.getByLabel("State", { exact: true }).selectOption("sent");
-  await page.getByRole("button", { name: "Record proposal" }).click();
+  const createProposalForm = page.locator("form").filter({ has: page.getByRole("button", { name: "Record proposal" }) });
+  await createProposalForm.locator('select[name="state"]').selectOption("sent");
+  await expect(createProposalForm.locator('select[name="state"]')).toHaveValue("sent");
+  await createProposalForm.getByRole("button", { name: "Record proposal" }).click();
   await expect(page.getByText("$2,500.00")).toBeVisible();
   const proposalEditor = page.getByRole("form", { name: "Edit sprint proposal" });
   await proposalEditor.getByLabel("Proposal engagement").selectOption("system");
