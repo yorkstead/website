@@ -7,6 +7,6 @@
 - [x] T005 — Add strict website server-side Hub client and independently owner-authenticated BFF; no secret/browser credential forwarding.
 - [x] T006 — Render captures/classifications, activity, integration health, review records, and read-only Google Tasks with source labels, IDs, timestamps, section states and responsive retry.
 - [x] T007 — Add contract/authentication/failure/sanitization/bounds and responsive browser tests for both sides; tenant/retirement workflows are not enabled by this dedicated single-owner projection.
-- [ ] T008 — Run task-specific checks and all applicable `docs/verification.md` checks; verify exact-head CI/build and note local constraints.
-- [ ] T009 — Converge implementation/spec, privacy/security, rollout/credential/dependency/rollback docs and `CURRENT.md`.
-- [ ] T010 — Commit/push authorized branches and open website PR `CC-021: Automation Hub Data Integration` plus coordinated Hub PR; do not merge, manually deploy, or alter production env/data.
+- [x] T008 — Run task-specific checks and all applicable `docs/verification.md` checks; verify exact-head CI/build and note local constraints.
+- [x] T009 — Converge implementation/spec, privacy/security, rollout/credential/dependency/rollback docs and `CURRENT.md`.
+- [x] T010 — Commit/push authorized branches and open website PR `CC-021: Automation Hub Data Integration` plus coordinated Hub PR; do not merge, manually deploy, or alter production env/data.
