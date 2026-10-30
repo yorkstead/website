@@ -59,7 +59,7 @@ test("owner captures evidence, runs discovery, records permission, and validates
   await expect(record).toBeVisible();
   await expect(record).toHaveAttribute("href",`/dashboard/opportunities?id=${opportunityId}`);
   await page.goto(`/dashboard/opportunities?id=${opportunityId}`);
-  await expect(page.getByText("Hypothesis",{exact:true})).toBeVisible();
+  await expect(page.getByText("Hypothesis",{exact:true}).first()).toBeVisible();
   await expect(page.getByText("No evidence added. Keep the suspected problem labeled as a hypothesis.")).toBeVisible();
 
   const evidenceForm=page.locator("form").filter({has:page.getByLabel("Evidence summary")});
