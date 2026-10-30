@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { cc023Owner, disposeCc023Owner, setupCc023Owner } from "../fixtures/cc023-owner";
+import { emptyWorkspace } from "../../lib/workspace";
 
 test.beforeAll(async()=>setupCc023Owner());
 test.afterAll(async()=>disposeCc023Owner());
@@ -22,15 +23,25 @@ test("owner can navigate, manage a directory record, review audit, and see hones
  await dialog.getByLabel("Provider",{exact:true}).fill("Vercel");
  await dialog.getByLabel("Purpose").fill("Synthetic browser regression service");
  await dialog.getByLabel("Account email or username").fill("owner@example.test");
- await dialog.getByLabel("Amount").fill("120");
- await dialog.getByLabel("Billing cadence").selectOption("annual");
+ const amount=dialog.getByLabel("Amount");
+ await amount.fill("12.");await expect(amount).toHaveValue("12.");
+ await amount.fill("12..5");await dialog.getByRole("button",{name:"Save system"}).click();
+ await expect(dialog.getByRole("alert")).toContainText("up to two decimal places");await expect(amount).toHaveValue("12..5");
+ await amount.fill("12.50");await expect(amount).toHaveValue("12.50");
+ await dialog.getByLabel("Billing cadence").selectOption("monthly");
  await dialog.getByLabel("Cost basis").selectOption("actual");
  await dialog.getByLabel("Cost confirmation").selectOption("confirmed");
  await dialog.getByLabel("Renewal date").fill("2026-11-20");
  await dialog.getByRole("button",{name:"Save system"}).click();
  let card=page.locator("article").filter({has:page.getByRole("heading",{name})});
  await expect(card).toBeVisible();
- await expect(card.getByText(/USD 120\.00 \/ annual/)).toBeVisible();
+ await expect(card.getByText(/USD 12\.50 \/ monthly/)).toBeVisible();
+ await page.getByRole("button",{name:"Add service"}).click();
+ const duplicate=page.getByRole("dialog");
+ await duplicate.getByLabel("Service name").fill(name);await duplicate.getByLabel("Provider",{exact:true}).fill("Vercel");await duplicate.getByLabel("Purpose").fill("Draft stays visible after duplicate rejection");
+ await duplicate.getByRole("button",{name:"Save system"}).click();
+ await expect(duplicate.getByRole("alert")).toContainText("already exists");await expect(duplicate.getByLabel("Purpose")).toHaveValue("Draft stays visible after duplicate rejection");
+ await duplicate.getByRole("button",{name:"Close editor"}).click();
  await card.getByRole("button",{name:`Pin ${name}`}).click();
  await expect(card.getByRole("button",{name:`Unpin ${name}`})).toBeVisible();
  await card.getByRole("button",{name:"Edit"}).click();
@@ -42,6 +53,18 @@ test("owner can navigate, manage a directory record, review audit, and see hones
  await expect(page.getByText("Recent audit history")).toBeVisible();
  await expect(page.getByText(/updated · cc023-browser-owner/)).toHaveCount(2);
  await page.getByRole("button",{name:"Close editor"}).click();
+ await page.route("**/api/systems-directory",async route=>{
+  if(route.request().method()==="PATCH"&&JSON.parse(route.request().postData()??"{}").entry){await route.fulfill({status:409,contentType:"application/json",body:JSON.stringify({error:"Directory record changed; reload before retrying"})});return;}
+  await route.continue();
+ });
+ await card.getByRole("button",{name:"Edit"}).click();
+ const conflict=page.getByRole("dialog");
+ await conflict.getByLabel("Purpose").fill("Draft survives revision conflict");await conflict.getByRole("button",{name:"Save system"}).click();
+ await expect(conflict.getByRole("alert")).toContainText("changed since you opened it");await expect(conflict.getByLabel("Purpose")).toHaveValue("Draft survives revision conflict");
+ await page.unroute("**/api/systems-directory");await conflict.getByRole("button",{name:"Close editor"}).click();
+ await card.getByRole("button",{name:"Edit"}).click();
+ const clear=page.getByRole("dialog");await clear.getByLabel("Amount").fill("");await clear.getByLabel("Cost basis").selectOption("unknown");await clear.getByLabel("Cost confirmation").selectOption("unverified");
+ await clear.getByRole("button",{name:"Save system"}).click();await expect(card).toContainText("unknown · unverified");
  await card.getByRole("button",{name:"Archive"}).click();
  await expect(card).toHaveCount(0);
  await page.getByLabel("Include archived").check();
@@ -51,11 +74,54 @@ test("owner can navigate, manage a directory record, review audit, and see hones
  await expect(card.getByRole("button",{name:"Archive"})).toBeVisible();
  await page.getByLabel("Include archived").uncheck();
  await page.goto("/dashboard");
- await expect(page.getByText(/USD 10\.00\/mo · annualized 120\.00/)).toBeVisible();
+ await expect(page.getByText("No recurring amounts have been entered.")).toBeVisible();
  await page.setViewportSize({width:390,height:844});
  await page.getByRole("button",{name:"Open navigation menu"}).click();
  const drawer=page.getByRole("dialog",{name:"Yorkstead navigation"});
  await expect(drawer.getByRole("link",{name:"Systems Directory"})).toBeVisible();
  await drawer.getByRole("link",{name:"Systems Directory"}).click();
  await expect(page.getByRole("heading",{name:"Systems Directory",exact:true})).toBeVisible();
+});
+
+test("Exceptions refresh checks the overview and existing project intelligence together once",async({page,context,baseURL})=>{
+ const origin=baseURL!;
+ const login=await context.request.post("/api/auth/sign-in/email",{headers:{origin},data:cc023Owner});expect(login.status()).toBe(200);
+ let overviewCalls=0;let projectCalls=0;
+ await page.route("**/api/systems-directory/overview",async route=>{
+  overviewCalls++;const checkedAt=new Date(Date.UTC(2026,9,30,18,0,overviewCalls)).toISOString();
+  if(overviewCalls===3){await route.fulfill({status:503,contentType:"application/json",body:JSON.stringify({error:"simulated overview failure",checkedAt})});return;}
+  await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({checkedAt,observations:[],counts:{},costs:{totals:{},renewals:[]},entryCount:0})});
+ });
+ await page.route("**/api/project-status**",async route=>{
+  projectCalls++;const checkedAt=new Date(Date.UTC(2026,9,30,18,0,projectCalls)).toISOString();
+  const conclusion=projectCalls===1?"failure":"success";
+  await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({fetchedAt:checkedAt,github:{available:true,workflows:{checkedAt,items:[{name:"Synthetic Verify",status:"completed",conclusion,url:"https://github.com/example/repo/actions/runs/1",updatedAt:checkedAt}]}},vercel:{reachable:true,state:"READY",url:"example.vercel.app",checkedAt},integrations:{github:{status:"ok",authenticated:false},vercel:{status:"ok",authenticated:false}}})});
+ });
+ await page.goto("/dashboard");await expect(page.getByRole("heading",{name:"Systems & recurring costs"})).toBeVisible();
+ await page.getByRole("button",{name:"New project"}).click();
+ await page.getByLabel("Project name").fill(`Refresh regression ${randomUUID().slice(0,8)}`);
+ await page.getByRole("button",{name:"Save"}).click();
+ const projectName=await page.locator("h3").filter({hasText:"Refresh regression"}).first().textContent();expect(projectName).toBeTruthy();
+ await page.getByRole("button",{name:`Edit ${projectName}`} ).click();
+ await page.getByLabel("GitHub repository").fill("https://github.com/example/repo");
+ await page.getByLabel("Deployment",{exact:true}).fill("https://example.vercel.app");
+ const workspaceSave=page.waitForResponse(response=>response.url().includes("/api/workspace")&&response.request().method()==="PUT"&&response.ok());
+ await page.getByRole("button",{name:"Save changes"}).click();
+ await workspaceSave;
+ await expect(page.getByText("Workflow conclusion: failure.")).toBeVisible();
+ await expect.poll(()=>projectCalls).toBe(1);await expect.poll(()=>overviewCalls).toBe(1);
+ const checked=page.locator("span").filter({hasText:/^Checked /});const firstChecked=await checked.textContent();
+ await page.getByRole("button",{name:"Refresh",exact:true}).click();
+ await expect.poll(()=>projectCalls).toBe(2);await expect.poll(()=>overviewCalls).toBe(2);
+ await expect(page.getByText("Workflow conclusion: failure.")).toHaveCount(0);
+ await expect(checked).not.toHaveText(firstChecked??"");
+ const successfulChecked=await checked.textContent();
+ await page.getByRole("button",{name:"Refresh",exact:true}).click();
+ await expect.poll(()=>projectCalls).toBe(3);await expect.poll(()=>overviewCalls).toBe(3);
+ await expect(page.getByRole("status")).toContainText("simulated overview failure");
+ await expect(checked).toHaveText(successfulChecked??"");
+ await page.waitForTimeout(500);expect(projectCalls).toBe(3);expect(overviewCalls).toBe(3);
+ const cloud=await context.request.get("/api/workspace");expect(cloud.status()).toBe(200);const payload=await cloud.json() as {updatedAt:string|null};
+ expect(payload.updatedAt).toBeTruthy();
+ const reset=await context.request.put("/api/workspace",{headers:{"x-workspace-version":payload.updatedAt??""},data:emptyWorkspace});expect(reset.status()).toBe(200);
 });

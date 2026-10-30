@@ -1,10 +1,24 @@
 import { describe, expect, test } from "bun:test";
-import { monthlyEquivalent, orderExceptions, safeHttpsURL, servicesLinkedToProject, staleHealth, summarizeCosts, systemDirectoryInputSchema, type SystemDirectoryInput } from "@/lib/system-directory";
+import { monthlyEquivalent, orderExceptions, parseSystemAmountInput, refreshSystemsControlPanel, safeHttpsURL, servicesLinkedToProject, staleHealth, summarizeCosts, systemDirectoryInputSchema, type SystemDirectoryInput } from "@/lib/system-directory";
 import { createSystemDirectoryController } from "@/lib/system-directory-http";
 
 const valid:SystemDirectoryInput={name:"Yorkstead Website",category:"hosting",provider:"Vercel",purpose:"Website hosting",dashboardURL:"https://vercel.com/dashboard",documentationURL:"",accountIdentity:"owner@example.com",billingEntity:"Yorkstead Systems",notes:"",relationships:[{kind:"project",name:"Website"},{kind:"repository",name:"yorkstead/website",url:"https://github.com/yorkstead/website"},{kind:"domain",name:"yorkstead.com"}],billingCadence:"annual",currency:"USD",amount:120,amountBasis:"actual",costConfirmation:"confirmed",renewalDate:"2026-11-15",pinned:false,manualHealth:"not_monitored",manualHealthSummary:"",manualHealthCheckedAt:null};
 
 describe("CC-023 systems directory validation and calculations",()=>{
+ test("preserves decimal text until save parsing, accepts clear, and rejects malformed amounts",()=>{
+  expect(parseSystemAmountInput("12.50")).toEqual({ok:true,amount:12.5});
+  expect(parseSystemAmountInput("")).toEqual({ok:true,amount:null});
+  expect(parseSystemAmountInput("12.")).toEqual({ok:false});
+  expect(parseSystemAmountInput("12..5")).toEqual({ok:false});
+  expect(parseSystemAmountInput("1,250.00")).toEqual({ok:false});
+  expect(parseSystemAmountInput("1000000000.01")).toEqual({ok:false});
+ });
+ test("control-panel refresh starts both sources once and reports independent outcomes",async()=>{
+  let overview=0;let intelligence=0;
+  const outcomes=await refreshSystemsControlPanel(async()=>{overview++;},async()=>{intelligence++;throw new Error("upstream unavailable");});
+  expect(overview).toBe(1);expect(intelligence).toBe(1);
+  expect(outcomes[0]?.status).toBe("fulfilled");expect(outcomes[1]?.status).toBe("rejected");
+ });
  test("accepts explicit safe directory facts and rejects secrets and tenant/credential fields",()=>{
   expect(systemDirectoryInputSchema.safeParse(valid).success).toBe(true);
   expect(systemDirectoryInputSchema.safeParse({...valid,accountIdentity:"Bearer abcdefghijklmnop"}).success).toBe(false);

@@ -1,13 +1,10 @@
-# Active work — CC-023 Business Systems Directory & Control Panel — 2026-10-30
+# Active work — CC-023 review corrections on existing Website PR #80 — 2026-10-30
 
-- Authorization: user explicitly authorizes implementation, verification, and one new Website PR titled `CC-023: Business Systems Directory & Control Panel`. No merge, manual deployment, production secrets/configuration/data mutation, third-party subscription changes, purchases, or cancellations.
-- Verified start: Website `main` SHA `7901d0b2e6de9fabf92c2739cdd539b2c41468a3`, merged from PR #79. PR #79 is merged; no Website PRs were open. Implementation branch `codex/cc-023-business-systems-directory` is isolated in `/tmp/website-cc023` from that exact tip.
-- The original checkout on `feat/cc-022b-voice-shopping-payday-planning` contained uncommitted CC-022B edits and untracked `website.code-workspace`; it remains untouched.
-- Spec, plan, tasks, verification, and operations instructions: `specs/033-cc-023-business-systems-directory/`.
-- Discovery reused existing owner authentication, Command Center, Operations monitor, Automation Hub static health and read contract, project intelligence, ordered migrations, and current UI navigation. No provider credentials/accounts/costs were assumed. New directory is empty by default.
-- Complete at implementation head `c4a6f8bc3c6e4c11b4bd35c8fdcb8ae8b71aa99a`. Open draft [Website PR #80](https://github.com/yorkstead/website/pull/80), title `CC-023: Business Systems Directory & Control Panel`. Exact-head CI [41009951558](https://github.com/yorkstead/website/actions/runs/41009951558) passed all PostgreSQL-backed tests, browser flows including CC-023, lint, typecheck, production build, and clean-worktree validation. Vercel preview [succeeded](https://vercel.com/yorkstead/website/5jA4ZAM1U22mh1ntUonAkydYBZ5h). PR remains unmerged and is being marked ready after final documentation commit/check.
-- The original checkout remains untouched; no production data/configuration, provider accounts, subscriptions, merge or manual deployment changed.
-- Production/release restrictions remain in force. No production operation or provider mutation is authorized.
+- Authorization: fix the three outstanding CC-023 review findings on existing PR #80, add regressions, run the requested verification, push to the same PR and resolve those exact threads after passing CI. Do not merge, manually deploy, or change production.
+- Verified at session start: PR #80 was open, ready for review, unmerged, at `24b43a1ac5c6560f3cd5e1d26de0a2d1e1470835`; CI run `41010806300` passed at that head. The original checkout has unrelated dirty CC-022B changes and remains untouched. Work is isolated in `/tmp/website-cc023`.
+- Corrections implemented: amount input retains its string form until save; refresh invokes both overview and project intelligence; duplicate, validation, and revision-conflict errors appear accessibly in the modal with the draft retained. Unit and browser regressions cover these transitions.
+- Local verification: 406 Bun tests pass and 111 PostgreSQL-dependent tests are skipped because no disposable local PostgreSQL is configured. `bun run db:migrate:check`, `bun run yorkstead:check`, lint (0 errors; one existing login-panel warning), typecheck, production build, and CC-023 Playwright discovery pass. Docker cannot start here because the snap confinement check refuses to launch it. Full disposable-PostgreSQL and browser execution is pending exact-head GitHub CI.
+- No merge, manual deployment, production change, or modification to the original checkout.
 
 ## CC-022B Website P2 review closeout — 2026-10-30
 

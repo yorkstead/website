@@ -32,3 +32,12 @@
 - Vercel preview succeeded for this PR head: [deployment](https://vercel.com/yorkstead/website/5jA4ZAM1U22mh1ntUonAkydYBZ5h). Vercel Preview Comments passed; Vercel Agent Review was skipped by the provider.
 - Earlier CI failures were resolved: the database fixture now uses a null documentation URL, protocol tests assert the three CC-023 triggers, PostgreSQL DATE values map to `YYYY-MM-DD`, and the audit browser check accounts for both legitimate update rows.
 - No merge, production deployment, provider credential setup, production data change, or subscription change occurred.
+
+
+## PR #80 review-correction verification — 2026-10-30
+
+- Added amount parser regressions for `12.50`, a blank value, partial decimal and malformed/oversized values; owner-browser flow checks raw decimal preservation, saved value, and clearing the amount.
+- Added an owner-browser flow that verifies duplicate and revision-conflict errors remain in the modal with drafts intact.
+- Added panel refresh coverage for both overview and existing project intelligence, verifies one request per source on refresh, the overview checked time advances only on successful overview responses, and project failure transitions to fresh observations. Existing project-intelligence tests cover retained stale data and degraded/failure states.
+- Local full `bun test`: 406 passed, 111 PostgreSQL-dependent skipped, 0 failed (517 total); `bun run db:migrate:check`: all 20 migrations validated; `bun run yorkstead:check`: passed; lint: 0 errors (one existing warning at `components/login-panel.tsx:62`); typecheck and `bun run build`: passed; `bunx playwright test -c playwright.cc023.config.ts --list`: two CC-023 owner-browser tests discovered.
+- Local PostgreSQL is unavailable (`pg_isready` reports no server; `TEST_DATABASE_URL` is unset). Docker is installed as a snap but cannot launch because snap confinement refuses to start. The owner-browser tests and database suites therefore require GitHub CI's disposable PostgreSQL workflow. Exact-head run, Vercel status, and review-thread resolution will be recorded after push.

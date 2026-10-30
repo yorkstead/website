@@ -56,6 +56,19 @@ export const systemDirectoryInputSchema = z.object({
 export type SystemDirectoryInput = z.infer<typeof systemDirectoryInputSchema>;
 export type SystemDirectoryEntry = SystemDirectoryInput & { id: string; revision: number; archivedAt: string | null; createdAt: string; updatedAt: string };
 
+export function parseSystemAmountInput(input: string): { ok: true; amount: number | null } | { ok: false } {
+  const value = input.trim();
+  if (value === "") return { ok: true, amount: null };
+  if (!/^\d+(?:\.\d{1,2})?$/.test(value)) return { ok: false };
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount > 1_000_000_000) return { ok: false };
+  return { ok: true, amount };
+}
+
+export function refreshSystemsControlPanel(refreshOverview: () => Promise<void>, refreshIntelligence: () => Promise<void>) {
+  return Promise.allSettled([refreshOverview(), refreshIntelligence()]);
+}
+
 export type ProviderSuggestion = { provider: typeof providers[number]; category: typeof systemCategories[number]; dashboardURL: string; documentationURL?: string };
 export const providerSuggestions: ProviderSuggestion[] = [
   { provider: "GitHub", category: "development", dashboardURL: "https://github.com" },

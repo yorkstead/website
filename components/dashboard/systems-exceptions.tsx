@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Activity, AlertTriangle, CircleCheck, RefreshCw } from "lucide-react";
 import type { Project } from "@/lib/projects";
 import type { ProjectIntelligenceEntry } from "@/lib/project-intelligence-client";
+import { refreshSystemsControlPanel } from "@/lib/system-directory";
 
 type Overview={checkedAt:string;observations:Array<{id:string;status:string;source:string;checkedAt:string|null;summary:string;affected:string[]}>;counts:Record<string,number>;costs:{totals:Record<string,Record<string,number>>;renewals:Array<{name:string;renewalDate:string;currency:string;amountBasis:string;costConfirmation:string}>};entryCount:number};
 const stateClass:Record<string,string>={down:"text-red-500",degraded:"text-red-500",stale:"text-amber-500",unknown:"text-muted-foreground",not_monitored:"text-muted-foreground",healthy:"text-emerald-500"};
 const stateLabel:Record<string,string>={down:"Down",degraded:"Degraded",stale:"Stale",unknown:"Unknown",not_monitored:"Not monitored",healthy:"Healthy"};
-export function SystemsExceptions({projects,intelligence}:{projects:Project[];intelligence:Record<string,ProjectIntelligenceEntry>}){
- const [data,setData]=useState<Overview|null>(null);const [error,setError]=useState("");const [loading,setLoading]=useState(true);const [revision,setRevision]=useState(0);const [observedNow,setObservedNow]=useState<number|null>(null);
- const refresh=useCallback(()=>{const controller=new AbortController();setLoading(true);fetch("/api/systems-directory/overview",{cache:"no-store",signal:controller.signal}).then(async response=>{const body=await response.json();if(!response.ok)throw new Error(body.error||"Systems status unavailable");setData(body);setObservedNow(Date.parse(body.checkedAt));setError("");}).catch(cause=>{if(!controller.signal.aborted){setError(cause instanceof Error?cause.message:"Systems status unavailable");setData(null);}}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});return ()=>controller.abort();},[]);
- useEffect(()=>{let cancel:(()=>void)|undefined;const timer=window.setTimeout(()=>{cancel=refresh();},0);return()=>{window.clearTimeout(timer);cancel?.();};},[refresh,revision]);
+export function SystemsExceptions({projects,intelligence,onRefreshIntelligence,intelligenceRefreshing}:{projects:Project[];intelligence:Record<string,ProjectIntelligenceEntry>;onRefreshIntelligence:()=>Promise<void>;intelligenceRefreshing:boolean}){
+ const [data,setData]=useState<Overview|null>(null);const [error,setError]=useState("");const [loading,setLoading]=useState(true);const [observedNow,setObservedNow]=useState<number|null>(null);const refreshInFlight=useRef<Promise<void>|null>(null);
+ const refreshOverview=useCallback(async()=>{setLoading(true);try{const response=await fetch("/api/systems-directory/overview",{cache:"no-store"});const body=await response.json();if(!response.ok)throw new Error(body.error||"Systems status unavailable");setData(body);setObservedNow(Date.parse(body.checkedAt));setError("");}catch(cause){setError(cause instanceof Error?cause.message:"Systems status unavailable");}finally{setLoading(false);}},[]);
+ useEffect(()=>{const timer=window.setTimeout(()=>void refreshOverview(),0);return()=>window.clearTimeout(timer);},[refreshOverview]);
+ const refreshAll=useCallback(()=>{if(refreshInFlight.current)return refreshInFlight.current;const running=refreshSystemsControlPanel(refreshOverview,onRefreshIntelligence).then((results)=>{const failed=results.find((result)=>result.status==="rejected");if(failed?.status==="rejected")setError(failed.reason instanceof Error?failed.reason.message:"One or more status sources could not be refreshed.");});refreshInFlight.current=running.finally(()=>{refreshInFlight.current=null;});return refreshInFlight.current;},[onRefreshIntelligence,refreshOverview]);
  const projectObservations=projects.flatMap(project=>{
   const value=intelligence[project.id]?.data;if(!value)return [];
   const rows:Array<{id:string;status:string;source:string;checkedAt:string|null;summary:string;affected:string[]}>=[];
@@ -42,7 +44,7 @@ export function SystemsExceptions({projects,intelligence}:{projects:Project[];in
  const counts=Object.fromEntries(["down","degraded","stale","unknown","not_monitored","healthy"].map(status=>[status,combined.filter(item=>item.status===status).length]));
  const renewals=data?.costs.renewals??[];
  return <section aria-labelledby="systems-exceptions-title" className="mb-5 rounded-xl border border-border bg-card p-4 sm:p-5">
-   <div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex items-center gap-2 text-xs uppercase tracking-[.16em] text-primary"><Activity className="size-4"/>Exceptions first</div><h2 id="systems-exceptions-title" className="mt-1 text-lg font-semibold">Systems &amp; recurring costs</h2><p className="mt-1 text-xs text-muted-foreground">On-demand checks · owner-maintained records · no background monitoring</p></div><button onClick={()=>setRevision(v=>v+1)} disabled={loading} className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-xs"><RefreshCw className={`size-3.5 ${loading?"animate-spin":""}`}/>Refresh</button></div>
+   <div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex items-center gap-2 text-xs uppercase tracking-[.16em] text-primary"><Activity className="size-4"/>Exceptions first</div><h2 id="systems-exceptions-title" className="mt-1 text-lg font-semibold">Systems &amp; recurring costs</h2><p className="mt-1 text-xs text-muted-foreground">On-demand checks · owner-maintained records · no background monitoring</p></div><button onClick={()=>void refreshAll()} disabled={loading||intelligenceRefreshing} className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-xs"><RefreshCw className={`size-3.5 ${loading||intelligenceRefreshing?"animate-spin":""}`}/>Refresh</button></div>
    {loading&&!data?<p role="status" className="mt-4 text-sm text-muted-foreground">Checking existing health sources…</p>:null}
    {error?<p role="status" className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-600">Status data is unavailable. No healthy state is inferred. {error}</p>:null}
    {data&&<>

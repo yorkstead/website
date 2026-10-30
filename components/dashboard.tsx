@@ -202,18 +202,16 @@ export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable }: { g
     return () => window.clearTimeout(timer);
   }, [loadConflict, ready, workspace]);
 
-  const refreshIntelligence = useCallback(async () => {
+  const refreshIntelligence = useCallback(() => {
     const linked = workspace.projects.filter((project) => project.repo || project.deployment);
-    if (!linked.length) return;
-    setRefreshing(true);
+    if (!linked.length) return Promise.resolve();
     const projectIds = linked.map((project) => project.id);
+    setRefreshing(true);
     setIntelligence((current) => markProjectIntelligenceRefreshing(current, projectIds));
-    try {
-      const results = await Promise.allSettled(linked.map((project) => fetchProjectIntelligence(project)));
-      setIntelligence((current) => mergeProjectIntelligenceResults(current, projectIds, results));
-    } finally {
-      setRefreshing(false);
-    }
+    const running = Promise.allSettled(linked.map((project) => fetchProjectIntelligence(project)))
+      .then((results) => { setIntelligence((current) => mergeProjectIntelligenceResults(current, projectIds, results)); })
+      .finally(() => setRefreshing(false));
+    return running;
   }, [workspace.projects]);
 
   const intelligenceKey = workspace.projects.map((project) => `${project.id}:${project.repo ?? ""}:${project.deployment ?? ""}`).join("|");
@@ -847,7 +845,7 @@ export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable }: { g
           {projectLinkNotFound && <section role="alert" className="mt-5 flex flex-col justify-between gap-3 rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 sm:flex-row sm:items-center"><div><div className="text-sm font-semibold">Project link not found</div><p className="mt-1 text-xs text-muted-foreground">The requested project <span className="font-mono">{projectLinkNotFound}</span> is not in the current workspace. No records were changed.</p></div><div className="flex shrink-0 gap-2"><Button size="sm" variant="outline" asChild><Link href="/dashboard/leads">Review leads</Link></Button><Button size="sm" onClick={clearProjectDeepLink}>View current projects</Button></div></section>}
 
           <section className="py-7 sm:py-9"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><div className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Command Center · Overview</div><h1 className="text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">What needs attention today?</h1><p className="mt-2 text-sm text-muted-foreground">Your follow-ups, delivery work, and next actions in one place.</p></div><Button className="self-start sm:self-auto" onClick={() => setComposer("task")}><Plus />Create task</Button></div></section>
-          <SystemsExceptions projects={workspace.projects} intelligence={intelligence} />
+          <SystemsExceptions projects={workspace.projects} intelligence={intelligence} onRefreshIntelligence={refreshIntelligence} intelligenceRefreshing={refreshing} />
           <CommandCenterOverview
             crm={crmSnapshot}
             crmUnavailable={crmUnavailable}
