@@ -69,7 +69,8 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   expect(await workspaceResponse.json()).toHaveProperty("workspace");
 
   await page.goto(`/dashboard/leads?lead=${leadId}`);
-  const lead = page.locator(`#lead-${leadId}`);
+  const leadCard = () => page.locator(`#lead-${leadId}`).filter({ hasText: "CC-016 Synthetic Inquiry" }).first();
+  const lead = leadCard();
   await expect(lead).toContainText("CC-016 Synthetic Inquiry");
   await expect(lead).toContainText(email);
   await expect(lead).toContainText(company);
@@ -86,11 +87,11 @@ test("public inquiry persists once and completes the owner CRM-to-project lifecy
   await expect(lead.locator("textarea[name='notes']")).toHaveValue("CC-016 private synthetic qualification note");
   await expect(lead.locator("input[name='followUpAt']")).toHaveValue(followUpDate);
   await page.reload();
-  await expect(page.locator(`#lead-${leadId} textarea[name='notes']`)).toHaveValue("CC-016 private synthetic qualification note");
+  await expect(leadCard().locator("textarea[name='notes']")).toHaveValue("CC-016 private synthetic qualification note");
 
   await page.goto("/dashboard/leads?followUp=upcoming");
-  await expect(page.locator(`#lead-${leadId}`)).toBeVisible();
-  await page.locator(`#lead-${leadId}`).getByRole("button", { name: "Mark follow-up complete" }).click();
+  await expect(leadCard()).toBeVisible();
+  await leadCard().getByRole("button", { name: "Mark follow-up complete" }).click();
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   const leadFollowUpForm = page.getByRole("button", { name: "Save notes & follow-up" }).locator("xpath=..");
   await expect(leadFollowUpForm.locator('input[name="followUpAt"]')).toHaveValue("");

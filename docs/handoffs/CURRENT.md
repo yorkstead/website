@@ -1,8 +1,48 @@
-# Active work — Command Center PWA — 2026-10-30
+# Active work — Command Center PWA PR #84 conflict resolution — 2026-10-30
+
+- User authorized merging current `main` `5c0f702d5ae419f2b86e2db5707e0795069dbe2b` into existing PR #84 branch, preserving CC-026 and PWA, running checks, and pushing PR #84. No main merge, manual deployment or production configuration change. The CC-026 handoff below is retained as historical evidence from merged main; its then-open PR claims require live verification.
+
+# Historical Command Center PWA handoff — 2026-10-30
 
 - Authorized: focused PWA refinement, checks/build, commit/push and separate PR; no merge, manual deployment or production configuration changes. CC-026 and the old CC-022B workspace remain untouched.
 - Verified 2026-10-30 13:29 UTC: clean dedicated `feat/command-center-pwa`, HEAD and live main `62a64895117c8e6a8f3b45adfa45e8884fb33452`; origin `yorkstead/website`; only open PR #83 is unrelated CC-026. Fetched main matches. Historical handoff below is retained as historical evidence.
 - Implementation and local verification complete under `specs/036-command-center-pwa/`: 422 unit passes / 112 DB skips; scaffold, migration check, lint, typecheck and webpack production build pass. Turbopack worker creation is environment-blocked. Browser execution is blocked by missing host libraries (sudo requires authentication), and real login by absent disposable PostgreSQL. New browser regressions run in existing CI; Android update/reinstall remains a documented manual check. Delivery: [draft PR #84](https://github.com/yorkstead/website/pull/84), `Command Center PWA: Direct Dashboard Launch`. Exact implementation head `2de41fcd7898fd1ee414c106648f77af8845281c` passed [full CI 41065518691](https://github.com/yorkstead/website/actions/runs/41065518691), including all new browser/real login regressions, disposable PostgreSQL integration, standard production build and clean-worktree check; Vercel preview passed. Local limitations above are resolved by this CI source evidence. This documentation-only closeout follows that head; check its new exact-head CI separately. Next: review PR #84; keep open/unmerged, no manual deployment or production changes.
+
+# CC-026 handoff retained from merged main — 2026-10-30
+
+# Active work — CC-026 PR #83 review corrections — 2026-10-30
+
+## Verified session state and authorized scope
+
+- Live GitHub and remote refs verified PR #83 open/unmerged at `cb2d466d3f9ce4e0f661a466097aaa84f3b9c06e` against `main` `62a64895117c8e6a8f3b45adfa45e8884fb33452`. GitHub Actions run 454 and Vercel passed for the starting head. Three review threads remain unresolved pending corrections and exact-head verification.
+- The isolated `/tmp/yorkstead-cc026` checkout is on `feat/cc-026-opportunity-discovery` at the exact remote head before review edits. The prior local hash had identical tree and is saved as `backup/cc026-local-pre-review`; the CC-025 checkout remains untouched.
+- User authorized only the three review fixes, surrounding data-integrity review, required verification, push to this existing PR, and verified thread replies/resolution. No merge, manual deploy, production data/config/secret change, or outreach.
+- Review fixes are complete at code head `76960dbaabb9c3ebae69c381e0de0bc67ee8338c`: report DATE values are stable text, retention excludes linked inquiries and skips in-flight CRM locks, and promotion serializes normalized company and email identities separately. Disposable PostgreSQL regressions cover all three findings.
+- [Exact-code-head CI run 457](https://github.com/yorkstead/website/actions/runs/41069465245) passed migrations, database/unit tests, lint, typecheck, full and focused browser suites, screenshot upload, production build, and clean-worktree check. [Vercel](https://vercel.com/yorkstead/website/3Uxb7GN48fJK38m1iJidZQZupagt) passed. All three review threads received evidence replies and were resolved after verification. PR #83 remains open and unmerged.
+- Local checks passed: scaffold, 22 migration plan checks, typecheck, lint with one pre-existing login-panel warning, 428 unit tests with 116 PostgreSQL-backed skips, and production build. The local full browser run had 27 passes and 6 database-dependent owner-route failures because PostgreSQL is unavailable. CI ran those scenarios against disposable PostgreSQL. No production operation occurred.
+
+# Historical CC-026 handoff — 2026-10-30
+
+## Verified current state — 2026-10-30 13:43 UTC
+
+- GitHub API confirms PR [#83](https://github.com/yorkstead/website/pull/83) is open and unmerged against `main` at `62a64895117c8e6a8f3b45adfa45e8884fb33452`. The feature ref is `feat/cc-026-opportunity-discovery`, current remote head `0a7b5de2e63b420e4c58eb769d1de0dd77d31b10` (ten commits from that base). The original CC-025 checkout remains untouched.
+- The isolated checkout is `/tmp/yorkstead-cc026`. Shell DNS currently prevents fetching the API-created commits, so local HEAD `b271329dc07801574556a3fb6edaa8d04fc63a69` has an identical working tree but a different commit hash. The remote PR head and CI status are verified from GitHub API and are the publication source of truth.
+- Implementation, discovery/spec/plan/tasks, threat model, operations and verification documentation are complete under `specs/036-cc-026-opportunity-discovery/`. Migration 0022 was validated against disposable PostgreSQL in CI and has not been applied locally or in production.
+- GitHub Actions [run 452](https://github.com/yorkstead/website/actions/runs/41063930393) passed at the exact remote head: scaffold/dependency checks, migration plan and disposable PostgreSQL migrations, 541 deterministic/database tests, lint, typecheck, default Playwright, every existing isolated owner workflow, CC-016 lead lifecycle, CC navigation/overview/directory, CC-026 desktop/mobile owner workflow, responsive screenshot upload, production-secret-free build, and clean-worktree validation. The screenshot artifact is retained for 14 days. Lint reports one pre-existing warning in `components/login-panel.tsx:62`.
+- Local checks remain: scaffold/migration validation/typecheck/lint/build pass; 428 unit tests pass with 113 PostgreSQL-backed skips; focused tests pass. Local browser testing is limited by unavailable PostgreSQL and loopback bind restrictions. See `specs/036-cc-026-opportunity-discovery/verification.md` for detail.
+- Scope remains: no merge, manual deployment, production migration/data/config/secret change, or outbound message. PR #83 remains open and unmerged for review; the user did not authorize further actions.
+
+## Verified session start and current state — 2026-10-30 11:32 UTC
+
+- Live GitHub API and a fresh `git fetch origin main` verified `main` at `62a64895117c8e6a8f3b45adfa45e8884fb33452`, matching the requested base. PR #82 merged at this SHA; no open PRs or existing CC-026 branch were found. These observations supersede the historical CC-025 active/open status further below.
+- The pre-existing `/home/brandon/development/yorkstead/website-cc025` checkout is clean at `1dc96f6a32f0c37427d8d692e3c3e0d0d5ce761a` and remains untouched. `/tmp/yorkstead-cc026` is an isolated local clone, clean on `feat/cc-026-opportunity-discovery` at the verified main SHA.
+- Repository instructions, constitution, verification/release workflow, and code-change-verification, database-migration, security-review, production-hardening, and spec-convergence skills were read. Bun dependencies installed offline from the lockfile; no dependency files were changed. Installed Next.js 16.4.2 App Router guides are being reviewed before application code.
+- Discovery audit/spec/plan/tasks/threat model are in `specs/036-cc-026-opportunity-discovery/`. Existing lead/consultation/proposal/follow-up/project-conversion sources of truth remain authoritative. Research is isolated until explicit, consent-backed promotion, and no contact data is collected in research-only records.
+- Authorization from the current user request: implement, verify, publish `feat/cc-026-opportunity-discovery`, and open one PR with title `CC-026: Opportunity Discovery & Problem-Led Prospecting`. No merge, manual deployment, production data/config/secret change, or outreach.
+- Current stage: implementation complete in the isolated checkout; final verification, operational notes, exact-head review, push, and PR opening remain. Additive migration 0022 has not been applied to any database. Production is untouched.
+- Implemented: owner-only research workspace under CRM navigation; separate opportunity/evidence/interview/history persistence; epistemic evidence labels; consent-aware guided discovery; explicit qualification and manual queue ordering; duplicate-aware transactional/idempotent CRM link or promotion; reports that distinguish research from CRM outcomes; no research conversion analytics or outbound messaging. The existing CRM status, proposal, follow-up, consultation, and project paths remain authoritative.
+- Verification: scaffold, migration-plan, typecheck, migration validation, lint, full unit tests (428 pass / 113 PostgreSQL-backed skips / 0 fail), focused tests (43 pass), and Next build pass. Lint retains one existing warning in `components/login-panel.tsx`. Standard Playwright completed 25 pass / 8 fail with no local PostgreSQL; owner/session checks logged `ECONNREFUSED 127.0.0.1:5432`. Focused CC-026 Playwright server could not bind loopback in this sandbox (`EPERM`). These limits and CI's disposable-PostgreSQL/screenshot coverage are documented in spec verification.
+- Next exact action: finish security/spec convergence, verify exact branch head and live base, push the authorized feature branch, and open one PR. No merge, manual deployment, production data/config/secret change, or outreach.
 
 # Active work — CC-025 Unified Yorkstead Design System & Navigation — 2026-10-30
 
