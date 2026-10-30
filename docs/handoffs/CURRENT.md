@@ -1,13 +1,11 @@
 ## CC-022B Website P2 review closeout — 2026-10-30
 
-- Scope: finish only the two new P2 findings on existing Website PR #79. No new PR, merge, manual deployment, production change or purchase.
-- Fixes: payday schedule forms capture their starting revision; refreshed newer revisions show a stale-draft alert and block save until review. Shopping item command recovery is held by `AutomationHubRecords` above the conditional planner mount, mirrored to schema-validated sessionStorage when possible; recovery retries the original key after 202, failed/degraded Hub reads and remount, and blocks conflicting mutations.
-- Regressions: cross-tab schedule changes prove stale form values cannot be saved with a refreshed revision. A second browser path blocks storage writes, returns 503 then 202, fails Hub refresh, remounts, checks duplicate prevention and reconciles with the same key.
-- Exact source/test head `69773a4b895bbce4d3f8918d8e6dc895af854a92` passed full Website CI [40981740290](https://github.com/yorkstead/website/actions/runs/40981740290), including disposable PostgreSQL, all tests/browser workflows and production build. Local typecheck, lint (one pre-existing login-panel warning), Bun tests (397 passed / 110 DB-dependent skipped), scaffold/migration checks, webpack build and diff check passed. Playwright server could not launch locally; CI ran its disposable PostgreSQL browser suite.
-- Review threads `PRRT_kwDOUJPn1c6xzghr` and `PRRT_kwDOUJPn1c6xzghx` were resolved after this passing run. PR #79 remains open and unmerged and was marked ready for review after source/test CI 40981740290 passed and the exact documentation head CI 40982871445 passed. The final docs head is 7874b6383471bf4d3d90f18f3e800a1dcf36849a; its Vercel check succeeded. No merge, deployment, or production operation occurred. Rollout remains Hub #92 first, then Website #79 after nonproduction Hub contract validation. `website.code-workspace` remains untouched.
-
-Warning: truncated output (original token count: 19873)
-Total output lines: 258
+- Scope: finish the two outstanding P2 findings on existing Website PR #79 only. PR remains unmerged; no deployment or production changes.
+- Fixes: receipt forms retain their starting record revision and block confirmation after a cross-tab refresh until the latest receipt is reviewed. Pending item command retry is rendered independently of the bounded shopping snapshot, so truncation cannot strand a command.
+- Recovery regression: with sessionStorage writes blocked, item commands retain the exact payload/key in the stable parent page ref through 202 responses, failed/degraded Hub refresh, planner unmount/remount, bounded snapshots and duplicate prevention. Retry reconciles with the same key.
+- Exact source/test head `fe99203ae14e39abc42e48d41d6d3562a67d5a86` passed [full exact-head CI 40986168706](https://github.com/yorkstead/website/actions/runs/40986168706): disposable PostgreSQL migrations/integration, deterministic tests, lint, typecheck, all browser workflows including the CC-022B regressions, production build and generated-worktree cleanliness. [Vercel](https://vercel.com/yorkstead/website/55sURrUbvS4kTYtMRfsrMKkXmbQj) succeeded.
+- Local evidence: 397 unit tests passed, 110 PostgreSQL-dependent tests skipped locally; typecheck, scaffold check, 19 migration checks, webpack production build and Playwright discovery passed. Lint has one pre-existing warning at `components/login-panel.tsx:62`. The remote CI ran the disposable PostgreSQL and browser scenarios.
+- Review threads `PRRT_kwDOUJPn1c6x0BBI` and `PRRT_kwDOUJPn1c6x0BBK` were resolved after exact-head CI passed. Confirm the final documentation-head CI and live PR state before marking #79 ready. Rollout remains Hub #92 first, then Website #79 after nonproduction Hub contract validation. `website.code-workspace` remains untouched.
 
 ## CC-022B existing-PR review corrections — 2026-10-29
 
