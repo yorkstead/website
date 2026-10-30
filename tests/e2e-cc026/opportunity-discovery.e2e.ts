@@ -51,12 +51,14 @@ test("owner captures evidence, runs discovery, records permission, and validates
   await createForm.getByLabel("Suspected problem (hypothesis until supported)").fill("Receiving quantities may be copied between records.");
   await createForm.getByRole("button",{name:"Create research record"}).click();
   await expect(page.getByText("Research record created")).toBeVisible();
-  const record=page.getByRole("link",{name:businessName,exact:true});
-  await expect(record).toBeVisible();
-  await record.click();
-  const opportunityId=new URL(page.url()).searchParams.get("id");
+  const createdRecord=await databasePool!.query<{id:string}>("SELECT id::text AS id FROM research_opportunities WHERE business_name=$1 ORDER BY created_at DESC LIMIT 1",[businessName]);
+  const opportunityId=createdRecord.rows[0]?.id;
   expect(opportunityId).toMatch(/^[0-9a-f-]{36}$/i);
   ids.push(opportunityId!);
+  const record=page.getByRole("link",{name:businessName,exact:true});
+  await expect(record).toBeVisible();
+  await expect(record).toHaveAttribute("href",`/dashboard/opportunities?id=${opportunityId}`);
+  await page.goto(`/dashboard/opportunities?id=${opportunityId}`);
   await expect(page.getByText("Hypothesis",{exact:true})).toBeVisible();
   await expect(page.getByText("No evidence added. Keep the suspected problem labeled as a hypothesis.")).toBeVisible();
 
