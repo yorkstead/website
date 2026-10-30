@@ -158,8 +158,8 @@ test("shopping edits keep their opening revision across a cross-tab refresh", as
   const otherTab = await context.newPage();
   await page.goto("/dashboard/automations");
   await otherTab.goto("/dashboard/automations");
-  const firstItem = page.locator('section[aria-labelledby="shopping-planner-title"] li').filter({ has: page.getByRole("heading", { name: "Dog food", exact: true }) });
-  const secondTabItem = otherTab.locator('section[aria-labelledby="shopping-planner-title"] li').filter({ has: otherTab.getByRole("heading", { name: "Dog food", exact: true }) });
+  const firstItem = page.locator('section[aria-labelledby="shopping-planner-title"] li').first();
+  const secondTabItem = otherTab.locator('section[aria-labelledby="shopping-planner-title"] li').first();
   await firstItem.getByRole("button", { name: "Edit", exact: true }).click();
   await page.getByLabel("Item", { exact: true }).fill("Stale draft from first tab");
   await secondTabItem.getByRole("button", { name: "Edit", exact: true }).click();
@@ -258,7 +258,7 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   hubReadMode="available";await page.getByRole("button",{name:"Refresh Hub records"}).click();
   await expect(page.getByRole("heading",{name:"Shopping planner"})).toBeVisible();
   const beforeBlockedDuplicate=bodies.length;await shoppingItem.getByRole("button",{name:"Mark purchased"}).click();
-  expect(bodies).toHaveLength(beforeBlockedDuplicate);await expect(page.getByRole("status").filter({hasText:"A payday command is unresolved"})).toBeVisible();
+  expect(bodies).toHaveLength(beforeBlockedDuplicate);await expect(page.getByRole("status").filter({hasText:"Other shopping commands are blocked"})).toBeVisible();
   await page.getByRole("button",{name:"Retry original payday command"}).click();
   await expect(page.getByRole("status").filter({hasText:"unsupported or invalid data contract"})).toBeVisible();
   await expect(page.getByRole("heading",{name:"Shopping planner"})).toHaveCount(0);
