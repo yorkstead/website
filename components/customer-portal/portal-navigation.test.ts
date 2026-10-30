@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { firstVisiblePortalSection } from "@/components/customer-portal/portal-navigation";
+import {
+  firstVisiblePortalSection,
+  portalSectionObserverRootMargin,
+} from "@/components/customer-portal/portal-navigation";
 
 describe("customer portal section navigation", () => {
   test("selects the first visible section from the top of the viewport", () => {
@@ -14,5 +17,12 @@ describe("customer portal section navigation", () => {
     expect(firstVisiblePortalSection([
       { isIntersecting: false, target: { id: "timeline" }, boundingClientRect: { top: 60 } },
     ])).toBeUndefined();
+  });
+
+  test("uses viewport-height pixel insets that leave an observation area on desktop and mobile", () => {
+    expect(portalSectionObserverRootMargin(900)).toBe("-88px 0px -612px 0px");
+    expect(portalSectionObserverRootMargin(844)).toBe("-88px 0px -573px 0px");
+    expect(portalSectionObserverRootMargin(600)).toBe("-88px 0px -408px 0px");
+    expect(portalSectionObserverRootMargin(120)).toBe("-56px 0px 0px 0px");
   });
 });

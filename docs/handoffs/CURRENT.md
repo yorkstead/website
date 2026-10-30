@@ -1,10 +1,17 @@
 # Active work — CC-025 Unified Yorkstead Design System & Navigation — 2026-10-30
 
+## CC-025 customer portal observer review correction — 2026-10-30
+
+- Verified live at 2026-10-30 11:00 UTC: isolated checkout `/home/brandon/development/yorkstead/website-cc025`, branch `feat/cc-025-unified-design-navigation`, clean at `210be045a3150530819398cc843f25aaae22b2c1`, tracking ref matched; verified live `main` is `363c4dad28b1d0676e4b28887154b74589536e06` and remains an ancestor. PR #82 is open/unmerged against that base at this exact head. Exact-head GitHub Actions run 439 and Vercel passed. Two unresolved duplicate P2 review threads are `PRRT_kwDOUJPn1c6x7q4r` and `PRRT_kwDOUJPn1c6x7xRV`, both on `components/customer-portal/portal-navigation.tsx:35`.
+- User-authorized correction: make the observer band height-based and nonempty, reconnect it after viewport resizing with complete cleanup, preserve sticky links/highlighting/`aria-current`, add actual desktop 1440×900 and mobile/resized phone scrolling coverage, run the affected and complete required checks, then respond to and resolve both threads after exact-head verification. No merge or manual deployment.
+- The root-margin helper, cleanup/reconnect logic, unit coverage and owner-authenticated Playwright regression are now implemented locally. Scaffold, migration validation, lint, typecheck, targeted portal tests, full unit suite, and build pass. The affected local owner-browser suite cannot initialize because no identical disposable `DATABASE_URL` and `TEST_DATABASE_URL` are configured; GitHub Actions CI is required to run it against its disposable PostgreSQL service. See the feature verification record for final exact-head evidence.
+- Next exact action: finish the local review, commit and push the correction to PR #82, wait for full CI and Vercel on the exact new head, then respond to and resolve only the two listed threads. Keep PR #82 open.
+
 ## Skill metadata repair — 2026-10-30
 
 - Verified at session start: isolated checkout `/home/brandon/development/yorkstead/website-cc025`, branch `feat/cc-025-unified-design-navigation`, clean at `df0b6f080ed915d108deea1d4fb815e9c2b4ce60`; local tracking ref matched. Live GitHub API confirmed `main` remained `363c4dad28b1d0676e4b28887154b74589536e06`, PR #82 open at the feature SHA, GitHub Actions CI run 438 in progress, and Vercel status successful. These are current observations separate from prior CC-025 handoff history.
 - User-authorized supplemental docs task: repair required Agent Skills YAML metadata before resuming CC-025. All six repository skills lacked frontmatter, including the five reported skills plus `.agents/skills/code-change-verification/SKILL.md`. Added matching `name` and task-specific `description` fields to all six; preserved each original instruction body and all safety constraints/references. Bundled `quick_validate.py`, Agent Skills name/description/directory checks, body-preservation comparison, and `git diff --check` passed. This session also passed scaffold check, 21-migration check, lint (0 errors, one existing warning), typecheck, 420 unit tests (112 database-backed skips), and production build. No application behavior changed; browser checks remain on the existing PR head workflow.
-- Keep this as a standalone skills/documentation commit on the existing CC-025 branch. Continue CC-025 by reviewing PR #82 checks/feedback when available; do not merge or manually deploy.
+- The standalone skill metadata commit is `210be045a3150530819398cc843f25aaae22b2c1` on the existing CC-025 branch and remains part of PR #82. It changed no application behavior.
 
 ## Session resumed
 

@@ -21,6 +21,7 @@ Visitors, owners and customers should recognize Yorkstead's visual language acro
 - Public navigation works by keyboard and pointer, communicates active route, and fits common phone/tablet/desktop widths without page-level horizontal overflow.
 - Owner navigation works at phone and desktop widths; collapsed and expanded preference, selected route/hash, Escape dismissal, focus return, and route access continue to work.
 - Customer section navigation is scrollable/usable on small screens; active section state updates as the customer scrolls; links target the correct sections; focus visibility is clear.
+- Browser regression coverage scrolls the actual customer portal at 1440×900 and 390×844, then resizes to a shorter phone viewport and confirms active-section and `aria-current` updates remain correct.
 - Navigation controls have meaningful accessible names, landmarks, current-state semantics, visible focus and adequate target sizes; reduced-motion is respected.
 - No public intake, database access, auth, customer authorization, route, production-data or secret behavior changes.
 - New focused automated tests pass. Desktop and mobile screenshots are captured from the implemented site and stored with the spec.

@@ -13,3 +13,5 @@
 - [x] Complete acceptance-criteria convergence and privacy/security review.
 - [x] Update current handoff, commit/push branch, and open the single titled PR (#82).
 - [x] Confirm no merge, deployment or production operation occurred.
+- [x] Replace percentage root margins with a viewport-height observation band, reconnect and clean up on resize/unmount, and add desktop/mobile/resized scrolling coverage for active `aria-current`.
+- [ ] Pass full exact-head CI, then respond to and resolve both duplicate customer-navigation review threads.
