@@ -1,4 +1,13 @@
-# Active work — CC-026 Opportunity Discovery & Problem-Led Prospecting — 2026-10-30
+# Active work — CC-026 PR #83 review corrections — 2026-10-30
+
+## Verified session state and authorized scope
+
+- Live GitHub and remote refs verified PR #83 open/unmerged at `cb2d466d3f9ce4e0f661a466097aaa84f3b9c06e` against `main` `62a64895117c8e6a8f3b45adfa45e8884fb33452`. GitHub Actions run 454 and Vercel passed for the starting head. Three review threads remain unresolved pending corrections and exact-head verification.
+- The isolated `/tmp/yorkstead-cc026` checkout is on `feat/cc-026-opportunity-discovery` at the exact remote head before review edits. The prior local hash had identical tree and is saved as `backup/cc026-local-pre-review`; the CC-025 checkout remains untouched.
+- User authorized only the three review fixes, surrounding data-integrity review, required verification, push to this existing PR, and verified thread replies/resolution. No merge, manual deploy, production data/config/secret change, or outreach.
+- Review fixes underway: stable overdue DATE strings, retention exclusion and row-lock handling for linked CRM inquiries, and separate company/email promotion locks; disposable PostgreSQL regressions added. Local PostgreSQL is unavailable, so database and owner browser tests require the CI disposable service. Update this section with exact results after publication.
+
+# Historical CC-026 handoff — 2026-10-30
 
 ## Verified current state — 2026-10-30 13:43 UTC
 

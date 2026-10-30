@@ -36,6 +36,7 @@ Each of the ten criteria is explicitly selected as low / medium / high / unknown
 - Parameterized SQL, bounded text/arrays/JSON, explicit enums, UUID validation, URL-safe source references limited to safe `https:` or same-origin local links, private responses, and audit history for material transitions.
 - Additive ordered migration only. Foreign keys from research records to opportunities/consultations/leads are restrictive or nullable where appropriate; no research history is deleted on promotion/archive.
 - Archive hides active work but retains the record and evidence. Deletion/retention is owner-only and must not delete CRM leads, consultations, proposals, or projects.
+- An archived CRM inquiry linked to retained opportunity research is deferred from the existing time-based inquiry purge. Unrelated eligible inquiries continue to purge. Deliberate erasure of archived research releases the link for a later retention run and leaves minimal audit history.
 
 ## Rollback
 

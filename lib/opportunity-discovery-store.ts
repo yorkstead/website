@@ -301,14 +301,14 @@ export const opportunityStore = {
   },
 
   async duplicateLeads(businessName: string, email?: string) {
-    const normalized = normalizeBusinessName(businessName).replace(/\s/g, "");
+    const company = businessName.trim().slice(0, 200);
     const emailValue = typeof email === "string" ? email.trim().toLowerCase().slice(0, 254) : "";
-    if (normalized.length < 2 && !emailValue) return [];
+    if (company.length < 2 && !emailValue) return [];
     const rows = await pool().query(`SELECT i.id,i.name,i.email,i.company,i.status,i.follow_up_at,i.next_step,i.converted_project_id
       FROM contact_inquiries i WHERE NOT EXISTS(SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)
-      AND (($1<>'' AND regexp_replace(lower(COALESCE(i.company,'')),'[^[:alnum:]]','','g')=$1)
+      AND ((regexp_replace(lower($1),'[^[:alnum:]]','','g')<>'' AND regexp_replace(lower(COALESCE(i.company,'')),'[^[:alnum:]]','','g')=regexp_replace(lower($1),'[^[:alnum:]]','','g'))
         OR ($2<>'' AND lower(i.email)=$2))
-      ORDER BY i.updated_at DESC,i.id DESC LIMIT 20`, [normalized,emailValue]);
+      ORDER BY i.updated_at DESC,i.id DESC LIMIT 20`, [company,emailValue]);
     return rows.rows.map((row) => ({ id: Number(row.id), name: String(row.name), email: String(row.email), company: row.company ? String(row.company) : null, status: String(row.status), followUpAt: safeDate(row.follow_up_at), nextStep: String(row.next_step ?? ""), projectId: row.converted_project_id ? String(row.converted_project_id) : null }));
   },
 
@@ -338,8 +338,13 @@ export const opportunityStore = {
         leadId = Number(existing.id);
         eventType = "crm_linked";
       } else {
-        await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [`opportunity-promotion:${normalizeBusinessName(company)}:${email}`]);
-        const matches = await client.query("SELECT id FROM contact_inquiries i WHERE lower(i.email)=lower($1) OR (regexp_replace(lower(COALESCE(i.company,'')),'[^[:alnum:]]','','g')=regexp_replace(lower($2),'[^[:alnum:]]','','g') AND $2<>'') FOR UPDATE", [email,company]);
+        const identity = (await client.query<{ company_key: string }>("SELECT regexp_replace(lower($1),'[^[:alnum:]]','','g') AS company_key", [company])).rows[0]?.company_key;
+        if (!identity) throw new OpportunityOperationError("A company name with letters or numbers is required.");
+        // Every promotion takes these independent identity locks in the same
+        // order, including when only one identity overlaps another promotion.
+        await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [`opportunity-promotion:company:${identity}`]);
+        await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [`opportunity-promotion:email:${email}`]);
+        const matches = await client.query("SELECT id FROM contact_inquiries i WHERE NOT EXISTS(SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id) AND (lower(i.email)=$1 OR regexp_replace(lower(COALESCE(i.company,'')),'[^[:alnum:]]','','g')=$2) FOR UPDATE", [email,identity]);
         if (matches.rowCount) throw new OpportunityOperationError("A matching CRM lead already exists. Review it and link the existing record.");
         const inserted = await client.query(`INSERT INTO contact_inquiries(name,email,company,project_type,message,ip_hash,status,intake)
           VALUES($1,$2,$3,'Opportunity research validation',$4,'owner-research-'||$5,'new',jsonb_build_object('source','owner-research','opportunityId',$5)) RETURNING id`, [name,email,company,String(opportunity.suspected_problem || opportunity.workflow || "Validated operational workflow research").slice(0,5000),id]);
@@ -366,7 +371,7 @@ export const opportunityStore = {
         client.query("SELECT o.id,o.business_name,o.industry,o.research_status,o.crm_lead_id,i.status AS crm_status,i.converted_project_id,(SELECT COUNT(*)::int FROM crm_proposals p WHERE p.lead_id=i.id) AS proposal_count,(SELECT COUNT(*)::int FROM crm_proposals p WHERE p.lead_id=i.id AND p.state='accepted') AS accepted_count FROM research_opportunities o LEFT JOIN contact_inquiries i ON i.id=o.crm_lead_id WHERE o.crm_lead_id IS NOT NULL ORDER BY o.updated_at DESC,o.id LIMIT 100"),
       ]);
       const rows = (value: typeof industries) => value.rows;
-      return { industries: rows(industries), recurringWorkflows: rows(workflows).map((row) => ({ ...row, opportunityIds: row.opportunity_ids as string[] })), recurringProblems: rows(problems).map((row) => ({ ...row, opportunityIds: row.opportunity_ids as string[] })), stages: rows(stages), upcomingInterviews: rows(calendar).map((row) => ({ ...row, id: String(row.id), date: new Date(String(row.interview_date)).toISOString().slice(0,10) })), overdueActions: rows(overdue).map((row) => ({ ...row, id: String(row.id) })), validatedUnpromoted: rows(unpromoted).map((row) => ({ ...row, id: String(row.id) })), promotions: rows(outcomes).map((row) => ({ ...row, id: String(row.id), crmLeadId: Number(row.crm_lead_id), projectId: row.converted_project_id ? String(row.converted_project_id) : null, proposalCount: Number(row.proposal_count), acceptedProposalCount: Number(row.accepted_count) })) };
+      return { industries: rows(industries), recurringWorkflows: rows(workflows).map((row) => ({ ...row, opportunityIds: row.opportunity_ids as string[] })), recurringProblems: rows(problems).map((row) => ({ ...row, opportunityIds: row.opportunity_ids as string[] })), stages: rows(stages), upcomingInterviews: rows(calendar).map((row) => ({ ...row, id: String(row.id), date: new Date(String(row.interview_date)).toISOString().slice(0,10) })), overdueActions: rows(overdue).map((row) => ({ ...row, id: String(row.id), next_action_at: new Date(String(row.next_action_at)).toISOString().slice(0,10) })), validatedUnpromoted: rows(unpromoted).map((row) => ({ ...row, id: String(row.id) })), promotions: rows(outcomes).map((row) => ({ ...row, id: String(row.id), crmLeadId: Number(row.crm_lead_id), projectId: row.converted_project_id ? String(row.converted_project_id) : null, proposalCount: Number(row.proposal_count), acceptedProposalCount: Number(row.accepted_count) })) };
     } finally { client.release(); }
   },
 

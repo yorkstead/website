@@ -1,5 +1,12 @@
 # CC-026 verification record
 
+## PR #83 review correction verification (2026-10-30)
+
+- Corrected the overdue report's PostgreSQL `DATE` mapping to an ISO calendar-day string before rendering; a disposable PostgreSQL regression checks the returned value.
+- Reused the retention job's restrictive migration-0022 CRM link with a shared parameterized purge query. Its disposable PostgreSQL regression checks that unrelated eligible inquiries purge while linked research remains, then that owner erasure releases the inquiry for a later purge and leaves an audit event.
+- Promotion now takes independent normalized company and email transaction locks in fixed order. Disposable PostgreSQL regressions race two distinct opportunities with the same company/different emails and the same email/different companies, asserting exactly one new CRM lead and one rejected duplicate.
+- Local `bun run yorkstead:check`, `bun run db:migrate:check`, `bun run typecheck`, `bun run lint`, `bun test`, and `bun run build` pass. Lint retains the pre-existing login-panel warning. Local `bun test` reports 428 pass, 116 PostgreSQL-backed skips, 0 fail. The disposable database and full browser suite are required in exact-head CI; the local browser run cannot exercise database-backed owner flows without PostgreSQL. Final CI evidence belongs in the PR review replies.
+
 Verification is performed from the isolated `feat/cc-026-opportunity-discovery` checkout based on the verified `main` SHA `62a64895117c8e6a8f3b45adfa45e8884fb33452`. Record the final branch HEAD and CI result in the PR before completion.
 
 ## Required repository checks
@@ -19,7 +26,7 @@ Verification is performed from the isolated `feat/cc-026-opportunity-discovery` 
 ## Focused coverage
 
 - `lib/opportunity-discovery.test.ts`: parser bounds, date/source URL safety, evidence classifications, transparent unknown behavior, transitions, duplicate name normalization, and evidence-grounded draft generation.
-- `tests/opportunity-discovery-database.test.ts`: research/CRM separation, validation prerequisites, evidence and interview persistence, parallel idempotent promotion, duplicate linking, CRM follow-up preservation, conversion-event separation, audit history, and archived erasure.
+- `tests/opportunity-discovery-database.test.ts`: research/CRM separation, validation prerequisites, evidence and interview persistence, parallel idempotent promotion, independent company/email lock races, duplicate linking, CRM follow-up preservation, conversion-event separation, overdue DATE serialization, retention with linked and unrelated inquiries, audit history, and archived erasure.
 - `tests/analytics-persistence.test.ts`: rejects a research event from the public first-party conversion event contract.
 - `tests/e2e-cc026/opportunity-discovery.e2e.ts`: unauthenticated owner-page redirect, disabled customer-route isolation, authenticated research workflow, no premature CRM lead, responsive owner navigation, and desktop/mobile screenshots. CI uploads screenshots as `cc026-opportunity-discovery-screenshots` for 14 days.
 

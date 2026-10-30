@@ -15,6 +15,7 @@ Migration `0022_opportunity-discovery.sql` is additive and ordered after `0021`.
 
 - Archive hides the record from active queues and reporting; the owner can restore it to researching.
 - A deliberate typed confirmation can erase archived opportunity/evidence/interview content. A minimal `opportunity_history` erase event remains without research text. A linked CRM lead is preserved and never cascaded into deletion.
+- Migration 0022 deliberately uses `ON DELETE RESTRICT` for the CRM link. The existing retention job now skips expired archived inquiries while a research opportunity still links them, and skips CRM rows locked by an in-flight owner action. It continues purging unrelated eligible inquiries in the same run. To release an expired CRM lead, the owner first archives and erases its linked research record with typed confirmation; the next retention run can then purge the lead. The minimal research audit event remains. This linked-record exception should be reviewed as part of the normal retention policy.
 - Evidence and interview rows cascade only when the research opportunity itself is erased. A linked consultation uses `ON DELETE SET NULL`; this feature never deletes consultations.
 - Retention policy should be reviewed with the existing CRM/consultation retention schedule before production activation. Do not use the audit table for sensitive conversation content.
 
