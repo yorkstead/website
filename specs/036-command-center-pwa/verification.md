@@ -22,4 +22,6 @@ Base: `62a64895117c8e6a8f3b45adfa45e8884fb33452`; dedicated `feat/command-center
 
 ## Delivery
 
-Open a separate draft PR pending exact-head CI. No merge, manual deployment or production configuration operation is authorized or performed.
+[PR #84](https://github.com/yorkstead/website/pull/84) is open and draft, titled **Command Center PWA: Direct Dashboard Launch**. Exact implementation head `2de41fcd7898fd1ee414c106648f77af8845281c` passed [CI run 41065518691](https://github.com/yorkstead/website/actions/runs/41065518691): disposable PostgreSQL migrations/integration, complete general browser suite (including manifest/shortcut launch and actual worker cache tests), all isolated authenticated workflows (including the new real owner recovery-login return to dashboard), lint/typecheck, standard production build and generated-worktree cleanliness. Vercel preview also succeeded. This resolves the local browser/database/default-build verification gaps for that source revision. Physical Android update/install testing remains manual and unperformed.
+
+A documentation-only closeout commit follows this verified implementation head; its new exact-head checks may be pending. No merge, manual deployment or production configuration operation is authorized or performed.
