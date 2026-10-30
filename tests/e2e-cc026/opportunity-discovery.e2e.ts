@@ -68,7 +68,7 @@ test("owner captures evidence, runs discovery, records permission, and validates
   await evidenceForm.getByLabel("Source URL or traceable reference").fill("interview CC-026-01");
   await evidenceForm.getByLabel("Date observed").fill("2026-10-30");
   await evidenceForm.getByRole("button",{name:"Add evidence"}).click();
-  await expect(page.getByText("Business statement",{exact:true})).toBeVisible();
+  await expect(page.getByText("Business statement",{exact:true}).first()).toBeVisible();
 
   await page.getByText("Schedule a conversation or record a completed interview").click();
   const interviewForm=page.locator("form").filter({has:page.getByLabel("Conversation state")});
