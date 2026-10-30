@@ -1,5 +1,11 @@
 # Active work — CC-025 Unified Yorkstead Design System & Navigation — 2026-10-30
 
+## Skill metadata repair — 2026-10-30
+
+- Verified at session start: isolated checkout `/home/brandon/development/yorkstead/website-cc025`, branch `feat/cc-025-unified-design-navigation`, clean at `df0b6f080ed915d108deea1d4fb815e9c2b4ce60`; local tracking ref matched. Live GitHub API confirmed `main` remained `363c4dad28b1d0676e4b28887154b74589536e06`, PR #82 open at the feature SHA, GitHub Actions CI run 438 in progress, and Vercel status successful. These are current observations separate from prior CC-025 handoff history.
+- User-authorized supplemental docs task: repair required Agent Skills YAML metadata before resuming CC-025. All six repository skills lacked frontmatter, including the five reported skills plus `.agents/skills/code-change-verification/SKILL.md`. Added matching `name` and task-specific `description` fields to all six; preserved each original instruction body and all safety constraints/references. Bundled `quick_validate.py`, Agent Skills name/description/directory checks, body-preservation comparison, and `git diff --check` passed. This session also passed scaffold check, 21-migration check, lint (0 errors, one existing warning), typecheck, 420 unit tests (112 database-backed skips), and production build. No application behavior changed; browser checks remain on the existing PR head workflow.
+- Keep this as a standalone skills/documentation commit on the existing CC-025 branch. Continue CC-025 by reviewing PR #82 checks/feedback when available; do not merge or manually deploy.
+
 ## Session resumed
 
 - User-authorized scope: complete CC-025 discovery, specification/plan/tasks, design-system consolidation, public/owner/customer navigation improvements, responsive behavior, accessibility, existing behavior preservation, automated tests, visual screenshots, documentation, verification, one PR titled `CC-025: Unified Yorkstead Design System & Navigation`. Do not merge, manually deploy, modify production secrets, or mutate production data.
