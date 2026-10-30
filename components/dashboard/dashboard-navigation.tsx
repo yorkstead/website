@@ -26,6 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { navigationLinkStyles } from "@/components/navigation/navigation-link-styles";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const preferenceKey = "yorkstead-dashboard-nav-collapsed";
@@ -114,11 +115,10 @@ function LinkItem({
 }) {
   const Icon = item.icon;
   const active = routeIsActive(item, pathname, query);
-  const className = cn(
-    "group flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-    nested && "min-h-9 text-xs",
-    collapsed && "justify-center px-0",
-    active ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground",
+  const className = navigationLinkStyles(
+    "sidebar",
+    active,
+    cn(nested && "min-h-9 text-xs", collapsed && "justify-center px-0"),
   );
   const content = <><Icon aria-hidden="true" className="size-[18px] shrink-0" /><span className={cn("min-w-0 truncate", collapsed && "sr-only")}>{item.label}</span>{item.external && !collapsed ? <ExternalLink aria-hidden="true" className="ml-auto size-3.5" /> : null}</>;
   const shared = {

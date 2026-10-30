@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Terminal, RefreshCcw } from "lucide-react";
-import { BrandMark } from "@/components/brand-mark";
+import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata: Metadata = {
   title: "Walkthroughs",
@@ -17,28 +16,7 @@ export default function DemosPage() {
       {/* Background Glow */}
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_0%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_38%)]" />
 
-      {/* Header */}
-      <header className="relative mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
-        <BrandMark />
-        <nav aria-label="Primary" className="flex items-center gap-1 sm:gap-2">
-          <Link href="/#services" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
-            Software + automation
-          </Link>
-          <Link href="/demos" className="px-3 py-2 text-xs text-foreground font-semibold border-b-2 border-primary">
-            Walkthroughs
-          </Link>
-          <Link href="/#work" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
-            Work
-          </Link>
-          <Link href="/about" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground lg:block">
-            About
-          </Link>
-          <Link href="/#contact" className="hidden px-3 py-2 text-xs text-muted-foreground hover:text-foreground sm:block">
-            Contact
-          </Link>
-          <ThemeToggle />
-        </nav>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section */}
       <section className="relative mx-auto max-w-7xl px-5 pt-12 pb-16 sm:px-8 sm:pt-16 sm:pb-20">

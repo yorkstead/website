@@ -85,12 +85,6 @@ export interface SolutionOutcome { slug: string; number: string; title: string; 
 export interface SolutionCardProps { solution: SolutionOutcome }
 export declare function SolutionCard(props: SolutionCardProps): React.JSX.Element;
 
-/** lib/demos.ts */
-export interface PublicDemo { slug: string; number: string; title: string; industry: string; kicker: string; summary: string; operationalProblem: string; solutionNarrative: string; workflowsShown: string[]; maturity: "Interactive Production Sandbox" | "Beta Interactive Sandbox"; dataDisclaimer: string; canonicalLaunchUrl: string; metrics: { label: string; value: string }[]; stages: string[] }
-/** components/demo-card.tsx */
-export interface DemoCardProps { demo: PublicDemo }
-export declare function DemoCard(props: DemoCardProps): React.JSX.Element;
-
 /** lib/labs.ts */
 export interface LabExperiment { slug: string; number: string; title: string; category: string; kicker: string; maturity: "Functional Prototype" | "Browser-Runnable Slice" | "Hardware Lab Benchmark" | "Archived Spike"; status: "active_experiment" | "runnable_prototype" | "archived"; purpose: string; operationalHypothesis: string; limitations: string; dataSource: string; interactionType: string; interactionUrl?: string; technologies: string[]; findings: string[] }
 /** components/lab-experiment-card.tsx */

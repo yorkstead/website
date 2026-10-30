@@ -1,3 +1,15 @@
+# Active work — CC-025 Unified Yorkstead Design System & Navigation — 2026-10-30
+
+## Session resumed
+
+- User-authorized scope: complete CC-025 discovery, specification/plan/tasks, design-system consolidation, public/owner/customer navigation improvements, responsive behavior, accessibility, existing behavior preservation, automated tests, visual screenshots, documentation, verification, one PR titled `CC-025: Unified Yorkstead Design System & Navigation`. Do not merge, manually deploy, modify production secrets, or mutate production data.
+- Isolated checkout: `/home/brandon/development/yorkstead/website-cc025`; branch `feat/cc-025-unified-design-navigation`; clean at start. Local `HEAD`, `main`, and `origin/main` all equal the user-supplied verified main SHA `363c4dad28b1d0676e4b28887154b74589536e06`; that SHA is an ancestor of `HEAD`. `origin` is `https://github.com/yorkstead/website.git`.
+- Shell GitHub/DNS calls fail (`Could not resolve host: github.com`), but the connected GitHub API is available. Verified 2026-10-30 10:34 UTC: repository `yorkstead/website`, default branch `main`; PR #81 is merged with merge commit `363c4dad28b1d0676e4b28887154b74589536e06`; no matching CC-025 branch and no open CC-025 PR were found. The unrelated CC-022B checkout is not accessed or modified.
+- Discovery: `app/globals.css` is canonical for semantic theme tokens; `design-system/build.mjs` syncs them into `design-system/source/tokens.json`. Public navigation is in `components/site-header.tsx`, owner navigation in `components/dashboard/dashboard-navigation.tsx`, and customer section navigation in `components/customer-portal/customer-portal.tsx`. Existing theme, routes, App Router and privacy boundaries remain authoritative. Detailed discovery and acceptance criteria: `specs/035-cc-025-unified-design-navigation/`.
+- Next.js 16.4.2 App Router linking, CSS and accessibility guides were read from `node_modules/next/dist/docs/` before code changes. Dependencies were installed from the local Bun cache with `bun install --frozen-lockfile --offline`; no network was used.
+- Current stage: implementation and repository verification are complete. `bun test` passed 420 with 112 database-backed skips; production build, typecheck, design-system build, scaffold and 21-migration check passed; lint has one pre-existing warning. Focused public navigation Playwright passed and screenshots are stored in `specs/035-cc-025-unified-design-navigation/screenshots/`. Full E2E was partial: 25 passed, 8 failed due unavailable PostgreSQL owner routes and unrelated parallel-suite timeouts. See the feature verification record. No production operation, merge or deployment.
+- Next exact action: commit the verified feature work on this branch, publish it and open the single requested PR using the available GitHub connector; report any PR-head CI still pending. Do not merge or deploy.
+
 # Active work — CC-024 First-Party Analytics — 2026-10-30
 
 ## Final PR #81 measurement corrections — verified

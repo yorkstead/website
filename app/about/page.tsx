@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Boxes, ChartNoAxesCombined, Factory, Gauge, Mail, PackageCheck, PanelsTopLeft, ScanLine, Wrench } from "lucide-react";
-import { BrandMark } from "@/components/brand-mark";
+import { ArrowRight, Boxes, ChartNoAxesCombined, Factory, Gauge, Mail, PackageCheck, PanelsTopLeft, ScanLine, Wrench } from "lucide-react";
 import { FounderPortrait } from "@/components/founder-portrait";
 import { TrackedLink } from "@/components/conversion-tracker";
+import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { brand, brandMailto } from "@/lib/brand";
 import { founder, founderExperience, founderStructuredData } from "@/lib/founder";
 
@@ -29,7 +28,7 @@ export default function AboutPage() {
   return <main className="min-h-screen overflow-hidden">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(founderStructuredData).replace(/</g, "\\u003c") }} />
     <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_72%_0%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_38%)]" />
-    <header className="relative mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8"><BrandMark /><div className="flex items-center gap-2"><ThemeToggle /><Link href="/packages" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition hover:text-foreground">Pricing & Model</Link><Link href="/" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-xs text-muted-foreground transition hover:text-foreground"><ArrowLeft className="size-3.5" aria-hidden="true" />Home</Link></div></header>
+    <SiteHeader />
 
     <section className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-24 pt-16 sm:px-8 sm:pt-24 lg:grid-cols-[1fr_380px] lg:items-center lg:gap-20"><div><div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">About Yorkstead Systems</div><h1 className="mt-4 max-w-4xl text-5xl font-semibold leading-[.96] tracking-[-0.055em] sm:text-7xl">The operational perspective comes first.</h1><p className="mt-7 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">I’m {founder.name}. I build tailored software and workflow systems for businesses where work moves through offices, shop floors, material racks, machines, packaging stations, trucks, and customer handoffs.</p><p className="mt-5 max-w-2xl text-sm leading-7 text-foreground/85">My background crosses manufacturing and production management, CNC operation, digital fabrication, exterior architectural panel production, inventory, shipping, packaging, metrics, and process improvement. Manufacturing experience is an essential credential that informs practical system design, but manufacturing is not the boundary of the business—the same practical design approach applies across warehousing, logistics, restaurants, ecommerce, and owner-led operations where disconnected tools and recurring subscriptions create friction.</p><div className="mt-9 flex flex-wrap gap-3"><Link href="/#contact" className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground">Talk directly with Brandon <ArrowRight className="size-4" aria-hidden="true" /></Link><TrackedLink href="/workflow-audit" event="workflow_audit_cta_click" metadata={{ placement: "about-hero" }} className="inline-flex h-11 items-center rounded-lg border border-border bg-card px-5 text-sm font-medium">Start with a workflow audit</TrackedLink></div></div><FounderPortrait priority className="mx-auto w-full max-w-[380px] lg:mx-0" /></section>
 

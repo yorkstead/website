@@ -5,6 +5,9 @@ import { omit } from "./omit.js";
 // Preview stand-in: the real tracker posts analytics beacons; previews record nothing.
 export function trackConversionEvent() {}
 
+// The preview never loads the app's first-party attribution session.
+export function getBrowserAnalyticsSession() { return null; }
+
 export function WorkflowAuditViewTracker() {
   return null;
 }

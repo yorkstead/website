@@ -13,18 +13,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { PortalNavigation } from "@/components/customer-portal/portal-navigation";
 import {
   normalizePortalProgress,
   type CustomerPortalView,
   type PortalReviewState,
 } from "@/lib/customer-portal-view";
-
-const navigation = [
-  { href: "#overview", label: "Overview" },
-  { href: "#timeline", label: "Timeline" },
-  { href: "#deliverables", label: "Deliverables" },
-  { href: "#updates", label: "Updates" },
-] as const;
 
 const projectStatus = {
   on_track: { label: "On track", className: "border-success/30 bg-success/10 text-success" },
@@ -97,33 +91,7 @@ function EmptyState({ title, detail }: { title: string; detail: string }) {
   );
 }
 
-export function PortalNavigation({ companyName }: { companyName: string }) {
-  return (
-    <div className="sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
-        <a href="#portal-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground">
-          Skip to portal content
-        </a>
-        <a href="#overview" className="min-w-0">
-          <span className="block font-mono text-[9px] uppercase tracking-[0.22em] text-primary">Yorkstead Systems</span>
-          <span className="block truncate text-xs text-muted-foreground">{companyName}</span>
-        </a>
-        <nav aria-label="Portal sections" className="-mr-2 flex max-w-full gap-1 overflow-x-auto p-2">
-          {navigation.map((item, index) => (
-            <a
-              key={item.href}
-              href={item.href}
-              aria-current={index === 0 ? "page" : undefined}
-              className="whitespace-nowrap rounded-md px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </div>
-    </div>
-  );
-}
+export { PortalNavigation };
 
 export function PortalOverview({ portal }: { portal: CustomerPortalView }) {
   const progress = normalizePortalProgress(portal.project.progress);

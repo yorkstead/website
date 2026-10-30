@@ -18,7 +18,7 @@ if (!Bun) throw new Error("Run this with Bun: bun run design-system");
 // Order of the component catalogue; each needs source/components/<Name>/.
 const COMPONENTS = [
   "Button", "Badge", "Card", "Input", "Textarea", "Label", "BrandMark", "ProjectStatusBadge", "ThemeToggle", "PrintButton",
-  "SiteHeader", "SiteFooter", "ContactForm", "WorkflowLeadForm", "CaseStudyCard", "SolutionCard", "DemoCard",
+  "SiteHeader", "SiteFooter", "ContactForm", "WorkflowLeadForm", "CaseStudyCard", "SolutionCard",
   "LabExperimentCard", "EngagementPricing", "ProjectStatusLegend", "FounderIntroduction", "PaginationControls",
 ];
 
