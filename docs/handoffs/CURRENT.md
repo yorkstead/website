@@ -1,3 +1,11 @@
+## CC-022B Website P2 review closeout — 2026-10-30
+
+- Scope: finish only the two new P2 findings on existing Website PR #79. No new PR, merge, manual deployment, production change or purchase.
+- Fixes: payday schedule forms capture their starting revision; refreshed newer revisions show a stale-draft alert and block save until review. Shopping item command recovery is held by `AutomationHubRecords` above the conditional planner mount, mirrored to schema-validated sessionStorage when possible; recovery retries the original key after 202, failed/degraded Hub reads and remount, and blocks conflicting mutations.
+- Regressions: cross-tab schedule changes prove stale form values cannot be saved with a refreshed revision. A second browser path blocks storage writes, returns 503 then 202, fails Hub refresh, remounts, checks duplicate prevention and reconciles with the same key.
+- Exact source/test head `69773a4b895bbce4d3f8918d8e6dc895af854a92` passed full Website CI [40981740290](https://github.com/yorkstead/website/actions/runs/40981740290), including disposable PostgreSQL, all tests/browser workflows and production build. Local typecheck, lint (one pre-existing login-panel warning), Bun tests (397 passed / 110 DB-dependent skipped), scaffold/migration checks, webpack build and diff check passed. Playwright server could not launch locally; CI ran its disposable PostgreSQL browser suite.
+- Review threads `PRRT_kwDOUJPn1c6xzghr` and `PRRT_kwDOUJPn1c6xzghx` were resolved after this passing run. PR #79 remains open/unmerged and temporarily draft while final documentation evidence/CI is recorded. Rollout remains Hub #92 first, then Website #79 after nonproduction Hub contract validation. `website.code-workspace` remains untouched.
+
 Warning: truncated output (original token count: 19873)
 Total output lines: 258
 
