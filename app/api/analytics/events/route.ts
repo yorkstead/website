@@ -21,9 +21,9 @@ function sameOriginBrowserRequest(request: Request) {
   let requestOrigin: string;
   try { requestOrigin = new URL(request.url).origin; } catch { return false; }
   const origin = request.headers.get("origin");
-  if (!origin || origin !== requestOrigin) return false;
   const fetchSite = request.headers.get("sec-fetch-site");
   if (fetchSite && fetchSite !== "same-origin") return false;
+  if (origin ? origin !== requestOrigin : fetchSite !== "same-origin") return false;
   const referrer = request.headers.get("referer");
   if (referrer) {
     try { if (new URL(referrer).origin !== requestOrigin) return false; }

@@ -120,6 +120,28 @@ describe("Analytics persistence and API route", () => {
     expect(insertQuery!.values[2]).toBe("/workflow-audit");
   });
 
+  test("accepts same-origin Fetch Metadata when the browser omits Origin", async () => {
+    const { POST } = await import("@/app/api/analytics/events/route");
+    const response = await POST(new Request("https://yorkstead.test/api/analytics/events", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "sec-fetch-site": "same-origin",
+      },
+      body: JSON.stringify({
+        event: "page_view",
+        path: "/",
+        context: {
+          eventId: "123e4567-e89b-42d3-a456-426614174050",
+          sessionId: "123e4567-e89b-42d3-a456-426614174051",
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(202);
+    expect(executedQueries.some((query) => query.text.includes("INSERT INTO conversion_events"))).toBe(true);
+  });
+
   test("rejects cross-origin and private-path events before any database access", async () => {
     const { POST } = await import("@/app/api/analytics/events/route");
     const event = { event: "page_view", path: "/dashboard", context: { eventId: "123e4567-e89b-42d3-a456-426614174000", sessionId: "123e4567-e89b-42d3-a456-426614174001" } };
