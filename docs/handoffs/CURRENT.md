@@ -1,3 +1,9 @@
+# Active work — Command Center PWA — 2026-10-30
+
+- Authorized: focused PWA refinement, checks/build, commit/push and separate PR; no merge, manual deployment or production configuration changes. CC-026 and the old CC-022B workspace remain untouched.
+- Verified 2026-10-30 13:29 UTC: clean dedicated `feat/command-center-pwa`, HEAD and live main `62a64895117c8e6a8f3b45adfa45e8884fb33452`; origin `yorkstead/website`; only open PR #83 is unrelated CC-026. Fetched main matches. Historical handoff below is retained as historical evidence.
+- Implementation and local verification complete under `specs/036-command-center-pwa/`: 422 unit passes / 112 DB skips; scaffold, migration check, lint, typecheck and webpack production build pass. Turbopack worker creation is environment-blocked. Browser execution is blocked by missing host libraries (sudo requires authentication), and real login by absent disposable PostgreSQL. New browser regressions run in existing CI; Android update/reinstall remains a documented manual check. Next: publish separate draft PR and inspect exact-head CI.
+
 # Active work — CC-025 Unified Yorkstead Design System & Navigation — 2026-10-30
 
 ## CC-025 customer portal observer review correction — 2026-10-30

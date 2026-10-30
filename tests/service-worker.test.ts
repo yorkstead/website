@@ -53,6 +53,9 @@ describe("service-worker cache isolation", () => {
     expect(await worker.dispatchFetch("/api/workspace")).toBe(false);
     expect(await worker.dispatchFetch("/dashboard")).toBe(false);
     expect(await worker.dispatchFetch("/dashboard/leads")).toBe(false);
+    for (const path of ["/dashboard/analytics", "/dashboard/consultations", "/login?next=/dashboard", "/account", "/account/passkeys", "/api/auth/get-session"]) {
+      expect(await worker.dispatchFetch(path)).toBe(false);
+    }
     expect(worker.cacheWrites).toEqual([]);
   });
 
