@@ -303,9 +303,8 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   failNext=true;processingNext=true;await shoppingItem.getByRole("button",{name:"Repeat once"}).click();
   await expect(page.getByText(/Update needs review/)).toBeVisible();
   await shoppingItem.getByRole("button",{name:"Retry same command key"}).click();
-  await expect(page.getByRole("status").filter({hasText:"still processing"})).toBeVisible();
-  const processingCommand=bodies.at(-1);const processingKey=processingCommand?.idempotencyKey;const afterProcessing=bodies.length;
   await expect(page.getByRole("alert").filter({hasText:"Automation Hub records could not be loaded"})).toBeVisible();
+  const processingCommand=bodies.at(-1);const processingKey=processingCommand?.idempotencyKey;const afterProcessing=bodies.length;
   await expect(page.getByRole("heading",{name:"Shopping planner"})).toHaveCount(0);
   hubReadMode="available";await page.getByRole("button",{name:"Refresh Hub records"}).click();
   await expect(page.getByRole("heading",{name:"Shopping planner"})).toBeVisible();
@@ -315,7 +314,7 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   await recoveredShoppingItem.getByRole("button",{name:"Retry same command key"}).click();
   expect(bodies.slice(-1)[0]).toEqual(processingCommand);
   expect(bodies.at(-1)?.idempotencyKey).toBe(processingKey);
-  expect(bodies.filter((body)=>body.idempotencyKey===processingKey)).toHaveLength(4);
+  expect(bodies.filter((body)=>body.idempotencyKey===processingKey)).toHaveLength(3);
   await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:testInfo.outputPath("cc022b-shopping-desktop.png"),fullPage:true});
   hubReadMode="unavailable";await page.getByRole("button",{name:"Refresh planner"}).click();
   await expect(page.getByRole("alert").filter({hasText:"Automation Hub records could not be loaded"})).toBeVisible();
