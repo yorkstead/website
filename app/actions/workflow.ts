@@ -90,7 +90,7 @@ export async function submitWorkflowLead(_: WorkflowLeadState, formData: FormDat
 
     await Promise.allSettled([
       notificationTask,
-      recordConversionEvent({ event: "lead", path: "/workflow", visitorHash, metadata: { source: result.values.utm_source || "direct", campaign: result.values.utm_campaign || "organic", problemAreas: result.values.problemAreas } }),
+      recordConversionEvent({ event: "lead", path: "/workflow", visitorHash, contactInquiryId: result.id, attribution: { utmSource: result.values.utm_source || undefined, utmMedium: result.values.utm_medium || undefined, utmCampaign: result.values.utm_campaign || undefined, utmContent: result.values.utm_content || undefined, utmTerm: result.values.utm_term || undefined }, metadata: { source: result.values.utm_source || "unknown", ...(result.values.utm_campaign ? { campaign: result.values.utm_campaign } : {}) } }),
     ]);
   });
 

@@ -24,7 +24,7 @@ export const analyticsEventDefinitions = {
   lead: { category: "business", properties: ["projectType", "source", "campaign"] },
   schedule_start: { category: "conversion", properties: ["destination", "placement"] },
   schedule_complete: { category: "business", properties: ["destination"] },
-  qualified_lead: { category: "business", properties: ["projectType", "status", "type", "restaurantName", "approximateSeats", "posTerminals"] },
+  qualified_lead: { category: "business", properties: ["projectType", "status", "type"] },
   web_vital: { category: "performance", properties: ["metric", "value", "rating", "navigationType"] },
   client_error: { category: "reliability", properties: ["errorType", "sourcePath", "line", "column"] },
   server_error: { category: "reliability", properties: ["digest", "routeType", "renderSource"] },
@@ -38,7 +38,7 @@ export type AnalyticsEventProperties = Partial<Record<
   | "digest" | "errorType" | "field" | "fields" | "line" | "metric"
   | "navigationType" | "page" | "placement" | "problemAreas" | "projectType"
   | "rating" | "renderSource" | "routeType" | "service" | "source" | "sourcePath"
-  | "status" | "title" | "type" | "restaurantName" | "approximateSeats" | "posTerminals" | "value",
+  | "status" | "title" | "type" | "value",
   AnalyticsPropertyValue
 >>;
 
@@ -58,8 +58,15 @@ export type AnalyticsClientContext = {
   attribution?: AnalyticsAttribution;
 };
 
+const privatePathPrefixes = ["/api", "/account", "/dashboard", "/login", "/customer"] as const;
+
+export function isPublicAnalyticsPath(path: string) {
+  if (!path.startsWith("/") || path.startsWith("//")) return false;
+  return !privatePathPrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
 export function isAnalyticsEventName(value: unknown): value is AnalyticsEventName {
-  return typeof value === "string" && value in analyticsEventDefinitions;
+  return typeof value === "string" && Object.hasOwn(analyticsEventDefinitions, value);
 }
 
 export function sanitizeAnalyticsProperties(event: AnalyticsEventName, value: unknown): AnalyticsEventProperties {

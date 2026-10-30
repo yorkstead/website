@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { GoogleOperations } from "@/lib/dashboard-google-operations";
 import type { CommandCenterCrmSnapshot } from "@/lib/contact-inquiries";
+import type { AnalyticsOverviewSnapshot } from "@/lib/analytics-dashboard";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Activity, AlertCircle, Archive, ArrowRightCircle, BarChart3, CalendarDays, CheckCircle2, CircleDot,
@@ -51,7 +52,7 @@ type SnapshotNotice = { tone: "success" | "error"; message: string; authenticati
 type SnapshotHistoryItem = { id: string; createdAt: string };
 type UndoToast = { label: string; canUndo: boolean; canRedo: boolean; actionType: "mutate" | "undo" | "redo" };
 
-export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable }: { googleOperations: GoogleOperations | null; crmSnapshot: CommandCenterCrmSnapshot | null; crmUnavailable: boolean }) {
+export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable, analyticsSnapshot, analyticsUnavailable }: { googleOperations: GoogleOperations | null; crmSnapshot: CommandCenterCrmSnapshot | null; crmUnavailable: boolean; analyticsSnapshot: AnalyticsOverviewSnapshot | null; analyticsUnavailable: boolean }) {
   const router = useRouter();
   const requestedProjectId = useSearchParams().get("project");
   const [workspace, setWorkspace] = useState<Workspace>(emptyWorkspace);
@@ -849,6 +850,8 @@ export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable }: { g
           <CommandCenterOverview
             crm={crmSnapshot}
             crmUnavailable={crmUnavailable}
+            analyticsSnapshot={analyticsSnapshot}
+            analyticsUnavailable={analyticsUnavailable}
             projects={workspace.projects}
             tasks={workspace.tasks}
             googleTasks={googleVisible}

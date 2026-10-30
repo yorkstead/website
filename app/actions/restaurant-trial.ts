@@ -38,14 +38,6 @@ export async function submitRestaurantTrial(
 
   const errors = validateRestaurantTrial(payload);
   if (Object.keys(errors).length > 0) {
-    after(() =>
-      recordConversionEvent({
-        event: "lead",
-        path: "/work/table-os",
-        visitorHash,
-        metadata: { status: "validation_error", fields: Object.keys(errors) },
-      }).catch(() => undefined)
-    );
     return {
       status: "error",
       message: "Check the highlighted fields to submit your evaluation request.",
@@ -147,12 +139,8 @@ export async function submitRestaurantTrial(
           event: "qualified_lead",
           path: "/work/table-os",
           visitorHash,
-          metadata: {
-            type: "restaurant_trial",
-            restaurantName: payload.restaurantName,
-            approximateSeats: payload.approximateSeats,
-            posTerminals: payload.posTerminals,
-          },
+          contactInquiryId: inquiryId,
+          metadata: { type: "restaurant_trial" },
         }),
       ]);
     });

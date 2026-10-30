@@ -66,7 +66,7 @@ export async function submitWorkflowAudit(_: WorkflowAuditState, formData: FormD
         logOperationalError("workflow_audit_notification.failed", requestId, error, { dependency: "resend", operation: "workflow_audit_notification" });
       }
     })();
-    await Promise.allSettled([notificationTask, recordConversionEvent({ event: "workflow_audit_submission_success", path: "/workflow-audit", visitorHash })]);
+    await Promise.allSettled([notificationTask, recordConversionEvent({ event: "workflow_audit_submission_success", path: "/workflow-audit", visitorHash, contactInquiryId: result.id })]);
   });
   return { status: "success", message: "Your Workflow Rescue request is in. Brandon will review the operating problem and follow up directly with fit, scope, the founding-client rate, and the next available step." };
 }

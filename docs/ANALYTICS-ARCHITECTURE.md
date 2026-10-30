@@ -21,18 +21,18 @@ The owner view is `/dashboard/analytics`. It is protected by the existing Better
 1. A public browser creates one random UUID per tab session in `sessionStorage`.
 2. The browser records the first public path, external referrer hostname, and allowlisted UTM values. Query strings and full referrer URLs are discarded.
 3. The typed client helper sends an allowlisted event and event-specific properties to the same-origin analytics route.
-4. The server hashes the session UUID, creates a rotating one-way request hash, classifies only a coarse device type, and reads coarse Vercel country/region headers.
-5. Postgres stores the event. A unique event ID makes retries idempotent and indexed acquisition/session columns support dashboard queries.
-6. Successful lead submissions are recorded server-side and carry the same first-touch attribution into `contact_inquiries`.
+4. The server hashes the session UUID, creates a rotating one-way request hash, classifies only a coarse device type, and reads coarse Vercel country/region headers. Ingestion is same-origin, streaming-size-bounded, schema-checked, and excludes owner/customer paths.
+5. Postgres stores the event. Unique event IDs and inquiry/outcome keys make transport and server retries idempotent; indexed acquisition/session columns support dashboard queries.
+6. Successful inquiry submissions are recorded server-side and linked to the created `contact_inquiries.id`. Public clients cannot supply this link. Existing analytics rows remain unlinked and are not backfilled.
 
-No analytics event contains a name, email, form text, raw network address, full referrer URL, advertising ID, or persistent cross-session browser identifier.
+No analytics event contains a name, email, form text, restaurant operating details, raw network address, full referrer URL, advertising ID, or persistent cross-session browser identifier. Query strings and fragments are stripped from paths. Analytics metadata is event-specific and allowlisted.
 
 ## Event taxonomy
 
 - Traffic: `page_view`
 - Content intent: `service_page_view`, `case_study_view`, `view_content`, `demo_view`
 - Conversion intent: CTA, contact-start, scheduling, workflow-audit, rescue-check, card-scan, and contact-save events
-- Business outcomes: `contact_form_submission`, `lead`, `qualified_lead`, `schedule_complete`
+- Business outcomes: `contact_form_submission`, `lead`, `qualified_lead`, `workflow_audit_submission_success`, `schedule_complete`. Only server-created inquiry outcomes with a CRM link count as measured inquiries; legacy unlinked outcomes are identified and excluded.
 - Experience: `web_vital`
 - Reliability: `client_error`, `server_error`
 
@@ -44,7 +44,7 @@ Primary outcomes:
 
 - Qualified leads: inquiries moved to `qualified` (weekly operating review).
 - Won work: inquiries moved to `won` and, later, booked project value (monthly review).
-- Visit-to-lead conversion: server-confirmed leads divided by distinct anonymous public sessions (weekly acquisition review).
+- Visit-to-inquiry conversion: unique linked stored inquiry records divided by tab-scoped anonymous sessions that recorded a page view (weekly acquisition review). Sessions do not represent people.
 
 Drivers:
 
@@ -74,13 +74,13 @@ Do not set hard growth targets until at least four complete weeks of baseline tr
 
 ## Dashboard and mobile path
 
-The owner dashboard includes date windows, headline outcomes, a session funnel, daily movement, acquisition cohorts, landing pages, CTAs, service/project interest, geography, devices, Web Vitals, the lead pipeline, near-real-time activity, and threshold alerts. Empty and unavailable states remain distinct from measured zero.
+The owner dashboard includes 1/7/30/90-day windows, prior-period context, linked stored inquiry outcomes, a session funnel, daily movement, acquisition cohorts, landing pages, observed UTM campaigns, CTAs, service/project interest, geography, devices, Web Vitals, the CRM pipeline, collection freshness, and threshold alerts. Inquiry rates use unique linked inquiry records over anonymous page-view sessions. Legacy unlinked outcomes are shown as excluded. Empty and unavailable states remain distinct from measured zero. No campaign ROI is inferred.
 
 For Expo, expose the existing `AnalyticsDashboardData` from an owner-authenticated route, preserve the event names and KPI formulas, and render native cards/charts. Do not give the mobile app direct Postgres credentials. Mobile product events can call the same server ingestion contract or a versioned `/api/analytics/events` endpoint with app-specific authentication.
 
 ## Environment and operations
 
-- `ANALYTICS_HASH_SALT`: independent high-entropy server secret used to hash anonymous browser sessions and rotating request addresses.
+- `ANALYTICS_HASH_SALT`: independent high-entropy server secret used to hash anonymous browser sessions and rotating request addresses. If no valid configured salt exists, process-local random salt is used; session hashes then reset when the process restarts.
 - `ANALYTICS_RETENTION_DAYS`: event retention from 30 to 730 days; defaults to 90.
 - `NEXT_PUBLIC_FIRST_PARTY_ANALYTICS`: set to `disabled` to stop public collection at both client and route layers; any other value keeps the documented first-party collection enabled.
 

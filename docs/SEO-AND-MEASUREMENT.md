@@ -15,7 +15,7 @@ The application owns the technical SEO and first-party conversion layer. Externa
 
 Governed traffic, conversion, performance, and reliability events are written to the existing Neon `conversion_events` table and summarized in the authenticated `/dashboard/analytics` view. No Google Analytics, Meta Pixel, advertising identifier, browser cookie, or third-party analytics script is added. The canonical architecture, KPI definitions, provider boundaries, event contract, retention settings, and future Expo path are documented in [`ANALYTICS-ARCHITECTURE.md`](ANALYTICS-ARCHITECTURE.md).
 
-The browser sends only an allowlisted event name, the current public path, and limited context such as a service slug, project slug, placement, or booking destination. The server derives a daily salted one-way request hash for rate limiting and aggregate counting; it does not store the raw network address in the analytics table. Records older than 90 days are pruned as new events are recorded.
+The browser sends only an allowlisted event name, a public path without query strings/fragments, a bounded anonymous tab-session ID, first-touch attribution, and limited event-specific context. The same-origin endpoint validates origin, payload shape and size, and excludes owner/customer paths before database access. The server derives one-way hashes and does not store the raw network address in the analytics table. Successful inquiry outcomes link to the server-created CRM record; validation attempts and unlinked historical outcomes do not count as inquiries. Records older than the configured 90-day default are pruned as new events are recorded.
 
 Tracked events:
 

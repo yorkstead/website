@@ -154,6 +154,7 @@ export async function submitContact(_: ContactState, formData: FormData): Promis
         event: "contact_form_submission",
         path: "/",
         visitorHash,
+        contactInquiryId: result.id,
         metadata: result.projectType ? { projectType: result.projectType } : {},
         sessionHash: hashedAnalyticsSession(payload.analyticsSessionId),
         attribution: payload.attribution,
