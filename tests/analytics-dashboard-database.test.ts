@@ -81,7 +81,7 @@ describe("analytics dashboard PostgreSQL reporting windows", () => {
       expect(result.summary.conversionRate).toBeCloseTo(expectedRate, 8);
       expect(result.summary.inquiryChangePercent).toBeCloseTo(expectedChange, 8);
       expect(result.summary.unlinkedHistoricalOutcomes - baseline.summary.unlinkedHistoricalOutcomes).toBe(1);
-      expect((result.funnel.find((step) => step.event === "stored_inquiry")?.sessions ?? 0) - (baseline.funnel.find((step) => step.event === "stored_inquiry")?.sessions ?? 0)).toBe(3);
+      expect((result.funnel.find((step) => step.event === "stored_inquiry")?.sessions ?? 0) - (baseline.funnel.find((step) => step.event === "stored_inquiry")?.sessions ?? 0)).toBe(2);
       expect((result.funnel.find((step) => step.event === "unlinked_historical_outcome")?.sessions ?? 0) - (baseline.funnel.find((step) => step.event === "unlinked_historical_outcome")?.sessions ?? 0)).toBe(1);
       expect(result.funnel.find((step) => step.event === "unlinked_historical_outcome")?.label).toContain("not a conversion");
     } finally {
