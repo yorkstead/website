@@ -14,3 +14,7 @@
 - [x] Run focused checks and all applicable repository verification; record unavailable environment checks.
 - [x] Review diff for privacy, security and spec convergence; commit and push this branch.
 - [x] Update the existing CC-024 PR to `CC-024: Restore First-Party Analytics & Conversion Intelligence` and leave it as a draft pending database-backed CI; do not merge or deploy.
+- [ ] Correct tracker effect idempotency so replays share an ID while later visits/navigation get a new ID; add focused regressions.
+- [ ] Bound current and previous analytics dashboard windows explicitly, including snapshot and related reports; add metric regressions.
+- [ ] Count only linked inquiry outcomes in the stored-inquiry funnel step and label unlinked history separately; verify against disposable PostgreSQL.
+- [ ] Run full repository verification and exact-head GitHub CI, reply to the three Vercel review threads, then resolve them after evidence passes; keep PR #81 draft and do not merge or deploy.

@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useReportWebVitals } from "next/web-vitals";
 import { attributionFromLocation } from "@/lib/analytics-attribution";
+import { createEffectEventIdGenerator } from "@/lib/analytics-effect-event-id";
 import { isPublicAnalyticsPath } from "@/lib/analytics-contract";
 import type { AnalyticsAttribution, AnalyticsEventName, AnalyticsEventProperties } from "@/lib/analytics-contract";
 
@@ -14,8 +15,6 @@ let fallbackSessionId: string | undefined;
 let fallbackAttribution: AnalyticsAttribution | undefined;
 let lastPageView: { path: string; eventId: string } | undefined;
 const webVitalEventIds = new Map<string, string>();
-const effectDedupEvents = new Set<AnalyticsEventName>(["service_page_view", "case_study_view", "workflow_audit_view", "workflow_audit_form_start"]);
-const effectEventIds = new Map<string, string>();
 
 export type BrowserAnalyticsSession = { sessionId: string; attribution: AnalyticsAttribution };
 
@@ -42,16 +41,7 @@ export function trackConversionEvent(event: AnalyticsEventName, metadata: Analyt
   const session = getBrowserAnalyticsSession();
   if (!session) return;
   const properties = typeof metadata === "string" ? { field: metadata } : metadata;
-  let eventId = stableEventId;
-  if (!eventId && effectDedupEvents.has(event)) {
-    const key = `${session.sessionId}:${event}:${window.location.pathname}:${JSON.stringify(properties)}`;
-    eventId = effectEventIds.get(key);
-    if (!eventId) {
-      eventId = crypto.randomUUID();
-      effectEventIds.set(key, eventId);
-      if (effectEventIds.size > 500) effectEventIds.delete(effectEventIds.keys().next().value!);
-    }
-  }
+  const eventId = stableEventId;
   const body = JSON.stringify({
     event,
     path: window.location.pathname,
@@ -107,12 +97,24 @@ export function AnalyticsRuntime() {
 }
 
 export function WorkflowAuditViewTracker() {
-  useEffect(() => { trackConversionEvent("workflow_audit_view"); }, []);
+  const pathname = usePathname();
+  const [eventIdForEffect] = useState(() => createEffectEventIdGenerator());
+  useEffect(() => {
+    const eventId = eventIdForEffect(`workflow_audit_view:${pathname}:{}`);
+    trackConversionEvent("workflow_audit_view", {}, eventId);
+  }, [eventIdForEffect, pathname]);
   return null;
 }
 
 export function ConversionViewTracker({ event, field, value }: { event: "service_page_view" | "case_study_view"; field: "service" | "caseStudy"; value: string }) {
-  useEffect(() => { trackConversionEvent(event, { [field]: value }); }, [event, field, value]);
+  const pathname = usePathname();
+  const metadata = { [field]: value };
+  const propertiesKey = JSON.stringify(metadata);
+  const [eventIdForEffect] = useState(() => createEffectEventIdGenerator());
+  useEffect(() => {
+    const eventId = eventIdForEffect(`${event}:${pathname}:${propertiesKey}`);
+    trackConversionEvent(event, { [field]: value }, eventId);
+  }, [event, eventIdForEffect, field, pathname, propertiesKey, value]);
   return null;
 }
 

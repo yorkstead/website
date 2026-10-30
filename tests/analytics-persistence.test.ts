@@ -198,8 +198,71 @@ describe("Analytics persistence and API route", () => {
     expect(result.summary.inquiryChangePercent).toBe(100);
     expect(result.summary.unlinkedHistoricalOutcomes).toBe(3);
     expect(result.alerts.some((alert) => alert.message.includes("legacy or ambiguous submission event"))).toBe(true);
-    expect(result.funnel.at(-1)?.label).toBe("Stored inquiry outcome");
+    expect(result.funnel.find((step) => step.event === "stored_inquiry")?.label).toBe("Stored inquiry outcome");
     expect(result.campaigns).toEqual([]);
+  });
+
+  test("dashboard isolates current and previous inquiry windows and keeps unlinked outcomes out of conversions", async () => {
+    const now = new Date("2026-10-30T12:00:00.000Z");
+    const currentSince = new Date(now.getTime() - 7 * 86_400_000).toISOString();
+    const previousSince = new Date(now.getTime() - 14 * 86_400_000).toISOString();
+    const inquiries = [
+      { id: 501, createdAt: "2026-10-24T12:00:00.000Z" },
+      { id: 502, createdAt: "2026-10-29T12:00:00.000Z" },
+      { id: 503, createdAt: "2026-10-20T12:00:00.000Z" },
+    ];
+    const inWindow = (createdAt: string, start: string, end: string) => createdAt >= start && createdAt < end;
+    const currentCount = new Set(inquiries.filter((item) => inWindow(item.createdAt, currentSince, now.toISOString())).map((item) => item.id)).size;
+    const previousCount = new Set(inquiries.filter((item) => inWindow(item.createdAt, previousSince, currentSince)).map((item) => item.id)).size;
+    queryHandler = async (text) => {
+      if (text.includes("unlinked_historical_outcomes")) {
+        return [{ sessions: 10, page_views: 12, conversions: currentCount, previous_sessions: 5, previous_conversions: previousCount, cta_clicks: 2, errors: 0, active_last_hour: 1, last_event_at: "2026-10-30T11:00:00.000Z", unlinked_historical_outcomes: 2 }];
+      }
+      if (text.includes("unlinked_historical_outcome") && text.includes("CASE")) {
+        return [
+          { event_name: "stored_inquiry", sessions: 2 },
+          { event_name: "unlinked_historical_outcome", sessions: 2 },
+        ];
+      }
+      return [];
+    };
+
+    const { getAnalyticsDashboard } = await import("@/lib/analytics-dashboard");
+    const result = await getAnalyticsDashboard(7, now);
+    const summaryQuery = executedQueries.find((query) => query.text.includes("unlinked_historical_outcomes"))!;
+    const funnelQuery = executedQueries.find((query) => query.text.includes("unlinked_historical_outcome") && query.text.includes("CASE"))!;
+
+    expect(result.summary.conversions).toBe(2);
+    expect(result.summary.conversionRate).toBe(20);
+    expect(result.summary.previousInquiries).toBe(1);
+    expect(result.summary.inquiryChangePercent).toBe(100);
+    expect(result.summary.unlinkedHistoricalOutcomes).toBe(2);
+    expect(summaryQuery.text).toContain("contact_inquiry_id IS NOT NULL AND created_at >= ? AND created_at < ?");
+    expect(summaryQuery.values).toContain(currentSince);
+    expect(summaryQuery.values).toContain(previousSince);
+    expect(summaryQuery.values).toContain(now.toISOString());
+    expect(funnelQuery.text).toContain("contact_inquiry_id IS NOT NULL AND event_name IN");
+    expect(result.funnel.find((step) => step.event === "stored_inquiry")?.sessions).toBe(2);
+    expect(result.funnel.find((step) => step.event === "unlinked_historical_outcome")?.sessions).toBe(2);
+    expect(result.funnel.find((step) => step.event === "unlinked_historical_outcome")?.label).toContain("not a conversion");
+  });
+
+  test("seven-day overview snapshot uses adjacent bounded inquiry windows", async () => {
+    queryHandler = async (text) => text.includes("AS previous_inquiries")
+      ? [{ sessions: 6, inquiries: 2, previous_inquiries: 1, last_event_at: "2026-10-30T11:00:00.000Z" }]
+      : [];
+    const { getAnalyticsOverviewSnapshot } = await import("@/lib/analytics-dashboard");
+    const now = new Date("2026-10-30T12:00:00.000Z");
+    const snapshot = await getAnalyticsOverviewSnapshot(now);
+    const query = executedQueries[0]!;
+
+    expect(snapshot.inquiries).toBe(2);
+    expect(snapshot.previousInquiries).toBe(1);
+    expect(snapshot.changePercent).toBe(100);
+    expect(query.text).toContain("created_at >= ? AND created_at < ?");
+    expect(query.values).toContain(new Date(now.getTime() - 7 * 86_400_000).toISOString());
+    expect(query.values).toContain(new Date(now.getTime() - 14 * 86_400_000).toISOString());
+    expect(query.values).toContain(now.toISOString());
   });
 
   test("POST /api/analytics/events returns 202 when database storage fails without claiming event was saved", async () => {

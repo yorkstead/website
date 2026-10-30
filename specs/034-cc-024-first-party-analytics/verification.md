@@ -27,3 +27,11 @@ Commands were run in the isolated feature checkout after implementation:
 
 - No production environment/configuration, production database or production analytics data was inspected or changed.
 - No test result is inferred from historical handoff counts.
+
+## Final review corrections — 2026-10-30
+
+- Verified starting PR #81 head: `5ea49b517a6c682062aaf7d12bf3a6716bf52dd6`; PR open, unmerged, draft. The three live Vercel review findings are preserved on the PR.
+- Added view-instance-scoped event ID generation so React effect replays/retries reuse an ID while remounts, navigations, and changed view data create a new ID. Focused ID tests pass.
+- Dashboard reporting now uses explicit `[since, now)` and `[previousSince, since)` boundaries for summary and seven-day snapshot metrics; related time-series, acquisition, CTA, interest, device, geography, vital, and pipeline queries are also capped at `now`.
+- Stored-inquiry funnel attribution requires a non-null CRM inquiry link. Unlinked legacy outcomes remain a separate labeled step and in the historical outcome count.
+- Focused analytics tests: 18 passed, 0 failed; the disposable PostgreSQL analytics regression is skipped locally because `TEST_DATABASE_URL` is unavailable. Full repository and exact-head CI verification is pending.
