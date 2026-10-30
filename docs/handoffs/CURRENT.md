@@ -1,13 +1,13 @@
 # Active work — CC-026 Opportunity Discovery & Problem-Led Prospecting — 2026-10-30
 
-## Verified current state — 2026-10-30 12:57 UTC
+## Verified current state — 2026-10-30 13:08 UTC
 
-- GitHub API confirms PR [#83](https://github.com/yorkstead/website/pull/83) is open and unmerged against `main` at `62a64895117c8e6a8f3b45adfa45e8884fb33452`. The feature ref is `feat/cc-026-opportunity-discovery`, current remote head `b99d5d696a52fc1af2e6f725b9a466a488749b59` (six commits from that base). The original CC-025 checkout remains untouched.
-- The isolated checkout is `/tmp/yorkstead-cc026`. Shell DNS currently prevents fetching the API-created commits, so local HEAD `0be9b1151b58ffb637eea546db0406a90d27da7b` has an identical working tree but a different commit hash. The remote PR head and CI status are verified from GitHub API and are the publication source of truth.
+- GitHub API confirms PR [#83](https://github.com/yorkstead/website/pull/83) is open and unmerged against `main` at `62a64895117c8e6a8f3b45adfa45e8884fb33452`. The feature ref is `feat/cc-026-opportunity-discovery`, current remote head `6fac09b67f9e6143e548e2725775216d9307dc55` (seven commits from that base). The original CC-025 checkout remains untouched.
+- The isolated checkout is `/tmp/yorkstead-cc026`. Shell DNS currently prevents fetching the API-created commits, so local HEAD `33736354149c350eb150929ef5bb3b05c182aac5` has an identical working tree but a different commit hash. The remote PR head and CI status are verified from GitHub API and are the publication source of truth.
 - Implementation, discovery/spec/plan/tasks, threat model, operations and verification documentation are complete under `specs/036-cc-026-opportunity-discovery/`. Migration 0022 was validated against disposable PostgreSQL in CI and has not been applied locally or in production.
-- CI run 448 passed migrations, 541 deterministic/database tests, lint and typecheck, then stopped at an unrelated CC-007 customer-enrollment browser assertion. It did not reach CC-026 or generate screenshots. The failed job is being rerun. A prior run validated the CC-026 owner flow up to a duplicate-label test selector; that selector is now scoped to the visible badge.
+- CI run 449 passed migrations, 541 deterministic/database tests, lint/typecheck, default Playwright, and all existing owner browser regressions. Its CC-026 run confirmed the evidence-label selector fix and exposed a test setup that skipped the allowed Hypothesis → Researching → Validated transition. The browser flow now follows those stages. The prior run 448's unrelated CC-007 enrollment browser assertion was intermittent and passed on run 449. A fresh exact-head run is required after these changes.
 - Local checks remain: scaffold/migration validation/typecheck/lint/build pass; 428 unit tests pass with 113 PostgreSQL-backed skips; focused tests pass. Local browser testing is limited by unavailable PostgreSQL and loopback bind restrictions. See `specs/036-cc-026-opportunity-discovery/verification.md` for detail.
-- Scope remains: no merge, manual deployment, production migration/data/config/secret change, or outbound message. Next action is to finish the exact-head CI rerun, confirm responsive screenshot artifacts, and keep PR #83 open for review.
+- Scope remains: no merge, manual deployment, production migration/data/config/secret change, or outbound message. Next action is to finish exact-head CI, confirm responsive screenshot artifacts, and keep PR #83 open for review.
 
 ## Verified session start and current state — 2026-10-30 11:32 UTC
 

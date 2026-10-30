@@ -90,6 +90,9 @@ test("owner captures evidence, runs discovery, records permission, and validates
   await expect(page.getByRole("button",{name:"Confirm and promote to CRM"})).toHaveCount(0);
 
   const statusForm=page.locator("form").filter({has:page.getByLabel("Research stage")});
+  await statusForm.getByLabel("Research stage").selectOption("researching");
+  await statusForm.getByRole("button",{name:"Save stage"}).click();
+  await expect(page.getByText("Researching",{exact:true}).first()).toBeVisible();
   await statusForm.getByLabel("Research stage").selectOption("validated");
   await statusForm.getByRole("button",{name:"Save stage"}).click();
   await expect(page.getByText("Validated problem",{exact:true})).toBeVisible();
