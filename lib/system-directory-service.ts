@@ -4,6 +4,12 @@ import type { SystemDirectoryInput, SystemDirectoryEntry } from "@/lib/system-di
 
 const tenant = "yorkstead-owner";
 type Row = Record<string, unknown>;
+function dateKey(value: unknown): string | null {
+  if (!value) return null;
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.toISOString().slice(0,10);
+  const text=String(value);
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
+}
 function mapEntry(row: Row): SystemDirectoryEntry {
   const relationships = typeof row.relationships === "string" ? JSON.parse(row.relationships) : row.relationships;
   return {
@@ -11,7 +17,7 @@ function mapEntry(row: Row): SystemDirectoryEntry {
     purpose: String(row.purpose ?? ""), dashboardURL: row.dashboard_url ? String(row.dashboard_url) : undefined, documentationURL: row.documentation_url ? String(row.documentation_url) : undefined,
     accountIdentity: String(row.account_identity ?? ""), billingEntity: String(row.billing_entity ?? ""), notes: String(row.notes ?? ""), relationships: Array.isArray(relationships) ? relationships : [],
     billingCadence: row.billing_cadence as SystemDirectoryEntry["billingCadence"], currency: String(row.currency).trim(), amount: row.amount === null ? null : Number(row.amount),
-    amountBasis: row.amount_basis as SystemDirectoryEntry["amountBasis"], costConfirmation: row.cost_confirmation as SystemDirectoryEntry["costConfirmation"], renewalDate: row.renewal_date ? String(row.renewal_date).slice(0,10) : null,
+    amountBasis: row.amount_basis as SystemDirectoryEntry["amountBasis"], costConfirmation: row.cost_confirmation as SystemDirectoryEntry["costConfirmation"], renewalDate: dateKey(row.renewal_date),
     pinned: row.pinned === true, archivedAt: row.archived_at ? new Date(String(row.archived_at)).toISOString() : null,
     manualHealth: row.manual_health as SystemDirectoryEntry["manualHealth"], manualHealthSummary: String(row.manual_health_summary ?? ""), manualHealthCheckedAt: row.manual_health_checked_at ? new Date(String(row.manual_health_checked_at)).toISOString() : null,
     createdAt: new Date(String(row.created_at)).toISOString(), updatedAt: new Date(String(row.updated_at)).toISOString(),

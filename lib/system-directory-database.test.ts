@@ -13,7 +13,7 @@ const dbTest=safeDatabase?test:test.skip;
 const admin=safeDatabase?new Pool({connectionString:configured}):null;
 afterAll(async()=>{await admin?.end();});
 
-const input=(name:string):SystemDirectoryInput=>({name,category:"hosting",provider:"Vercel",purpose:"Synthetic test record",dashboardURL:"https://vercel.com",documentationURL:undefined,accountIdentity:"owner@example.test",billingEntity:"Test owner",notes:"",relationships:[{kind:"project",name:"Synthetic project"}],billingCadence:"monthly",currency:"USD",amount:12,amountBasis:"actual",costConfirmation:"confirmed",renewalDate:null,pinned:false,manualHealth:"not_monitored",manualHealthSummary:"",manualHealthCheckedAt:null});
+const input=(name:string):SystemDirectoryInput=>({name,category:"hosting",provider:"Vercel",purpose:"Synthetic test record",dashboardURL:"https://vercel.com",documentationURL:undefined,accountIdentity:"owner@example.test",billingEntity:"Test owner",notes:"",relationships:[{kind:"project",name:"Synthetic project"}],billingCadence:"monthly",currency:"USD",amount:12,amountBasis:"actual",costConfirmation:"confirmed",renewalDate:"2026-11-20",pinned:false,manualHealth:"not_monitored",manualHealthSummary:"",manualHealthCheckedAt:null});
 
 describe("CC-023 disposable PostgreSQL persistence",()=>{
  dbTest("creates, rejects duplicates, protects concurrent edits, archives, and retains immutable audit history",async()=>{
@@ -29,6 +29,7 @@ describe("CC-023 disposable PostgreSQL persistence",()=>{
    const name=`CC-023 ${randomUUID()}`;
    await expect(scoped.query("INSERT INTO system_directory_entries(id,tenant_id,name,category,provider) VALUES($1,'customer-tenant',$2,'other','Test')",[randomUUID(),name])).rejects.toMatchObject({code:"23514"});
    const created=await service.create(input(name),"cc023-owner");
+   expect(created.renewalDate).toBe("2026-11-20");
    await expect(service.create(input(name.toLowerCase()),"cc023-owner")).rejects.toMatchObject({code:"23505"});
    const edits=await Promise.all([
     service.update(created.id,created.revision,{...input(name),purpose:"First concurrent edit"},"cc023-owner"),

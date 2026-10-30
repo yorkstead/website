@@ -29,3 +29,4 @@
 ## Exact-head CI follow-up
 
 - Initial PR head `09644573e303093d47fea7cb5cfce5da905cdd63` failed two database tests: the integration fixture passed an empty documentation URL instead of `NULL`, and the prepared migration protocol assertion expected four CC-023 triggers while migration 0020 defines three. Both test expectations were corrected; rerun full checks and record the new exact-head CI result after pushing the correction.
+- Browser rerun at corrected head `51ef671d72c77ea4e59281dfc98119b37f565c38` reached CC-023 but revealed that PostgreSQL DATE values decoded as `Date` objects were formatted as a weekday string by the persistence DTO. The mapper now converts date objects to `YYYY-MM-DD`, and the database integration case asserts the round trip. Rerun CI after pushing this correction.
