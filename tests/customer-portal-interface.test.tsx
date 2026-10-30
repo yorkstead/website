@@ -15,6 +15,7 @@ describe("customer portal presentation", () => {
 
     expect(html).toContain("<main id=\"portal-content\">");
     expect(html).toContain('aria-label="Portal sections"');
+    expect(html).toContain('aria-current="location"');
     expect(html).toContain('id="portal-title"');
     expect(html).toContain('aria-labelledby="timeline-title"');
     expect(html).toContain('id="timeline-title"');
@@ -98,12 +99,14 @@ describe("customer portal presentation", () => {
 
   test("includes the established responsive layout and focus conventions", async () => {
     const source = await Bun.file("components/customer-portal/customer-portal.tsx").text();
+    const navigation = await Bun.file("components/customer-portal/portal-navigation.tsx").text();
 
     expect(source).toContain("md:grid-cols-3");
     expect(source).toContain("md:grid-cols-2");
     expect(source).toContain("lg:grid-cols-");
-    expect(source).toContain("overflow-x-auto");
-    expect(source).toContain("focus:not-sr-only");
+    expect(navigation).toContain("overflow-x-auto");
+    expect(navigation).toContain("IntersectionObserver");
+    expect(navigation).toContain("focus:not-sr-only");
     expect(source).not.toContain("from-");
     expect(source).not.toContain("animate-");
   });

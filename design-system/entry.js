@@ -17,7 +17,6 @@ import { ContactForm } from "@/components/contact-form";
 import { WorkflowLeadForm } from "@/components/workflow-lead-form";
 import { CaseStudyCard } from "@/components/case-study-card";
 import { SolutionCard } from "@/components/solution-card";
-import { DemoCard } from "@/components/demo-card";
 import { LabExperimentCard } from "@/components/lab-experiment-card";
 import { EngagementPricing } from "@/components/engagement-pricing";
 import { ProjectStatusLegend } from "@/components/project-status-legend";
@@ -25,15 +24,14 @@ import { FounderIntroduction } from "@/components/founder-introduction";
 import { PaginationControls } from "@/components/pagination-controls";
 import { caseStudies } from "@/lib/case-studies";
 import { publicSolutions } from "@/lib/solutions";
-import { publicDemos } from "@/lib/demos";
 import { publicLabExperiments } from "@/lib/labs";
 import { ArrowRight, Check, MoveUpRight, Send } from "lucide-react";
 
 window.Yorkstead = {
   Button, Badge, Card, CardContent, Input, Textarea, Label, BrandMark, BrandLogo, ProjectStatusBadge, ThemeToggle, PrintButton,
-  SiteHeader, SiteFooter, ContactForm, WorkflowLeadForm, CaseStudyCard, SolutionCard, DemoCard, LabExperimentCard,
+  SiteHeader, SiteFooter, ContactForm, WorkflowLeadForm, CaseStudyCard, SolutionCard, LabExperimentCard,
   EngagementPricing, ProjectStatusLegend, FounderIntroduction, PaginationControls,
   // The site's own content, so previews render real cards.
-  data: { caseStudies, publicSolutions, publicDemos, publicLabExperiments },
+  data: { caseStudies, publicSolutions, publicLabExperiments },
   icons: { ArrowRight, Check, MoveUpRight, Send },
 };

@@ -132,6 +132,38 @@ test("mobile drawer supports keyboard focus, Escape, backdrop, and route selecti
   await expect(opener).toBeFocused();
 });
 
+test("customer portal active section follows scrolling at desktop and mobile viewport heights", async ({ page, context }) => {
+  expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).status()).toBe(200);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/dashboard/customer-portal-preview");
+
+  const nav = page.getByRole("navigation", { name: "Portal sections" });
+  const sections = [
+    ["timeline", "Timeline"],
+    ["deliverables", "Deliverables"],
+    ["updates", "Updates"],
+  ] as const;
+  const scrollThroughPortal = async () => {
+    for (const [id, label] of sections) {
+      await page.locator(`#${id}`).evaluate((section) => section.scrollIntoView({ block: "start" }));
+      await expect(nav.getByRole("link", { name: label })).toHaveAttribute("aria-current", "location");
+      await expect(nav.locator('[aria-current="location"]')).toHaveCount(1);
+    }
+  };
+
+  await expect(nav.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "location");
+  await scrollThroughPortal();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(nav).toBeVisible();
+  await scrollThroughPortal();
+
+  // A shorter mobile viewport verifies that resize reconnects with a new height-based margin.
+  await page.setViewportSize({ width: 390, height: 600 });
+  await scrollThroughPortal();
+});
+
 test("Automations keeps owner-only access and runs Hub capture controls in the Website", async ({ page, context }) => {
   await page.goto("/dashboard/automations");
   await expect(page).toHaveURL(/\/login\?next=%2Fdashboard%2Fautomations|\/login\?next=\/dashboard\/automations/);

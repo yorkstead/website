@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
-import { BrandMark } from "@/components/brand-mark";
+import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
   buyingModelElements,
   confirmedNamedSystems,
@@ -129,15 +128,7 @@ const faqs = [
 export default function PackagesPage() {
   return (
     <main className="min-h-screen">
-      <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
-        <BrandMark />
-        <nav aria-label="Package page navigation" className="flex items-center gap-3">
-          <Link href="/work" className="text-xs text-muted-foreground hover:text-foreground">
-            Selected work
-          </Link>
-          <ThemeToggle />
-        </nav>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="mx-auto max-w-7xl px-5 pb-16 pt-14 sm:px-8 sm:pt-20">

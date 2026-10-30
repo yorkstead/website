@@ -46,6 +46,15 @@ The only branded shadow is `shadow-glow`, the soft `primary` halo on the primary
 
 Use **lucide-react** (the shadcn "new-york" setup), outline style at 16px (`size-4`) inside buttons and 14px (`size-3.5`) inside small links. Icons inherit `currentColor`. Common glyphs are `ArrowRight`, `MoveUpRight` (external links), `CheckCircle2`, `Factory`, `Truck`, `UtensilsCrossed`, `ShoppingBag`, `Wrench`, `ScanLine`, `GitBranch`, `Sun`/`Moon` (theme toggle) and `Menu`. Decorative icons get `aria-hidden`. Don't use emoji or custom icon fonts.
 
+## Navigation
+
+`app/globals.css` remains the runtime source of truth for semantic theme colors, focus rings and radii. `design-system/build.mjs` synchronizes the palette into `source/tokens.json`; do not hand-maintain a second palette. Public, owner and customer navigation share `components/navigation/navigation-link-styles.ts` for token-based link spacing, active-state cues and visible keyboard focus. Surface components keep their own route, drawer, anchor and authorization behavior: `SiteHeader`, `DashboardNavigation` and the customer `PortalNavigation` are not interchangeable shells. Internal application destinations use Next.js `Link`; same-page customer section links remain anchors.
+
+- Use `aria-current="page"` for a selected route and `aria-current="location"` for the customer portal section currently in view.
+- Every icon-only menu control needs a meaningful accessible name. Drawer/menu state, focus return, Escape dismissal and current-route cues must be testable by keyboard.
+- Navigation must stay usable without horizontal page overflow at phone widths. Horizontal section navigation may scroll within its own rail.
+- Use semantic token colors and the shared `:focus-visible` ring; do not use a color alone to communicate selection.
+
 ## Logo
 
 The mark is a geometric **Y**: two dark arms, one `mark-sky` arm and a `mark-sky` hub with a `mark-hub` ring. See **Logos** in Assets.
@@ -64,7 +73,7 @@ The components are the site's real React code, built into one bundle (`window.Yo
 - **Primitives:** `Button`, `Badge`, `Card` (with `CardContent`), `Input`, `Textarea`, `Label`, `ThemeToggle`, `PrintButton`.
 - **Brand and status:** `BrandMark` (with `BrandLogo`), `ProjectStatusBadge`, `ProjectStatusLegend`.
 - **Page sections:** `SiteHeader`, `SiteFooter`, `EngagementPricing`, `FounderIntroduction`, `PaginationControls`.
-- **Content cards:** `CaseStudyCard`, `SolutionCard`, `DemoCard`, `LabExperimentCard`.
+- **Content cards:** `CaseStudyCard`, `SolutionCard`, `LabExperimentCard`.
 - **Forms:** `ContactForm`, `WorkflowLeadForm`.
 
 In the app, import them from `@/components/ui/*` and `@/components/*`. Build new screens by composing these; don't restyle them. Section content (case studies, solutions, demos, labs, engagements) lives in `lib/*.ts`, and the bundle exposes the site's own copy as `window.Yorkstead.data`.
