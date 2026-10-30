@@ -3,9 +3,9 @@
 ## Environment and revision
 
 - Checkout: `/home/brandon/development/yorkstead/website-cc025`.
-- Base: verified main `363c4dad28b1d0676e4b28887154b74589536e06`; feature commit `ace6856165148c0ae5be0821cd8e3b78b311640d` is published on `feat/cc-025-unified-design-navigation`.
+- Base: verified main `363c4dad28b1d0676e4b28887154b74589536e06`; initial feature commit `ace6856165148c0ae5be0821cd8e3b78b311640d` and supplemental commits are published on `feat/cc-025-unified-design-navigation`.
 - Runtime: Bun 1.4.2, Node 26.10.0, Next.js 16.4.2. Dependencies were installed from the lockfile and local cache with `bun install --frozen-lockfile --offline`; no dependency files changed.
-- GitHub: PR [#82](https://github.com/yorkstead/website/pull/82) is open against `main`, with the exact requested title and the verified base SHA. GitHub Actions CI run 437 is in progress; the Vercel commit status is pending and the automatic PR preview is building. These provider checks are not yet complete. PR #81 is merged at the base SHA; no CC-025 branch or PR existed before delivery. The feature branch was published with Git push.
+- GitHub: PR [#82](https://github.com/yorkstead/website/pull/82) is open against `main`, with the exact requested title and verified base SHA. The original delivery check status in run 437 was pending; the final customer-navigation correction at `9f436c9977afa2a142d523bf973cc2577d3ad0a2` passed exact-head run 440 and Vercel (see below). PR #81 is merged at the base SHA; no CC-025 branch or PR existed before delivery. The feature branch was published with Git push.
 - No database migration, production setting, secret, customer record, merge or deployment was performed.
 
 ## Checks
@@ -48,4 +48,12 @@ These screenshots were captured from the local implementation with Playwright. T
 ## Remaining verification limits
 
 - The full local browser suite is not fully green because it includes database-backed owner/auth flows and unrelated parallel-run flakes listed above. A disposable PostgreSQL-backed CI run is required to verify those specialized owner routes on the final PR head.
-- GitHub Actions and Vercel checks remain in progress/pending on PR #82. The preview is an automatic PR integration; no manual deployment or production operation was performed. No merge was performed.
+- Local owner-browser execution still requires the unavailable disposable PostgreSQL fixture; exact-head CI supplied that fixture and passed the added browser regression. No manual deployment or production operation was performed. No merge was performed.
+
+## PR #82 customer portal observer review correction
+
+- Code commit: `9f436c9977afa2a142d523bf973cc2577d3ad0a2`. Replaced the percentage bottom `rootMargin` with a viewport-height-derived pixel inset clamped to leave at least 64px of observation area. Resize handling coalesces events with `requestAnimationFrame`, disconnects and rebuilds the observer, ignores stale callbacks, and removes the listener/cancels pending work/disconnects during cleanup.
+- Added margin unit assertions for 1440×900, 390×844, 390×600 and a short viewport. Added an owner-authenticated browser regression that scrolls the actual portal sections at 1440×900 and 390×844, then resizes to 390×600; each scroll verifies exactly one `aria-current="location"` item.
+- Local affected tests: portal unit tests 3/3 pass; full `bun test` 421 pass, 112 database-backed skips, 0 fail; scaffold, 21-migration check, lint, typecheck, production build and diff check pass. Lint reports one pre-existing warning at `components/login-panel.tsx:62`. The local owner browser suite could not initialize because identical disposable `DATABASE_URL` and `TEST_DATABASE_URL` values are unavailable.
+- Exact-head GitHub Actions [run 440](https://github.com/yorkstead/website/actions/runs/41045035430) passed on `9f436c9977afa2a142d523bf973cc2577d3ad0a2`, including disposable PostgreSQL, all browser workflows, the CC-017 navigation step containing the new desktop/mobile/resize regression, production build and generated-worktree cleanliness. Vercel passed on the same head.
+- Both duplicate P2 review threads were answered with the implementation and test evidence, then resolved after run 440 passed: `PRRT_kwDOUJPn1c6x7q4r` and `PRRT_kwDOUJPn1c6x7xRV`. PR #82 remains open and unmerged. No manual deployment or production operation occurred.
