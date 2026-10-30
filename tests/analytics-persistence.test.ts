@@ -317,6 +317,18 @@ describe("Analytics persistence and API route", () => {
     expect(executedQueries.length).toBe(0);
   });
 
+  test("keeps research-only opportunity state outside public conversion analytics", async () => {
+    const { POST } = await import("@/app/api/analytics/events/route");
+    const body = JSON.stringify({ event: "opportunity_validated", path: "/dashboard/opportunities", metadata: { problem: "private research" } });
+    const response = await POST(new Request("https://yorkstead.test/api/analytics/events", {
+      method: "POST",
+      headers: { "content-type": "application/json", "content-length": String(body.length), origin: "https://yorkstead.test" },
+      body,
+    }));
+    expect(response.status).toBe(400);
+    expect(executedQueries).toHaveLength(0);
+  });
+
   test("POST /api/analytics/events returns 413 when content-length exceeds 4096 bytes", async () => {
     const { POST } = await import("@/app/api/analytics/events/route");
     const request = new Request("https://yorkstead.test/api/analytics/events", {

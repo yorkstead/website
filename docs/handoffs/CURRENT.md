@@ -1,3 +1,17 @@
+# Active work — CC-026 Opportunity Discovery & Problem-Led Prospecting — 2026-10-30
+
+## Verified session start and current state — 2026-10-30 11:32 UTC
+
+- Live GitHub API and a fresh `git fetch origin main` verified `main` at `62a64895117c8e6a8f3b45adfa45e8884fb33452`, matching the requested base. PR #82 merged at this SHA; no open PRs or existing CC-026 branch were found. These observations supersede the historical CC-025 active/open status further below.
+- The pre-existing `/home/brandon/development/yorkstead/website-cc025` checkout is clean at `1dc96f6a32f0c37427d8d692e3c3e0d0d5ce761a` and remains untouched. `/tmp/yorkstead-cc026` is an isolated local clone, clean on `feat/cc-026-opportunity-discovery` at the verified main SHA.
+- Repository instructions, constitution, verification/release workflow, and code-change-verification, database-migration, security-review, production-hardening, and spec-convergence skills were read. Bun dependencies installed offline from the lockfile; no dependency files were changed. Installed Next.js 16.4.2 App Router guides are being reviewed before application code.
+- Discovery audit/spec/plan/tasks/threat model are in `specs/036-cc-026-opportunity-discovery/`. Existing lead/consultation/proposal/follow-up/project-conversion sources of truth remain authoritative. Research is isolated until explicit, consent-backed promotion, and no contact data is collected in research-only records.
+- Authorization from the current user request: implement, verify, publish `feat/cc-026-opportunity-discovery`, and open one PR with title `CC-026: Opportunity Discovery & Problem-Led Prospecting`. No merge, manual deployment, production data/config/secret change, or outreach.
+- Current stage: implementation complete in the isolated checkout; final verification, operational notes, exact-head review, push, and PR opening remain. Additive migration 0022 has not been applied to any database. Production is untouched.
+- Implemented: owner-only research workspace under CRM navigation; separate opportunity/evidence/interview/history persistence; epistemic evidence labels; consent-aware guided discovery; explicit qualification and manual queue ordering; duplicate-aware transactional/idempotent CRM link or promotion; reports that distinguish research from CRM outcomes; no research conversion analytics or outbound messaging. The existing CRM status, proposal, follow-up, consultation, and project paths remain authoritative.
+- Verification: scaffold, migration-plan, typecheck, migration validation, lint, full unit tests (428 pass / 113 PostgreSQL-backed skips / 0 fail), focused tests (43 pass), and Next build pass. Lint retains one existing warning in `components/login-panel.tsx`. Standard Playwright completed 25 pass / 8 fail with no local PostgreSQL; owner/session checks logged `ECONNREFUSED 127.0.0.1:5432`. Focused CC-026 Playwright server could not bind loopback in this sandbox (`EPERM`). These limits and CI's disposable-PostgreSQL/screenshot coverage are documented in spec verification.
+- Next exact action: finish security/spec convergence, verify exact branch head and live base, push the authorized feature branch, and open one PR. No merge, manual deployment, production data/config/secret change, or outreach.
+
 # Active work — CC-025 Unified Yorkstead Design System & Navigation — 2026-10-30
 
 ## CC-025 customer portal observer review correction — 2026-10-30
