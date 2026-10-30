@@ -43,3 +43,5 @@
 - Local PostgreSQL is unavailable (`pg_isready` reports no server; `TEST_DATABASE_URL` is unset). Docker is installed as a snap but cannot launch because snap confinement refuses to start. The owner-browser tests and database suites therefore require GitHub CI's disposable PostgreSQL workflow. Exact-head run, Vercel status, and review-thread resolution will be recorded after push.
 
 - First exact-head GitHub run `41012863223` passed disposable PostgreSQL migration/integration, deterministic tests, lint, typecheck and standard Playwright. The added coordinated-refresh browser test stopped at an ambiguous `New project` locator (three matches); it is now scoped to the primary button and full exact-head CI must be rerun.
+
+- Second exact-head run `41013748867` passed disposable PostgreSQL, deterministic/database tests, lint, typecheck and the standard browser matrix. The CC-023 directory/save browser test passed; the refresh browser test reached its expected overview-error state but its broad `role=status` locator matched both the dashboard toast and panel warning. The assertion now targets the panel warning paragraph specifically.

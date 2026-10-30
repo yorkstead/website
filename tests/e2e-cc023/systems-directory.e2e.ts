@@ -118,7 +118,7 @@ test("Exceptions refresh checks the overview and existing project intelligence t
  const successfulChecked=await checked.textContent();
  await page.getByRole("button",{name:"Refresh",exact:true}).click();
  await expect.poll(()=>projectCalls).toBe(3);await expect.poll(()=>overviewCalls).toBe(3);
- await expect(page.getByRole("status")).toContainText("simulated overview failure");
+ await expect(page.locator('p[role="status"]').filter({hasText:"simulated overview failure"})).toBeVisible();
  await expect(checked).toHaveText(successfulChecked??"");
  await page.waitForTimeout(500);expect(projectCalls).toBe(3);expect(overviewCalls).toBe(3);
  const cloud=await context.request.get("/api/workspace");expect(cloud.status()).toBe(200);const payload=await cloud.json() as {updatedAt:string|null};
