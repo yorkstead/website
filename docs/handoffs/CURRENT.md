@@ -1,3 +1,11 @@
+# Active work — CC-023 review corrections on existing Website PR #80 — 2026-10-30
+
+- Authorization: fix the three outstanding CC-023 review findings on existing PR #80, add regressions, verify, push to that PR, and resolve the findings after passing CI. No merge, manual deployment, or production changes.
+- PR #80 remains open, ready, and unmerged. The verified implementation head is `3a671e433e6a5c692e2b30e26bedbcc153bed0dc`; exact-head GitHub Actions run [41014803000](https://github.com/yorkstead/website/actions/runs/41014803000) passed disposable PostgreSQL migration/integration, deterministic tests, lint, typecheck, the full Playwright matrix including CC-023, production build, and clean-worktree validation. Vercel preview succeeded.
+- The three findings are resolved: Vercel auto-resolved the decimal-entry thread after the amount fix; the project-intelligence refresh and in-modal save-error threads were resolved after the passing exact-head CI run. The renewal-date correction thread remains resolved.
+- Local checks: full Bun suite 406 pass / 111 PostgreSQL-dependent skips; migration check (20 migrations), scaffold check, lint (0 errors, one existing login-panel warning), typecheck, production build and CC-023 Playwright discovery passed. Local PostgreSQL could not start because the configured Docker snap is blocked by confinement; CI ran disposable PostgreSQL and the browser tests.
+- Original checkout on `feat/cc-022b-voice-shopping-payday-planning` remains untouched. No merge, manual deployment, production change, or provider/account mutation occurred.
+
 ## CC-022B Website P2 review closeout — 2026-10-30
 
 - Scope: finish the two outstanding P2 findings on existing Website PR #79 only. PR remains unmerged; no deployment or production changes.

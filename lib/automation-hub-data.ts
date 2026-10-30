@@ -153,7 +153,7 @@ async function readJsonLimited(response: Response): Promise<unknown> {
   return JSON.parse(new TextDecoder().decode(body));
 }
 
-export async function getAutomationHubData(): Promise<AutomationHubDataResult> {
+export async function getAutomationHubData(timeoutMs = 25000): Promise<AutomationHubDataResult> {
   const checkedAt = new Date().toISOString();
   const token = process.env.YORKSTEAD_AUTOMATIONS_READ_SECRET;
   if (!token || token.length < 32) return { state: "not_configured", checkedAt };
@@ -165,7 +165,7 @@ export async function getAutomationHubData(): Promise<AutomationHubDataResult> {
       cache: "no-store",
       // The Hub performs bounded OAuth and Google Tasks reads (up to 8s per provider hop).
       // Leave room for those reads while retaining a hard ceiling on this server request.
-      signal: AbortSignal.timeout(25000),
+      signal: AbortSignal.timeout(Math.max(1000,Math.min(25000,timeoutMs))),
     });
     if (!response.ok) return { state: response.status >= 500 ? "unavailable" : "degraded", checkedAt };
     const parsed = AutomationHubSnapshot.safeParse(await readJsonLimited(response));

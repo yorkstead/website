@@ -1,5 +1,5 @@
 export type ProjectIntelligence = {
-  github: null | { available: boolean; private?: boolean; defaultBranch?: string; openIssues?: number; pushedAt?: string; latestCommit?: null | { sha: string; message: string; url: string; date?: string }; pullRequests?: Array<{ number: number; title: string; url: string; draft: boolean; updatedAt: string }>; issues?: Array<{ number: number; title: string; url: string; updatedAt: string }> };
+  github: null | { available: boolean; private?: boolean; defaultBranch?: string; openIssues?: number; pushedAt?: string; latestCommit?: null | { sha: string; message: string; url: string; date?: string }; pullRequests?: Array<{ number: number; title: string; url: string; draft: boolean; updatedAt: string }>; issues?: Array<{ number: number; title: string; url: string; updatedAt: string }>; workflows?: null | {checkedAt:string;items:Array<{name:string;status:string;conclusion:string|null;url:string;updatedAt:string}>}; deployments?:null|Array<{environment:string;state:string;updatedAt:string}> };
   vercel: null | { reachable: boolean; state: string | null; target?: string | null; createdAt?: number; url: string; checkedAt: string };
   integrations: Record<"github" | "vercel", IntegrationReport>;
   fetchedAt: string;
@@ -26,6 +26,8 @@ function validGitHub(value: unknown) {
   if (value.latestCommit !== undefined && value.latestCommit !== null && (!isRecord(value.latestCommit) || typeof value.latestCommit.sha !== "string" || typeof value.latestCommit.message !== "string" || typeof value.latestCommit.url !== "string")) return false;
   if (value.pullRequests !== undefined && (!Array.isArray(value.pullRequests) || !value.pullRequests.every((item) => isRecord(item) && typeof item.number === "number" && typeof item.title === "string" && typeof item.url === "string" && typeof item.draft === "boolean" && typeof item.updatedAt === "string"))) return false;
   if (value.issues !== undefined && (!Array.isArray(value.issues) || !value.issues.every((item) => isRecord(item) && typeof item.number === "number" && typeof item.title === "string" && typeof item.url === "string" && typeof item.updatedAt === "string"))) return false;
+  if(value.workflows!==undefined&&value.workflows!==null&&(!isRecord(value.workflows)||typeof value.workflows.checkedAt!=="string"||Number.isNaN(Date.parse(value.workflows.checkedAt))||!Array.isArray(value.workflows.items)||!value.workflows.items.every(item=>isRecord(item)&&typeof item.name==="string"&&typeof item.status==="string"&&(typeof item.conclusion==="string"||item.conclusion===null)&&typeof item.url==="string"&&typeof item.updatedAt==="string"&&!Number.isNaN(Date.parse(item.updatedAt)))))return false;
+  if(value.deployments!==undefined&&value.deployments!==null&&(!Array.isArray(value.deployments)||!value.deployments.every(item=>isRecord(item)&&typeof item.environment==="string"&&typeof item.state==="string"&&typeof item.updatedAt==="string"&&!Number.isNaN(Date.parse(item.updatedAt)))))return false;
   return true;
 }
 

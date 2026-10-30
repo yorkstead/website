@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { fetchProjectIntelligence, markProjectIntelligenceRefreshing, mergeProjectIntelligenceResults, parseProjectIntelligence, type ProjectIntelligence } from "@/lib/project-intelligence-client";
 
 const intelligence = (fetchedAt = "2026-08-15T18:30:00.000Z"): ProjectIntelligence => ({
-  github: { available: true, latestCommit: { sha: "abc1234", message: "Ship it", url: "https://github.com/example/repo/commit/abc1234" }, pullRequests: [], issues: [] },
+  github: { available: true, latestCommit: { sha: "abc1234", message: "Ship it", url: "https://github.com/example/repo/commit/abc1234" }, pullRequests: [], issues: [], workflows:{checkedAt:fetchedAt,items:[{name:"Verify",status:"completed",conclusion:"success",url:"https://github.com/example/repo/actions/runs/1",updatedAt:fetchedAt}]} },
   vercel: { reachable: true, state: "READY", url: "example.vercel.app", checkedAt: fetchedAt },
   integrations: { github: { status: "ok", authenticated: true }, vercel: { status: "ok", authenticated: true } },
   fetchedAt,
@@ -25,6 +25,7 @@ describe("project intelligence refresh", () => {
     await expect(fetchProjectIntelligence({ id: "one", repo: "https://github.com/example/repo" }, async () => Response.json({ github: { pullRequests: "invalid" }, fetchedAt: "today" }))).rejects.toThrow();
     expect(parseProjectIntelligence({ github: null, vercel: null, fetchedAt: "not-a-date" })).toBeNull();
     expect(parseProjectIntelligence({ github: null, vercel: null, integrations: { github: { status: "mystery", authenticated: false }, vercel: { status: "ok", authenticated: true } }, fetchedAt: new Date().toISOString() })).toBeNull();
+    expect(parseProjectIntelligence({...intelligence(),github:{available:true,workflows:{checkedAt:new Date().toISOString(),items:[{name:"Build",status:"completed",conclusion:{secret:true},url:"https://github.com/x/y",updatedAt:new Date().toISOString()}]}}})).toBeNull();
   });
 
   test("retains last-known data for failed projects while accepting successful siblings", () => {

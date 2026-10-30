@@ -23,4 +23,5 @@ export const readinessMigrationManifest = [...readinessMigrationManifest0016,
   ["0017", "7497a8aca888799bce8f6f6ea6ea278ebc1216ae9dadecbd6a554ed78b76e9de"],
   ["0018", "d2239bd96fd45b96c7f4d41245de282fd2d7077491fec570a16f7f49ba91d834"],
   ["0019", "54b58ef817646782030c455554a15884430c46e2f583ab2eca92d8f22fc2448e"],
+  ["0020", "a812f9602eaf079bdd0ae434911a9828ef11bf4bb732f98c72e61d8cd4877245"],
 ] as const;
