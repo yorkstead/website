@@ -77,7 +77,7 @@ export const readinessCatalog: readonly ReadinessDefinition[] = [
     "schema.applied",
     "Release",
     "Migration ledger matches the exact release checksum manifest",
-    "All 17 applied migrations, no unknown or mismatched checksum",
+    "All applied migrations have matching checksums; no unknown revisions",
   ),
   technical(
     "production.secrets",
