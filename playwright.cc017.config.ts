@@ -18,6 +18,8 @@ export default defineConfig({
       PASSKEY_RP_ID: "127.0.0.1",
       YORKSTEAD_AUTOMATIONS_WRITE_SECRET: "synthetic-cc022-browser-write-secret-not-for-any-deployment",
       YORKSTEAD_AUTOMATIONS_ACTIONS_ENABLED: "true",
+      YORKSTEAD_SHOPPING_WRITE_SECRET: "synthetic-cc022b-browser-write-secret-not-for-any-deployment",
+      YORKSTEAD_SHOPPING_ACTIONS_ENABLED: "true",
     },
   },
 });

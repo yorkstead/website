@@ -130,3 +130,213 @@ test("uncertain command recovery survives unavailable refresh and remount with t
   await expect.poll(() => commandBodies.length).toBe(3);
   expect(commandBodies.map((body) => body.idempotencyKey)).toEqual([commandBodies[0].idempotencyKey, commandBodies[0].idempotencyKey, commandBodies[0].idempotencyKey]);
 });
+
+test("shopping edits keep their opening revision across a cross-tab refresh", async ({ page, context }) => {
+  await expect(await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).toBeOK();
+  const itemId = "c1c1c1c1-c1c1-41c1-81c1-c1c1c1c1c1c1";
+  let item = { id: itemId, captureId: "c2c2c2c2-c2c2-42c2-82c2-c2c2c2c2c2c2", name: "Dog food", category: null, estimatedAmount: null, currency: null, priority: "need" as const, priorityConfirmed: true, scope: "personal" as const, scopeConfirmed: true, timingIntent: "this_week" as const, targetDate: null, recurrenceRule: null, state: "planned" as const, reviewState: "approved" as const, reviewReason: null, revision: 1, createdAt: checkedAt, completedAt: null };
+  let payday = { timezone: "America/Denver", weekday: 1, enabled: true, expectedAmount: 1200, currency: "USD", nextPayday: "2026-11-02", revision: 1, updatedAt: checkedAt, records: [{ id: "e3e3e3e3-e3e3-43e3-83e3-e3e3e3e3e3e3", date: "2026-11-02", status: "confirmed", expectedAmount: 1200, confirmedAmount: 1700, currency: "USD", variableIncome: false, receivedAt: checkedAt, reservesConfirmed: true, reserveAmount: 400, reserveCount: 1, revision: 1, createdAt: checkedAt }] as Array<Record<string, unknown>> };
+  const commands: Array<Record<string, unknown>> = [];
+  const snapshot = () => ({ state: "available", checkedAt, data: { contractVersion: 1, source: "Automation Hub", generatedAt: checkedAt,
+    captures: { source: "Automation Hub · captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+    captureActions: { source: "Automation Hub · capture action audit", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+    activity: { source: "Automation Hub · execution history", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+    integrationHealth: { source: "Automation Hub · database and Google Tasks", state: "available", checkedAt, database: "healthy", googleTasks: "healthy", errorCode: null },
+    reviewQueue: { source: "Automation Hub · pending captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+    tasks: { source: "Google Tasks via Automation Hub", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+    shopping: { source: "Automation Hub · shopping planner", state: "available", checkedAt, truncated: false, errorCode: null, items: [item] },
+    payday: { source: "Automation Hub · payday planning", state: "available", checkedAt, truncated: false, errorCode: null, items: [payday] },
+    shoppingAudit: { source: "Automation Hub · shopping audit", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+  } });
+  await context.route("**/api/dashboard/automation-hub", async route => route.fulfill({ json: snapshot() }));
+  await context.route("**/api/dashboard/shopping", async route => {
+    const command = route.request().postDataJSON() as Record<string, unknown>;
+    commands.push(command);
+    if (command.action === "set_payday") payday = { ...payday, expectedAmount: Number(command.expectedAmount), revision: payday.revision + 1 };
+    if (command.action === "confirm_payday") payday.records[0] = { ...payday.records[0], confirmedAmount: Number(command.confirmedAmount), revision: Number(payday.records[0].revision) + 1 };
+    item = { ...item, ...(command.changes as Partial<typeof item>), revision: item.revision + 1 };
+    await route.fulfill({ status: 200, json: { contractVersion: 2, commandId: "c5c5c5c5-c5c5-45c5-85c5-c5c5c5c5c5c5", itemId, status: "succeeded", resultCode: "updated" } });
+  });
+
+  const otherTab = await context.newPage();
+  await page.goto("/dashboard/automations");
+  await otherTab.goto("/dashboard/automations");
+  const firstItem = page.locator('section[aria-labelledby="shopping-planner-title"] li').first();
+  const secondTabItem = otherTab.locator('section[aria-labelledby="shopping-planner-title"] li').first();
+  await firstItem.getByRole("button", { name: "Edit", exact: true }).click();
+  await page.getByLabel("Item", { exact: true }).fill("Stale draft from first tab");
+  await secondTabItem.getByRole("button", { name: "Edit", exact: true }).click();
+  await otherTab.getByLabel("Item", { exact: true }).fill("Committed change from second tab");
+  await secondTabItem.getByRole("button", { name: "Save changes" }).click();
+  expect(commands[0].expectedRevision).toBe(1);
+
+  await page.getByRole("button", { name: "Refresh planner" }).click();
+  await expect(firstItem.getByRole("alert")).toContainText("changed in Automation Hub");
+  await expect(firstItem.getByRole("button", { name: "Save changes" })).toBeDisabled();
+  expect(commands).toHaveLength(1);
+  await firstItem.getByRole("button", { name: "Review latest item" }).click();
+  await expect(page.getByLabel("Item", { exact: true })).toHaveValue("Committed change from second tab");
+  await page.getByLabel("Item", { exact: true }).fill("Reviewed change from first tab");
+  await firstItem.getByRole("button", { name: "Save changes" }).click();
+  expect(commands[1].expectedRevision).toBe(2);
+  expect((commands[1].changes as Record<string, unknown>).name).toBe("Reviewed change from first tab");
+  expect(JSON.stringify(commands[1])).not.toContain("Stale draft from first tab");
+  await page.getByText("Configure weekly Monday payday", { exact: true }).click();
+  await page.getByLabel("Expected amount (optional)").fill("1400");
+  await otherTab.getByText("Configure weekly Monday payday", { exact: true }).click();
+  await otherTab.getByLabel("Expected amount (optional)").fill("1500");
+  await otherTab.getByRole("button", { name: "Save schedule" }).click();
+  expect(commands.at(-1)?.expectedRevision).toBe(1);
+  await page.getByRole("button", { name: "Refresh Hub records" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "payday schedule changed" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Save schedule" })).toBeDisabled();
+  expect(commands).toHaveLength(3);
+  await page.getByRole("button", { name: "Review latest schedule" }).click();
+  await expect(page.getByLabel("Expected amount (optional)")).toHaveValue("1500");
+  await page.getByLabel("Expected amount (optional)").fill("1600");
+  await page.getByRole("button", { name: "Save schedule" }).click();
+  expect(commands.at(-1)?.expectedRevision).toBe(2);
+  expect(commands.at(-1)?.expectedAmount).toBe(1600);
+  await page.getByText("Confirm actual payday and review reserves", { exact: true }).click();
+  const receiptCommandStart = commands.length;
+  await page.getByLabel("Receipt date").fill("2026-11-02");
+  await page.getByLabel("Actual amount received").fill("1800");
+  await otherTab.getByText("Confirm actual payday and review reserves", { exact: true }).click();
+  await otherTab.getByLabel("Receipt date").fill("2026-11-02");
+  await otherTab.getByLabel("Actual amount received").fill("1850");
+  await otherTab.getByRole("button", { name: "Confirm receipt and reserves" }).click();
+  expect(commands.at(-1)?.expectedRevision).toBe(1);
+  await page.getByRole("button", { name: "Refresh Hub records" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "This receipt changed in Automation Hub" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirm receipt and reserves" })).toBeDisabled();
+  expect(commands).toHaveLength(receiptCommandStart + 1);
+  await page.getByRole("button", { name: "Review latest receipt" }).click();
+  await expect(page.getByLabel("Actual amount received")).toHaveValue("1850");
+  await page.getByLabel("Actual amount received").fill("1900");
+  await page.getByRole("button", { name: "Confirm receipt and reserves" }).click();
+  expect(commands.at(-1)?.expectedRevision).toBe(2);
+  expect(commands.at(-1)?.confirmedAmount).toBe(1900);
+  await otherTab.close();
+});
+
+test("shopping planner reviews, edits, purchases, confirms payday, recovers same key, and renders mobile/desktop", async ({ page, context }, testInfo) => {
+  const anonymousShopping=await context.request.post("/api/dashboard/shopping",{headers:{origin},data:{}});
+  expect(anonymousShopping.status()).toBe(401);
+  await expect(await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).toBeOK();
+  const itemId="c1c1c1c1-c1c1-41c1-81c1-c1c1c1c1c1c1";
+  const secondItemId="d1d1d1d1-d1d1-41d1-81d1-d1d1d1d1d1d1";
+  const captureId="c2c2c2c2-c2c2-42c2-82c2-c2c2c2c2c2c2";
+  type ShoppingFixtureItem={id:string;captureId:string;name:string;category:string|null;estimatedAmount:number|null;currency:string|null;priority:"essential"|"need"|"want";priorityConfirmed:boolean;scope:"personal"|"business"|null;scopeConfirmed:boolean;timingIntent:"next_payday"|"this_week"|"specific_date"|"unscheduled";targetDate:string|null;recurrenceRule:string|null;state:"planned"|"purchased"|"postponed"|"cancelled";reviewState:"needs_review"|"approved";reviewReason:string|null;revision:number;createdAt:string;completedAt:string|null};
+  let item:ShoppingFixtureItem={id:itemId,captureId,name:"Dog food",category:null,estimatedAmount:null,currency:null,priority:"need",priorityConfirmed:false,scope:null,scopeConfirmed:false,timingIntent:"next_payday",targetDate:null,recurrenceRule:"month",state:"planned",reviewState:"needs_review",reviewReason:"scope_needs_confirmation",revision:1,createdAt:checkedAt,completedAt:null};
+  const secondItem:ShoppingFixtureItem={id:secondItemId,captureId,name:"Dish soap",category:null,estimatedAmount:null,currency:null,priority:"need",priorityConfirmed:true,scope:"personal",scopeConfirmed:true,timingIntent:"this_week",targetDate:null,recurrenceRule:null,state:"planned",reviewState:"approved",reviewReason:null,revision:1,createdAt:checkedAt,completedAt:null};
+  let audits: Array<Record<string,unknown>>=[];let omitItemFromSnapshot=false;
+  const bodies:Array<Record<string,unknown>>=[];let failNext=false;let processingNext=false;let rejectPaydayNext=false;let hubReadMode:"available"|"unavailable"|"degraded"="available";let holdNextCommand=false;let commandStartedResolve=()=>{};let releaseHeldCommand=()=>{};
+  const commandStarted=new Promise<void>(resolve=>{commandStartedResolve=resolve});const heldCommand=new Promise<void>(resolve=>{releaseHeldCommand=resolve});
+  const paydayOutcomes=[503,202,202,200];
+  const payday:{timezone:string;weekday:number;enabled:boolean;expectedAmount:number;currency:string;nextPayday:string;revision:number;updatedAt:string;records:Array<{id:string;date:string;status:string;expectedAmount:number;confirmedAmount:number;currency:string;variableIncome:boolean;receivedAt:string;reservesConfirmed:boolean;reserveAmount:number;reserveCount:number;revision:number;createdAt:string}>}={timezone:"America/Denver",weekday:1,enabled:true,expectedAmount:1200,currency:"USD",nextPayday:"2026-11-02",revision:1,updatedAt:checkedAt,records:[]};
+  await context.addInitScript(()=>{const original=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==="yorkstead-shopping-commands-v2-payday"||key==="yorkstead-shopping-commands-v2")throw new DOMException("Storage blocked","QuotaExceededError");return original.call(this,key,value);};});
+  await page.route("**/api/dashboard/automation-hub",async(route)=>{
+    if(hubReadMode==="unavailable"){await route.fulfill({status:503,json:{error:"unavailable"}});return;}
+    if(hubReadMode==="degraded"){await route.fulfill({json:{state:"degraded",checkedAt}});return;}
+    await route.fulfill({json:{state:"available",checkedAt,data:{contractVersion:1,source:"Automation Hub",generatedAt:checkedAt,
+      captures:{source:"Automation Hub · captures",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},captureActions:{source:"Automation Hub · capture action audit",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},
+      shopping:{source:"Automation Hub · shopping planner",state:"available",checkedAt,truncated:false,errorCode:null,items:omitItemFromSnapshot?[secondItem]:[item,secondItem]},
+      payday:{source:"Automation Hub · payday planning",state:"available",checkedAt,truncated:false,errorCode:null,items:[payday]},
+      shoppingAudit:{source:"Automation Hub · shopping audit",state:"available",checkedAt,truncated:false,errorCode:null,items:audits},
+      activity:{source:"Automation Hub · execution history",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},integrationHealth:{source:"Automation Hub",state:"available",checkedAt,database:"healthy",googleTasks:"healthy",errorCode:null},reviewQueue:{source:"Automation Hub",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},tasks:{source:"Google Tasks",state:"available",checkedAt,truncated:false,errorCode:null,items:[]}}}});
+  });
+  await page.route("**/api/dashboard/shopping",async(route)=>{
+    const body=route.request().postDataJSON() as Record<string,unknown>;bodies.push(body);
+    if(body.action==="set_payday"&&paydayOutcomes.length){const outcome=paydayOutcomes.shift();if(outcome===503){await route.fulfill({status:503,json:{error:"hub_unavailable"}});return;}if(outcome===202){hubReadMode=paydayOutcomes.length===2?"unavailable":"degraded";await route.fulfill({status:202,json:{status:"processing",resultCode:"command_pending"}});return;}}
+    if(failNext){failNext=false;await route.fulfill({status:503,json:{error:"hub_unavailable"}});return;}
+    if(body.action==="confirm_payday"&&rejectPaydayNext){rejectPaydayNext=false;await route.fulfill({status:400,json:{error:"invalid_request"}});return;}
+    if(body.action==="repeat"&&processingNext){processingNext=false;hubReadMode="unavailable";await route.fulfill({status:202,json:{status:"processing",resultCode:"command_pending"}});return;}
+    if(body.action==="purchase"&&holdNextCommand){holdNextCommand=false;commandStartedResolve();await heldCommand;}
+    if(body.action==="update"||body.action==="review"){const changes=body.changes as Partial<ShoppingFixtureItem>;item={...item,...changes,scopeConfirmed:changes.scopeConfirmed??item.scopeConfirmed,priorityConfirmed:changes.priorityConfirmed??item.priorityConfirmed,...(body.action==="review"?{reviewState:"approved" as const,reviewReason:null}:{}),revision:item.revision+1};}
+    if(body.action==="purchase")item={...item,state:"purchased",revision:item.revision+1};
+    if(body.action==="unpurchase")item={...item,state:"planned",revision:item.revision+1};
+    if(body.action==="skip")item={...item,state:"postponed",revision:item.revision+1};
+    if(body.action==="confirm_payday")payday.records=[{id:"c3c3c3c3-c3c3-43c3-83c3-c3c3c3c3c3c3",date:String(body.paydayDate),status:"confirmed",expectedAmount:1200,confirmedAmount:1100,currency:"USD",variableIncome:false,receivedAt:checkedAt,reservesConfirmed:true,reserveAmount:300,reserveCount:1,revision:1,createdAt:checkedAt}];
+    if(body.action==="set_reserves")payday.records[0]={...payday.records[0],reserveAmount:350,reserveCount:1,revision:payday.records[0].revision+1};
+    audits=[{id:"c4c4c4c4-c4c4-44c4-84c4-c4c4c4c4c4c4",itemId:itemId,paydayId:null,actor:"website_owner",event:body.action,priorRevision:item.revision,resultingRevision:item.revision+1,priorState:"planned",resultingState:item.state,metadata:{},createdAt:checkedAt}];
+    await route.fulfill({status:200,json:{contractVersion:2,commandId:"c5c5c5c5-c5c5-45c5-85c5-c5c5c5c5c5c5",itemId:String(body.itemId||itemId),status:"succeeded",resultCode:"updated"}});
+  });
+  await page.setViewportSize({width:390,height:900});await page.goto("/dashboard/automations");
+  await expect(page.getByRole("heading",{name:"Shopping planner"})).toBeVisible();
+  await page.screenshot({path:testInfo.outputPath("cc022b-shopping-mobile.png"),fullPage:true});
+  const shoppingItem=page.locator('section[aria-labelledby="shopping-planner-title"] li').filter({has:page.getByRole("heading",{name:"Dog food",exact:true})});
+  const secondShoppingItem=page.locator('section[aria-labelledby="shopping-planner-title"] li').filter({has:page.getByRole("heading",{name:"Dish soap",exact:true})});
+  await shoppingItem.getByRole("button",{name:"Correct and review"}).click();
+  const scopeControl=shoppingItem.getByRole("combobox",{name:"Scope",exact:true});
+  const priorityControl=shoppingItem.getByRole("combobox",{name:"Priority",exact:true});
+  await expect(scopeControl).toBeVisible();
+  await scopeControl.selectOption("personal");await priorityControl.selectOption("essential");
+  await shoppingItem.getByRole("button",{name:"Save changes"}).click();
+  expect(bodies.at(-1)?.action).toBe("review");expect((bodies.at(-1)?.changes as Record<string,unknown>).recurrenceRule).toBe("month");
+  await page.getByRole("combobox",{name:"Status",exact:true}).selectOption("all");
+  await secondShoppingItem.getByRole("button",{name:"Edit",exact:true}).click();
+  holdNextCommand=true;const beforeConcurrent=bodies.length;await shoppingItem.getByRole("button",{name:"Mark purchased"}).click();await commandStarted;
+  await expect(secondShoppingItem.getByRole("button",{name:"Save changes"})).toBeDisabled();expect(bodies).toHaveLength(beforeConcurrent+1);
+  releaseHeldCommand();await expect(shoppingItem.getByRole("button",{name:"Undo purchase"})).toBeVisible();await shoppingItem.getByRole("button",{name:"Undo purchase"}).click();
+  await page.getByRole("combobox",{name:"Status",exact:true}).selectOption("open");
+  await shoppingItem.getByRole("button",{name:"Edit",exact:true}).click();
+  await shoppingItem.getByRole("combobox",{name:"Repeat rule",exact:true}).selectOption("");
+  await shoppingItem.getByRole("button",{name:"Save changes"}).click();
+  expect(bodies.at(-1)?.action).toBe("update");expect((bodies.at(-1)?.changes as Record<string,unknown>).recurrenceRule).toBeNull();
+  await shoppingItem.getByRole("button",{name:"Mark purchased"}).click();
+  await page.getByRole("combobox",{name:"Status",exact:true}).selectOption("purchased");
+  await shoppingItem.getByRole("button",{name:"Undo purchase"}).click();
+  await page.getByText("Configure weekly Monday payday",{exact:true}).click();
+  const paydayCommandStart=bodies.length;await page.getByRole("button",{name:"Save schedule"}).click();
+  await expect(page.getByRole("status").filter({hasText:"Payday update needs review"})).toBeVisible();
+  const paydayRecoveryCommand=bodies.at(-1);const paydayRecoveryKey=paydayRecoveryCommand?.idempotencyKey;
+  await page.getByRole("button",{name:"Save schedule"}).click();
+  await expect(page.getByRole("alert").filter({hasText:"Automation Hub records could not be loaded"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Shopping planner"})).toHaveCount(0);
+  hubReadMode="available";await page.getByRole("button",{name:"Refresh Hub records"}).click();
+  await expect(page.getByRole("heading",{name:"Shopping planner"})).toBeVisible();
+  const beforeBlockedDuplicate=bodies.length;await shoppingItem.getByRole("button",{name:"Mark purchased"}).click();
+  expect(bodies).toHaveLength(beforeBlockedDuplicate);await expect(page.getByRole("status").filter({hasText:"Other shopping commands are blocked"})).toBeVisible();
+  await page.getByRole("button",{name:"Retry original payday command"}).click();
+  await expect(page.getByRole("status").filter({hasText:"unsupported or invalid data contract"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Shopping planner"})).toHaveCount(0);
+  hubReadMode="available";await page.getByRole("button",{name:"Refresh Hub records"}).click();
+  await expect(page.getByRole("heading",{name:"Shopping planner"})).toBeVisible();
+  await page.getByRole("button",{name:"Retry original payday command"}).click();
+  expect(bodies.slice(paydayCommandStart).map(body=>body.idempotencyKey)).toEqual([paydayRecoveryKey,paydayRecoveryKey,paydayRecoveryKey,paydayRecoveryKey]);
+  expect(bodies.slice(paydayCommandStart)).toEqual([paydayRecoveryCommand,paydayRecoveryCommand,paydayRecoveryCommand,paydayRecoveryCommand]);
+  await page.getByText("Confirm actual payday and review reserves",{exact:true}).click();
+  const beforeBlankReceipt=bodies.length;await page.getByRole("button",{name:"Confirm receipt and reserves"}).click();
+  await expect(page.getByRole("status").filter({hasText:"finite, nonnegative amount"})).toBeVisible();expect(bodies).toHaveLength(beforeBlankReceipt);
+  await page.getByLabel("Receipt date").fill("2026-11-02");await page.getByLabel("Actual amount received").fill("1100");
+  await page.getByLabel("Reserve label").fill("Rent");await page.getByLabel("Reserve amount").fill("300");await page.getByRole("button",{name:"Add reserve"}).click();
+  const receiptDetails=page.locator("details").filter({hasText:"Confirm actual payday and review reserves"});
+  await receiptDetails.getByLabel("Currency").fill("US");
+  rejectPaydayNext=true;await page.getByRole("button",{name:"Confirm receipt and reserves"}).click();
+  await expect(page.getByRole("status").filter({hasText:"rejected this payday input"})).toBeVisible();
+  const rejectedPaydayKey=bodies.at(-1)?.idempotencyKey;
+  await receiptDetails.getByLabel("Currency").fill("USD");
+  await page.getByRole("button",{name:"Confirm receipt and reserves"}).click();
+  expect(bodies.at(-1)?.idempotencyKey).not.toBe(rejectedPaydayKey);
+  await expect(page.getByText(/Available to plan after explicitly entered reserves/)).toBeVisible();
+  await page.getByRole("combobox",{name:"Status",exact:true}).selectOption("open");
+  failNext=true;processingNext=true;await shoppingItem.getByRole("button",{name:"Repeat once"}).click();
+  await expect(page.getByText(/Update needs review/)).toBeVisible();
+  await shoppingItem.getByRole("button",{name:"Retry same command key"}).click();
+  await expect(page.getByRole("alert").filter({hasText:"Automation Hub records could not be loaded"})).toBeVisible();
+  const processingCommand=bodies.at(-1);const processingKey=processingCommand?.idempotencyKey;const afterProcessing=bodies.length;
+  await expect(page.getByRole("heading",{name:"Shopping planner"})).toHaveCount(0);
+  omitItemFromSnapshot=true;hubReadMode="available";await page.getByRole("button",{name:"Refresh Hub records"}).click();
+  await expect(page.getByRole("heading",{name:"Shopping planner"})).toBeVisible();
+  await expect(page.getByRole("status").filter({hasText:"outside the current Hub snapshot"})).toBeVisible();
+  const recoveredOtherItem=page.locator('section[aria-labelledby="shopping-planner-title"] li').filter({has:page.getByRole("heading",{name:"Dish soap",exact:true})});
+  await recoveredOtherItem.getByRole("button",{name:"Mark purchased"}).click();expect(bodies).toHaveLength(afterProcessing);
+  await expect(page.getByRole("status").filter({hasText:"uncertain result"})).toBeVisible();
+  await page.getByRole("button",{name:"Retry pending command"}).click();
+  expect(bodies.slice(-1)[0]).toEqual(processingCommand);
+  expect(bodies.at(-1)?.idempotencyKey).toBe(processingKey);
+  expect(bodies.filter((body)=>body.idempotencyKey===processingKey)).toHaveLength(3);
+  await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:testInfo.outputPath("cc022b-shopping-desktop.png"),fullPage:true});
+  hubReadMode="unavailable";await page.getByRole("button",{name:"Refresh planner"}).click();
+  await expect(page.getByRole("alert").filter({hasText:"Automation Hub records could not be loaded"})).toBeVisible();
+});
