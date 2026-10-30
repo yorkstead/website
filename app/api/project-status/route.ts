@@ -39,8 +39,10 @@ async function githubStatus(repositoryUrl: string) {
     fetchWithTimeout(`${base}/commits?per_page=1`, { headers, next: { revalidate: 60 } }),
     fetchWithTimeout(`${base}/pulls?state=open&per_page=5&sort=updated&direction=desc`, { headers, next: { revalidate: 60 } }),
     fetchWithTimeout(`${base}/issues?state=open&per_page=10&sort=updated&direction=desc`, { headers, next: { revalidate: 60 } }),
+    process.env.GITHUB_TOKEN ? fetchWithTimeout(`${base}/actions/runs?per_page=5`, { headers, next: { revalidate: 60 } }) : Promise.resolve(null),
+    process.env.GITHUB_TOKEN ? fetchWithTimeout(`${base}/deployments?per_page=3`, { headers, next: { revalidate: 60 } }) : Promise.resolve(null),
   ]);
-  const [repoResult, commitResult, pullResult, issueResult] = results;
+  const [repoResult, commitResult, pullResult, issueResult, workflowResult, deploymentResult] = results;
   if (!repoResult || repoResult.status === "rejected") return { data: null, report: rejectedReport(repoResult?.reason, authenticated) };
   const rateLimit = upstreamRateLimit(repoResult.value);
   if (!repoResult.value.ok) return {
@@ -61,10 +63,40 @@ async function githubStatus(repositoryUrl: string) {
   } catch {
     return { data: null, report: { status: "invalid_response", authenticated, httpStatus: repoResult.value.status, rateLimit } satisfies IntegrationReport };
   }
-  const [commits, pulls, issueRows] = await Promise.all([
+  const [commits, pulls, issueRows, workflowPayload, deploymentPayload] = await Promise.all([
     optionalJSON(commitResult, "commits"),
     optionalJSON(pullResult, "pull_requests"),
     optionalJSON(issueResult, "issues"),
+    (async()=>{
+      if (!process.env.GITHUB_TOKEN) return null;
+      if (!workflowResult || workflowResult.status === "rejected" || !workflowResult.value || !workflowResult.value.ok) { failures.push("workflow_runs"); return null; }
+      try {
+        const payload:unknown=await workflowResult.value.json();
+        if(!payload||typeof payload!=="object"||Array.isArray(payload)||!Array.isArray((payload as {workflow_runs?:unknown}).workflow_runs))throw new Error("Invalid response");
+        return (payload as {workflow_runs:unknown[]}).workflow_runs;
+      } catch { failures.push("workflow_runs"); return null; }
+    })(),
+    (async()=>{
+      if (!process.env.GITHUB_TOKEN) return null;
+      if (!deploymentResult || deploymentResult.status === "rejected" || !deploymentResult.value || !deploymentResult.value.ok) { failures.push("deployments"); return null; }
+      try {
+        const payload:unknown=await deploymentResult.value.json();
+        if(!Array.isArray(payload))throw new Error("Invalid response");
+        return await Promise.all(payload.slice(0,3).map(async(raw)=>{
+          if(!raw||typeof raw!=="object"||Array.isArray(raw))return null;
+          const deployment=raw as Record<string,unknown>;
+          if(!Number.isSafeInteger(deployment.id))return null;
+          try{
+            const statusResponse=await fetchWithTimeout(`${base}/deployments/${deployment.id}/statuses?per_page=1`,{headers,next:{revalidate:60}});
+            if(!statusResponse.ok){failures.push("deployment_statuses");return null;}
+            const statusPayload:unknown=await statusResponse.json();
+            if(!Array.isArray(statusPayload))throw new Error("Invalid response");
+            const latest=statusPayload[0]&&typeof statusPayload[0]==="object"?statusPayload[0] as Record<string,unknown>:null;
+            return {environment:typeof deployment.environment==="string"?deployment.environment.slice(0,80):"unknown",state:typeof latest?.state==="string"?latest.state.slice(0,32):"unknown",updatedAt:typeof latest?.updated_at==="string"?latest.updated_at:String(deployment.updated_at??deployment.created_at??new Date().toISOString())};
+          }catch{failures.push("deployment_statuses");return null;}
+        }));
+      } catch { failures.push("deployments"); return null; }
+    })(),
   ]);
   const commit = commits[0] as Record<string, unknown> | undefined;
   const commitDetails = commit?.commit && typeof commit.commit === "object" ? commit.commit as { message?: unknown; author?: { date?: unknown } } : null;
@@ -84,6 +116,13 @@ async function githubStatus(repositoryUrl: string) {
       } : null,
       pullRequests: pulls.map((pull) => pull as { number: number; title: string; html_url: string; draft?: boolean; updated_at: string }).map((pull) => ({ number: pull.number, title: pull.title, url: pull.html_url, draft: Boolean(pull.draft), updatedAt: pull.updated_at })),
       issues: issueRows.map((issue) => issue as { number: number; title: string; html_url: string; updated_at: string; pull_request?: unknown }).filter((issue) => !issue.pull_request).slice(0, 5).map((issue) => ({ number: issue.number, title: issue.title, url: issue.html_url, updatedAt: issue.updated_at })),
+      workflows: Array.isArray(workflowPayload) ? { checkedAt:new Date().toISOString(), items:workflowPayload.slice(0,5).flatMap((raw)=>{
+        if(!raw||typeof raw!=="object"||Array.isArray(raw))return [];
+        const run=raw as Record<string,unknown>;
+        if(typeof run.name!=="string"||typeof run.status!=="string"||typeof run.updated_at!=="string"||typeof run.html_url!=="string")return [];
+        return [{name:run.name.slice(0,120),status:run.status.slice(0,32),conclusion:typeof run.conclusion==="string"?run.conclusion.slice(0,32):null,url:run.html_url,updatedAt:run.updated_at}];
+      })} : null,
+      deployments:Array.isArray(deploymentPayload)?deploymentPayload.filter((item):item is NonNullable<typeof item>=>Boolean(item)).slice(0,3):null,
     },
     report,
   };

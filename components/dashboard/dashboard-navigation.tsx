@@ -21,6 +21,7 @@ import {
   Menu,
   PanelsTopLeft,
   Settings2,
+  ServerCog,
   Users,
   X,
 } from "lucide-react";
@@ -59,6 +60,7 @@ const insightLinks: NavigationLink[] = [
 ];
 
 const toolLinks: NavigationLink[] = [
+  { label: "Systems Directory", href: "/dashboard/systems", icon: ServerCog, active: (path) => path.startsWith("/dashboard/systems") },
   { label: "Client Access", href: "/dashboard/client-access", icon: Users, active: (path) => path.startsWith("/dashboard/client-access") },
   { label: "Client Publishing", href: "/dashboard/client-publishing", icon: FileText, active: (path) => path.startsWith("/dashboard/client-publishing") },
   { label: "Portal Preview", href: "/dashboard/customer-portal-preview", icon: PanelsTopLeft, active: (path) => path.startsWith("/dashboard/customer-portal-preview") || path.startsWith("/dashboard/client-publishing/preview") },

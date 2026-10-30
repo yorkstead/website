@@ -41,6 +41,17 @@ describe("migration prepared-query protocol", () => {
           AND relation.relname IN ('document_registry','document_versions','document_approval_requests','document_audit_events')`, [schema]);
       expect(triggers.rows[0].count).toBe(17);
       expect((await client.query("SELECT count(*)::int AS count FROM document_registry")).rows[0].count).toBe(0);
+      const directoryDetails = await client.query<{ entries: boolean; audit: boolean; trigger_count: number }>(`SELECT
+        to_regclass('system_directory_entries') IS NOT NULL AS entries,
+        to_regclass('system_directory_audit') IS NOT NULL AS audit,
+        (SELECT count(*)::int FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=$1 AND NOT t.tgisinternal AND c.relname IN ('system_directory_entries','system_directory_audit')) AS trigger_count`,[schema]);
+      expect(directoryDetails.rows[0]).toEqual({entries:true,audit:true,trigger_count:4});
+      await client.query("SELECT set_config('yorkstead.system_directory_actor','synthetic-owner',true)");
+      const inserted = await client.query<{id:string;revision:number}>(`INSERT INTO system_directory_entries(id,name,category,provider) VALUES(gen_random_uuid(),'Synthetic provider','other','Test') RETURNING id,revision`);
+      expect(inserted.rows[0]?.revision).toBe(1);
+      const audit = await client.query<{action:string;actor_id:string}>("SELECT action,actor_id FROM system_directory_audit WHERE entry_id=$1",[inserted.rows[0]?.id]);
+      expect(audit.rows).toEqual([{action:"created",actor_id:"synthetic-owner"}]);
+      await expect(client.query("UPDATE system_directory_audit SET action='updated' WHERE entry_id=$1",[inserted.rows[0]?.id])).rejects.toMatchObject({code:"23514"});
     } finally {
       // All schema creation is confined to this disposable transaction.
       await client.query("ROLLBACK");

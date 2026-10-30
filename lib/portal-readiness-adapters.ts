@@ -121,7 +121,7 @@ export function createReadinessInspector(
       try {
         const rows = (
           await client.query<{ version: string; checksum: string }>(
-            "SELECT version,checksum FROM application_migrations ORDER BY version LIMIT 19",
+            "SELECT version,checksum FROM application_migrations ORDER BY version LIMIT 20",
           )
         ).rows;
         const ledger = rows.map((r) => [r.version, r.checksum]);

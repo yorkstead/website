@@ -123,6 +123,11 @@ jobs:
           NODE_ENV: development
         run: bunx playwright test -c playwright.cc018.config.ts
 
+      - name: Verify Business Systems Directory
+        env:
+          NODE_ENV: development
+        run: bunx playwright test -c playwright.cc023.config.ts
+
       - name: Build without production runtime secrets
         run: bun run build
 

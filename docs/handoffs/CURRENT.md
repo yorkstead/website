@@ -1,3 +1,14 @@
+# Active work — CC-023 Business Systems Directory & Control Panel — 2026-10-30
+
+- Authorization: user explicitly authorizes implementation, verification, and one new Website PR titled `CC-023: Business Systems Directory & Control Panel`. No merge, manual deployment, production secrets/configuration/data mutation, third-party subscription changes, purchases, or cancellations.
+- Verified start: Website `main` SHA `7901d0b2e6de9fabf92c2739cdd539b2c41468a3`, merged from PR #79. PR #79 is merged; no Website PRs were open. Implementation branch `codex/cc-023-business-systems-directory` is isolated in `/tmp/website-cc023` from that exact tip.
+- The original checkout on `feat/cc-022b-voice-shopping-payday-planning` contained uncommitted CC-022B edits and untracked `website.code-workspace`; it remains untouched.
+- Spec, plan, tasks, verification, and operations instructions: `specs/033-cc-023-business-systems-directory/`.
+- Discovery reused existing owner authentication, Command Center, Operations monitor, Automation Hub static health and read contract, project intelligence, ordered migrations, and current UI navigation. No provider credentials/accounts/costs were assumed. New directory is empty by default.
+- Progress: migration `0020`, owner-only directory/API, audit, responsive directory page, persistent provider suggestions, navigation, and exception/cost overview are implemented. On the implementation worktree, `yorkstead:check`, `db:migrate:check` (20 ordered migrations), lint (0 errors, one pre-existing warning), typecheck, full Bun tests (404 passed / 111 PostgreSQL-dependent skipped), production build, and `git diff --check` pass. Existing Playwright run: 24 pass / 8 fail with local PostgreSQL unavailable; CC-023 browser fixture refused to run without disposable DB variables. Exact-head PostgreSQL-backed CI is required for browser and persistence validation.
+- Next exact action: review the complete diff, commit/push and open the single authorized PR, then verify exact-head GitHub checks and update this handoff. No merge or deployment.
+- Production/release restrictions remain in force. No production operation or provider mutation is authorized.
+
 ## CC-022B Website P2 review closeout — 2026-10-30
 
 - Scope: finish the two outstanding P2 findings on existing Website PR #79 only. PR remains unmerged; no deployment or production changes.
