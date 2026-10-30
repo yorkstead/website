@@ -10,13 +10,16 @@ import { openLeadStageCounts, selectCommandCenterActions, type GoogleCommandTask
 import type { CommandCenterCrmSnapshot } from "@/lib/contact-inquiries";
 import type { Project } from "@/lib/projects";
 import type { ActivityItem, Task } from "@/lib/workspace";
+import type { AnalyticsOverviewSnapshot } from "@/lib/analytics-dashboard";
 
 export function CommandCenterOverview({
-  crm, crmUnavailable, projects, tasks, googleTasks, activity, today, staleProjectDays, ready,
+  crm, crmUnavailable, analyticsSnapshot, analyticsUnavailable, projects, tasks, googleTasks, activity, today, staleProjectDays, ready,
   onCompleteTask, onOpenTask, onCompleteGoogleTask, onCreateTask,
 }: {
   crm: CommandCenterCrmSnapshot | null;
   crmUnavailable: boolean;
+  analyticsSnapshot: AnalyticsOverviewSnapshot | null;
+  analyticsUnavailable: boolean;
   projects: Project[];
   tasks: Task[];
   googleTasks: GoogleCommandTask[];
@@ -69,5 +72,7 @@ export function CommandCenterOverview({
         <div className="mt-4 border-t border-border/70 pt-3"><div className="mb-2 flex items-center gap-2"><Activity className="size-3.5 text-muted-foreground" /><h3 className="text-xs font-semibold">Recent activity</h3></div>{!ready ? <p className="text-xs text-muted-foreground">Loading workspace history…</p> : recent.length ? <div className="space-y-1.5">{recent.map((item) => <div key={item.id} className="flex min-w-0 items-center gap-2 text-xs"><span className="size-1.5 shrink-0 rounded-full bg-primary/70" /><span className="min-w-0 flex-1 truncate">{item.message}</span><time className="shrink-0 text-[10px] text-muted-foreground" dateTime={item.createdAt}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/Denver" }).format(new Date(item.createdAt))}</time></div>)}</div> : <p className="text-xs text-muted-foreground">No saved activity yet.</p>}</div>
       </CardContent></Card>
     </section>
+
+    <Card className="min-w-0"><CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"><div><div className="flex items-center gap-2"><Activity className="size-4 text-primary" /><h2 className="text-sm font-semibold">Website intelligence · 7 days</h2></div>{analyticsUnavailable || !analyticsSnapshot ? <p role="status" className="mt-1 text-xs text-muted-foreground">Analytics snapshot is unavailable.</p> : <p className="mt-1 text-xs text-muted-foreground">{analyticsSnapshot.sessions.toLocaleString()} anonymous sessions · {analyticsSnapshot.inquiries.toLocaleString()} linked stored inquiries{analyticsSnapshot.changePercent === null ? " · new baseline" : ` · ${analyticsSnapshot.changePercent >= 0 ? "+" : ""}${analyticsSnapshot.changePercent.toFixed(0)}% vs prior 7 days`}</p>}</div><Link href="/dashboard/analytics?days=7" className="inline-flex min-h-9 items-center gap-1 self-start rounded-md border border-border px-3 text-xs hover:bg-accent sm:self-auto">Open Insights <ArrowUpRight className="size-3.5" /></Link></CardContent></Card>
   </div>;
 }

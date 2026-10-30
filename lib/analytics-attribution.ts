@@ -2,9 +2,10 @@ import type { AnalyticsAttribution } from "@/lib/analytics-contract";
 
 const attributionKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
 
-function limited(value: string | null | undefined, maximum = 160) {
-  const normalized = value?.trim();
-  return normalized ? normalized.slice(0, maximum) : undefined;
+function limited(value: string | null | undefined, maximum = 160, lowerCase = false) {
+  const normalized = value?.normalize("NFKC").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
+  if (!normalized || !/^[\p{L}\p{N} ._~-]+$/u.test(normalized) || normalized.includes("@")) return undefined;
+  return (lowerCase ? normalized.toLocaleLowerCase("en-US") : normalized).slice(0, maximum);
 }
 
 export function publicAnalyticsPath(value: string | null | undefined) {
@@ -32,7 +33,7 @@ export function referrerHost(value: string | null | undefined, currentHost?: str
 export function attributionFromLocation(urlValue: string, referrerValue = "", previous: AnalyticsAttribution = {}): AnalyticsAttribution {
   const url = new URL(urlValue, "https://analytics.invalid");
   const params = url.searchParams;
-  const campaign = Object.fromEntries(attributionKeys.map((key) => [key, limited(params.get(key))])) as Record<typeof attributionKeys[number], string | undefined>;
+  const campaign = Object.fromEntries(attributionKeys.map((key) => [key, limited(params.get(key), key === "utm_campaign" || key === "utm_content" ? 200 : 120, key === "utm_source" || key === "utm_medium")])) as Record<typeof attributionKeys[number], string | undefined>;
   return {
     landingPath: previous.landingPath ?? publicAnalyticsPath(url.pathname),
     referrerHost: previous.referrerHost ?? referrerHost(referrerValue, url.hostname),
@@ -51,8 +52,8 @@ export function normalizeAnalyticsAttribution(value: unknown): AnalyticsAttribut
   return {
     landingPath: publicAnalyticsPath(typeof item.landingPath === "string" ? item.landingPath : "/"),
     referrerHost: /^[a-z0-9.-]+$/.test(candidateHost) ? limited(candidateHost) : undefined,
-    utmSource: limited(typeof item.utmSource === "string" ? item.utmSource : undefined, 120),
-    utmMedium: limited(typeof item.utmMedium === "string" ? item.utmMedium : undefined, 120),
+    utmSource: limited(typeof item.utmSource === "string" ? item.utmSource : undefined, 120, true),
+    utmMedium: limited(typeof item.utmMedium === "string" ? item.utmMedium : undefined, 120, true),
     utmCampaign: limited(typeof item.utmCampaign === "string" ? item.utmCampaign : undefined, 200),
     utmContent: limited(typeof item.utmContent === "string" ? item.utmContent : undefined, 200),
     utmTerm: limited(typeof item.utmTerm === "string" ? item.utmTerm : undefined, 120),

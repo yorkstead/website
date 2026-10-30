@@ -6,6 +6,8 @@ import { CommandCenterOverview } from "@/components/dashboard/command-center-ove
 const baseProps = {
   crm: null,
   crmUnavailable: false,
+  analyticsSnapshot: { sessions: 21, inquiries: 3, previousInquiries: 2, changePercent: 50, lastEventAt: "2026-10-29T10:00:00.000Z" },
+  analyticsUnavailable: false,
   projects: [],
   tasks: [],
   googleTasks: [],
@@ -26,6 +28,9 @@ describe("Command Center Overview states", () => {
     expect(html).toContain("You’re clear for now");
     expect(html).toContain("No saved activity yet.");
     expect(html).toContain("No open inquiries in the pipeline.");
+    expect(html).toContain("Website intelligence · 7 days");
+    expect(html).toContain("3 linked stored inquiries");
+    expect(html).toContain("/dashboard/analytics?days=7");
     expect(html).not.toContain("Activity appears as you work");
   });
 

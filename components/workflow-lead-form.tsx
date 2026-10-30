@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { brand } from "@/lib/brand";
 import { workflowAuditBookingURL } from "@/lib/workflow-audit-config";
-import { workflowProblemAreas, type WorkflowLeadField } from "@/lib/workflow-lead";
+import { workflowProblemAreas } from "@/lib/workflow-lead";
 import { cn } from "@/lib/utils";
 
 const initialState: WorkflowLeadState = { status: "idle", message: "" };
@@ -45,11 +45,6 @@ export function WorkflowLeadForm() {
     }
   };
 
-  const trackInvalid = (event: React.InvalidEvent<HTMLFormElement>) => {
-    const field = (event.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).name as WorkflowLeadField;
-    if (field) trackConversionEvent("lead", { field, status: "validation_error" });
-  };
-
   if (state.status === "success") {
     return (
       <div role="status" className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-6 sm:p-8">
@@ -78,7 +73,7 @@ export function WorkflowLeadForm() {
   }
 
   return (
-    <form action={action} onFocusCapture={trackStart} onInvalidCapture={trackInvalid} className="space-y-6" noValidate>
+    <form action={action} onFocusCapture={trackStart} className="space-y-6" noValidate>
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="workflow-name">Name</Label>
