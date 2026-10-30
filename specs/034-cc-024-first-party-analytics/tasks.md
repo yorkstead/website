@@ -13,4 +13,4 @@
 - [x] Update privacy, architecture, operations, verification and this checklist with final evidence.
 - [x] Run focused checks and all applicable repository verification; record unavailable environment checks.
 - [x] Review diff for privacy, security and spec convergence; commit and push this branch.
-- [ ] Open `CC-024: Restore First-Party Analytics & Conversion Intelligence`; do not merge or deploy.
+- [x] Update the existing CC-024 PR to `CC-024: Restore First-Party Analytics & Conversion Intelligence` and leave it as a draft pending database-backed CI; do not merge or deploy.

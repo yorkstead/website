@@ -21,7 +21,7 @@ Commands were run in the isolated feature checkout after implementation:
 - Full `bun run test:e2e` — 24 passed, 8 failed. Six authenticated-route checks could not establish unauthenticated redirects because local PostgreSQL was unavailable; two public/gallery tests timed out in the parallel run. Both timed-out tests passed when rerun in isolation (2 passed in 44.4 seconds).
 - Disposable PostgreSQL migration, fresh/repeat upgrade and inquiry-link integration — skipped: `TEST_DATABASE_URL` is not configured and `127.0.0.1:5432` has no listener. No production database is used.
 - `git diff --check` — passed before commit; clean-worktree check is pending the final documentation commit.
-- Exact-head GitHub Actions result — pending after push
+- Exact-head GitHub Actions result — pending for PR #81 at its final pushed head.
 
 ## Limits
 
