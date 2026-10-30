@@ -17,4 +17,4 @@
 - [x] Refresh the systems overview and existing GitHub/Vercel project intelligence together; preserve source-specific checked times and avoid duplicate requests.
 - [x] Keep validation, duplicate, and revision-conflict errors accessible inside the editor while preserving the user draft.
 - [x] Add unit and owner-browser regressions for the review findings.
-- [ ] Run exact-head PostgreSQL-backed browser CI, then resolve only the three matching review threads on PR #80.
+- [x] Run exact-head PostgreSQL-backed browser CI and resolve the three review findings after verification (decimal-input thread was auto-resolved by Vercel; refresh and modal-error threads were resolved after CI passed).
