@@ -24,10 +24,11 @@
 
 - No production database, provider account, token, secret, or subscription was accessed or changed.
 - Local PostgreSQL was unavailable (`TEST_DATABASE_URL` unset; `pg_isready` had no response). Docker was unavailable because the local socket was denied. Migration/integration/browser persistence execution is delegated to the PR's PostgreSQL-backed CI job.
-- GitHub Actions and preview-deployment results must be recorded against the exact PR head after the PR is opened. No merge or deployment is authorized.
+- Final exact-head GitHub Actions and preview results are recorded below; no merge or production deployment is authorized.
 
 ## Exact-head CI follow-up
 
-- Initial PR head `09644573e303093d47fea7cb5cfce5da905cdd63` failed two database tests: the integration fixture passed an empty documentation URL instead of `NULL`, and the prepared migration protocol assertion expected four CC-023 triggers while migration 0020 defines three. Both test expectations were corrected; rerun full checks and record the new exact-head CI result after pushing the correction.
-- Browser rerun at corrected head `51ef671d72c77ea4e59281dfc98119b37f565c38` reached CC-023 but revealed that PostgreSQL DATE values decoded as `Date` objects were formatted as a weekday string by the persistence DTO. The mapper now converts date objects to `YYYY-MM-DD`, and the database integration case asserts the round trip. Rerun CI after pushing this correction.
-- The next run reached CC-023 and passed create, pin, edit and cost/date rendering, then the audit assertion failed because it matched two valid update rows (pin and edit). The browser check now asserts both rows; rerun CI after pushing.
+- Final PR head `c4a6f8bc3c6e4c11b4bd35c8fdcb8ae8b71aa99a` passed exact-head GitHub Actions run [41009951558](https://github.com/yorkstead/website/actions/runs/41009951558), including disposable PostgreSQL migration/integration tests, deterministic tests, lint, typecheck, all browser workflows including CC-023, production build and clean-worktree verification.
+- Vercel preview succeeded for this PR head: [deployment](https://vercel.com/yorkstead/website/5jA4ZAM1U22mh1ntUonAkydYBZ5h). Vercel Preview Comments passed; Vercel Agent Review was skipped by the provider.
+- Earlier CI failures were resolved: the database fixture now uses a null documentation URL, protocol tests assert the three CC-023 triggers, PostgreSQL DATE values map to `YYYY-MM-DD`, and the audit browser check accounts for both legitimate update rows.
+- No merge, production deployment, provider credential setup, production data change, or subscription change occurred.
