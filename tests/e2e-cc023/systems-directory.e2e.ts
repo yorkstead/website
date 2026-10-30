@@ -40,7 +40,7 @@ test("owner can navigate, manage a directory record, review audit, and see hones
  await expect(card.getByText("Updated synthetic browser regression service")).toBeVisible();
  await card.getByRole("button",{name:"Audit history"}).click();
  await expect(page.getByText("Recent audit history")).toBeVisible();
- await expect(page.getByText(/updated · cc023-browser-owner/)).toBeVisible();
+ await expect(page.getByText(/updated · cc023-browser-owner/)).toHaveCount(2);
  await page.getByRole("button",{name:"Close editor"}).click();
  await card.getByRole("button",{name:"Archive"}).click();
  await expect(card).toHaveCount(0);

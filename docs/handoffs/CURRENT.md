@@ -5,7 +5,7 @@
 - The original checkout on `feat/cc-022b-voice-shopping-payday-planning` contained uncommitted CC-022B edits and untracked `website.code-workspace`; it remains untouched.
 - Spec, plan, tasks, verification, and operations instructions: `specs/033-cc-023-business-systems-directory/`.
 - Discovery reused existing owner authentication, Command Center, Operations monitor, Automation Hub static health and read contract, project intelligence, ordered migrations, and current UI navigation. No provider credentials/accounts/costs were assumed. New directory is empty by default.
-- Progress: fixes for initial database test issues were pushed at `51ef671d72c77ea4e59281dfc98119b37f565c38`; migration, integration, unit, lint and typecheck passed in CI, and Vercel preview passed. Browser CI then exposed a real DATE serialization issue (PostgreSQL Date objects were rendered as weekday text), now fixed with a date-key mapper and persistence assertion. Push this fix and rerun exact-head CI. Local PostgreSQL/browser constraints remain documented in the spec verification record.
+- Progress: date handling fix was pushed at `ed8b3f0`; CI passed migration, integration, unit, lint, typecheck, Vercel preview and existing browser flows through CC-018. CC-023 browser now passes its create/pin/edit/date flow and exposed only an audit assertion that matched two legitimate updates; the test now expects both. Push this final test adjustment and rerun exact-head CI.
 - Next exact action: review the complete diff, commit/push and open the single authorized PR, then verify exact-head GitHub checks and update this handoff. No merge or deployment.
 - Production/release restrictions remain in force. No production operation or provider mutation is authorized.
 
