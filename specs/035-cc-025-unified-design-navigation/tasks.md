@@ -11,5 +11,5 @@
 - [x] Capture desktop and mobile screenshots from the implemented application.
 - [x] Run task-specific checks and all required commands in `docs/verification.md`; record environment skips/failures.
 - [x] Complete acceptance-criteria convergence and privacy/security review.
-- [ ] Update current handoff, commit/push branch, open one titled PR when GitHub is reachable.
-- [ ] Confirm no merge, deployment or production operation occurred.
+- [x] Update current handoff, commit/push branch, and open the single titled PR (#82).
+- [x] Confirm no merge, deployment or production operation occurred.

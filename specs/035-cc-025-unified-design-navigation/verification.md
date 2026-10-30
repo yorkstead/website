@@ -3,9 +3,9 @@
 ## Environment and revision
 
 - Checkout: `/home/brandon/development/yorkstead/website-cc025`.
-- Base: verified main `363c4dad28b1d0676e4b28887154b74589536e06`; local feature branch `feat/cc-025-unified-design-navigation` starts at this SHA before delivery.
+- Base: verified main `363c4dad28b1d0676e4b28887154b74589536e06`; feature commit `ace6856165148c0ae5be0821cd8e3b78b311640d` is published on `feat/cc-025-unified-design-navigation`.
 - Runtime: Bun 1.4.2, Node 26.10.0, Next.js 16.4.2. Dependencies were installed from the lockfile and local cache with `bun install --frozen-lockfile --offline`; no dependency files changed.
-- GitHub connector recheck: repository `yorkstead/website`, default branch `main`; PR #81 is merged at the base SHA. Branch search found no CC-025 feature branch and open-PR search found no CC-025 PR before delivery. Shell access to GitHub is blocked by DNS, so repository delivery uses the connected GitHub API.
+- GitHub: PR [#82](https://github.com/yorkstead/website/pull/82) is open against `main`, with the exact requested title and the verified base SHA. GitHub Actions CI run 437 is in progress; the Vercel commit status is pending and the automatic PR preview is building. These provider checks are not yet complete. PR #81 is merged at the base SHA; no CC-025 branch or PR existed before delivery. The feature branch was published with Git push.
 - No database migration, production setting, secret, customer record, merge or deployment was performed.
 
 ## Checks
@@ -48,4 +48,4 @@ These screenshots were captured from the local implementation with Playwright. T
 ## Remaining verification limits
 
 - The full local browser suite is not fully green because it includes database-backed owner/auth flows and unrelated parallel-run flakes listed above. A disposable PostgreSQL-backed CI run is required to verify those specialized owner routes on the final PR head.
-- Live GitHub Actions checks are not available until the feature branch is committed/published and the PR is opened. No manual deployment will be used to close a verification gap.
+- GitHub Actions and Vercel checks remain in progress/pending on PR #82. The preview is an automatic PR integration; no manual deployment or production operation was performed. No merge was performed.
