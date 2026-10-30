@@ -53,6 +53,7 @@ describe("opportunity discovery transactional boundaries in disposable PostgreSQ
     const separate = await connectionPool!.query("SELECT id FROM contact_inquiries WHERE company=$1", [companyName]);
     expect(separate.rowCount).toBe(0);
 
+    await opportunityStore.setResearchStatus(created.id,"researching",actor);
     await expect(opportunityStore.setResearchStatus(created.id,"validated",actor)).rejects.toThrow("requires a business statement");
     await opportunityStore.addEvidence(created.id,{ evidenceType:"hypothesis", summary:"Maybe duplicate entry is common", sourceReference:"owner research notes", observedOn:"2026-10-30", ownerNote:"Keep unvalidated" },actor);
     await opportunityStore.addEvidence(created.id,{ evidenceType:"business_statement", summary:"Receiving staff described copying each slip line into the inventory screen.", sourceReference:"interview CC-026-01", observedOn:"2026-10-30", ownerNote:"Participant statement; not independently verified" },actor);
