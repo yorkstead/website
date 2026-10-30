@@ -20,6 +20,7 @@ import {
   ListChecks,
   Menu,
   PanelsTopLeft,
+  Lightbulb,
   Settings2,
   ServerCog,
   Users,
@@ -41,7 +42,7 @@ type NavigationLink = {
 
 const primaryLinks: NavigationLink[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard, active: (path) => path === "/dashboard" },
-  { label: "CRM", href: "/dashboard/leads", icon: Users, active: (path) => path.startsWith("/dashboard/leads") || path.startsWith("/dashboard/consultations") },
+  { label: "CRM", href: "/dashboard/leads", icon: Users, active: (path) => path.startsWith("/dashboard/leads") || path.startsWith("/dashboard/consultations") || path.startsWith("/dashboard/opportunities") },
   { label: "Projects", href: "/dashboard#projects", icon: FolderKanban, active: (path) => path === "/dashboard" },
   { label: "Tasks", href: "/dashboard#tasks", icon: ListChecks, active: (path) => path === "/dashboard" },
   { label: "Automations", href: "/dashboard/automations", icon: Activity, active: (path) => path.startsWith("/dashboard/automations") },
@@ -49,6 +50,7 @@ const primaryLinks: NavigationLink[] = [
 ];
 
 const crmLinks: NavigationLink[] = [
+  { label: "Opportunity Discovery", href: "/dashboard/opportunities", icon: Lightbulb, active: (path) => path.startsWith("/dashboard/opportunities") },
   { label: "Overdue follow-ups", href: "/dashboard/leads?followUp=overdue", icon: BellRing, active: (_path, query) => query.get("followUp") === "overdue" },
   { label: "Due today", href: "/dashboard/leads?followUp=today", icon: CalendarDays, active: (_path, query) => query.get("followUp") === "today" },
   { label: "Upcoming follow-ups", href: "/dashboard/leads?followUp=upcoming", icon: CalendarDays, active: (_path, query) => query.get("followUp") === "upcoming" },

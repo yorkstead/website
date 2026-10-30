@@ -232,7 +232,7 @@ describe("versioned deterministic release readiness", () => {
       actual.push([m.version, m.checksum]);
     }
     expect(actual).toEqual(readinessMigrationManifest.map((row) => [...row]));
-    expect(actual).toHaveLength(21);
+    expect(actual).toHaveLength(22);
   });
 });
 

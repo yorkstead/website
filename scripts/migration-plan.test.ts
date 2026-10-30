@@ -9,7 +9,7 @@ describe("application migration plan", () => {
   test("loads ordered, unique, nonempty migrations", async () => {
     const fileNames = (await readdir(migrationsDirectory)).filter((fileName) => fileName.endsWith(".sql")).sort();
     const migrations = await Promise.all(fileNames.map(async (fileName) => parseMigration(fileName, await readFile(resolve(migrationsDirectory, fileName), "utf8"))));
-    expect(migrations.map((migration) => migration.version)).toEqual(["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021"]);
+    expect(migrations.map((migration) => migration.version)).toEqual(["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008", "0009", "0010", "0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022"]);
     expect(new Set(migrations.map((migration) => migration.version)).size).toBe(migrations.length);
     expect(migrations.every((migration) => migration.statements.length > 0)).toBeTrue();
     expect(migrations.every((migration) => /^[0-9a-f]{64}$/.test(migration.checksum))).toBeTrue();
@@ -52,6 +52,10 @@ describe("application migration plan", () => {
       "customer_project_grants_project_fkey",
       "customer_auth_account_provider_key",
       "customer_auth_session_user_idx",
+      "research_opportunities_status_industry_updated_idx",
+      "opportunity_evidence_opportunity_date_idx",
+      "opportunity_interviews_opportunity_date_idx",
+      "opportunity_history_opportunity_created_idx",
     ]) expect(plan).toContain(expected);
   });
 

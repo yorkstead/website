@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import type { NextRequest } from "next/server";
-import { archivedInquiryPurgeBefore, morningBriefingPurgeBefore, workspaceSnapshotRetentionCount } from "@/lib/data-retention";
+import { archivedInquiryPurgeBefore, archivedInquiryPurgeQuery, morningBriefingPurgeBefore, workspaceSnapshotRetentionCount } from "@/lib/data-retention";
 import { createOperationalContext, jsonWithRequestId, withOperationTimeout } from "@/lib/operational-observability";
 
 export const runtime = "nodejs";
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const purgeBefore = archivedInquiryPurgeBefore().toISOString();
     const briefingPurgeBefore = morningBriefingPurgeBefore().toISOString();
     const [inquiries, snapshots, briefings] = await withOperationTimeout(Promise.all([
-      sql`DELETE FROM contact_inquiries WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=contact_inquiries.id) AND status = 'archived' AND archived_at < ${purgeBefore}::timestamptz RETURNING id`,
+      sql.query(archivedInquiryPurgeQuery, [purgeBefore]),
       sql`
         DELETE FROM workspace_snapshots
         WHERE id IN (
