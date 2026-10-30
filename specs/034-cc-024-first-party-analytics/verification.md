@@ -9,7 +9,7 @@
 
 ## Verification results
 
-Record commands, result, environment and revision after implementation:
+Commands were run in the isolated feature checkout after implementation:
 
 - `bun run yorkstead:check` — passed; 35 active spec directories detected.
 - `bun run db:migrate:check` — passed; 21 ordered migrations validated, including 0021.
@@ -20,7 +20,7 @@ Record commands, result, environment and revision after implementation:
 - `bun run build` — passed with Next.js 16.4.2.
 - Full `bun run test:e2e` — 24 passed, 8 failed. Six authenticated-route checks could not establish unauthenticated redirects because local PostgreSQL was unavailable; two public/gallery tests timed out in the parallel run. Both timed-out tests passed when rerun in isolation (2 passed in 44.4 seconds).
 - Disposable PostgreSQL migration, fresh/repeat upgrade and inquiry-link integration — skipped: `TEST_DATABASE_URL` is not configured and `127.0.0.1:5432` has no listener. No production database is used.
-- `git diff --check` — passed; final clean-worktree check pending commit.
+- `git diff --check` — passed before commit; clean-worktree check is pending the final documentation commit.
 - Exact-head GitHub Actions result — pending after push
 
 ## Limits

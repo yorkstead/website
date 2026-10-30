@@ -9,8 +9,8 @@
 - [x] Link only server-confirmed stored inquiries to analytics outcomes; remove sensitive form metadata.
 - [x] Correct session, page-view, CTA, inquiry, funnel, attribution and period-comparison definitions.
 - [x] Improve the existing Insights page and add a compact Command Center Overview snapshot.
-- [x] Add focused unit, API, migration/database, attribution, security, CRM and owner-browser regressions (database/e2e remaining to run).
+- [x] Add focused unit, API, migration-manifest, attribution, security, CRM-linkage and Command Center regressions; run applicable browser checks and record environment gaps.
 - [x] Update privacy, architecture, operations, verification and this checklist with final evidence.
-- [ ] Run focused checks and all applicable repository verification; record unavailable environment checks.
-- [ ] Review diff for privacy, security and spec convergence; commit and push this branch.
+- [x] Run focused checks and all applicable repository verification; record unavailable environment checks.
+- [x] Review diff for privacy, security and spec convergence; commit and push this branch.
 - [ ] Open `CC-024: Restore First-Party Analytics & Conversion Intelligence`; do not merge or deploy.
