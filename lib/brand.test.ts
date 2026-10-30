@@ -18,10 +18,10 @@ describe("public brand positioning", () => {
     for (const term of ["cannabis", "marijuana", "dispensary", "weed", "hemp", "leaf"]) expect(identity).not.toContain(term);
   });
 
-  test("uses the public brand in the install manifest and structured data", () => {
+  test("keeps the Command Center install name and public structured data positioning", () => {
     const appManifest = manifest();
-    expect(appManifest.name).toContain(brand.descriptor);
-    expect(appManifest.short_name).toBe(brand.name);
+    expect(appManifest.name).toBe("Yorkstead Command Center");
+    expect(appManifest.short_name).toBe("Yorkstead");
     expect(appManifest.description).toBe(brand.positioning);
     const organization = founderStructuredData["@graph"].find((item) => item["@type"] === "Organization");
     expect(organization?.description).toBe(brand.positioning);

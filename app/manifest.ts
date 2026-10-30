@@ -3,11 +3,11 @@ import { brand } from "@/lib/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: `${brand.name} — ${brand.descriptor}`,
-    short_name: brand.name,
+    name: "Yorkstead Command Center",
+    short_name: "Yorkstead",
     description: brand.positioning,
     id: "/",
-    start_url: "/",
+    start_url: "/dashboard",
     scope: "/",
     display: "standalone",
     background_color: "#111419",

@@ -1,3 +1,15 @@
+# Active work — Command Center PWA PR #84 conflict resolution — 2026-10-30
+
+- User authorized merging current `main` `5c0f702d5ae419f2b86e2db5707e0795069dbe2b` into existing PR #84 branch, preserving CC-026 and PWA, running checks, and pushing PR #84. No main merge, manual deployment or production configuration change. The CC-026 handoff below is retained as historical evidence from merged main; its then-open PR claims require live verification.
+
+# Historical Command Center PWA handoff — 2026-10-30
+
+- Authorized: focused PWA refinement, checks/build, commit/push and separate PR; no merge, manual deployment or production configuration changes. CC-026 and the old CC-022B workspace remain untouched.
+- Verified 2026-10-30 13:29 UTC: clean dedicated `feat/command-center-pwa`, HEAD and live main `62a64895117c8e6a8f3b45adfa45e8884fb33452`; origin `yorkstead/website`; only open PR #83 is unrelated CC-026. Fetched main matches. Historical handoff below is retained as historical evidence.
+- Implementation and local verification complete under `specs/036-command-center-pwa/`: 422 unit passes / 112 DB skips; scaffold, migration check, lint, typecheck and webpack production build pass. Turbopack worker creation is environment-blocked. Browser execution is blocked by missing host libraries (sudo requires authentication), and real login by absent disposable PostgreSQL. New browser regressions run in existing CI; Android update/reinstall remains a documented manual check. Delivery: [draft PR #84](https://github.com/yorkstead/website/pull/84), `Command Center PWA: Direct Dashboard Launch`. Exact implementation head `2de41fcd7898fd1ee414c106648f77af8845281c` passed [full CI 41065518691](https://github.com/yorkstead/website/actions/runs/41065518691), including all new browser/real login regressions, disposable PostgreSQL integration, standard production build and clean-worktree check; Vercel preview passed. Local limitations above are resolved by this CI source evidence. This documentation-only closeout follows that head; check its new exact-head CI separately. Next: review PR #84; keep open/unmerged, no manual deployment or production changes.
+
+# CC-026 handoff retained from merged main — 2026-10-30
+
 # Active work — CC-026 PR #83 review corrections — 2026-10-30
 
 ## Verified session state and authorized scope
