@@ -1,5 +1,11 @@
 # CC-022B operations and rollback
 
+## Review recovery handling — 2026-10-30
+
+- If a Hub refresh advances an item's revision while its editor is open, the form is stale. The owner must choose **Review latest item**, inspect the refreshed values, and save against that revision; the old draft cannot be submitted with the new revision.
+- A payday command returning HTTP 202 is still in progress. Do not submit another shopping command. Retry the retained original request/key after the read service recovers; storage-blocked recovery persists in the parent page component while the planner is unavailable and is restored when the planner remounts.
+- Verification evidence: Website application head `220ba94724df8871a9e117470cf67d1ad8e03fcf` passed full exact-head CI [40977677302](https://github.com/yorkstead/website/actions/runs/40977677302), including disposable PostgreSQL, browser recovery scenarios, and production build. This verification makes no production configuration change and does not enable shopping mutations.
+
 ## Disabled-by-default rollout
 
 1. Review and merge/release the Hub PR first through the normal process. Apply additive ordered migrations only through the separately authorized Hub migration workflow. Keep Hub `SHOPPING_COMMANDS_ENABLED` false and `YORKSTEAD_SHOPPING_WRITE_SECRET` unconfigured.
