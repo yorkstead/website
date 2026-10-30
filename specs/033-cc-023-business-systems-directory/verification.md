@@ -25,3 +25,7 @@
 - No production database, provider account, token, secret, or subscription was accessed or changed.
 - Local PostgreSQL was unavailable (`TEST_DATABASE_URL` unset; `pg_isready` had no response). Docker was unavailable because the local socket was denied. Migration/integration/browser persistence execution is delegated to the PR's PostgreSQL-backed CI job.
 - GitHub Actions and preview-deployment results must be recorded against the exact PR head after the PR is opened. No merge or deployment is authorized.
+
+## Exact-head CI follow-up
+
+- Initial PR head `09644573e303093d47fea7cb5cfce5da905cdd63` failed two database tests: the integration fixture passed an empty documentation URL instead of `NULL`, and the prepared migration protocol assertion expected four CC-023 triggers while migration 0020 defines three. Both test expectations were corrected; rerun full checks and record the new exact-head CI result after pushing the correction.

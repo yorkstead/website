@@ -45,7 +45,7 @@ describe("migration prepared-query protocol", () => {
         to_regclass('system_directory_entries') IS NOT NULL AS entries,
         to_regclass('system_directory_audit') IS NOT NULL AS audit,
         (SELECT count(*)::int FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=$1 AND NOT t.tgisinternal AND c.relname IN ('system_directory_entries','system_directory_audit')) AS trigger_count`,[schema]);
-      expect(directoryDetails.rows[0]).toEqual({entries:true,audit:true,trigger_count:4});
+      expect(directoryDetails.rows[0]).toEqual({entries:true,audit:true,trigger_count:3});
       await client.query("SELECT set_config('yorkstead.system_directory_actor','synthetic-owner',true)");
       const inserted = await client.query<{id:string;revision:number}>(`INSERT INTO system_directory_entries(id,name,category,provider) VALUES(gen_random_uuid(),'Synthetic provider','other','Test') RETURNING id,revision`);
       expect(inserted.rows[0]?.revision).toBe(1);

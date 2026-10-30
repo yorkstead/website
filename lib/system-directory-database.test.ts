@@ -13,7 +13,7 @@ const dbTest=safeDatabase?test:test.skip;
 const admin=safeDatabase?new Pool({connectionString:configured}):null;
 afterAll(async()=>{await admin?.end();});
 
-const input=(name:string):SystemDirectoryInput=>({name,category:"hosting",provider:"Vercel",purpose:"Synthetic test record",dashboardURL:"https://vercel.com",documentationURL:"",accountIdentity:"owner@example.test",billingEntity:"Test owner",notes:"",relationships:[{kind:"project",name:"Synthetic project"}],billingCadence:"monthly",currency:"USD",amount:12,amountBasis:"actual",costConfirmation:"confirmed",renewalDate:null,pinned:false,manualHealth:"not_monitored",manualHealthSummary:"",manualHealthCheckedAt:null});
+const input=(name:string):SystemDirectoryInput=>({name,category:"hosting",provider:"Vercel",purpose:"Synthetic test record",dashboardURL:"https://vercel.com",documentationURL:undefined,accountIdentity:"owner@example.test",billingEntity:"Test owner",notes:"",relationships:[{kind:"project",name:"Synthetic project"}],billingCadence:"monthly",currency:"USD",amount:12,amountBasis:"actual",costConfirmation:"confirmed",renewalDate:null,pinned:false,manualHealth:"not_monitored",manualHealthSummary:"",manualHealthCheckedAt:null});
 
 describe("CC-023 disposable PostgreSQL persistence",()=>{
  dbTest("creates, rejects duplicates, protects concurrent edits, archives, and retains immutable audit history",async()=>{
