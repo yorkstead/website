@@ -98,7 +98,7 @@ test("Exceptions refresh checks the overview and existing project intelligence t
   await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({fetchedAt:checkedAt,github:{available:true,workflows:{checkedAt,items:[{name:"Synthetic Verify",status:"completed",conclusion,url:"https://github.com/example/repo/actions/runs/1",updatedAt:checkedAt}]}},vercel:{reachable:true,state:"READY",url:"example.vercel.app",checkedAt},integrations:{github:{status:"ok",authenticated:false},vercel:{status:"ok",authenticated:false}}})});
  });
  await page.goto("/dashboard");await expect(page.getByRole("heading",{name:"Systems & recurring costs"})).toBeVisible();
- await page.getByRole("button",{name:"New project"}).click();
+ await page.getByRole("button",{name:"New project"}).first().click();
  await page.getByLabel("Project name").fill(`Refresh regression ${randomUUID().slice(0,8)}`);
  await page.getByRole("button",{name:"Save"}).click();
  const projectName=await page.locator("h3").filter({hasText:"Refresh regression"}).first().textContent();expect(projectName).toBeTruthy();
