@@ -16,12 +16,12 @@ Commands were run in the isolated feature checkout after implementation:
 - `bun run lint` — passed with one pre-existing warning in `components/login-panel.tsx:62`.
 - `bun run typecheck` — passed after adding snapshot props to overview regressions.
 - Focused analytics, migration, and Command Center tests — passed, 26 tests / 99 assertions; additional analytics persistence run passed 12 tests / 39 assertions.
-- `bun test` — passed: 411 pass, 111 skipped database-backed tests, 0 failures (522 tests, 4,152 assertions).
+- `bun test` — passed after the review corrections: 412 pass, 111 skipped database-backed tests, 0 failures (523 tests, 4,154 assertions). The 14 focused analytics persistence tests pass (43 assertions).
 - `bun run build` — passed with Next.js 16.4.2.
-- Full `bun run test:e2e` — 24 passed, 8 failed. Six authenticated-route checks could not establish unauthenticated redirects because local PostgreSQL was unavailable; two public/gallery tests timed out in the parallel run. Both timed-out tests passed when rerun in isolation (2 passed in 44.4 seconds).
-- Disposable PostgreSQL migration, fresh/repeat upgrade and inquiry-link integration — skipped: `TEST_DATABASE_URL` is not configured and `127.0.0.1:5432` has no listener. No production database is used.
-- `git diff --check` — passed before commit; clean-worktree check is pending the final documentation commit.
-- Exact-head GitHub Actions result — pending for PR #81 at its final pushed head.
+- Local Playwright attempt — 24 passed, 8 failed while the isolated checkout had no local PostgreSQL; the failures were owner-route checks and public browser timeouts. A later local rerun could not bind the Playwright server because sandbox networking returned `EPERM`. The exact-head CI browser matrix below passed.
+- Disposable PostgreSQL migration, fresh/repeat upgrade and inquiry-link integration — passed in GitHub CI. Local `TEST_DATABASE_URL` is not configured and `127.0.0.1:5432` has no listener. No production database is used.
+- Exact implementation-head GitHub Actions run [41027641504](https://github.com/yorkstead/website/actions/runs/41027641504) — passed at `d3daf18abda8d7e53f6953ff20ef12b0390b80ec`: disposable PostgreSQL migrations/integration, full browser suite and isolated workflows, lint, typecheck, production build, and generated-worktree cleanliness.
+- Local `git diff --check` passed. The current handoff/verification documentation update is a follow-up commit and triggers a fresh exact-head CI run.
 
 ## Limits
 
