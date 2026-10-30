@@ -120,13 +120,16 @@ describe("Analytics persistence and API route", () => {
     expect(insertQuery!.values[2]).toBe("/workflow-audit");
   });
 
-  test("accepts same-origin Fetch Metadata when the browser omits Origin", async () => {
+  test("uses the received Host when Next adapts the request URL and accepts same-origin Fetch Metadata without Origin", async () => {
     const { POST } = await import("@/app/api/analytics/events/route");
-    const response = await POST(new Request("https://yorkstead.test/api/analytics/events", {
+    const response = await POST(new Request("https://next-internal.invalid/api/analytics/events", {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        host: "yorkstead.test",
+        origin: "https://yorkstead.test",
         "sec-fetch-site": "same-origin",
+        "x-forwarded-proto": "https",
       },
       body: JSON.stringify({
         event: "page_view",

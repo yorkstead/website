@@ -19,7 +19,22 @@ function response(status: number) {
 
 function sameOriginBrowserRequest(request: Request) {
   let requestOrigin: string;
-  try { requestOrigin = new URL(request.url).origin; } catch { return false; }
+  try {
+    const requestUrl = new URL(request.url);
+    const host = request.headers.get("host");
+    const forwardedProtocol = request.headers
+      .get("x-forwarded-proto")
+      ?.split(",", 1)[0]
+      ?.trim()
+      .toLowerCase();
+    const protocol =
+      forwardedProtocol === "http" || forwardedProtocol === "https"
+        ? `${forwardedProtocol}:`
+        : requestUrl.protocol;
+    requestOrigin = host
+      ? new URL(`${protocol}//${host}`).origin
+      : requestUrl.origin;
+  } catch { return false; }
   const origin = request.headers.get("origin");
   const fetchSite = request.headers.get("sec-fetch-site");
   if (fetchSite && fetchSite !== "same-origin") return false;
