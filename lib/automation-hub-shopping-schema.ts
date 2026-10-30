@@ -13,5 +13,7 @@ export const AutomationHubShoppingCommand=z.discriminatedUnion('action',[
  z.object({...base,action:z.literal('set_reserves'),paydayId:z.uuid(),expectedRevision:z.number().int().positive(),reservesConfirmed:z.literal(true),reserves:z.array(reserve).max(20)}).strict(),
 ]);
 export type AutomationHubShoppingCommandInput=z.infer<typeof AutomationHubShoppingCommand>;
+export type AutomationHubShoppingPaydayCommandInput=Extract<AutomationHubShoppingCommandInput,{action:"set_payday"|"confirm_payday"|"set_reserves"}>;
+export const AUTOMATION_HUB_PAYDAY_COMMAND_RECOVERY_KEY="yorkstead-shopping-commands-v2-payday";
 
 export const AutomationHubShoppingResult=z.object({contractVersion:z.literal(2),commandId:z.string().uuid().optional(),itemId:z.string().uuid().optional(),status:z.string().max(32).optional(),resultCode:z.string().max(80).optional(),retrySafe:z.boolean().optional(),idempotentReplay:z.boolean().optional(),error:z.string().max(80).optional()}).strip();

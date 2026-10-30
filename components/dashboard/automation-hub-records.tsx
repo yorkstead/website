@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AutomationHubDataResult, AutomationHubSnapshot } from "@/lib/automation-hub-data";
+import { AutomationHubShoppingCommand, AUTOMATION_HUB_PAYDAY_COMMAND_RECOVERY_KEY, type AutomationHubShoppingCommandInput, type AutomationHubShoppingPaydayCommandInput } from "@/lib/automation-hub-shopping-schema";
 import { AutomationCaptureActions } from "@/components/dashboard/automation-capture-actions";
 import { ShoppingPlanner } from "@/components/dashboard/shopping-planner";
 
@@ -101,6 +102,16 @@ export function AutomationHubRecords({ writeEnabled, shoppingEnabled }: { writeE
   const [result, setResult] = useState<AutomationHubDataResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const paydayRecoveryRef = useRef<AutomationHubShoppingPaydayCommandInput | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(AUTOMATION_HUB_PAYDAY_COMMAND_RECOVERY_KEY);
+      if (!saved || paydayRecoveryRef.current) return;
+      const parsed = AutomationHubShoppingCommand.safeParse(JSON.parse(saved));
+      if (parsed.success && isPaydayCommand(parsed.data)) paydayRecoveryRef.current = parsed.data;
+    } catch { /* The parent ref remains the page-session fallback when storage is unavailable. */ }
+  }, []);
 
   const requestData = useCallback(async (signal?: AbortSignal) => {
     const response = await fetch("/api/dashboard/automation-hub", { cache: "no-store", signal });
@@ -145,6 +156,10 @@ export function AutomationHubRecords({ writeEnabled, shoppingEnabled }: { writeE
     {loading && !result ? <p role="status" className="mt-4 text-sm">Loading Hub records…</p> : null}
     {error ? <p role="alert" className="mt-4 text-sm text-amber-300">{error}</p> : null}
     {result && result.state !== "available" ? <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm" role="status"><p>{unavailableMessage(result.state)}</p><p className="mt-2 text-xs text-muted-foreground">Checked <time dateTime={result.checkedAt}>{formatTimestamp(result.checkedAt)}</time></p></div> : null}
-    {result?.state === "available" ? <><HubSnapshotView data={result.data} /><ShoppingPlanner data={result.data} enabled={shoppingEnabled} onRefresh={() => void refresh()} /><AutomationCaptureActions data={result.data} enabled={writeEnabled} onRefresh={() => void refresh()} /></> : null}
+    {result?.state === "available" ? <><HubSnapshotView data={result.data} /><ShoppingPlanner data={result.data} enabled={shoppingEnabled} onRefresh={() => void refresh()} paydayRecovery={{ get: () => paydayRecoveryRef.current, set: (command) => { paydayRecoveryRef.current = command; } }} /><AutomationCaptureActions data={result.data} enabled={writeEnabled} onRefresh={() => void refresh()} /></> : null}
   </section>;
+}
+
+function isPaydayCommand(command: AutomationHubShoppingCommandInput): command is AutomationHubShoppingPaydayCommandInput {
+  return command.action === "set_payday" || command.action === "confirm_payday" || command.action === "set_reserves";
 }

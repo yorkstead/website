@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AutomationHubSnapshot } from "@/lib/automation-hub-data";
-import type { AutomationHubShoppingCommandInput } from "@/lib/automation-hub-shopping-schema";
+import { AutomationHubShoppingCommand, AUTOMATION_HUB_PAYDAY_COMMAND_RECOVERY_KEY, type AutomationHubShoppingCommandInput, type AutomationHubShoppingPaydayCommandInput } from "@/lib/automation-hub-shopping-schema";
 
 type Section<T> = {source:string;state:"available"|"unavailable";checkedAt:string;truncated:boolean;errorCode:string|null;items:T[]};
 type Item=NonNullable<AutomationHubSnapshot["shopping"]>["items"][number];
 type ItemChanges={name?:string;category?:string|null;estimatedAmount?:number|null;currency?:string|null;priority?:"essential"|"need"|"want";priorityConfirmed?:boolean;scope?:"personal"|"business"|null;scopeConfirmed?:boolean;timingIntent?:"next_payday"|"this_week"|"specific_date"|"unscheduled";targetDate?:string|null;recurrenceRule?:"week"|"month"|"quarter"|"year"|null};
 type ItemCommand={contractVersion:2;idempotencyKey:string;itemId:string;expectedRevision:number;action:"review"|"update"|"purchase"|"unpurchase"|"postpone"|"cancel"|"skip"|"repeat";changes?:ItemChanges}|{contractVersion:2;idempotencyKey:string;itemId:string;expectedRevision:number;action:"split";names:string[]}|{contractVersion:2;idempotencyKey:string;itemId:string;expectedRevision:number;action:"merge";name:string;otherItems:{id:string;revision:number}[]};
-type PaydayCommand=Exclude<AutomationHubShoppingCommandInput,ItemCommand>;
+type PaydayCommand=AutomationHubShoppingPaydayCommandInput;
+type PaydayRecoveryStore={get:()=>PaydayCommand|null;set:(command:PaydayCommand|null)=>void};
 type ReserveInput={label:string;amount:number;currency:string;essential:boolean};
 type ShoppingData={shopping?:Section<Item>;payday?:Section<NonNullable<AutomationHubSnapshot["payday"]>["items"][number]>;shoppingAudit?:AutomationHubSnapshot["shoppingAudit"]};
 const emptyItems:Item[]=[];
@@ -19,13 +20,14 @@ const inputClass="min-h-10 w-full rounded-lg border border-border bg-background 
 const actionClass="min-h-10 rounded-lg border border-border px-3 text-sm hover:bg-accent disabled:opacity-50";
 function fmt(value:number|null,currency:string|null){if(value===null)return "Not set";try{return new Intl.NumberFormat(undefined,{style:"currency",currency:currency||"USD"}).format(value);}catch{return `${value.toFixed(2)} ${currency||""}`;}}
 function pretty(value:string){return value.replaceAll("_"," ");}
+function isPaydayCommand(command:AutomationHubShoppingCommandInput):command is PaydayCommand{return command.action==="set_payday"||command.action==="confirm_payday"||command.action==="set_reserves";}
 
-export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enabled:boolean;onRefresh:()=>void}){
+export function ShoppingPlanner({data,enabled,onRefresh,paydayRecovery}:{data:ShoppingData;enabled:boolean;onRefresh:()=>void;paydayRecovery:PaydayRecoveryStore}){
  const [scope,setScope]=useState("all"),[priority,setPriority]=useState("all"),[timing,setTiming]=useState("all"),[state,setState]=useState("open");
- const [editing,setEditing]=useState<string>(""),[form,setForm]=useState<Record<string,string>>({}),[busy,setBusy]=useState(""),[message,setMessage]=useState(""),[pending,setPending]=useState<Record<string,ItemCommand>>({}),[selectedItems,setSelectedItems]=useState<string[]>([]),[mergeName,setMergeName]=useState("");
- const commandInFlight=useRef(false),pendingPayday=useRef<PaydayCommand|null>(null);
+ const [editing,setEditing]=useState<string>(""),[editingRevision,setEditingRevision]=useState<number|null>(null),[form,setForm]=useState<Record<string,string>>({}),[busy,setBusy]=useState(""),[message,setMessage]=useState(""),[pending,setPending]=useState<Record<string,ItemCommand>>({}),[selectedItems,setSelectedItems]=useState<string[]>([]),[mergeName,setMergeName]=useState("");
+ const commandInFlight=useRef(false);
  const [paydayDraft,setPaydayDraft]=useState<{enabled:boolean;expectedAmount:string;currency:string;nextPayday:string}|null>(null),[receiptForm,setReceiptForm]=useState({date:"",amount:"",currency:"USD",variableIncome:false}),[reserveLabel,setReserveLabel]=useState(""),[reserveAmount,setReserveAmount]=useState(""),[reserves,setReserves]=useState<ReserveInput[]>([]);
- useEffect(()=>{try{const saved=sessionStorage.getItem(pendingKey);if(saved)queueMicrotask(()=>setPending(JSON.parse(saved) as Record<string,ItemCommand>));const paydaySaved=sessionStorage.getItem(pendingKey+"-payday");if(paydaySaved)pendingPayday.current=JSON.parse(paydaySaved) as PaydayCommand;}catch{/* In-memory recovery remains available for this page session. */}},[]);
+ useEffect(()=>{try{const saved=sessionStorage.getItem(pendingKey);if(saved)queueMicrotask(()=>setPending(JSON.parse(saved) as Record<string,ItemCommand>));}catch{/* In-memory retry remains available. */}},[]);
  function rememberPending(next:Record<string,ItemCommand>){setPending(next);try{sessionStorage.setItem(pendingKey,JSON.stringify(next));}catch{/* In-memory retry remains available. */}}
  const shopping=data.shopping,payday=data.payday?.items[0],audit=data.shoppingAudit;
  const paydayForm=paydayDraft??{enabled:payday?.enabled??false,expectedAmount:payday?.expectedAmount==null?"":String(payday.expectedAmount),currency:payday?.currency||"USD",nextPayday:payday?.nextPayday||""};
@@ -37,6 +39,7 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
  const sunday=new Intl.DateTimeFormat("en-US",{weekday:"long",timeZone:"America/Denver"}).format(new Date())==="Sunday";
  async function sendCommand(item:Item,command:ItemCommand,retry=false){
   if(commandInFlight.current){setMessage("Another shopping command is still in progress. Wait for its result before submitting a new command.");return;}
+  if(paydayRecovery.get()){setMessage("A payday command is unresolved. Retry its original action before submitting another shopping command.");return;}
   if(pending[item.id]&&!retry){setMessage("A command for this item has an uncertain result. Retry the same command key before starting another action.");return;}
   commandInFlight.current=true;
   const req=retry&&pending[item.id]?pending[item.id]:command;
@@ -45,20 +48,21 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
    const response=await fetch("/api/dashboard/shopping",{method:"POST",cache:"no-store",headers:{"content-type":"application/json"},body:JSON.stringify(req)});
    const body=await response.json() as {status?:string;resultCode?:string;error?:string;idempotentReplay?:boolean};
    if(response.status===202||body.status==="processing"){setMessage("This command is still processing. Its original key is saved; retry it after the Hub reconciles the result.");onRefresh();return;}
-   if(response.status===409||body.status==="conflict"){const next={...pending};delete next[item.id];rememberPending(next);throw new Error(body.resultCode||body.error||"The item changed. Review the refreshed Hub record and confirm again.");}
+   if(response.status===409||body.status==="conflict"){const next={...pending};delete next[item.id];rememberPending(next);onRefresh();throw new Error(body.resultCode||body.error||"The item changed. Review the refreshed Hub record and confirm again.");}
    if(response.status===400||response.status===415||response.status===422){const next={...pending};delete next[item.id];rememberPending(next);setMessage("The Hub rejected this input. Correct the highlighted or invalid values, then submit a new command.");return;}
    if(!response.ok)throw new Error(body.resultCode||body.error||"The Hub could not confirm this update.");
-   const completed={...pending};delete completed[item.id];rememberPending(completed);setMessage(body.idempotentReplay?"The Hub confirmed the original command.":"Shopping record updated in Automation Hub.");setEditing("");setSelectedItems([]);onRefresh();
+   const completed={...pending};delete completed[item.id];rememberPending(completed);setMessage(body.idempotentReplay?"The Hub confirmed the original command.":"Shopping record updated in Automation Hub.");setEditing("");setEditingRevision(null);setSelectedItems([]);onRefresh();
   }catch(error){setMessage(error instanceof Error?`Update needs review: ${error.message}`:"Update needs review. Refresh the Hub record before retrying.");}
   finally{commandInFlight.current=false;setBusy("");}
  }
- function send(item:Item,action:Extract<ItemCommand,{changes?:ItemChanges}>["action"],changes?:ItemChanges){
-  return sendCommand(item,{contractVersion:2,idempotencyKey:crypto.randomUUID(),action,itemId:item.id,expectedRevision:item.revision,...(changes?{changes}:{})} as ItemCommand);
+ function send(item:Item,action:Extract<ItemCommand,{changes?:ItemChanges}>["action"],changes?:ItemChanges,expectedRevision=item.revision){
+  return sendCommand(item,{contractVersion:2,idempotencyKey:crypto.randomUUID(),action,itemId:item.id,expectedRevision,...(changes?{changes}:{})} as ItemCommand);
  }
  function split(item:Item){
+  if(editingRevision===null||editingRevision!==item.revision){setMessage("This item changed in Automation Hub after editing began. Load the latest revision and review it before splitting.");return;}
   const names=(form.splitNames||"").split(/[,;\n]/).map(name=>name.trim()).filter(Boolean);
   if(names.length<2){setMessage("Enter at least two item names, separated by commas.");return;}
-  return sendCommand(item,{contractVersion:2,idempotencyKey:crypto.randomUUID(),action:"split",itemId:item.id,expectedRevision:item.revision,names} as ItemCommand);
+  return sendCommand(item,{contractVersion:2,idempotencyKey:crypto.randomUUID(),action:"split",itemId:item.id,expectedRevision:editingRevision,names} as ItemCommand);
  }
  function mergeSelected(){
   const chosen=allItems.filter(item=>selectedItems.includes(item.id));
@@ -69,22 +73,22 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
  async function sendPayday(command:PaydayCommand){
   if(commandInFlight.current){setMessage("Another shopping command is still in progress. Wait for its result before submitting a new command.");return;}
   commandInFlight.current=true;
-  setBusy("payday");setMessage("");const key=pendingKey+"-payday";let previous:PaydayCommand|undefined;
-  try{previous=pendingPayday.current??undefined;if(!previous){try{const stored=sessionStorage.getItem(key);if(stored)previous=JSON.parse(stored) as PaydayCommand;}catch{/* Use the new command; execution will retain it in memory. */}}
-   if(previous){pendingPayday.current=previous;setMessage("A payday command has an uncertain result. Retrying its same key before starting another command.");await executePayday(previous,key);return;}
-   pendingPayday.current=command;try{sessionStorage.setItem(key,JSON.stringify(command));}catch{/* The ref retains the exact command for this page session. */}
+  setBusy("payday");setMessage("");const key=AUTOMATION_HUB_PAYDAY_COMMAND_RECOVERY_KEY;let previous=paydayRecovery.get()??undefined;
+  try{if(!previous){try{const stored=sessionStorage.getItem(key);if(stored){const parsed=AutomationHubShoppingCommand.safeParse(JSON.parse(stored));if(parsed.success&&isPaydayCommand(parsed.data))previous=parsed.data;}}catch{/* Continue with the parent-held recovery value. */}}
+   if(previous){paydayRecovery.set(previous);setMessage("A payday command has an uncertain result. Retrying its same key before starting another command.");await executePayday(previous,key);return;}
+   paydayRecovery.set(command);try{sessionStorage.setItem(key,JSON.stringify(command));}catch{/* The Automation Hub records component retains the exact command for this page session. */}
    await executePayday(command,key);
   }finally{commandInFlight.current=false;setBusy("");}
  }
- async function executePayday(command:PaydayCommand,key=pendingKey+"-payday"){
+ async function executePayday(command:PaydayCommand,key=AUTOMATION_HUB_PAYDAY_COMMAND_RECOVERY_KEY){
   const request=command;
   setBusy("payday");setMessage("");
   try{const response=await fetch("/api/dashboard/shopping",{method:"POST",cache:"no-store",headers:{"content-type":"application/json"},body:JSON.stringify(request)});const body=await response.json() as {status?:string;resultCode?:string;error?:string;idempotentReplay?:boolean};
-   if(response.status===409||body.status==="conflict"){pendingPayday.current=null;try{sessionStorage.removeItem(key);}catch{/* The in-memory command is already cleared. */}throw new Error(body.resultCode||"Payday data changed. Refresh and review it.");}
+   if(response.status===409||body.status==="conflict"){paydayRecovery.set(null);try{sessionStorage.removeItem(key);}catch{/* The parent-held command is already cleared. */}throw new Error(body.resultCode||"Payday data changed. Refresh and review it.");}
    if(response.status===202||body.status==="processing"){setMessage("This payday command is still processing. Its original key is saved; retry it after the Hub reconciles the result.");onRefresh();return;}
-   if(response.status===400||response.status===415||response.status===422){pendingPayday.current=null;try{sessionStorage.removeItem(key);}catch{/* The in-memory command is already cleared. */}setMessage("The Hub rejected this payday input. Correct the values and submit a new command.");return;}
+   if(response.status===400||response.status===415||response.status===422){paydayRecovery.set(null);try{sessionStorage.removeItem(key);}catch{/* The parent-held command is already cleared. */}setMessage("The Hub rejected this payday input. Correct the values and submit a new command.");return;}
    if(!response.ok)throw new Error(body.resultCode||body.error||"The Hub could not confirm this payday command.");
-   pendingPayday.current=null;try{sessionStorage.removeItem(key);}catch{/* The in-memory command is already cleared. */}setPaydayDraft(null);setMessage(body.idempotentReplay?"The Hub confirmed the original payday command.":"Payday planning updated in Automation Hub.");onRefresh();
+   paydayRecovery.set(null);try{sessionStorage.removeItem(key);}catch{/* The parent-held command is already cleared. */}setPaydayDraft(null);setMessage(body.idempotentReplay?"The Hub confirmed the original payday command.":"Payday planning updated in Automation Hub.");onRefresh();
   }catch(error){setMessage(error instanceof Error?`Payday update needs review: ${error.message}`:"Payday update needs review. Retry the same command key.");}
   finally{setBusy("");}
  }
@@ -93,17 +97,20 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
   const prior=payday?.records.find(record=>record.date===receiptForm.date);
   void sendPayday({contractVersion:2,idempotencyKey:crypto.randomUUID(),action:"confirm_payday",expectedRevision:prior?.revision||0,paydayDate:receiptForm.date,confirmedAmount:amount,currency:receiptForm.currency.toUpperCase(),variableIncome:receiptForm.variableIncome,reservesConfirmed:true,reserves});
  }
- function startEdit(item:Item){setEditing(item.id);setForm({name:item.name,category:item.category||"",estimatedAmount:item.estimatedAmount===null?"":String(item.estimatedAmount),currency:item.currency||"USD",scope:item.scope||"",priority:item.priority,timingIntent:item.timingIntent,targetDate:item.targetDate||"",recurrenceRule:item.recurrenceRule||"",splitNames:""});}
+ function startEdit(item:Item){setEditing(item.id);setEditingRevision(item.revision);setMessage("");setForm({name:item.name,category:item.category||"",estimatedAmount:item.estimatedAmount===null?"":String(item.estimatedAmount),currency:item.currency||"USD",scope:item.scope||"",priority:item.priority,timingIntent:item.timingIntent,targetDate:item.targetDate||"",recurrenceRule:item.recurrenceRule||"",splitNames:""});}
  function save(item:Item){
+  if(editingRevision===null||editingRevision!==item.revision){setMessage("This item changed in Automation Hub after editing began. Load the latest revision and review it before saving.");return;}
   const amount=form.estimatedAmount.trim();
   const changes:ItemChanges={name:form.name.trim(),category:form.category.trim()||null,estimatedAmount:amount?Number(amount):null,currency:amount?form.currency.toUpperCase():null,scope:form.scope==="personal"||form.scope==="business"?form.scope:null,scopeConfirmed:form.scope==="personal"||form.scope==="business",priority:form.priority as "essential"|"need"|"want",priorityConfirmed:true,timingIntent:form.timingIntent as ItemChanges["timingIntent"],targetDate:form.targetDate||null,recurrenceRule:(form.recurrenceRule||null) as ItemChanges["recurrenceRule"]};
-  void send(item,item.reviewState==="needs_review"?"review":"update",changes);
+  void send(item,item.reviewState==="needs_review"?"review":"update",changes,editingRevision);
  }
+ function editIsStale(item:Item){return editing===item.id&&(editingRevision===null||editingRevision!==item.revision);}
  return <section className={`${panel} mt-6`} aria-labelledby="shopping-planner-title">
   <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs uppercase tracking-[0.16em] text-primary">Private · Hub is the source of truth</p><h2 id="shopping-planner-title" className="mt-1 text-xl font-semibold">Shopping planner</h2><p className="mt-1 max-w-3xl text-sm text-muted-foreground">Review purchase ideas, confirm scope and priority, and plan timing. Yorkstead will not place orders or read private amounts aloud.</p></div><button type="button" className={actionClass} onClick={onRefresh}>Refresh planner</button></div>
   {sunday?<p className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">Sunday planning · review essentials and choose what, if anything, belongs in the next payday plan.</p>:null}
   {!enabled?<p role="status" className="mt-4 rounded-lg border border-amber-500/30 p-3 text-sm">Shopping actions are disabled until the separate Hub write contract is configured. Read-only Hub data remains available.</p>:null}
   {message?<p role="status" className="mt-3 text-sm">{message}</p>:null}
+  {paydayRecovery.get()?<p role="status" className="mt-3 rounded-lg border border-amber-500/30 p-3 text-sm">A payday command is unresolved. Its original request and idempotency key are retained for reconciliation. Other shopping commands are blocked until it completes. <button type="button" className="underline" disabled={!!busy} onClick={()=>{const command=paydayRecovery.get();if(command)void sendPayday(command);}}>Retry original payday command</button></p>:null}
   {!shopping?<p role="status" className="mt-4 text-sm text-amber-200">The Hub has not returned the optional shopping section. This is a backend contract availability state, not an empty list.</p>:shopping.state==="unavailable"?<div role="alert" className="mt-4 rounded-lg border border-amber-500/30 p-3 text-sm">Shopping data unavailable from {shopping.source}. Retry after the Hub is reachable. Checked <time dateTime={shopping.checkedAt}>{new Date(shopping.checkedAt).toLocaleString()}</time>.</div>:<>
    <div className="mt-4 grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-2 lg:grid-cols-4">
     <label className="grid gap-1 text-xs text-muted-foreground">Scope<select className={selectClass} value={scope} onChange={e=>setScope(e.target.value)}><option value="all">All scopes</option><option value="personal">Personal</option><option value="business">Business</option></select></label>
@@ -118,6 +125,7 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
     <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4"><div><dt className="text-muted-foreground">Category</dt><dd>{item.category||"Not set"}</dd></div><div><dt className="text-muted-foreground">Estimate</dt><dd>{fmt(item.estimatedAmount,item.currency)}</dd></div><div><dt className="text-muted-foreground">Timing</dt><dd>{item.targetDate||"No date"}</dd></div><div><dt className="text-muted-foreground">Recurrence</dt><dd>{item.recurrenceRule?`Explicitly ${item.recurrenceRule}ly`:"None"}</dd></div><div><dt className="text-muted-foreground">Source capture</dt><dd className="break-all">{item.captureId}</dd></div><div><dt className="text-muted-foreground">Added</dt><dd><time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString()}</time></dd></div></dl>
     {pending[item.id]?<p role="status" className="mt-2 text-xs text-amber-200">A command result needs checking. You can safely retry the same command key; do not start a different command first.</p>:null}{item.reviewReason?<p className="mt-2 text-xs text-amber-200">Review: {pretty(item.reviewReason)}</p>:null}
     {editing===item.id?<div className="mt-4 grid gap-3 rounded-lg bg-muted/30 p-3 sm:grid-cols-2 lg:grid-cols-3">
+      {editIsStale(item)?<div role="alert" className="rounded-md border border-amber-500/30 p-3 text-sm sm:col-span-2 lg:col-span-3">This item changed in Automation Hub after you opened this editor. Your form is still based on revision {editingRevision}; load the latest item and review it before saving. <button type="button" className="ml-2 underline" onClick={()=>startEdit(item)}>Review latest item</button></div>:null}
       <label className="grid gap-1 text-xs">Item<input className={inputClass} maxLength={160} value={form.name||""} onChange={e=>setForm({...form,name:e.target.value})}/></label>
       <label className="grid gap-1 text-xs">Scope<select className={selectClass} value={form.scope||""} onChange={e=>setForm({...form,scope:e.target.value})}><option value="">Choose scope</option><option value="personal">Personal</option><option value="business">Business</option></select></label>
       <label className="grid gap-1 text-xs">Priority<select className={selectClass} value={form.priority||"need"} onChange={e=>setForm({...form,priority:e.target.value})}><option value="essential">Essential</option><option value="need">Need</option><option value="want">Want</option></select></label>
@@ -128,7 +136,7 @@ export function ShoppingPlanner({data,enabled,onRefresh}:{data:ShoppingData;enab
       <label className="grid gap-1 text-xs">Currency<input className={inputClass} maxLength={3} value={form.currency||"USD"} onChange={e=>setForm({...form,currency:e.target.value})}/></label>
       <label className="grid gap-1 text-xs sm:col-span-2 lg:col-span-3">Split into separate items (comma separated)<input className={inputClass} placeholder="Part one, part two" value={form.splitNames||""} onChange={e=>setForm({...form,splitNames:e.target.value})}/></label>
       <label className="grid gap-1 text-xs">Repeat rule<select className={selectClass} value={form.recurrenceRule||""} onChange={e=>setForm({...form,recurrenceRule:e.target.value})}><option value="">No repeat</option><option value="week">Weekly</option><option value="month">Monthly</option><option value="quarter">Quarterly</option><option value="year">Yearly</option></select></label>
-      <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3"><button className={actionClass} disabled={!enabled||!!busy} onClick={()=>save(item)}>Save changes</button><button className={actionClass} disabled={!enabled||!!busy} onClick={()=>void split(item)}>Split into items</button><button className={actionClass} onClick={()=>setEditing("")}>Cancel edit</button></div>
+      <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-3"><button className={actionClass} disabled={!enabled||!!busy||editIsStale(item)} onClick={()=>save(item)}>Save changes</button><button className={actionClass} disabled={!enabled||!!busy||editIsStale(item)} onClick={()=>void split(item)}>Split into items</button><button className={actionClass} onClick={()=>{setEditing("");setEditingRevision(null);}}>Cancel edit</button></div>
     </div>:null}
     {enabled?<div className="mt-3 flex flex-wrap gap-2">{pending[item.id]?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>void sendCommand(item,pending[item.id],true)}>Retry same command key</button>:null}{item.reviewState==="needs_review"?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>startEdit(item)}>Correct and review</button>:<button type="button" className={actionClass} disabled={!!busy} onClick={()=>startEdit(item)}>Edit</button>}{item.reviewState==="needs_review"&&item.scope&&item.scopeConfirmed&&item.priorityConfirmed?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>void send(item,"review")}>Approve review</button>:null}{item.reviewState==="approved"&&item.state!=="cancelled"?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>void send(item,"repeat")}>Repeat once</button>:null}{item.state==="purchased"?<button type="button" className={actionClass} disabled={!!busy} onClick={()=>void send(item,"unpurchase")}>Undo purchase</button>:<button type="button" className={actionClass} disabled={!!busy||item.reviewState!=="approved"} onClick={()=>void send(item,"purchase")}>Mark purchased</button>}{item.state!=="postponed"&&item.state!=="cancelled"?<><button type="button" className={actionClass} disabled={!!busy||item.reviewState!=="approved"} onClick={()=>void send(item,"postpone",{timingIntent:"next_payday",targetDate:null})}>Postpone to next payday</button><button type="button" className={actionClass} disabled={!!busy||item.reviewState!=="approved"} onClick={()=>void send(item,"skip")}>Skip this payday</button></>:null}{item.state!=="cancelled"&&item.state!=="purchased"?<button type="button" className={actionClass} disabled={!!busy||item.reviewState!=="approved"} onClick={()=>void send(item,"cancel")}>Cancel item</button>:null}</div>:null}
    </li>)}</ul>}
