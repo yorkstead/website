@@ -135,7 +135,7 @@ test("shopping edits keep their opening revision across a cross-tab refresh", as
   await expect(await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc016Owner })).toBeOK();
   const itemId = "c1c1c1c1-c1c1-41c1-81c1-c1c1c1c1c1c1";
   let item = { id: itemId, captureId: "c2c2c2c2-c2c2-42c2-82c2-c2c2c2c2c2c2", name: "Dog food", category: null, estimatedAmount: null, currency: null, priority: "need" as const, priorityConfirmed: true, scope: "personal" as const, scopeConfirmed: true, timingIntent: "this_week" as const, targetDate: null, recurrenceRule: null, state: "planned" as const, reviewState: "approved" as const, reviewReason: null, revision: 1, createdAt: checkedAt, completedAt: null };
-  let payday = { timezone: "America/Denver", weekday: 1, enabled: true, expectedAmount: 1200, currency: "USD", nextPayday: "2026-11-02", revision: 1, updatedAt: checkedAt, records: [] as Array<Record<string, unknown>> };
+  let payday = { timezone: "America/Denver", weekday: 1, enabled: true, expectedAmount: 1200, currency: "USD", nextPayday: "2026-11-02", revision: 1, updatedAt: checkedAt, records: [{ id: "e3e3e3e3-e3e3-43e3-83e3-e3e3e3e3e3e3", date: "2026-11-02", status: "confirmed", expectedAmount: 1200, confirmedAmount: 1700, currency: "USD", variableIncome: false, receivedAt: checkedAt, reservesConfirmed: true, reserveAmount: 400, reserveCount: 1, revision: 1, createdAt: checkedAt }] as Array<Record<string, unknown>> };
   const commands: Array<Record<string, unknown>> = [];
   const snapshot = () => ({ state: "available", checkedAt, data: { contractVersion: 1, source: "Automation Hub", generatedAt: checkedAt,
     captures: { source: "Automation Hub · captures", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
@@ -153,6 +153,7 @@ test("shopping edits keep their opening revision across a cross-tab refresh", as
     const command = route.request().postDataJSON() as Record<string, unknown>;
     commands.push(command);
     if (command.action === "set_payday") payday = { ...payday, expectedAmount: Number(command.expectedAmount), revision: payday.revision + 1 };
+    if (command.action === "confirm_payday") payday.records[0] = { ...payday.records[0], confirmedAmount: Number(command.confirmedAmount), revision: Number(payday.records[0].revision) + 1 };
     item = { ...item, ...(command.changes as Partial<typeof item>), revision: item.revision + 1 };
     await route.fulfill({ status: 200, json: { contractVersion: 2, commandId: "c5c5c5c5-c5c5-45c5-85c5-c5c5c5c5c5c5", itemId, status: "succeeded", resultCode: "updated" } });
   });
@@ -196,6 +197,25 @@ test("shopping edits keep their opening revision across a cross-tab refresh", as
   await page.getByRole("button", { name: "Save schedule" }).click();
   expect(commands.at(-1)?.expectedRevision).toBe(2);
   expect(commands.at(-1)?.expectedAmount).toBe(1600);
+  await page.getByText("Confirm actual payday and review reserves", { exact: true }).click();
+  const receiptCommandStart = commands.length;
+  await page.getByLabel("Receipt date").fill("2026-11-02");
+  await page.getByLabel("Actual amount received").fill("1800");
+  await otherTab.getByText("Confirm actual payday and review reserves", { exact: true }).click();
+  await otherTab.getByLabel("Receipt date").fill("2026-11-02");
+  await otherTab.getByLabel("Actual amount received").fill("1850");
+  await otherTab.getByRole("button", { name: "Confirm receipt and reserves" }).click();
+  expect(commands.at(-1)?.expectedRevision).toBe(1);
+  await page.getByRole("button", { name: "Refresh Hub records" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "This receipt changed in Automation Hub" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirm receipt and reserves" })).toBeDisabled();
+  expect(commands).toHaveLength(receiptCommandStart + 1);
+  await page.getByRole("button", { name: "Review latest receipt" }).click();
+  await expect(page.getByLabel("Actual amount received")).toHaveValue("1850");
+  await page.getByLabel("Actual amount received").fill("1900");
+  await page.getByRole("button", { name: "Confirm receipt and reserves" }).click();
+  expect(commands.at(-1)?.expectedRevision).toBe(2);
+  expect(commands.at(-1)?.confirmedAmount).toBe(1900);
   await otherTab.close();
 });
 
@@ -209,7 +229,7 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   type ShoppingFixtureItem={id:string;captureId:string;name:string;category:string|null;estimatedAmount:number|null;currency:string|null;priority:"essential"|"need"|"want";priorityConfirmed:boolean;scope:"personal"|"business"|null;scopeConfirmed:boolean;timingIntent:"next_payday"|"this_week"|"specific_date"|"unscheduled";targetDate:string|null;recurrenceRule:string|null;state:"planned"|"purchased"|"postponed"|"cancelled";reviewState:"needs_review"|"approved";reviewReason:string|null;revision:number;createdAt:string;completedAt:string|null};
   let item:ShoppingFixtureItem={id:itemId,captureId,name:"Dog food",category:null,estimatedAmount:null,currency:null,priority:"need",priorityConfirmed:false,scope:null,scopeConfirmed:false,timingIntent:"next_payday",targetDate:null,recurrenceRule:"month",state:"planned",reviewState:"needs_review",reviewReason:"scope_needs_confirmation",revision:1,createdAt:checkedAt,completedAt:null};
   const secondItem:ShoppingFixtureItem={id:secondItemId,captureId,name:"Dish soap",category:null,estimatedAmount:null,currency:null,priority:"need",priorityConfirmed:true,scope:"personal",scopeConfirmed:true,timingIntent:"this_week",targetDate:null,recurrenceRule:null,state:"planned",reviewState:"approved",reviewReason:null,revision:1,createdAt:checkedAt,completedAt:null};
-  let audits: Array<Record<string,unknown>>=[];
+  let audits: Array<Record<string,unknown>>=[];let omitItemFromSnapshot=false;
   const bodies:Array<Record<string,unknown>>=[];let failNext=false;let processingNext=false;let rejectPaydayNext=false;let hubReadMode:"available"|"unavailable"|"degraded"="available";let holdNextCommand=false;let commandStartedResolve=()=>{};let releaseHeldCommand=()=>{};
   const commandStarted=new Promise<void>(resolve=>{commandStartedResolve=resolve});const heldCommand=new Promise<void>(resolve=>{releaseHeldCommand=resolve});
   const paydayOutcomes=[503,202,202,200];
@@ -220,7 +240,7 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
     if(hubReadMode==="degraded"){await route.fulfill({json:{state:"degraded",checkedAt}});return;}
     await route.fulfill({json:{state:"available",checkedAt,data:{contractVersion:1,source:"Automation Hub",generatedAt:checkedAt,
       captures:{source:"Automation Hub · captures",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},captureActions:{source:"Automation Hub · capture action audit",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},
-      shopping:{source:"Automation Hub · shopping planner",state:"available",checkedAt,truncated:false,errorCode:null,items:[item,secondItem]},
+      shopping:{source:"Automation Hub · shopping planner",state:"available",checkedAt,truncated:false,errorCode:null,items:omitItemFromSnapshot?[secondItem]:[item,secondItem]},
       payday:{source:"Automation Hub · payday planning",state:"available",checkedAt,truncated:false,errorCode:null,items:[payday]},
       shoppingAudit:{source:"Automation Hub · shopping audit",state:"available",checkedAt,truncated:false,errorCode:null,items:audits},
       activity:{source:"Automation Hub · execution history",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},integrationHealth:{source:"Automation Hub",state:"available",checkedAt,database:"healthy",googleTasks:"healthy",errorCode:null},reviewQueue:{source:"Automation Hub",state:"available",checkedAt,truncated:false,errorCode:null,items:[]},tasks:{source:"Google Tasks",state:"available",checkedAt,truncated:false,errorCode:null,items:[]}}}});
@@ -306,12 +326,13 @@ test("shopping planner reviews, edits, purchases, confirms payday, recovers same
   await expect(page.getByRole("alert").filter({hasText:"Automation Hub records could not be loaded"})).toBeVisible();
   const processingCommand=bodies.at(-1);const processingKey=processingCommand?.idempotencyKey;const afterProcessing=bodies.length;
   await expect(page.getByRole("heading",{name:"Shopping planner"})).toHaveCount(0);
-  hubReadMode="available";await page.getByRole("button",{name:"Refresh Hub records"}).click();
+  omitItemFromSnapshot=true;hubReadMode="available";await page.getByRole("button",{name:"Refresh Hub records"}).click();
   await expect(page.getByRole("heading",{name:"Shopping planner"})).toBeVisible();
-  const recoveredShoppingItem=page.locator('section[aria-labelledby="shopping-planner-title"] li').filter({has:page.getByRole("heading",{name:"Dog food",exact:true})});
-  await recoveredShoppingItem.getByRole("button",{name:"Mark purchased"}).click();expect(bodies).toHaveLength(afterProcessing);
-  await expect(recoveredShoppingItem.getByRole("button",{name:"Retry same command key"})).toBeVisible();
-  await recoveredShoppingItem.getByRole("button",{name:"Retry same command key"}).click();
+  await expect(page.getByRole("status").filter({hasText:"outside the current Hub snapshot"})).toBeVisible();
+  const recoveredOtherItem=page.locator('section[aria-labelledby="shopping-planner-title"] li').filter({has:page.getByRole("heading",{name:"Dish soap",exact:true})});
+  await recoveredOtherItem.getByRole("button",{name:"Mark purchased"}).click();expect(bodies).toHaveLength(afterProcessing);
+  await expect(page.getByRole("status").filter({hasText:"uncertain result"})).toBeVisible();
+  await page.getByRole("button",{name:"Retry pending command"}).click();
   expect(bodies.slice(-1)[0]).toEqual(processingCommand);
   expect(bodies.at(-1)?.idempotencyKey).toBe(processingKey);
   expect(bodies.filter((body)=>body.idempotencyKey===processingKey)).toHaveLength(3);
