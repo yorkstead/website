@@ -95,7 +95,7 @@ test("owner captures evidence, runs discovery, records permission, and validates
   await expect(page.getByText("Researching",{exact:true}).first()).toBeVisible();
   await statusForm.getByLabel("Research stage").selectOption("validated");
   await statusForm.getByRole("button",{name:"Save stage"}).click();
-  await expect(page.getByText("Validated problem",{exact:true})).toBeVisible();
+  await expect(page.getByText("Validated problem",{exact:true}).first()).toBeVisible();
   await expect(page.getByText("Opportunity linked to CRM lead")).toHaveCount(0);
 
   const recordCount=await databasePool!.query("SELECT COUNT(*)::int AS count FROM contact_inquiries WHERE company=$1",[businessName]);
