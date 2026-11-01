@@ -32,4 +32,6 @@
 
 ## Delivery
 
-PR 0 is intended to be a draft documentation-only pull request against `main`. It is not a declaration that the production row/audit baseline or database binding has been verified. Do not merge or deploy. The next implementation slice is PR 1 preservation foundation, blocked on read-only production baseline evidence and independent review.
+Draft [PR #87](https://github.com/yorkstead/website/pull/87), `YS-SYS-001 PR 0: Systems Registry discovery and sequence`, is open against `main` and references issue #86. The initial remote branch head was `c4be1eee6c0092b174786140a77f99ac54f79721`; the PR comparison initially exposed a truncated `CURRENT.md` update (91 deleted historical lines). That was corrected from the complete local handoff and verified byte-for-byte; final remote branch head and exact-head CI/Vercel status are recorded in the current handoff/PR after recheck.
+
+PR 0 is not a declaration that the production row/audit baseline or database binding has been verified. Do not merge or deploy. The next implementation slice is PR 1 preservation foundation, blocked on read-only production baseline evidence and independent review.
