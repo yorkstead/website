@@ -10,7 +10,7 @@
 - [ ] Verify production DB binding, applied migration ledger, seven original records and immutable audit fingerprints using an approved read-only operator path. Current session has no verified DB target/access.
 - [x] Record source evidence, uncertainty, compatibility decision and PR sequence.
 - [x] Update project roadmap and current handoff with cross-workstream sequencing.
-- [ ] Review and open PR 0 with discovery and implementation sequence.
+- [x] Review and open draft PR 0 with discovery and implementation sequence; preserve historical handoff and verify final PR head.
 
 ## PR 1 — preservation foundation
 
