@@ -31,7 +31,7 @@ function command(args: string[], env: Record<string, string> = {}) {
     YS_RECOVERY_BOUNDARY: process.env.YS_RECOVERY_BOUNDARY!,
     ...env,
   };
-  return spawnSync(args[0], args.slice(1), { encoding: "utf8", timeout: 60_000, env: isolatedEnv });
+  return spawnSync(args[0], args.slice(1), { encoding: "utf8", timeout: 60_000, env: isolatedEnv as NodeJS.ProcessEnv });
 }
 
 disposableTest("encrypts, verifies, uploads locally, and restores a synthetic seven/eleven baseline", async () => {
