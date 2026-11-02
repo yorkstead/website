@@ -9,6 +9,12 @@
 - Once checks pass, **squash merge** the pull request into `main`. Each main merge is a deliberate release candidate.
 - Production deployment stays handled by Vercel's existing Git integration; do not add a second GitHub Actions deployment job.
 
+## Database migration release gate
+
+The Vercel project uses `vercel.json` → `bun run vercel-build`. Merging any PR into `main` creates a production deployment through the existing Git integration. The build wrapper runs `bun run build` only; it does not run `db:migrate`. CI's migration commands target its disposable PostgreSQL service.
+
+Before an approved production schema change, the owner must separately authorize the exact migration version, database identity, recovery artifact, operator, time window and procedure. The operator runs `bun run db:migrate` as a separate controlled step, then verifies the applied ledger and application behavior. A successful PR check or main merge does not grant that authorization. If a deployment requires a new schema, hold the merge until the migration and deployment sequence is separately approved. A documentation merge still triggers a deployment and therefore requires its own release approval.
+
 ## Recommended release cadence
 
 - Batch nonurgent dashboard/UX updates into **one release per project per day** (or less).
