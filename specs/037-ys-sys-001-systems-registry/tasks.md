@@ -27,7 +27,7 @@
 - [x] Restrict database operations to fixed read-only queries and redact connection/audit/private fields.
 - [x] Include migration match evidence and per-record count/fingerprint metadata.
 - [x] Document platform-level Vercel rate limiting, separately authorized production steps, and cleanup/removal.
-- [ ] Run focused tests and required repository verification; record exact PR head and CI.
+- [x] Run focused/full tests and required repository verification; record exact PR head and CI status in `verification.md`.
 - [ ] Keep the diagnostic disabled; perform no production query, configuration change, merge or deployment.
 
 ## PR 2 — staged inventory and ownership

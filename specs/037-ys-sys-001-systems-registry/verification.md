@@ -14,7 +14,7 @@
 - `bun run yorkstead:check`: passed (39 active spec directories).
 - `bun run db:migrate:check`: passed (22 ordered repository migrations; no production state inferred).
 - `git diff --check`: passed.
-- PR not yet published at time of this local verification entry; exact remote SHA and CI will be added after publication.
+- Draft [PR #89](https://github.com/yorkstead/website/pull/89) is open against `main`. Exact head `404def19c89bd6fcf32410dec2c7ac0a29c0fec3` compares one commit ahead and zero behind base `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`; GitHub reports 11 intended files, 607 additions and 24 deletions. GitHub Actions run [41371973332](https://github.com/yorkstead/website/actions/runs/41371973332) and Vercel preview were pending at initial publication; recheck exact-head status before review.
 
 ## Current session evidence
 
