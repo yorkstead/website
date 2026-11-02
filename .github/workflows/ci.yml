@@ -67,7 +67,17 @@ jobs:
       - name: Prepare Better Auth schema in disposable PostgreSQL
         run: bun run auth:migrate
 
+      - name: Install disposable recovery rehearsal tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y age postgresql-client
+          pg_dump --version
+          pg_restore --version
+          age --version
+
       - name: Run deterministic and database integration tests
+        env:
+          RECOVERY_PREP_DISPOSABLE: "1"
         run: bun test
 
       - name: Lint
