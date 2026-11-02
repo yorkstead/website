@@ -33,9 +33,6 @@ function pgEnv(database: string) {
     PGUSER: decodeURIComponent(parsed!.username),
     PGPASSWORD: decodeURIComponent(parsed!.password),
     PGDATABASE: database,
-    PGHOSTADDR: "",
-    PGSERVICE: "",
-    PGSERVICEFILE: "",
   };
 }
 
