@@ -23,7 +23,9 @@ cleanup() {
   if [[ -n $partial ]]; then rm -f -- "$partial"; fi
   if [[ -n $manifest_partial ]]; then rm -f -- "$manifest_partial"; fi
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 case $mode in
   backup)
@@ -88,7 +90,7 @@ case $mode in
     expected=$(sed -n 's/^encrypted_sha256=//p' "$RECOVERY_MANIFEST_FILE")
     [[ $expected =~ ^[0-9a-f]{64}$ ]] || fail 'manifest checksum is invalid'
     [[ $(sha256sum "$RECOVERY_ENCRYPTED_FILE" | cut -d ' ' -f 1) == "$expected" ]] || fail 'encrypted artifact checksum mismatch'
-    table_count=$(psql -w -X -A -t -q -c "SELECT count(*) FROM pg_class WHERE relkind IN ('r','p') AND relnamespace='public'::regnamespace" | tr -d '\r\n')
+    table_count=$(psql -w -X -A -t -q -c "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_toast%'" | tr -d '\r\n')
     [[ $table_count == 0 ]] || fail 'restore target must have no user tables'
     stage=$(mktemp -d "${TMPDIR:-/tmp}/ys-sys-001-recovery-XXXXXXXX")
     age -d -i "$RECOVERY_IDENTITY_FILE" -o "$stage/plain.dump" "$RECOVERY_ENCRYPTED_FILE" >/dev/null
