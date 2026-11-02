@@ -2,10 +2,10 @@
 
 ## Current session evidence
 
-- Observed at `2026-11-01T23:25:12Z` from system UTC clock.
+- Initial repository observation at `2026-11-01T23:25:12Z`; final PR-head check at `2026-11-02T00:04:00Z` UTC.
 - GitHub repository API: `yorkstead/website`, default branch `main`.
 - GitHub commit lookup resolved `main` to `9070c538277cccf852a3fc0efc214fe65238c1fa`.
-- Dedicated checkout `/tmp/website-ys-sys-001`, branch `codex/ys-sys-001-pr0`, HEAD `9070c538277cccf852a3fc0efc214fe65238c1fa`; clean before PR 0 edits.
+- Dedicated checkout `/tmp/website-ys-sys-001`, delivery branch `docs/86-systems-registry-pr0`, base `9070c538277cccf852a3fc0efc214fe65238c1fa`; initial checkout was clean before PR 0 edits. Local commit history differs from the API-published branch because network publishing used GitHub's file API after shell DNS failed.
 - Original checkout `/home/brandon/development/yorkstead/website` remains on its pre-existing dirty CC-022B branch and was not modified.
 - Vercel production deployment list reports project `website`, state `READY`, branch `main`, and source SHA `9070c538277cccf852a3fc0efc214fe65238c1fa`.
 - Follow-up cross-project check at `2026-11-01T23:28:04Z`: Hub `main` is `02c21a31784de965ce35d1af8c6cedcfd57230f2`; incident PR #93 is closed/merged; latest Hub Vercel production deployment is READY at the same SHA. Its PR record says production schema recovery still requires separately authorized migrations. No Website/Hub production database was queried in this session.
@@ -32,6 +32,6 @@
 
 ## Delivery
 
-Draft [PR #87](https://github.com/yorkstead/website/pull/87), `YS-SYS-001 PR 0: Systems Registry discovery and sequence`, is open against `main` and references issue #86. The initial remote branch head was `c4be1eee6c0092b174786140a77f99ac54f79721`; the PR comparison initially exposed a truncated `CURRENT.md` update (91 deleted historical lines). That was corrected from the complete local handoff and verified byte-for-byte; final remote branch head and exact-head CI/Vercel status are recorded in the current handoff/PR after recheck.
+Draft [PR #87](https://github.com/yorkstead/website/pull/87), `YS-SYS-001 PR 0: Systems Registry discovery and sequence`, is open against `main` and references issue #86. At exact remote head `d1c949fccae3786f7a5b358e0bc0312f02c131d8`, GitHub compare reports nine intended files, 353 additions, zero deletions, ahead 13/behind 0 from base `9070c538277cccf852a3fc0efc214fe65238c1fa`. The full `CURRENT.md` was verified byte-for-byte against the remote branch after an earlier truncated update was detected and corrected. Exact-head GitHub Actions [run 41362511856](https://github.com/yorkstead/website/actions/runs/41362511856) completed successfully, and Vercel [preview](https://vercel.com/yorkstead/website/7czDzzR8d4efSbbjScJQv9U8dxx6) succeeded. A follow-up handoff/verification documentation commit comes after this checked SHA; inspect current PR checks before review completion.
 
 PR 0 is not a declaration that the production row/audit baseline or database binding has been verified. Do not merge or deploy. The next implementation slice is PR 1 preservation foundation, blocked on read-only production baseline evidence and independent review.
