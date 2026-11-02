@@ -89,7 +89,10 @@ disposableTest("encrypts, verifies, uploads locally, and restores a synthetic se
 
     const sourceEnv = { ...pgEnv(sourceName), RECOVERY_OUTPUT_DIR: output, BACKUP_RECIPIENT: publicRecipient,
       BACKUP_KEY_ID: "synthetic_key", BACKUP_SOURCE_TOKEN: "synthetic_source" };
-    expect(command(["bash", script, "backup"], sourceEnv).status).toBe(0);
+    const backup = command(["bash", script, "backup"], sourceEnv);
+    if (backup.status !== 0) {
+      throw new Error(`synthetic backup exited ${backup.status}: ${backup.stderr.replaceAll(sourceName, "[synthetic-db]").slice(0, 500)}`);
+    }
     expect((await readdir(output)).sort()).toEqual(["backup.dump.age", "manifest.txt"]);
     const manifest = await readFile(resolve(output, "manifest.txt"), "utf8");
     expect(manifest).toContain("migration_version=0020");
