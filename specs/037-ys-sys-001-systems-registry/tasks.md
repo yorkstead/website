@@ -20,6 +20,14 @@
 - [ ] Prove all seven legacy IDs, values and audit histories survive a disposable upgrade unchanged.
 - [ ] Run migration checks and required application verification; update exact-head evidence.
 
+## PR 0 follow-up — temporary production identity diagnostic
+
+- [x] Reuse the existing owner-only server diagnostic route; add no public route or UI.
+- [x] Add default-off production and owner gates, no-store headers, and a WAF-confirmation gate with local rate limiting.
+- [x] Query database identity, safe schema/migration metadata, Systems Directory preservation counts, stable IDs/revisions/archive state, audit counts/fingerprints, trigger and constraint facts using fixed SELECTs.
+- [x] Document separate production deployment/access approval and the explicit disable/removal procedure.
+- [x] Run focused/full tests and repository verification; keep PR 1 blocked until verified production evidence is reviewed.
+- [ ] Keep production mode disabled; no production query, config change, migration, merge or deployment without separate authorization.
 ## PR 2 — staged inventory and ownership
 
 - [ ] Add unverified candidate staging, duplicate review, owner/recovery roles and provenance.

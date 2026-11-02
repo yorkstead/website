@@ -4,6 +4,27 @@
 
 PR 0 is discovery/documentation only. It performs no database connection, production write, migration, environment read, credential inspection, provider request, configuration change, merge or deployment. GitHub/Vercel metadata is used only to verify repository default branch and deployed source SHA.
 
+## Temporary read-only identity preflight
+
+The PR 1 readiness helper extends the already-existing owner-only `GET /api/dashboard/leads/diagnostic` route using the exact query `mode=ys-sys-001-preflight`. It adds no route or UI. The special mode runs only when `VERCEL_ENV=production`, both `YS_SYS_001_PREFLIGHT_ENABLED=true` and `YS_SYS_001_PREFLIGHT_WAF_CONFIRMED=true`, and the Better Auth owner session is valid. Both flags are absent/false by default; the WAF confirmation flag is set only after the shared platform rate rule is active. The handler uses the runtime `DATABASE_URL` internally and issues only fixed `SELECT` statements.
+
+Before enabling the flag in a separately approved production verification window:
+
+1. Confirm the intended READY production deployment and approve its merge/deployment separately.
+2. Configure and publish a Vercel Firewall rate-limit rule for the existing exact path `/api/dashboard/leads/diagnostic` at one request per 60 seconds per source IP. This WAF rule is the shared, platform-level limiter; the in-process limiter is only additional protection. The WAF rule applies to the existing diagnostic path as a whole. Review Vercel's rate-limit pricing prompt and stop for separate purchase approval if any charge is presented.
+3. Set both non-secret flags `YS_SYS_001_PREFLIGHT_ENABLED=true` and `YS_SYS_001_PREFLIGHT_WAF_CONFIRMED=true` for Production only, with the latter set only after the WAF rule is active. Then use the separately approved deployment process so the new runtime receives them. Do not set either in Preview or Development.
+4. In a browser authenticated as the Yorkstead owner, issue one same-origin GET to `/api/dashboard/leads/diagnostic?mode=ys-sys-001-preflight`. Do not copy or export the session cookie. Confirm `Cache-Control: private, no-store`, then retain only the approved redacted evidence bundle outside public GitHub.
+5. Resolve `identity.endpointId` in Neon control-plane endpoint metadata. Match the exact endpoint ID, then record its non-secret Neon `project_id` and `branch_id` plus `identity.databaseName`. Do not infer project/branch from project names or `DATABASE_URL_RECOVERY`.
+6. Verify the seven expected stable IDs, revision/archive state, each audit count/fingerprint, migration versions/checksum-match flags, table/trigger/constraint summaries and zero unexpected/orphan audit conditions. This endpoint returns no row names, account labels, costs, URLs, notes, role names, hostnames, connection strings or raw audit snapshots.
+
+### Temporary diagnostic disable and removal
+
+1. Set/remove both preflight flags in Production and complete the separately approved deployment needed to apply that change.
+2. Confirm the special query mode returns 404 while the existing legacy diagnostic mode remains available to the owner.
+3. Remove the route branch, preflight helper and diagnostic-only tests in a small cleanup PR; after that cleanup is deployed, remove the temporary WAF rule. Keep the redacted verification result in the approved evidence record, never in logs or a public issue.
+
+No Vercel environment update, Firewall change, merge, deployment, production request or database operation is authorized by this implementation PR.
+
 ## Pre-migration gate
 
 Before PR 1 implementation:

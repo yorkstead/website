@@ -24,6 +24,7 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 ## Scope
 
 - Extend the existing owner-only directory with typed inventory, relationships and evidence, preserving the current entry model and compatibility routes.
+- Before schema work, allow a temporary, default-off, owner-only read-only preflight mode on the existing owner diagnostic route. It must expose only safe database/Neon endpoint identity, schema/migration status, counts, stable entry IDs/revisions/archive state and deterministic fingerprints; it must not create a new route or return raw entry/audit fields.
 - Stage newly discovered candidates as unverified; detect duplicates against existing records and require owner review before they become authoritative.
 - Represent account ownership and recovery responsibility without storing credentials, recovery codes, payment data or customer operational records.
 - Represent subscription cost evidence as actual, estimated or unknown, with currency, period, source/evidence reference and shared-entitlement allocation. Totals must not count one shared entitlement multiple times or turn missing evidence into zero.
@@ -53,6 +54,7 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 9. Every material mutation is owner-authorized, revision-safe, transactionally audited and compatible with immutable audit constraints.
 10. Ordered additive migration checks, disposable database preservation/integration tests, relevant browser flows and repository verification pass; each slice has independent review/rollback notes.
 11. Roadmap and handoff keep Automation Hub recovery, CC-026 activation/migration evidence and MKT-QR-001 print readiness coordinated as separate dependencies/workstreams.
+12. The temporary preflight mode is owner-authorized, production-only, default-off, non-cacheable, rate-limited, SELECT-only, secret-safe, and has a documented disable/removal procedure.
 
 ## Non-goals
 

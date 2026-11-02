@@ -1,4 +1,11 @@
-# Current handoff — YS-SYS-001 PR 1 readiness — 2026-11-02
+# Active work — YS-SYS-001 read-only preflight PR #89 — 2026-11-02
+
+- Updated against the newer `main` after PR #88 merged; verified main SHA: `798c9ed7f6115a332c8c35cee8456ae16d5010a7`. PR #87 and PR #88 are merged.
+- PR #89 reuses the existing owner-only `GET /api/dashboard/leads/diagnostic` route. Its temporary mode is production-only, owner-session protected, no-store, fixed-SELECT, and requires both default-off flags plus a separately verified Vercel WAF rate rule.
+- The successful Vercel preview is not production; the diagnostic mode returns 404 there because `VERCEL_ENV` is not production and the flags are unset. No production request, configuration change, migration, data change, merge, or deployment occurred.
+- Local focused/full tests, typecheck, lint, build, scaffold and migration checks passed before the base refresh; review live PR checks for the rebased head. PR 1 remains NO-GO pending production DB identity and the reviewed seven-record/audit/recovery evidence.
+- Production access/deploy steps and disable/removal sequence: `specs/037-ys-sys-001-systems-registry/preflight-diagnostic.md`.
+# Previous handoff — YS-SYS-001 PR 1 readiness — 2026-11-02 (PR #88 merged)
 
 - PR #87 is verified merged. Live `origin/main`, PR #87's merge commit and the latest READY Website production deployment all resolve to `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`.
 - Read-only production database preflight is **blocked at identity binding**. Vercel connector access returned 403 (App installation lacks project access); Vercel environment metadata without decryption returned 404 under the available scope; Neon has multiple plausible `website` projects without a binding to production `DATABASE_URL`. No production SQL was run. See `specs/037-ys-sys-001-systems-registry/production-preflight.md`.

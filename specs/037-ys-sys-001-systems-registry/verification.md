@@ -1,5 +1,13 @@
 # YS-SYS-001 verification record — PR 0
 
+## PR #89 — rebased read-only production diagnostic
+
+- PR #89 has been refreshed onto newer `main` at `798c9ed7f6115a332c8c35cee8456ae16d5010a7` (PR #88 merge). Its diagnostic changes are preserved; PR remains draft and unmerged.
+- Reuses the existing owner-only route; mode requires production environment, owner auth, both absent-by-default flags, and the published Vercel per-IP rate rule. It returns only endpoint ID and safe database/schema/migration metadata, aggregate counts, stable IDs/revision/archive state, per-entry audit counts/fingerprints, and schema protection summaries.
+- No production secret was retrieved, production database queried, or production configuration/data/schema changed.
+- Local verification on the unchanged implementation: focused tests passed (6 tests, 40 assertions); full suite passed (435 passed, 116 skipped, 0 failed); typecheck/build/spec check/migration check passed; lint passed with one pre-existing warning at `components/login-panel.tsx:62`.
+- The repository's Vercel integration created a Preview deployment; its check succeeded. The preflight mode is inaccessible in Preview because `VERCEL_ENV` is not production and the two flags are absent.
+- See the [live PR checks](https://github.com/yorkstead/website/pull/89) for current exact-head Actions and Vercel status.
 ## PR 1 readiness preflight — 2026-11-02
 
 - Live `origin/main` is `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`; PR #87 merged at that SHA. Latest Vercel production deployment is READY at the same source SHA.
