@@ -1,20 +1,21 @@
 # YS-SYS-001 verification record — PR 0
 
-## Temporary production identity diagnostic — PR in preparation
+## PR #89 — rebased read-only production diagnostic
 
-- Live GitHub comparison reports current `main` identical to merge commit `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`; PR #87 is merged. Vercel's latest READY production source deployment is that SHA.
-- Reused the existing owner-only `/api/dashboard/leads/diagnostic` path with a disabled-by-default `mode=ys-sys-001-preflight`; no new route, UI or production request was introduced.
-- The preflight response uses a server-derived endpoint ID, safe database/schema metadata, a redacted migration comparison and per-entry preservation counts/fingerprints. Source performs fixed SELECTs only. The route is gated by owner session, production environment, and two absent-by-default flags; a verified Vercel WAF per-IP rate rule is a required manual production prerequisite.
-- Production flag remains off. No production SQL/query, environment change, migration, merge or deployment was performed.
-- Focused diagnostic tests: passed (6 tests, 40 assertions).
-- Full `bun run test`: passed (435 passed, 116 skipped because database-backed prerequisites are unavailable, 0 failed; 551 total).
-- `bun run typecheck`: passed.
-- `bun run lint`: passed with one existing warning in `components/login-panel.tsx:62` (`window.location.assign` for internal navigation).
-- `bun run build`: passed; Next.js 16.4.2 production build includes the existing diagnostic route.
-- `bun run yorkstead:check`: passed (39 active spec directories).
-- `bun run db:migrate:check`: passed (22 ordered repository migrations; no production state inferred).
-- `git diff --check`: passed.
-- Draft [PR #89](https://github.com/yorkstead/website/pull/89) is open against `main`, based on `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`; GitHub reports the intended 11-file change. Initial Actions run [41371973332](https://github.com/yorkstead/website/actions/runs/41371973332) was cancelled when the documentation-only handoff follow-up updated the head. Vercel preview then succeeded. Use the live PR checks for Actions status on the current exact head; the diagnostic is preview-gated by `VERCEL_ENV` and absent flags.
+- PR #89 has been refreshed onto newer `main` at `798c9ed7f6115a332c8c35cee8456ae16d5010a7` (PR #88 merge). Its diagnostic changes are preserved; PR remains draft and unmerged.
+- Reuses the existing owner-only route; mode requires production environment, owner auth, both absent-by-default flags, and the published Vercel per-IP rate rule. It returns only endpoint ID and safe database/schema/migration metadata, aggregate counts, stable IDs/revision/archive state, per-entry audit counts/fingerprints, and schema protection summaries.
+- No production secret was retrieved, production database queried, or production configuration/data/schema changed.
+- Local verification on the unchanged implementation: focused tests passed (6 tests, 40 assertions); full suite passed (435 passed, 116 skipped, 0 failed); typecheck/build/spec check/migration check passed; lint passed with one pre-existing warning at `components/login-panel.tsx:62`.
+- The repository's Vercel integration created a Preview deployment; its check succeeded. The preflight mode is inaccessible in Preview because `VERCEL_ENV` is not production and the two flags are absent.
+- See the [live PR checks](https://github.com/yorkstead/website/pull/89) for current exact-head Actions and Vercel status.
+## PR 1 readiness preflight — 2026-11-02
+
+- Live `origin/main` is `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`; PR #87 merged at that SHA. Latest Vercel production deployment is READY at the same source SHA.
+- Production DB binding could not be verified: Vercel connector metadata returned 403 for the project, Vercel environment metadata returned 404 under available scope, and multiple Neon `website` projects remain unbound to the deployed `DATABASE_URL`.
+- No production database query was run. The earlier candidate-only 7/11/0 counts and 22 migration matches remain historical and do not establish production state.
+- Production migration ledger, seven-record identities/revisions/archive values, audit counts/fingerprints and trigger/schema protections remain unverified. Production backup/PITR retention, current recovery point and restore procedure are also unverified; no restore was tested.
+- Recommendation: **NO-GO for PR 1 implementation**. The complete access boundary and next required evidence are documented in `production-preflight.md`.
+- No production configuration/data/schema action, merge or deployment occurred.
 
 ## Current session evidence
 

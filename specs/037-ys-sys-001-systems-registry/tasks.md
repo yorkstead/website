@@ -14,22 +14,20 @@
 
 ## PR 1 — preservation foundation
 
-- [ ] Do not begin implementation until production identity and preservation evidence from the approved read-only preflight are reviewed.
+- [ ] **Blocked (2026-11-02):** establish the production `DATABASE_URL` → Neon project/branch/database binding and complete the reviewed read-only preservation and recovery evidence bundle; see `production-preflight.md`.
 - [ ] Capture and independently review redacted production baseline before schema implementation.
 - [ ] Add default-off, additive schema/compatibility foundation and migration/backout record.
 - [ ] Prove all seven legacy IDs, values and audit histories survive a disposable upgrade unchanged.
 - [ ] Run migration checks and required application verification; update exact-head evidence.
 
-## PR 0 follow-up — temporary production preflight diagnostic
+## PR 0 follow-up — temporary production identity diagnostic
 
-- [x] Confirm the existing owner-only server diagnostic route can be reused without a new route or UI.
-- [x] Add the diagnostic response contract, default-off production gate, owner authorization and no-store behavior.
-- [x] Restrict database operations to fixed read-only queries and redact connection/audit/private fields.
-- [x] Include migration match evidence and per-record count/fingerprint metadata.
-- [x] Document platform-level Vercel rate limiting, separately authorized production steps, and cleanup/removal.
-- [x] Run focused/full tests and required repository verification; record exact PR head and CI status in `verification.md`.
-- [ ] Keep the diagnostic disabled; perform no production query, configuration change, merge or deployment.
-
+- [x] Reuse the existing owner-only server diagnostic route; add no public route or UI.
+- [x] Add default-off production and owner gates, no-store headers, and a WAF-confirmation gate with local rate limiting.
+- [x] Query database identity, safe schema/migration metadata, Systems Directory preservation counts, stable IDs/revisions/archive state, audit counts/fingerprints, trigger and constraint facts using fixed SELECTs.
+- [x] Document separate production deployment/access approval and the explicit disable/removal procedure.
+- [x] Run focused/full tests and repository verification; keep PR 1 blocked until verified production evidence is reviewed.
+- [ ] Keep production mode disabled; no production query, config change, migration, merge or deployment without separate authorization.
 ## PR 2 — staged inventory and ownership
 
 - [ ] Add unverified candidate staging, duplicate review, owner/recovery roles and provenance.
