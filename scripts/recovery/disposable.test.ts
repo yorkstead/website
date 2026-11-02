@@ -11,8 +11,9 @@ import { createSystemDirectoryService } from "@/lib/system-directory-service";
 const configured = process.env.TEST_DATABASE_URL;
 let parsed: URL | null = null;
 try { parsed = configured ? new URL(configured) : null; } catch { /* invalid test URL */ }
-const safe = Boolean(parsed && ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname)
-  && /(^|[_-])(test|disposable)([_-]|$)/i.test(parsed.pathname)
+const safe = Boolean(parsed && ["postgres:", "postgresql:"].includes(parsed.protocol)
+  && ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname)
+  && parsed.pathname === "/project_command_center_test" && parsed.search === ""
   && process.env.RECOVERY_PREP_DISPOSABLE === "1"
   && spawnSync("age", ["--version"], { stdio: "ignore" }).status === 0
   && spawnSync("age-keygen", ["--version"], { stdio: "ignore" }).status === 0);
