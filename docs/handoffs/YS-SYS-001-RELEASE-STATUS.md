@@ -14,3 +14,7 @@ This is a redacted status supplement for issue [#86](https://github.com/yorkstea
 ## Next exact action
 
 For PR #93, verify the proposed merge checks and request separate release authorization. See `specs/037-ys-sys-001-systems-registry/operations.md` and `recovery-runbook.md`; the older `CURRENT.md` link to the removed activation guide is historical. A main merge creates a Production deployment. Keep #92 unmerged.
+
+## Isolation hardening implementation — 2026-11-02
+
+The PR #93 recovery rehearsal has been changed to run only in a dedicated Actions container job with an ephemeral PostgreSQL peer on a Docker internal network, a read-only image filesystem, tmpfs-only writable mounts, and an unprivileged process. The helper now uses generated database names and credentials, fixed workspace paths, no cloud/provider access, and fail-closed environment checks. Local negative tests and repository checks pass; exact-head Actions disposable PostgreSQL, browser and build checks plus Preview readiness are still required. Historical `CURRENT.md` remains untouched. No production operation is authorized.

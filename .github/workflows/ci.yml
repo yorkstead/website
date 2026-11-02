@@ -67,17 +67,7 @@ jobs:
       - name: Prepare Better Auth schema in disposable PostgreSQL
         run: bun run auth:migrate
 
-      - name: Install disposable recovery rehearsal tools
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y age postgresql-client
-          pg_dump --version
-          pg_restore --version
-          age --version
-
       - name: Run deterministic and database integration tests
-        env:
-          RECOVERY_PREP_DISPOSABLE: "1"
         run: bun test
 
       - name: Lint
@@ -173,3 +163,52 @@ jobs:
           path: test-results
           if-no-files-found: ignore
           retention-days: 7
+
+  recovery-rehearsal:
+    name: Isolated synthetic recovery rehearsal
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create internal network and ephemeral PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker network create --internal ys-recovery-${GITHUB_RUN_ID}
+          test "$(docker network inspect -f '{{.Internal}}' ys-recovery-${GITHUB_RUN_ID})" = true
+          db_user="r$(openssl rand -hex 8)"
+          db_password="$(openssl rand -hex 32)"
+          db_name="recovery_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+          echo "::add-mask::${db_user}"
+          echo "::add-mask::${db_password}"
+          printf 'RECOVERY_DB_USER=%s\nRECOVERY_DB_PASSWORD=%s\nRECOVERY_DB_NAME=%s\nRECOVERY_DOCKER_NETWORK=ys-recovery-%s\n' \
+            "$db_user" "$db_password" "$db_name" "$GITHUB_RUN_ID" >> "$GITHUB_ENV"
+          docker run -d --rm --name ys-recovery-postgres --network "ys-recovery-${GITHUB_RUN_ID}" \
+            -e POSTGRES_USER="$db_user" -e POSTGRES_PASSWORD="$db_password" -e POSTGRES_DB="$db_name" postgres:16-alpine
+          for attempt in $(seq 1 30); do
+            docker exec ys-recovery-postgres pg_isready -U "$db_user" -d "$db_name" && exit 0
+            sleep 1
+          done
+          exit 1
+      - name: Build recovery-only test image
+        run: docker build --file scripts/recovery/Dockerfile --tag ys-sys-001-recovery:${GITHUB_RUN_ID} .
+      - name: Verify only the disposable database is attached
+        run: |
+          attached="$(docker network inspect -f '{{range $id, $container := .Containers}}{{println $container.Name}}{{end}}' "${RECOVERY_DOCKER_NETWORK}")"
+          test "$attached" = "ys-recovery-postgres"
+      - name: Run recovery-only entry point
+        run: |
+          docker run --rm --name ys-recovery-runner --network "${RECOVERY_DOCKER_NETWORK}" --read-only \
+            --cap-drop=ALL --security-opt=no-new-privileges --user 10001:10001 \
+            --tmpfs /work:rw,noexec,nosuid,nodev,size=512m,mode=700,uid=10001,gid=10001 \
+            --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m,mode=700,uid=10001,gid=10001 \
+            -e RECOVERY_DB_HOST=ys-recovery-postgres -e RECOVERY_DB_PORT=5432 \
+            -e RECOVERY_DB_USER="${RECOVERY_DB_USER}" -e RECOVERY_DB_PASSWORD="${RECOVERY_DB_PASSWORD}" \
+            -e RECOVERY_DB_NAME="${RECOVERY_DB_NAME}" ys-sys-001-recovery:${GITHUB_RUN_ID}
+      - name: Remove disposable resources
+        if: always()
+        run: |
+          docker rm -f ys-recovery-postgres 2>/dev/null || true
+          docker network rm "ys-recovery-${GITHUB_RUN_ID}" 2>/dev/null || true
