@@ -54,7 +54,7 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 9. Every material mutation is owner-authorized, revision-safe, transactionally audited and compatible with immutable audit constraints.
 10. Ordered additive migration checks, disposable database preservation/integration tests, relevant browser flows and repository verification pass; each slice has independent review/rollback notes.
 11. Roadmap and handoff keep Automation Hub recovery, CC-026 activation/migration evidence and MKT-QR-001 print readiness coordinated as separate dependencies/workstreams.
-12. The temporary preflight mode is owner-authorized, production-only, default-off, non-cacheable, rate-limited, SELECT-only, secret-safe, and has a documented disable/removal procedure.
+12. Cleanup PR #90 removes the temporary preflight from source (pending review/merge/deployment); the owner must verify production flags and authenticated 404 separately. The approved parity and recovery procedures are documented without public row-level evidence.
 
 ## Non-goals
 
