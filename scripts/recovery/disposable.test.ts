@@ -148,10 +148,11 @@ test("rejects missing disposable authorization before any connection", () => {
   expect(result.stderr).toContain("disposable authorization marker");
 });
 
-test("rejects non-local hosts and non-test database names", () => {
+test("rejects non-local hosts, non-test names and connection strings", () => {
   for (const env of [
     { PGHOST: "example.invalid", PGDATABASE: "synthetic_test" },
     { PGHOST: "localhost", PGDATABASE: "production" },
+    { PGHOST: "localhost", PGDATABASE: "postgresql://example.invalid/ys_sys_001_test_source_0123456789abcdef0123456789abcdef" },
   ]) {
     const result = command(["bash", script, "backup"], { RECOVERY_PREP_DISPOSABLE: "1", PGPORT: "5432", PGUSER: "test", ...env });
     expect(result.status).not.toBe(0);

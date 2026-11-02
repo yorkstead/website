@@ -6,7 +6,7 @@ umask 077
 fail() { printf 'Recovery preparation failed: %s\n' "$1" >&2; exit 1; }
 [[ ${RECOVERY_PREP_DISPOSABLE:-} == 1 ]] || fail 'disposable authorization marker is required'
 [[ ${PGHOST:-} == localhost || ${PGHOST:-} == 127.0.0.1 || ${PGHOST:-} == ::1 ]] || fail 'local PostgreSQL host is required'
-[[ ${PGDATABASE:-} =~ (^|[_-])(test|disposable)([_-]|$) ]] || fail 'a test/disposable database name is required'
+[[ ${PGDATABASE:-} =~ ^ys_sys_001_test_(source|target)_[0-9a-f]{32}$ ]] || fail 'a generated synthetic database name is required'
 [[ -z ${PGHOSTADDR:-} && -z ${PGSERVICE:-} && -z ${PGSERVICEFILE:-} ]] || fail 'connection overrides are forbidden'
 [[ ${PGPORT:-} =~ ^[0-9]+$ ]] || fail 'PGPORT is required'
 [[ -n ${PGUSER:-} ]] || fail 'PGUSER is required'
