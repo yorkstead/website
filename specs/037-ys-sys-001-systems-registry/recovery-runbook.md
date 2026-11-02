@@ -20,6 +20,18 @@ Choose and approve one method before any production migration:
 
 If a one-time snapshot is unavailable or introduces an unapproved charge, stop and seek owner direction on the encrypted export option. Do not silently fall back to PITR as the only recovery plan.
 
+For the currently reported `free_v3` plan, retained PITR is the lowest-cost available provider recovery path, but its six-hour expiry does not meet the durable pre-migration requirement. An encrypted `pg_dump` in an already approved private storage location is the lowest-cost durable candidate without a Neon plan change; storage and operator costs still require owner confirmation. One-time snapshot eligibility and price remain unverified, so do not select or purchase one from this runbook.
+
+## Independent private parity checklist
+
+An owner-authorized operator and a separate reviewer must complete this checklist in private storage; only aggregate pass/fail and the capture time may enter GitHub.
+
+1. Record the capture UTC time, deployed source SHA, diagnostic/code revision, fingerprint algorithm/version, and exact Neon project, branch, endpoint, and database identity. Confirm the connection is the production binding without revealing credentials.
+2. Capture the pre-migration legacy-column projection for exactly seven entries and the full original audit projection for exactly eleven events. Record each stable entry ID, revision, archive state, per-entry audit count, and deterministic entry/audit fingerprints in the private evidence bundle.
+3. Independently recalculate all fingerprints from the same ordered, versioned projections. Confirm seven unique IDs, eleven distinct audit events, zero orphan events, all seven expected archive states, and migration ledger 0001–0022 with checksums. Sign off on any discrepancy before proceeding.
+4. After an authorized disposable rehearsal, compare every original entry ID, revision, archive state, account relationship, legacy field, and original audit event against the private before-state. Confirm unchanged fingerprints and per-entry counts; record new migration 0023 separately. Retain the private comparison report and reviewer sign-off.
+5. Repeat the same comparison against production only if a later, separately authorized production migration occurs. A synthetic fixture pass does not substitute for this independent review.
+
 Neon provider references: [PITR and branch restore](https://neon.com/blog/announcing-point-in-time-restore), [snapshot recovery and retention](https://neon.com/blog/three-ways-to-use-your-snapshots), [snapshot schedule plan requirement](https://api-docs.neon.tech/reference/setsnapshotschedule), and [restore snapshot into a new branch](https://api-docs.neon.tech/reference/restoresnapshot).
 
 ## Non-production restore rehearsal
@@ -53,6 +65,8 @@ Estimate potential data exposure as the interval from the selected recovery poin
 Before creating a production recovery point or export, obtain explicit owner approval for the selected method, time, target, storage location, access list, retention/deletion, and any cost. Before any restore, obtain separate approval for the exact source/target, point in time, expected data loss, reconciliation owner, and whether endpoint reassignment/cutover is allowed. Production migration, branch restore, traffic switch, and deployment each require their own scoped approval. This runbook authorizes none of those operations.
 
 ## Migration gate
+
+Merging source must not run migration 0023. `vercel-build` only builds the application; a named operator must run `bun run db:migrate` as a separate, explicitly authorized production operation after all gates below pass. CI migration commands use only the disposable PostgreSQL service.
 
 Production migration remains **NO-GO** until all of the following are privately evidenced and independently reviewed:
 

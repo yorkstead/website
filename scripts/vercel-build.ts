@@ -10,9 +10,7 @@ async function run(command: string[]) {
   if (exitCode !== 0) process.exit(exitCode);
 }
 
-if (process.env.VERCEL_ENV === "production") {
-  console.log("Applying ordered production database migrations before the Vercel build.");
-  await run(["bun", "run", "db:migrate"]);
-}
+// Production migrations require a separately authorized operator command.
+// Building a production deployment must never advance the database ledger.
 
 await run(["bun", "run", "build"]);

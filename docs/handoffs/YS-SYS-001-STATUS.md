@@ -27,6 +27,8 @@
 
 ## Decision and next action
 
+- PR #92 now targets `main` so the existing GitHub Actions PostgreSQL service can execute its integration suite. The production build wrapper no longer invokes migrations; migration 0023 requires a separate operator command and authorization. Exact-head CI and production cleanup verification remain pending.
+
 - **Implementation:** review and run the migration tests in GitHub Actions disposable PostgreSQL. A CI pass does not establish production parity or recovery readiness.
 - **Production migration:** **NO-GO** until private row-level parity is independently verified, a usable recovery point/artifact is approved, restore rehearsal passes, objectives/operators/storage are approved, and the owner separately authorizes the exact production operation.
 - **Next action:** review PR 1 schema and exact-head CI; obtain the private evidence bundle and owner recovery decisions through an authorized private channel; complete disposable restore rehearsal before any production migration proposal.
