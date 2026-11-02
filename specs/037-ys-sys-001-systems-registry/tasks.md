@@ -22,6 +22,15 @@
 - [ ] Implement migration 0023 only after separate implementation approval; prove seven entries and eleven audits survive fresh/repeat/populated disposable upgrades unchanged.
 - [ ] Run migration checks and required application verification; update exact-head evidence.
 
+## Recovery preparation — owner planning decision, no production execution
+
+- [x] Record planning choice of encrypted custom-format `pg_dump`, 30-day artifact retention, and 60-minute incident-to-service RTO target in `recovery-runbook.md`.
+- [x] Prepare synthetic-only backup/encryption/local-upload/restore scripts, automated failure and integrity tests, private evidence template and narrow owner-decision checklist.
+- [ ] Verify the synthetic restore rehearsal on disposable PostgreSQL with age in CI; record exact-head results. A synthetic pass is not a production-derived restore.
+- [ ] Owner approves RPO/cadence, exact storage and cost, key custody/recovery, primary/secondary operators and reviewer, coverage, and source-specific production export procedure.
+- [ ] Independently review private production seven-entry/eleven-audit parity and capture provenance.
+- [ ] Separately authorize a specific production export, verify remote storage/retention/retrieval, and complete an isolated restore rehearsal before any production migration request.
+
 ## PR 0 follow-up — production identity diagnostic and retirement
 
 - [x] Reuse the existing owner-only server diagnostic route; add no public route or UI.

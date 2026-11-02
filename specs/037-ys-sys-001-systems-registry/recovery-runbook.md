@@ -2,6 +2,20 @@
 
 **Status:** Preparation only. No Neon branch, snapshot, database, schedule, connection, or production configuration has been changed. A recovery point and a successful restore have not been verified.
 
+## Owner policy decision (2026-11-02)
+
+| Item | Planning decision | Execution state |
+| --- | --- | --- |
+| Recovery artifact | PostgreSQL custom-format `pg_dump`, encrypted client-side with an approved age recipient | Production export **not authorized** |
+| Retention | 30 days from the UTC timestamp of a successfully verified encrypted artifact | Storage expiration and deletion proof still need design/approval; legal hold pauses deletion only with documented owner approval |
+| RTO | 60 minutes from incident declaration to verified service recovery | Target accepted for planning; not demonstrated |
+| RPO and backup cadence | Open | Owner must approve maximum data loss and backup frequency; one pre-migration dump is not ongoing protection |
+| Storage, key custody, operators, cost | Open | Owner must approve exact destination, region, encryption/key recovery, access, cost, primary/secondary operators and independent reviewer |
+
+The synthetic-only [rehearsal script](../../scripts/recovery/disposable.sh) and its tests accept database credentials through private `PG*` environment variables, never command-line literals. They reject non-local or non-test database names. They are **not** a production export command. The local upload mode simulates a private store; it does not choose or validate a cloud provider.
+
+The local `pg_dump`/`pg_restore` clients report PostgreSQL 18.6; the earlier owner production diagnostic reported server 18.6. That is compatibility evidence for this workstation only, not an execution preflight. The disposable script checks its client is not older than its server. Before any production export, repeat the version check against the actual approved source. Source review of migrations 0001–0022 finds `public` objects plus `customer_auth`, explicit `REVOKE ALL` controls, and no application migration that creates an extension or global role. Better Auth and provider-created objects, actual extensions, owners, ACLs, RLS policies and effective permissions still require approved read-only catalog inspection; `pg_dump` of one database does not export cluster-global roles. Never infer portable security behavior from a successful archive listing.
+
 ## Current verified state (2026-11-02)
 
 - The owner-reported production diagnostic endpoint was matched by exact endpoint metadata to the Neon `website` project, its primary/default `production` branch, and database `neondb`.
@@ -12,13 +26,25 @@
 
 ## Recovery point options
 
-Choose and approve one method before any production migration:
+The owner selected an encrypted logical export for **planning**. Choose and approve an execution method separately before any production migration:
 
-1. **One-time Neon snapshot (preferred if available without unapproved cost).** Capture the exact production branch state immediately before the migration. Confirm the snapshot identity/time, database/branch scope, retention/lifecycle, access controls, and restore-to-new-branch behavior. Snapshots are separate from the six-hour PITR history. Do not enable a recurring schedule as part of this task.
-2. **Encrypted logical export.** Have an authorized operator create a consistent `pg_dump` custom-format export using the direct production connection, then store it in an owner-approved encrypted location with restricted access, retention, and deletion policy. Do not place the DSN, dump, private row identifiers, or account fields in GitHub, logs, shell history, or this repository. Restore the dump only into a disposable non-production PostgreSQL database and verify it there.
+1. **Encrypted logical export (planning choice).** After a separate target-specific approval, an authorized operator would use a direct/unpooled connection and compatible client to make a consistent custom-format dump, encrypt it before upload, verify its checksum and independent retrieval, and rehearse restoration only in isolation. Do not place a DSN, dump, row identifiers, or account fields in GitHub, logs, shell history, or this repository. `pg_restore --list` alone is insufficient.
+2. **One-time Neon snapshot (unselected alternative).** Eligibility, price and retention for the existing plan remain unverified. A snapshot cannot be created as part of this preparation.
 3. **PITR branch within the current window.** Immediately before migration, verify a concrete timestamp/LSN remains available and record it privately. PITR is useful for short-window recovery, but it is not durable beyond the configured six-hour retention and may lose legitimate writes after the chosen point.
 
-If a one-time snapshot is unavailable or introduces an unapproved charge, stop and seek owner direction on the encrypted export option. Do not silently fall back to PITR as the only recovery plan.
+PITR alone does not satisfy the durable pre-migration artifact requirement. A 30-day dump retention is not a 30-day history of recoverable points. The maximum loss between dumps remains unbounded until the owner approves an RPO and cadence.
+
+## Production export approval checklist — all open
+
+1. Reconfirm the actual production deployment and protected database binding against the previously matched Neon project, branch, endpoint and database using approved read-only metadata. Record identifiers only in private evidence. Verify the direct connection, server/client versions, schemas, extensions, role ownership, ACLs, RLS and restore privileges without logging credentials.
+2. Owner approves the exact source, least-privileged dump role, time window, procedure and cancellation path. No script in this PR connects to production.
+3. Owner approves a private storage provider/account/bucket/path and region, expected cost, encryption at rest and client-side age recipient, key owner, secondary recovery key access, rotation, and emergency recovery.
+4. Prove upload/download/list/delete permissions, audit logs, no public access, 30-day retention from verified capture, expiration/deletion verification, and documented legal-hold exceptions.
+5. Owner approves ongoing RPO, backup cadence, expected gaps between points, and the 60-minute RTO measurement method. Assign primary and secondary operators, separate reviewer, approval authority and out-of-band contacts.
+6. Independently review the private seven-entry/eleven-event row-level baseline and capture provenance. Approve a truly isolated restore target with outbound jobs, mail and webhooks disabled.
+7. Review space, bandwidth, database impact, runtime and charges. Grant a separate explicit approval for the specified production export. Production migration and any restore/cutover each need later separate approvals.
+
+The redacted [evidence template](recovery-evidence-template.md) records PASS/FAIL/NOT RUN and private artifact references without disclosing identifiers. Public PR/issue comments may carry aggregate results only.
 
 Neon provider references: [PITR and branch restore](https://neon.com/blog/announcing-point-in-time-restore), [snapshot recovery and retention](https://neon.com/blog/three-ways-to-use-your-snapshots), [snapshot schedule plan requirement](https://api-docs.neon.tech/reference/setsnapshotschedule), and [restore snapshot into a new branch](https://api-docs.neon.tech/reference/restoresnapshot).
 
@@ -33,6 +59,8 @@ Perform this rehearsal before production migration authorization:
 5. Test application rollback by using the pre-migration application against the restored state. Separately test forward-only recovery for the migrated database: disable new reads/writes in the disposable app, keep additive schema/data/audit, and validate the forward-fix path. Do not use a destructive down migration.
 6. Record measured elapsed time for restore, verification, and application readiness. These observations inform RTO; they do not establish a production RTO until an owner approves the target and a production-like rehearsal is authorized.
 
+The synthetic script uses restrictive staging permissions and removes plaintext on success, failure and interrupt. The operator must ensure the future approved production staging medium and deletion mechanism meet the private data-handling policy; unlinking a file does not guarantee physical media erasure. Its local upload simulator verifies bytes and removes partial objects on interruption. A provider-specific upload, remote checksum, retention lock, access audit and independent retrieval remain unimplemented until storage is selected. Never log a private download URL.
+
 ## Restore verification and data exposure
 
 For any future restore, first restore into a new branch/database with no production traffic. Check database identity, expected recovery timestamp, schema and migration ledger, all seven stable IDs, revisions and archive states, all eleven original audit records, per-entry counts, zero orphans, immutable audit protections, and a privacy-safe legacy-field comparison. Preserve the source and restored candidate until the owner approves a cutover.
@@ -41,7 +69,7 @@ Estimate potential data exposure as the interval from the selected recovery poin
 
 ## Required owner approvals
 
-Before creating a production recovery point or export, obtain explicit owner approval for the selected method, time, target, storage location, access list, retention/deletion, and any cost. Before any restore, obtain separate approval for the exact source/target, point in time, expected data loss, reconciliation owner, and whether endpoint reassignment/cutover is allowed. Production migration, branch restore, traffic switch, and deployment each require their own scoped approval. This runbook authorizes none of those operations.
+Before creating a production recovery point or export, obtain explicit owner approval for the selected method, time, target, storage location, access list, retention/deletion, and any cost. Before any restore, obtain separate approval for the exact source/target, point in time, expected data loss, reconciliation owner, and whether endpoint reassignment/cutover is allowed. Production migration, branch restore, traffic switch, and deployment each require their own scoped approval. This runbook authorizes none of those operations. The 60-minute RTO is measured from incident declaration through artifact acquisition/decryption, isolated restore, required configuration, application smoke checks and owner-approved service readiness; it has not been measured.
 
 ## Migration gate
 
