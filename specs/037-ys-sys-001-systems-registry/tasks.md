@@ -14,20 +14,28 @@
 
 ## PR 1 — preservation foundation
 
-- [ ] **Blocked (2026-11-02):** establish the production `DATABASE_URL` → Neon project/branch/database binding and complete the reviewed read-only preservation and recovery evidence bundle; see `production-preflight.md`.
-- [ ] Capture and independently review redacted production baseline before schema implementation.
-- [ ] Add default-off, additive schema/compatibility foundation and migration/backout record.
-- [ ] Prove all seven legacy IDs, values and audit histories survive a disposable upgrade unchanged.
+- [x] Match the owner-reported production diagnostic endpoint to the Neon `website` project, primary/default `production` branch and `neondb`; record non-secret outcome in `production-preflight.md`.
+- [x] Record owner-reported aggregate counts, migration checksums, trigger/constraint facts and fingerprint comparison algorithm without publishing row-level identifiers or hashes.
+- [ ] **Blocked:** review private seven-row IDs/revisions/per-entry audit counts/fingerprints and confirm a usable pre-migration recovery timestamp; restore remains untested.
+- [ ] Capture and independently review row-level production baseline before schema implementation.
+- [ ] Reconfirm `0023` is the next migration on current main and reconcile it with the verified production ledger.
+- [ ] Implement a unified additive model for provider/service, provider account, subscription, application/workload, infrastructure/asset, and stack component; retain the existing entries as canonical provider/service records.
+- [ ] Preserve existing routes/DTOs and owner-server auth; add only separately scoped typed APIs, fixed owner tenant, same-tenant relationship checks, and a default-off server feature flag.
+- [ ] Add provenance, verification state, candidate staging and responsible/recovery roles without credentials or recovery secrets.
+- [ ] Prove seven synthetic legacy IDs/material values/revisions/archive states and audit history/fingerprints survive fresh, repeat and populated disposable upgrades unchanged.
+- [ ] Verify legacy DTO compatibility, cross-tenant denial, feature default-off, immutable audit constraints, forward-only rollback, migration check and repository checks.
 - [ ] Run migration checks and required application verification; update exact-head evidence.
 
-## PR 0 follow-up — temporary production identity diagnostic
+## PR 0 follow-up — temporary production identity diagnostic (PR #89 merged; cleanup PR #90)
 
 - [x] Reuse the existing owner-only server diagnostic route; add no public route or UI.
 - [x] Add default-off production and owner gates, no-store headers, and a WAF-confirmation gate with local rate limiting.
 - [x] Query database identity, safe schema/migration metadata, Systems Directory preservation counts, stable IDs/revisions/archive state, audit counts/fingerprints, trigger and constraint facts using fixed SELECTs.
 - [x] Document separate production deployment/access approval and the explicit disable/removal procedure.
 - [x] Run focused/full tests and repository verification; keep PR 1 blocked until verified production evidence is reviewed.
-- [ ] Keep production mode disabled; no production query, config change, migration, merge or deployment without separate authorization.
+- [x] Owner-reported diagnostic was executed against production and returned the facts recorded in `production-preflight.md`.
+- [ ] Owner confirmation: both production flags false/removed, post-change production deployment identified, and owner-authenticated special mode returns 404. Vercel integration scope does not expose project/environment/deployment metadata.
+- [ ] Remove the temporary branch/helper/tests/docs while preserving legacy leads diagnostic behavior; verify in PR #90.
 ## PR 2 — staged inventory and ownership
 
 - [ ] Add unverified candidate staging, duplicate review, owner/recovery roles and provenance.

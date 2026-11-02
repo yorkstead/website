@@ -4,23 +4,30 @@
 
 1. Verify current default branch, clean isolated base, implementation owner, current production source deployment and available issue/handoff context.
 2. Inspect CC-023 routes, schema, audit triggers, validation/security patterns and ordered migration convention read-only.
-3. Record the production DB binding and seven-record/audit baseline only from approved read-only evidence. Current discovery has not verified these; record the exact gap and do not infer values.
+3. Record initial production DB and row-level evidence gaps in PR 0; later owner diagnostic and Neon endpoint matching are summarized in `production-preflight.md`, with private row-level parity still awaiting review.
 4. Ratify the single-registry/additive compatibility decision, detailed specification, PR sequence, roadmap and handoff.
 5. Open PR 0 for review. No code, migration, production data/configuration, merge or deployment.
 
-## PR 0 follow-up — read-only production identity diagnostic (this PR)
+## PR 0 follow-up — read-only production identity diagnostic (merged as PR #89)
 
-1. Extend the existing owner-only lead diagnostic route with a temporary YS-SYS-001 query mode; do not add a route or UI.
-2. Default the mode off and require production environment plus an authenticated owner session. Add no-store headers, an in-process throttle, and document the required Vercel Firewall per-IP rate limit before enablement.
-3. Query safe database/schema/migration metadata and aggregate Systems Directory counts, stable IDs, revision/archive state and deterministic fingerprints. Never return secrets, hostnames, role names, account fields, raw entry data or audit snapshots.
-4. Document independently authorized deployment, access, evidence handling and disable/removal steps. Do not run the mode against production, change production configuration, merge or deploy from this PR.
+The temporary mode was added to the existing owner diagnostic route, used by the owner to collect production evidence, and is removed by cleanup PR #90. It introduced no separate route or UI. The reviewed response was fixed-SELECT-only and redacted; see `production-preflight.md` for evidence provenance, privacy and limitations.
 
 ## PR 1 — preservation foundation
 
-1. Obtain and independently review the redacted production baseline bundle described in `discovery.md` using the temporary preflight in `preflight-diagnostic.md`.
-2. Finalize and review the additive schema/DTO compatibility needed for typed records, provenance and owner/recovery roles; choose migration number only after checking the current main manifest and production ledger.
-3. Add disposable PostgreSQL migration-upgrade tests that start from the exact legacy seven-row/audit fixture and prove every ID/value/history survives unchanged. Test immutable audit and rollback behavior; never test against production.
+1. Obtain and independently review the private row-level production baseline and confirm the pre-migration recovery point. Aggregate facts are recorded in `production-preflight.md`; the exact IDs/revisions/fingerprints remain private and have not been independently reviewed here.
+2. Finalize and review the additive schema/DTO compatibility needed for typed records, provenance and owner/recovery roles; current `main` contains migrations through `0022`, so the next candidate is `0023` (reconfirm at implementation start).
+3. Add disposable PostgreSQL migration-upgrade tests using a privacy-safe fixture derived from the reviewed private baseline and synthetic stable IDs; prove seven legacy rows and all audit history survive unchanged. Test immutable audit and rollback behavior; never test against production.
 4. Update operations/runbook and acceptance mappings. Do not activate or deploy production.
+
+### PR 1 schema and compatibility contract (review-ready; implementation gated)
+
+- Keep `system_directory_entries` as the sole shared registry identity and preserve the existing seven provider/service rows in place. The five additional classes are provider account, subscription, application/workload, infrastructure/asset, and stack component; model class-specific fields as additive typed data with explicit entry identity/relationships, not as a second independent registry.
+- Preserve legacy API paths and response DTOs. Existing directory readers/writers continue to expose provider/service entries with the current shape; new typed routes/DTOs are separately versioned and owner-authorized. New relationships may reference only same-tenant records, and actor/tenant remain server-derived.
+- New candidate records and reads stay behind an explicit server-side feature switch defaulting off. Default off must survive missing environment configuration and preview/production alike. Authorization remains owner-session plus fixed owner tenant; no client-supplied owner or tenant value is trusted.
+- Store provenance/evidence state, source reference, observation/confirmation timestamps, and responsible/recovery role separately from credentials, recovery codes, payment data, or private operational notes. Staged candidates do not become authoritative without explicit owner review.
+- Migration `0023` is the next repository candidate after current `0022`; reconfirm the live main migration list and production ledger before implementation or migration. Additive DDL only; no rewrite of `0020`/`0022`, delete/rekey/backfill of the seven entries, or change to immutable audit history.
+- Use a synthetic seven-entry fixture shaped from the private baseline's reviewed field-presence/value-class metadata. Assert stable IDs, revisions, archived state, legacy DTOs and all audit rows/fingerprints are unchanged before/after fresh and upgrade migrations. Test fresh, repeat, populated legacy upgrade, constraint enforcement, owner/tenant authorization, feature flag default-off and application rollback against disposable PostgreSQL only.
+- Application rollback means reverting new reads/writes and keeping additive schema/data/audit in place. Correct a schema defect with a forward migration. No destructive down migration or production cutover is part of PR 1.
 
 ## PR 2 — candidate inventory and ownership
 
