@@ -35,7 +35,7 @@
 - [x] Run focused/full tests and repository verification; keep PR 1 blocked until verified production evidence is reviewed.
 - [x] Owner-reported diagnostic was executed against production and returned the facts recorded in `production-preflight.md`.
 - [ ] Owner confirmation: both production flags false/removed, post-change production deployment identified, and owner-authenticated special mode returns 404. Vercel integration scope does not expose project/environment/deployment metadata.
-- [ ] Remove the temporary branch/helper/tests/docs while preserving legacy leads diagnostic behavior; verify in PR #90.
+- [x] Remove the temporary branch/helper/tests/docs while preserving legacy leads diagnostic behavior; open draft PR #90 and pass local verification. Exact-head automated checks are still pending.
 ## PR 2 — staged inventory and ownership
 
 - [ ] Add unverified candidate staging, duplicate review, owner/recovery roles and provenance.
