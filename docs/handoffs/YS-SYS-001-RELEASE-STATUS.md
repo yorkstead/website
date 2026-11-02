@@ -8,6 +8,7 @@ This is a redacted status supplement for issue [#86](https://github.com/yorkstea
 - PR #90 retired the temporary diagnostic mode while preserving the ordinary owner diagnostic. The remaining release order is #93 → #92, with separate authorization for each deployment.
 - The owner-reported diagnostic matched the production Neon endpoint to the website production branch and database. It reported 22 matching migrations, seven Systems Directory entries and eleven audit events. Private row-level parity has not been independently reviewed.
 - PR 1 design and disposable-database tests may proceed. **Production export, backup, restore and migration 0023 are NO-GO** pending private parity, approved recoverable artifact, isolated restore rehearsal, RPO/storage/operator decisions and separate owner authorization.
+- PR #93 prepares a synthetic recovery rehearsal and records the owner-approved planning targets: encrypted custom-format dump, 30-day retention and a 60-minute RTO. Its scripts do not authorize a production export or restore; recovery evidence and owner decisions remain open in the runbook.
 - The owner reports both temporary Production flags disabled and an owner-authenticated HTTP 404 after the cleanup deployment. No protected value or private diagnostic response belongs in GitHub.
 
 ## Next exact action
