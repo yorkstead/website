@@ -1,45 +1,50 @@
-# YS-SYS-001 production database preflight — 2026-11-02
+# YS-SYS-001 production identity and preservation baseline — 2026-11-02
 
-## Result
+## Verified source and provider identity
 
-**NO-GO for PR 1 implementation.** The production database cannot be bound to a Neon project, branch and database using the current authorized provider access. The production-target portion stopped at that identity gate. No production database query, write, migration, configuration change, backup creation or restore was performed.
+Live GitHub reports default branch `main` at `b521af85b00334f69c4cb089cdb6458c1e3e5ec9`; migrations `0020` and `0022` are present and current main contains 22 numbered application migrations. PRs #87–#89 are merged. PR #90 is a separate draft cleanup and is not merged.
 
-## Verified repository and deployment identity
+The owner reports that the temporary diagnostic ran against the production `DATABASE_URL`. Its returned endpoint ID was matched by exact Neon endpoint metadata to project `website`, primary/default branch `production`, database `neondb`. PostgreSQL reports version 18.6. This is an exact provider endpoint match; migration counts alone were not used to establish identity. Public repository artifacts intentionally omit endpoint/project/branch IDs, all row-level identifiers, and fingerprints.
 
-- Live `origin/main`: `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`, verified by `git ls-remote` at `2026-11-02T00:46Z`.
-- PR #87 is merged; its merge commit is the same SHA.
-- Vercel project `website` has a latest `READY` production deployment sourced from `main` at the same SHA: [deployment](https://vercel.com/yorkstead/website/B2EAmqhm5SWf2tHiSAS3nsMdVG2M).
-- A dedicated clean checkout was created at that exact commit. The original dirty checkout was not changed. Direct clone/fetch could not resolve GitHub from the shell; the commit object was available locally and matched the live `ls-remote` SHA.
+## Owner-reported production result
 
-These facts identify deployed source, not its database connection.
+The diagnostic reported:
 
-## Production database binding attempt
+- Migration ledger `matches_repository`: 22 expected, 22 applied; all checksums match; migrations `0020` and `0022` are applied.
+- Seven `system_directory_entries`, eleven `system_directory_audit` events, zero orphaned audit events, and all seven entries unarchived.
+- Append, audit-immutability, and revision triggers enabled.
+- Entry constraints: one primary key and 23 checks. Audit constraints: one primary key and four checks. No audit-to-entry FK.
 
-- The Vercel connector-list endpoint returned **403 Forbidden**: the connected App installation does not have access to this project.
-- The Vercel environment metadata endpoint, requested without decryption, returned **404 Project not found** under the available Vercel scope. No variable values were requested or read.
-- Neon inventory contains multiple plausible projects named `website`; there is no provider connection metadata available to tie one of them to the production `DATABASE_URL`.
-- `DATABASE_URL_RECOVERY` was not treated as the primary database or as proof of a valid backup.
+The exact diagnostic execution time and private per-entry payload were not made available in this review. The aggregates are owner-reported; exact seven-record parity has therefore **not** been independently verified. Retain the private response through the approved private evidence channel. Do not attach it to an issue or PR.
 
-Because the project/branch/database binding is unverified, no production SQL was run. The prior read-only counts of seven entries, eleven audit events, zero entries without audit, and 22 matching repository migrations were obtained on an unconfirmed candidate. They are **not production evidence** and are not used as the preservation baseline.
+## Private seven-entry / eleven-event parity procedure
 
-## Requested production checks
+Before implementation, have an independent reviewer inspect the private baseline for exactly seven stable entry IDs and eleven existing audit events. Verify the sum of per-entry audit counts is eleven, orphan count is zero, revisions and archive state match the owner response, and all seven entries are unarchived. Reconcile each entry's legacy material values (including account-label, cost, URL, note, renewal, and relationship fields) inside the private evidence record; do not publish these values.
 
-| Check | Result |
-| --- | --- |
-| Applied migration ledger (`0020`, `0022`) | Unverified; no confirmed production connection. Source presence is not applied-state evidence. |
-| Seven record IDs, revisions, archive state and redacted material fields | Unverified; no confirmed production query. |
-| Per-record audit counts and deterministic production fingerprints | Unverified; no confirmed production query. |
-| Audit triggers, immutability protections, constraints and relationships | Unverified on production. Repository schema alone does not establish the deployed database state. |
-| Production recovery point, retention and restore procedure | Unverified; the production Neon project/branch is unidentified. |
-| Restore capability tested | No. No snapshot or restore was created or run. |
+The diagnostic fingerprints are PostgreSQL MD5 comparison values, not signatures:
 
-## PR 1 readiness and next evidence
+- Entry: `md5(to_jsonb(entry)::text)`.
+- Audits: `md5(coalesce(string_agg(to_jsonb(audit)::text, newline ORDER BY audit.id), ''))` per entry.
 
-The additive preservation strategy and default-off control remain proposed in the existing plan and ADR. They are not finalized against a verified production baseline. Keep implementation blocked until an authorized read-only operator/provider path supplies:
+The original entry hash includes every current column. If migration 0023 adds columns, its whole-row entry fingerprint will change even when all legacy values are preserved. Before/after migration checks must therefore compare an explicit, versioned projection of the original migration-0020 columns and hash that projection separately. Do not misclassify a changed whole-row hash as data loss. The audit table is not changed by the proposed foundation migration, so all eleven audit records, per-entry counts, and original audit fingerprints must remain exactly unchanged.
 
-1. Non-secret metadata tying the current production deployment's `DATABASE_URL` to one Neon project, branch and database.
-2. Applied migration ledger and schema protections from that exact target.
-3. A redacted seven-record reconciliation, stable IDs, per-record audit counts and deterministic fingerprints.
-4. The target's available recovery point, retention limits, restore procedure and evidence of whether restoration has been tested.
+For an authorized comparison, independently re-confirm the production endpoint/project/branch/database before capture and after migration. Retain both raw diagnostic responses and projected values only in approved private storage. Public evidence should state only the verification timestamp, code/migration revision, aggregate counts, and pass/fail. Required post-migration checks:
 
-After those facts are supplied, review the evidence and reconcile the additive schema, compatibility tests and rollback plan before requesting separate approval to begin implementation. No production change is authorized by this report.
+1. Exactly the same seven IDs, revisions, archive values, and explicitly projected legacy fields.
+2. Exactly eleven original audit events with unchanged per-entry counts and audit fingerprints; zero orphans.
+3. Existing entry/audit trigger behavior and constraints remain valid; audit update/delete/truncate is still rejected.
+4. Migrations 0001–0022 retain their prior checksums; 0023 is applied with the reviewed checksum.
+
+## Audit foreign key
+
+Migration 0020 intentionally defines `entry_id` without a foreign key to `system_directory_entries`; the immutable audit table can retain history independently of a live entry. This is consistent with append-only retention, but the migration contains no explicit rationale. Keep the no-FK behavior in PR 1 and continue checking the zero-orphan invariant. Do not add an FK or cleanup policy that could delete or block retained history.
+
+## Current recovery gate
+
+Read-only Neon metadata was rechecked on 2026-11-02: the matched project reports six-hour history retention and plan `free_v3`; no snapshot schedule or saved snapshots were listed. A specific currently usable point was not confirmed and no restore was tested. See [`recovery-runbook.md`](./recovery-runbook.md) for the point-in-time options, durable backup choices, disposable restore rehearsal, data-exposure assessment, and required owner approvals.
+
+## Readiness
+
+- **PR 1 design and disposable verification preparation: GO.** Current main ends at migration 0022; 0023 is the next repository candidate. The proposed design and compatibility contract are in `plan.md`.
+- **Production migration: NO-GO.** Close the private row-level parity review, verify the chosen recovery point and backup durability, pass the disposable restore/migration rehearsal, establish accepted RPO/RTO and reconciliation ownership, and obtain separate scoped production authorization first.
+- No production query, data/DDL write, backup mutation, environment change, branch creation, merge, or deployment was performed in this readiness update.

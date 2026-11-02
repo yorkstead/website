@@ -8,19 +8,37 @@
 4. Ratify the single-registry/additive compatibility decision, detailed specification, PR sequence, roadmap and handoff.
 5. Open PR 0 for review. No code, migration, production data/configuration, merge or deployment.
 
-## PR 0 follow-up — read-only production identity diagnostic (this PR)
+## PR 0 follow-up — read-only production identity diagnostic (merged as PR #89)
 
-1. Extend the existing owner-only lead diagnostic route with a temporary YS-SYS-001 query mode; do not add a route or UI.
-2. Default the mode off and require production environment plus an authenticated owner session. Add no-store headers, an in-process throttle, and document the required Vercel Firewall per-IP rate limit before enablement.
-3. Query safe database/schema/migration metadata and aggregate Systems Directory counts, stable IDs, revision/archive state and deterministic fingerprints. Never return secrets, hostnames, role names, account fields, raw entry data or audit snapshots.
-4. Document independently authorized deployment, access, evidence handling and disable/removal steps. Do not run the mode against production, change production configuration, merge or deploy from this PR.
+The temporary mode reused the existing owner-only leads diagnostic route, returned only fixed-SELECT redacted evidence, and was executed by the owner against production. Cleanup PR #90 removes the temporary mode/helper/tests while preserving the legacy no-query route. The owner still needs to verify production flag deactivation and post-cleanup deployment separately; see `production-preflight.md`.
 
 ## PR 1 — preservation foundation
 
-1. Obtain and independently review the redacted production baseline bundle described in `discovery.md` using the temporary preflight in `preflight-diagnostic.md`.
-2. Finalize and review the additive schema/DTO compatibility needed for typed records, provenance and owner/recovery roles; choose migration number only after checking the current main manifest and production ledger.
-3. Add disposable PostgreSQL migration-upgrade tests that start from the exact legacy seven-row/audit fixture and prove every ID/value/history survives unchanged. Test immutable audit and rollback behavior; never test against production.
-4. Update operations/runbook and acceptance mappings. Do not activate or deploy production.
+1. Independently review the private seven-entry / eleven-event production baseline and close the recovery readiness gate described in `production-preflight.md` and `recovery-runbook.md`.
+2. Implement the approved additive migration 0023 design below; confirm the main migration list and private production ledger before implementation.
+3. Add fresh, repeat, and populated legacy-upgrade tests using disposable PostgreSQL. Prove all seven fixture entries, revisions, archive states, legacy values, eleven audit events, and audit history survive unchanged. Never test against production.
+4. Preserve the existing routes/DTOs; keep new reads/writes owner-authorized and default-off. Update operations and compatibility tests. No production migration, activation, merge, or deployment is authorized by this plan.
+
+### Migration 0023 design proposal
+
+- Keep `system_directory_entries` as the single registry identity and `system_directory_audit` as the immutable history. The seven current rows remain canonical provider/service entries; do not copy, rekey, or reseed them.
+- Add a checked `entity_class` with `provider_service` as the default for existing rows, plus five explicit classes: `provider_account`, `subscription`, `application_workload`, `infrastructure_asset`, and `stack_component`. This gives six distinct classes without a parallel top-level registry.
+- Add only the common verification/provenance fields needed by the foundation: verification state (unknown, candidate, owner-reviewed), provenance kind/reference, observed/confirmed timestamps, and responsible/recovery role labels. No credentials, recovery codes, payment secrets, or unrestricted operational notes.
+- Keep this migration metadata-only for existing records: no `UPDATE` or backfill statement against the seven rows, so revision/audit triggers do not create revisions or audit records. The default class is supplied by the new column default. Do not alter migration 0020, audit history, audit trigger functions, or the existing audit FK policy.
+- Preserve the compatibility surface. Existing `/api/systems-directory` and owner page return the current provider/service DTO shape and only provider/service records. New typed APIs and DTOs are additive and separately owner-authorized. Existing callers must not receive new fields or classes unexpectedly.
+- New typed reads/writes and candidate creation stay behind a server-side feature flag that is off when unset and in every environment by default. Tenant and actor are fixed from server authorization; client payloads cannot choose them. Any relationship must stay in the fixed owner scope and validate both referenced entries.
+- This is a proposal for implementation review, not production authorization. If code review shows typed class details need subtype tables, add them in a later separately reviewed additive migration rather than putting speculative subtype columns into 0023.
+
+### Compatibility and disposable verification plan
+
+1. **Fresh install:** run migrations 0001–0023 on disposable PostgreSQL; verify ordered checksums and all six accepted class values.
+2. **Repeat:** run the migration checker/runner twice and confirm no changed schema, duplicate relation, or history alteration.
+3. **Legacy upgrade:** build a synthetic, privacy-safe 0022 database with seven entries and eleven audit events. Snapshot synthetic IDs, revisions, archived flags, explicit legacy-column projection, per-entry audit counts/fingerprints, and legacy DTO JSON before migration. Apply 0023; require exact equality for all those properties and zero new audit events.
+4. **Audit controls:** verify entry revision/audit triggers remain enabled, update creates the expected revision/audit in the disposable DB, and audit update/delete/truncate remains rejected. The test migration itself must not exercise a write against any production target.
+5. **Compatibility/auth:** run contract fixtures for existing routes and DTOs; owner succeeds, unauthenticated/non-owner fails closed, client-supplied tenant/actor is ignored/rejected, and same-tenant relationship validation holds.
+6. **Default off:** remove the feature variable entirely, set it false, and confirm new typed operations remain unavailable while legacy routes remain usable. Verify Preview and production default behavior from code/tests only; do not change deployed flags.
+7. **Rollback:** revert the application to legacy readers/writers while retaining additive schema. Do not implement a destructive down migration. Any schema correction is forward-only.
+8. **Preservation report:** compare private production evidence only after separate authorization. Because whole-row entry MD5 changes when columns are added, compare the versioned migration-0020 legacy projection; require all eleven original audit hashes/counts unchanged. Public artifacts show aggregate pass/fail only.
 
 ## PR 2 — candidate inventory and ownership
 
