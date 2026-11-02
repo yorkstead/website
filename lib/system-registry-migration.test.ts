@@ -75,6 +75,11 @@ describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
         await client.query(`RELEASE SAVEPOINT ${savepoint}`);
       };
 
+      const service = createSystemDirectoryService(client as unknown as Pool);
+      const preMigrationView = await service.list(true);
+      expect(preMigrationView).toHaveLength(7);
+      expect(preMigrationView.every((entry) => !("entityClass" in entry) && !("verificationState" in entry))).toBe(true);
+
       await migration(client, "0023_systems-registry-foundation.sql");
 
       const rowsAfter = (await client.query(`SELECT ${legacyColumns} FROM system_directory_entries ORDER BY id`)).rows;
@@ -113,7 +118,6 @@ describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
       await expectDatabaseError(() => client.query("TRUNCATE system_directory_audit"), "23514");
       await expectDatabaseError(() => client.query("DELETE FROM system_directory_relationships WHERE id=$1", [relationshipId]), "23514");
 
-      const service = createSystemDirectoryService(client as unknown as Pool);
       const legacyView = await service.list(true);
       expect(legacyView).toHaveLength(8);
       expect(legacyView.every((entry) => !("entityClass" in entry) && !("verificationState" in entry))).toBe(true);

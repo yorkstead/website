@@ -42,7 +42,7 @@ export function createSystemDirectoryService(pool: Pool) {
   return {
     async list(includeArchived = false, search = "", category = "") {
       const params: unknown[] = [tenant];
-      let where = "tenant_id=$1 AND entity_class='provider_service'";
+      let where = "tenant_id=$1 AND COALESCE(to_jsonb(system_directory_entries)->>'entity_class','provider_service')='provider_service'";
       if (!includeArchived) where += " AND archived_at IS NULL";
       if (search) { params.push(`%${search}%`); where += ` AND (name ILIKE $${params.length} OR provider ILIKE $${params.length} OR purpose ILIKE $${params.length} OR account_identity ILIKE $${params.length})`; }
       if (category) { params.push(category); where += ` AND category=$${params.length}`; }
