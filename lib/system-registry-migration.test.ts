@@ -30,13 +30,19 @@ afterAll(async () => { await admin?.end(); });
 
 describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
   databaseTest("preserves seven synthetic legacy rows and eleven audit events while adding typed schema", async () => {
-    const client = await admin!.connect();
+    const databaseName = `ys_sys_001_test_${randomUUID().replaceAll("-", "")}`;
+    await admin!.query(`CREATE DATABASE ${databaseName}`);
+    const databaseURL = new URL(configured!);
+    databaseURL.pathname = `/${databaseName}`;
+    const isolated = new Pool({ connectionString: databaseURL.toString() });
+    const client = await isolated.connect();
     try {
       await client.query("BEGIN");
-      const schema = `ys_sys_001_${randomUUID().replaceAll("-", "")}`;
-      await client.query(`CREATE SCHEMA ${schema}`);
-      await client.query(`SET LOCAL search_path TO ${schema}`);
-      await migration(client, "0020_systems-directory.sql");
+      const existingMigrations = (await readdir("migrations"))
+        .filter((fileName) => fileName.endsWith(".sql") && fileName.slice(0, 4) <= "0022")
+        .sort();
+      expect(existingMigrations).toHaveLength(22);
+      for (const fileName of existingMigrations) await migration(client, fileName);
 
       await client.query("SELECT set_config('yorkstead.system_directory_actor','ys-sys-001-fixture',true)");
       for (let i = 1; i <= 7; i++) {
@@ -124,8 +130,10 @@ describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
     } finally {
       await client.query("ROLLBACK").catch(() => undefined);
       client.release();
+      await isolated.end();
+      await admin!.query(`DROP DATABASE ${databaseName} WITH (FORCE)`);
     }
-  }, 30000);
+  }, 60000);
 
   test("migration 0023 is the next ordered migration and remains additive", async () => {
     const migrationFiles = (await readdir("migrations")).filter((fileName) => fileName.endsWith(".sql")).sort();
