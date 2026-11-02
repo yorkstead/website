@@ -9,11 +9,12 @@ while IFS= read -r name; do
 done < <(compgen -e)
 for name in $(compgen -e); do
   case "$name" in
-    RECOVERY_DB_HOST|RECOVERY_DB_PORT|RECOVERY_DB_USER|RECOVERY_DB_PASSWORD|RECOVERY_DB_NAME|PATH|HOME|HOSTNAME|PWD|SHLVL|_|BUN_INSTALL|BUN_INSTALL_BIN|BUN_INSTALL_CACHE_DIR|BUN_CONFIG_MAX_HTTP_REQUESTS|TERM|LANG|LC_*) ;;
+    RECOVERY_DB_HOST|RECOVERY_DB_PORT|RECOVERY_DB_USER|RECOVERY_DB_PASSWORD|RECOVERY_DB_NAME|PATH|HOME|HOSTNAME|PWD|SHLVL|_|BUN_INSTALL|BUN_INSTALL_BIN|BUN_INSTALL_CACHE_DIR|BUN_RUNTIME_TRANSPILER_CACHE_PATH|BUN_CONFIG_MAX_HTTP_REQUESTS|TERM|LANG|LC_*) ;;
     *) echo "unexpected environment variable: $name" >&2; exit 78;;
   esac
 done
 [[ -d /work && $(findmnt -n -o FSTYPE /work) == tmpfs ]] || { echo 'isolated tmpfs workspace required' >&2; exit 78; }
+[[ -d /tmp && $(findmnt -n -o FSTYPE /tmp) == tmpfs && ${BUN_RUNTIME_TRANSPILER_CACHE_PATH:-} == /tmp/bun-runtime-cache ]] || { echo 'runtime temporary storage must remain on tmpfs' >&2; exit 78; }
 [[ -r /proc/net/route && -r /proc/net/ipv6_route ]] || { echo 'network namespace routes are unavailable' >&2; exit 78; }
 if awk 'NR>1 && $2=="00000000" {found=1} END {exit !found}' /proc/net/route || awk '$1 ~ /^0+$/ && $2=="00" {found=1} END {exit !found}' /proc/net/ipv6_route; then
   echo 'network namespace must have no default route' >&2; exit 78

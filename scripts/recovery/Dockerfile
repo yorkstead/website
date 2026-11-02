@@ -11,5 +11,5 @@ COPY lib/system-directory-service.ts lib/system-directory.ts lib/date-time.ts ./
 COPY scripts/recovery/entrypoint.sh /usr/local/bin/ys-recovery-entrypoint
 RUN chmod 0555 /usr/local/bin/ys-recovery-entrypoint && chmod -R a+rX /app
 USER 10001:10001
-ENV HOME=/tmp
+ENV HOME=/tmp BUN_RUNTIME_TRANSPILER_CACHE_PATH=/tmp/bun-runtime-cache
 ENTRYPOINT ["/usr/local/bin/ys-recovery-entrypoint"]
