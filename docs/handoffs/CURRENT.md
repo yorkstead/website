@@ -1,4 +1,12 @@
-# Active work — YS-SYS-001 Systems Registry PR 0 — 2026-11-01
+# Current handoff — YS-SYS-001 PR 1 readiness — 2026-11-02
+
+- PR #87 is verified merged. Live `origin/main`, PR #87's merge commit and the latest READY Website production deployment all resolve to `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`.
+- Read-only production database preflight is **blocked at identity binding**. Vercel connector access returned 403 (App installation lacks project access); Vercel environment metadata without decryption returned 404 under the available scope; Neon has multiple plausible `website` projects without a binding to production `DATABASE_URL`. No production SQL was run. See `specs/037-ys-sys-001-systems-registry/production-preflight.md`.
+- Earlier counts from an unconfirmed candidate (7 entries, 11 audit rows, no entry without audit, 22 migration checksums) remain candidate-only and are not accepted as production evidence. Applied migrations, stable IDs, revisions/archive state, audit fingerprints/triggers, constraints and production recovery capabilities remain unverified.
+- **PR 1 implementation: NO-GO.** Wait for non-secret provider binding and the redacted production preservation/recovery evidence bundle. The existing additive schema, default-off flag and rollback strategy remain proposals; no schema or code implementation is authorized in this readiness update.
+- No production database/configuration action, merge or deployment occurred. The original dirty CC-022B checkout was preserved. This update is based on a clean dedicated checkout at the verified main commit.
+
+# Previous handoff — YS-SYS-001 PR 0 — 2026-11-01 (historical)
 
 - User authorizes read-only discovery, repository-native spec/plan/tasks/decision/roadmap/handoff work, verification, and PR 0 creation for issue [#86](https://github.com/yorkstead/website/issues/86). Subsequent small implementation PRs are requested as the program sequence, with no merge, deployment, production migration/data/configuration change, or purchase authorized. Each production operation remains separately gated.
 - Verified GitHub default branch: `main`; current tip `9070c538277cccf852a3fc0efc214fe65238c1fa`. Vercel reports the latest Website production deployment READY at that same source SHA. Shell DNS could not resolve GitHub; connector API evidence was used. This confirms source deployment only, not database identity or migration state.
