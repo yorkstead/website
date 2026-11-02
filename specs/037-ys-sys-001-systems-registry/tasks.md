@@ -14,10 +14,21 @@
 
 ## PR 1 — preservation foundation
 
+- [ ] Do not begin implementation until production identity and preservation evidence from the approved read-only preflight are reviewed.
 - [ ] Capture and independently review redacted production baseline before schema implementation.
 - [ ] Add default-off, additive schema/compatibility foundation and migration/backout record.
 - [ ] Prove all seven legacy IDs, values and audit histories survive a disposable upgrade unchanged.
 - [ ] Run migration checks and required application verification; update exact-head evidence.
+
+## PR 0 follow-up — temporary production preflight diagnostic
+
+- [x] Confirm the existing owner-only server diagnostic route can be reused without a new route or UI.
+- [x] Add the diagnostic response contract, default-off production gate, owner authorization and no-store behavior.
+- [x] Restrict database operations to fixed read-only queries and redact connection/audit/private fields.
+- [x] Include migration match evidence and per-record count/fingerprint metadata.
+- [x] Document platform-level Vercel rate limiting, separately authorized production steps, and cleanup/removal.
+- [ ] Run focused tests and required repository verification; record exact PR head and CI.
+- [ ] Keep the diagnostic disabled; perform no production query, configuration change, merge or deployment.
 
 ## PR 2 — staged inventory and ownership
 

@@ -1,6 +1,6 @@
 # YS-SYS-001 implementation plan
 
-## PR 0 — discovery and architecture (current)
+## PR 0 — discovery and architecture (merged as PR #87)
 
 1. Verify current default branch, clean isolated base, implementation owner, current production source deployment and available issue/handoff context.
 2. Inspect CC-023 routes, schema, audit triggers, validation/security patterns and ordered migration convention read-only.
@@ -8,10 +8,17 @@
 4. Ratify the single-registry/additive compatibility decision, detailed specification, PR sequence, roadmap and handoff.
 5. Open PR 0 for review. No code, migration, production data/configuration, merge or deployment.
 
+## PR 0 follow-up — read-only production identity diagnostic (this PR)
+
+1. Extend the existing owner-only lead diagnostic route with a temporary YS-SYS-001 query mode; do not add a route or UI.
+2. Default the mode off and require production environment plus an authenticated owner session. Add no-store headers, an in-process throttle, and document the required Vercel Firewall per-IP rate limit before enablement.
+3. Query safe database/schema/migration metadata and aggregate Systems Directory counts, stable IDs, revision/archive state and deterministic fingerprints. Never return secrets, hostnames, role names, account fields, raw entry data or audit snapshots.
+4. Document independently authorized deployment, access, evidence handling and disable/removal steps. Do not run the mode against production, change production configuration, merge or deploy from this PR.
+
 ## PR 1 — preservation foundation
 
-1. Obtain and independently review the redacted production baseline bundle described in `discovery.md`.
-2. Implement a default-off server-side flag and additive schema/DTO compatibility needed for typed records, provenance and owner/recovery roles; choose migration number only after checking the current main manifest and production ledger.
+1. Obtain and independently review the redacted production baseline bundle described in `discovery.md` using the temporary preflight in `preflight-diagnostic.md`.
+2. Finalize and review the additive schema/DTO compatibility needed for typed records, provenance and owner/recovery roles; choose migration number only after checking the current main manifest and production ledger.
 3. Add disposable PostgreSQL migration-upgrade tests that start from the exact legacy seven-row/audit fixture and prove every ID/value/history survives unchanged. Test immutable audit and rollback behavior; never test against production.
 4. Update operations/runbook and acceptance mappings. Do not activate or deploy production.
 

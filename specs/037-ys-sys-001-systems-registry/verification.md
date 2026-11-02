@@ -1,5 +1,21 @@
 # YS-SYS-001 verification record — PR 0
 
+## Temporary production identity diagnostic — PR in preparation
+
+- Live GitHub comparison reports current `main` identical to merge commit `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`; PR #87 is merged. Vercel's latest READY production source deployment is that SHA.
+- Reused the existing owner-only `/api/dashboard/leads/diagnostic` path with a disabled-by-default `mode=ys-sys-001-preflight`; no new route, UI or production request was introduced.
+- The preflight response uses a server-derived endpoint ID, safe database/schema metadata, a redacted migration comparison and per-entry preservation counts/fingerprints. Source performs fixed SELECTs only. The route is gated by owner session, production environment, and two absent-by-default flags; a verified Vercel WAF per-IP rate rule is a required manual production prerequisite.
+- Production flag remains off. No production SQL/query, environment change, migration, merge or deployment was performed.
+- Focused diagnostic tests: passed (6 tests, 40 assertions).
+- Full `bun run test`: passed (435 passed, 116 skipped because database-backed prerequisites are unavailable, 0 failed; 551 total).
+- `bun run typecheck`: passed.
+- `bun run lint`: passed with one existing warning in `components/login-panel.tsx:62` (`window.location.assign` for internal navigation).
+- `bun run build`: passed; Next.js 16.4.2 production build includes the existing diagnostic route.
+- `bun run yorkstead:check`: passed (39 active spec directories).
+- `bun run db:migrate:check`: passed (22 ordered repository migrations; no production state inferred).
+- `git diff --check`: passed.
+- PR not yet published at time of this local verification entry; exact remote SHA and CI will be added after publication.
+
 ## Current session evidence
 
 - Initial repository observation at `2026-11-01T23:25:12Z`; final PR-head check at `2026-11-02T00:04:00Z` UTC.
