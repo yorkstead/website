@@ -22,7 +22,7 @@
 - [x] Implement additive migration 0023 with six checked classes, provenance/verification metadata, normalized FK-backed relationships, revision/audit protection, and indexes; no existing rows are updated or seeded.
 - [x] Preserve the legacy service DTO and filter it to provider/service records; add a default-off exact-value feature gate that also requires server-derived owner authorization.
 - [x] Author a synthetic seven-entry/eleven-audit populated-upgrade parity test, relationship integrity/audit tests, class constraints, and legacy DTO compatibility test.
-- [ ] Execute database-backed migration and preservation tests on disposable PostgreSQL; local PostgreSQL and Docker daemon are unavailable, so wait for disposable CI evidence.
+- [x] Execute database-backed migration and preservation tests on disposable PostgreSQL; [PR #92 CI run 41499404998](https://github.com/yorkstead/website/actions/runs/41499404998) passed the then-current head. Recheck the consolidated head before review completion.
 - [ ] Rehearse restore from an authorized recovery artifact; none is available in this workspace.
 - [ ] Run complete repository verification and update exact-head evidence.
 
@@ -30,7 +30,7 @@
 
 - [x] Record planning choice of encrypted custom-format `pg_dump`, 30-day artifact retention, and 60-minute incident-to-service RTO target in `recovery-runbook.md`.
 - [x] Prepare synthetic-only backup/encryption/local-upload/restore scripts, automated failure and integrity tests, private evidence template and narrow owner-decision checklist.
-- [ ] Verify the synthetic restore rehearsal on disposable PostgreSQL with age in CI; record exact-head results. A synthetic pass is not a production-derived restore.
+- [x] Verify the synthetic restore rehearsal on disposable PostgreSQL with age; [PR #93 CI run 41504298230](https://github.com/yorkstead/website/actions/runs/41504298230) passed the then-current head. Recheck the consolidated head. A synthetic pass is not a production-derived restore.
 - [ ] Owner approves RPO/cadence, exact storage and cost, key custody/recovery, primary/secondary operators and reviewer, coverage, and source-specific production export procedure.
 - [ ] Independently review private production seven-entry/eleven-audit parity and capture provenance.
 - [ ] Separately authorize a specific production export, verify remote storage/retention/retrieval, and complete an isolated restore rehearsal before any production migration request.

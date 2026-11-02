@@ -59,7 +59,7 @@ describe("application migration plan", () => {
     ]) expect(plan).toContain(expected);
   });
 
-  test("does not run database migrations during Vercel builds", async () => {
+  test("does not run migrations during Vercel builds", async () => {
     const packageJSON = JSON.parse(await readFile(resolve(import.meta.dir, "../package.json"), "utf8")) as { scripts: Record<string, string> };
     const vercelConfig = JSON.parse(await readFile(resolve(import.meta.dir, "../vercel.json"), "utf8")) as { buildCommand?: string };
     const buildScript = await readFile(resolve(import.meta.dir, "vercel-build.ts"), "utf8");

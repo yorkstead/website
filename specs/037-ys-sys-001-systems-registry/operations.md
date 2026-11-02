@@ -32,7 +32,7 @@ Use `recovery-runbook.md` as the controlled recovery plan. Current PITR history 
 - Make changes additive and forward-compatible. Preserve existing tables, IDs, triggers, constraints, compatibility endpoints and audit data.
 - Prefer nullable/new tables and bounded backfills with resumable checkpoints. Do not rewrite historical migrations or fabricate legacy values.
 - Run `bun run db:migrate:check`, disposable PostgreSQL fresh/repeat checks and an upgrade test loaded with the exact redacted legacy shape and seven synthetic fixture IDs.
-- No production DDL or data write is authorized. Automatic production migration behavior remains subject to separate release authorization.
+- No production DDL or data write is authorized. `vercel-build` no longer runs migrations; a named operator must execute `bun run db:migrate` only after a separate, target-specific production authorization and recovery approval. CI migrations use the disposable PostgreSQL service.
 
 ## Rollback and recovery
 

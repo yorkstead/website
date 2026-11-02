@@ -10,7 +10,8 @@ async function run(command: string[]) {
   if (exitCode !== 0) process.exit(exitCode);
 }
 
-// Production migrations require a separately authorized operator command.
-// Building a production deployment must never advance the database ledger.
+// Database migrations require a separately authorized operator command.
+// A Vercel build, including a production build triggered by merging main,
+// must not advance the application_migrations ledger.
 
 await run(["bun", "run", "build"]);
