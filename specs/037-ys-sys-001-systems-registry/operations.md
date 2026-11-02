@@ -6,9 +6,9 @@ PR 0 is discovery/documentation only. It performs no database connection, produc
 
 ## Temporary diagnostic status and retirement
 
-PR #89 added the special read-only mode to the existing owner-only leads diagnostic. The owner reports one successful production execution; endpoint identity and aggregate data are summarized in `production-preflight.md`. Cleanup PR #90 removes the mode, helper, temporary tests, and activation guide while retaining the legacy no-query leads diagnostic. PR #90 is open as draft and has passing GitHub Actions and Vercel Preview checks; it has not been merged or deployed.
+PR #89 added the special read-only mode to the existing owner-only leads diagnostic. The owner reports one successful production execution; endpoint identity and aggregate data are summarized in `production-preflight.md`. Cleanup PR #90 removes the mode, helper, temporary tests, and activation guide while retaining the legacy no-query leads diagnostic. PR #90 is open and has not been merged or deployed.
 
-The Vercel integration available to this review cannot verify whether `YS_SYS_001_PREFLIGHT_ENABLED` and `YS_SYS_001_PREFLIGHT_WAF_CONFIRMED` are false/removed, identify a post-disable Production deployment, or confirm an owner-authenticated 404 against Production. The owner must confirm these through an authorized Vercel account. No environment or firewall change is authorized here. After PR #90 is separately reviewed, merged, and deployed, confirm the owner-authenticated special query returns 404 and the legacy no-query diagnostic still works; only then remove any temporary WAF rule under separate owner approval.
+The owner reports both temporary Production flags are disabled and the owner-authenticated special query returned 404 after PR #91's Production deployment. After PR #90 is separately reviewed, merged, and deployed, confirm that query still returns 404 and the legacy no-query diagnostic still works; only then remove any temporary WAF rule under separate owner approval. No environment or firewall change is authorized here.
 
 ## Pre-migration gate
 
