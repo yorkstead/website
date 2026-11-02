@@ -59,14 +59,14 @@ describe("application migration plan", () => {
     ]) expect(plan).toContain(expected);
   });
 
-  test("runs ordered migrations before production Vercel builds", async () => {
+  test("does not run migrations during Vercel builds", async () => {
     const packageJSON = JSON.parse(await readFile(resolve(import.meta.dir, "../package.json"), "utf8")) as { scripts: Record<string, string> };
     const vercelConfig = JSON.parse(await readFile(resolve(import.meta.dir, "../vercel.json"), "utf8")) as { buildCommand?: string };
     const buildScript = await readFile(resolve(import.meta.dir, "vercel-build.ts"), "utf8");
     expect(packageJSON.scripts["vercel-build"]).toBe("bun scripts/vercel-build.ts");
     expect(vercelConfig.buildCommand).toBe("bun run vercel-build");
-    expect(buildScript).toContain('process.env.VERCEL_ENV === "production"');
-    expect(buildScript.indexOf('"db:migrate"')).toBeLessThan(buildScript.indexOf('"build"'));
+    expect(buildScript).not.toContain('"db:migrate"');
+    expect(buildScript).toContain('await run(["bun", "run", "build"])');
   });
 });
 
