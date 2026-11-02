@@ -1,5 +1,14 @@
 # YS-SYS-001 verification record — PR 0
 
+## PR 1 readiness preflight — 2026-11-02
+
+- Live `origin/main` is `0d7f2379d359fa63ee7cf70e4fa49040328f30e2`; PR #87 merged at that SHA. Latest Vercel production deployment is READY at the same source SHA.
+- Production DB binding could not be verified: Vercel connector metadata returned 403 for the project, Vercel environment metadata returned 404 under available scope, and multiple Neon `website` projects remain unbound to the deployed `DATABASE_URL`.
+- No production database query was run. The earlier candidate-only 7/11/0 counts and 22 migration matches remain historical and do not establish production state.
+- Production migration ledger, seven-record identities/revisions/archive values, audit counts/fingerprints and trigger/schema protections remain unverified. Production backup/PITR retention, current recovery point and restore procedure are also unverified; no restore was tested.
+- Recommendation: **NO-GO for PR 1 implementation**. The complete access boundary and next required evidence are documented in `production-preflight.md`.
+- No production configuration/data/schema action, merge or deployment occurred.
+
 ## Current session evidence
 
 - Initial repository observation at `2026-11-01T23:25:12Z`; final PR-head check at `2026-11-02T00:04:00Z` UTC.

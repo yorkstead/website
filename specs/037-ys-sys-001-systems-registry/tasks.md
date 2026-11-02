@@ -14,6 +14,7 @@
 
 ## PR 1 — preservation foundation
 
+- [ ] **Blocked (2026-11-02):** establish the production `DATABASE_URL` → Neon project/branch/database binding and complete the reviewed read-only preservation and recovery evidence bundle; see `production-preflight.md`.
 - [ ] Capture and independently review redacted production baseline before schema implementation.
 - [ ] Add default-off, additive schema/compatibility foundation and migration/backout record.
 - [ ] Prove all seven legacy IDs, values and audit histories survive a disposable upgrade unchanged.
