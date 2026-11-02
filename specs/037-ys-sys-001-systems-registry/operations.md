@@ -4,24 +4,27 @@
 
 PR 0 is discovery/documentation only. It performs no database connection, production write, migration, environment read, credential inspection, provider request, configuration change, merge or deployment. GitHub/Vercel metadata is used only to verify repository default branch and deployed source SHA.
 
-## Retired production identity diagnostic
+## Temporary diagnostic status and retirement
 
-The temporary YS-SYS-001 query mode on the existing owner-only leads diagnostic was used once by the owner and is removed by cleanup PR #90. The route now returns 404 for any `mode` query while retaining its existing no-query legacy diagnostic behavior. After the cleanup is reviewed, merged and deployed through the normal separately authorized release process, the owner should verify both Production flags are false/removed and the owner-authenticated mode URL returns 404. This repository work does not change Vercel settings, merge, or deploy.
+PR #89 added the special read-only mode to the existing owner-only leads diagnostic. The owner reports one successful production execution; endpoint identity and aggregate data are summarized in `production-preflight.md`. Cleanup PR #90 removes the mode, helper, temporary tests, and activation guide while retaining the legacy no-query leads diagnostic. PR #90 is open as draft and has passing GitHub Actions and Vercel Preview checks; it has not been merged or deployed.
 
-The approved private evidence store must retain the unredacted row-level diagnostic result and timestamps. Public artifacts may contain aggregate counts and a parity pass/fail only. The deterministic comparison fields and procedure are recorded in `production-preflight.md`.
-
-No Vercel environment update, Firewall change, merge, deployment, production request or database operation is authorized by this implementation PR.
+The Vercel integration available to this review cannot verify whether `YS_SYS_001_PREFLIGHT_ENABLED` and `YS_SYS_001_PREFLIGHT_WAF_CONFIRMED` are false/removed, identify a post-disable Production deployment, or confirm an owner-authenticated 404 against Production. The owner must confirm these through an authorized Vercel account. No environment or firewall change is authorized here. After PR #90 is separately reviewed, merged, and deployed, confirm the owner-authenticated special query returns 404 and the legacy no-query diagnostic still works; only then remove any temporary WAF rule under separate owner approval.
 
 ## Pre-migration gate
 
 Before PR 1 implementation:
 
-1. Confirm the production target by exact provider endpoint binding; do not infer it from migration counts or `DATABASE_URL_RECOVERY`.
-2. Review the private seven-record row set, stable IDs/revisions/archive state, per-entry audit counts/fingerprints, migration ledger, triggers and constraints against the aggregate report in `production-preflight.md`.
-3. Confirm a usable pre-migration recovery timestamp with the provider and test restore/upgrade/backout only on disposable data.
-4. Have an independent reviewer approve the preservation comparison and forward-only design before migration code is written.
+1. Use the exact provider endpoint mapping and migration evidence recorded in `production-preflight.md`; never copy a DSN, host, secret, or credential into GitHub.
+2. Independently review the private seven-entry / eleven-event inventory, stable IDs, revisions, archive state, material legacy values, audit counts, and fingerprints. Keep these details in private evidence only.
+3. Select and confirm a usable recovery point and perform the disposable rehearsal in `recovery-runbook.md`. No production recovery operation is implied.
+4. Confirm audit triggers/permissions and compatibility contracts. Review the versioned legacy-column fingerprint projection before/after schema change; the all-column entry fingerprint is expected to change when columns are added.
+5. Have an independent reviewer approve preservation evidence, migration 0023, compatibility and backout before implementation. Production migration remains a separate explicit approval.
 
-If the private baseline or recovery point is unavailable, keep production migration blocked. Do not improvise with deployment secrets, shell environment dumps, client requests or a different database. Schema work may proceed only against disposable databases and must not claim production parity.
+If private row-level evidence or a usable recovery point is unavailable, production migration remains blocked. Do not improvise with deployment secrets, shell environment dumps, client requests, or a different database. PR 1 design and disposable tests may continue without claiming production parity.
+
+## Recovery readiness
+
+Use `recovery-runbook.md` as the controlled recovery plan. Current PITR history is six hours; no snapshot schedule or saved snapshots were found. The document covers a one-time snapshot if available and approved, an encrypted logical export, or PITR as a short-window option; non-production restore rehearsal; verification; data-loss exposure; and approvals. No backup, export, restore, schedule, branch, or production setting is changed by this specification.
 
 ## Migration conventions
 

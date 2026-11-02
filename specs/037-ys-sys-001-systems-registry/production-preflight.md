@@ -1,55 +1,50 @@
-# YS-SYS-001 production baseline and recovery evidence — 2026-11-02
+# YS-SYS-001 production identity and preservation baseline — 2026-11-02
 
-## Evidence provenance
+## Verified source and provider identity
 
-The Systems Directory facts below are from the owner-reported response of the temporary, owner-authenticated diagnostic running against the production `DATABASE_URL`. Provider mapping and recovery metadata were separately checked through the authorized Neon integration on 2026-11-02. The diagnostic execution timestamp and exact record-level evidence were not included in the material available to this review; keep those details in the approved private evidence store, not GitHub.
+Live GitHub reports default branch `main` at `b521af85b00334f69c4cb089cdb6458c1e3e5ec9`; migrations `0020` and `0022` are present and current main contains 22 numbered application migrations. PRs #87–#89 are merged. PR #90 is a separate draft cleanup and is not merged.
 
-The exact endpoint, project, branch, record IDs, revisions, and fingerprints are intentionally omitted from this repository artifact. The endpoint-to-project mapping is confirmed in provider metadata; private identifiers are retained only in the approved private evidence record.
+The owner reports that the temporary diagnostic ran against the production `DATABASE_URL`. Its returned endpoint ID was matched by exact Neon endpoint metadata to project `website`, primary/default branch `production`, database `neondb`. PostgreSQL reports version 18.6. This is an exact provider endpoint match; migration counts alone were not used to establish identity. Public repository artifacts intentionally omit endpoint/project/branch IDs, all row-level identifiers, and fingerprints.
 
-## Production identity and database baseline
+## Owner-reported production result
 
-| Evidence | Result |
-| --- | --- |
-| Provider and endpoint mapping | Neon endpoint from the owner-reported diagnostic matches the `website` Neon project’s primary/default `production` branch. The provider database lookup confirms `neondb`. This is a direct endpoint-ID match, not an inference from migrations or project name. |
-| Database engine | PostgreSQL 18.6, from the owner-reported production diagnostic. |
-| Migration ledger | `matches_repository`: 22 expected / 22 applied; all checksums match; migrations `0020` and `0022` applied. |
-| Systems Directory | 7 entries, 11 audit records, 0 orphan audit records; all 7 entries are unarchived. |
-| Audit protection | Append, immutability, and revision triggers enabled. Entry constraints: 1 primary key and 23 checks. Audit constraints: 1 primary key and 4 checks. |
-| Audit-to-entry foreign key | None. Migration `0020` also defines no FK. Audit rows are immutable and retain `entry_id` independently; absence of the FK permits history to survive removal of a live entry. This is consistent with append-only retention, but no explicit rationale is documented in the migration. Keep the relationship application-level and verify orphan count during parity checks. |
-| Exact row parity | Owner-reported response contained stable IDs, revisions, archive state, per-entry audit counts, and fingerprints for all seven rows. The values are not present in the reviewed evidence artifact, so exact seven-row parity is not independently reviewable here. Do not proceed to a production migration on aggregate counts alone. |
+The diagnostic reported:
 
-## Fingerprint and repeatable comparison procedure
+- Migration ledger `matches_repository`: 22 expected, 22 applied; all checksums match; migrations `0020` and `0022` are applied.
+- Seven `system_directory_entries`, eleven `system_directory_audit` events, zero orphaned audit events, and all seven entries unarchived.
+- Append, audit-immutability, and revision triggers enabled.
+- Entry constraints: one primary key and 23 checks. Audit constraints: one primary key and four checks. No audit-to-entry FK.
 
-The deployed diagnostic reports `md5(postgresql_jsonb_text_ordered_by_stable_key)`: entry fingerprints are PostgreSQL `md5(to_jsonb(entry)::text)`; audit fingerprints are PostgreSQL MD5 over JSONB-text audit rows concatenated in ascending audit ID order. These are opaque comparison tokens, not encryption. Preserve the exact algorithm if parity needs to be checked later; changing selected fields or serialization changes the result.
+The exact diagnostic execution time and private per-entry payload were not made available in this review. The aggregates are owner-reported; exact seven-record parity has therefore **not** been independently verified. Retain the private response through the approved private evidence channel. Do not attach it to an issue or PR.
 
-For an authorized pre/post comparison, retain the original owner-only response in the approved private evidence store. Run the same diagnostic against the same verified production endpoint immediately before and after an additive migration, using the same code version and canonicalization. Compare, without copying values to public GitHub:
+## Private seven-entry / eleven-event parity procedure
 
-1. Endpoint/project/branch/database identity and migration version/checksum result.
-2. The sorted seven-entry stable-ID set, each revision and archived state.
-3. Each entry fingerprint and per-entry audit count/fingerprint.
-4. Total entry/audit counts, orphan count, and audit trigger/constraint summaries.
+Before implementation, have an independent reviewer inspect the private baseline for exactly seven stable entry IDs and eleven existing audit events. Verify the sum of per-entry audit counts is eleven, orphan count is zero, revisions and archive state match the owner response, and all seven entries are unarchived. Reconcile each entry's legacy material values (including account-label, cost, URL, note, renewal, and relationship fields) inside the private evidence record; do not publish these values.
 
-Require exact equality for all legacy IDs, revisions, archive flags, entry fingerprints, per-entry counts/fingerprints, and existing applied-migration checksums; require zero orphan audits. Record only pass/fail, aggregate counts, code revision, and UTC timestamps in public artifacts. Store the detailed comparison privately. New migration rows may change the migration ledger as expected; do not treat that as a legacy-data mismatch.
+The diagnostic fingerprints are PostgreSQL MD5 comparison values, not signatures:
 
-## Recovery readiness
+- Entry: `md5(to_jsonb(entry)::text)`.
+- Audits: `md5(coalesce(string_agg(to_jsonb(audit)::text, newline ORDER BY audit.id), ''))` per entry.
 
-- Neon project metadata reports a six-hour history-retention window and the `free_v3` plan.
-- The provider reports no scheduled snapshot policy and no retained snapshots for the production branch at inspection time.
-- Neon supports creating a branch from a parent timestamp/LSN within the available history window. Snapshot restore can target a new branch and can be previewed before a separate finalize operation. These are documented provider capabilities, not a tested recovery of this project.
-- A pre-migration point should be within the current six-hour PITR window if migration begins promptly, but exact recoverable timestamps/WAL availability were not independently enumerated. Treat a usable point as **not yet verified** until the owner confirms the chosen timestamp in Neon.
-- Restore has not been tested. No branch, snapshot, restore, backup configuration, or production connection was changed.
-- Recovery procedure: owner selects and verifies a timestamp/LSN in Neon, creates a separate recovery branch without finalizing over production, validates the restored database and application compatibility, then follows a separately approved traffic/connection cutover and rollback plan. A restore to a new branch can expose writes made after the recovery point; estimate that exposure from the selected timestamp and business activity before any cutover. RPO/RTO have not been measured.
-- Required before production migration: confirm a specific pre-migration recovery point, document who can restore and authorize cutover, agree acceptable RPO/data exposure, and test the procedure on a disposable branch/database. No paid snapshot schedule has been enabled or proposed for automatic purchase.
+The original entry hash includes every current column. If migration 0023 adds columns, its whole-row entry fingerprint will change even when all legacy values are preserved. Before/after migration checks must therefore compare an explicit, versioned projection of the original migration-0020 columns and hash that projection separately. Do not misclassify a changed whole-row hash as data loss. The audit table is not changed by the proposed foundation migration, so all eleven audit records, per-entry counts, and original audit fingerprints must remain exactly unchanged.
 
-## Diagnostic retirement status
+For an authorized comparison, independently re-confirm the production endpoint/project/branch/database before capture and after migration. Retain both raw diagnostic responses and projected values only in approved private storage. Public evidence should state only the verification timestamp, code/migration revision, aggregate counts, and pass/fail. Required post-migration checks:
 
-The owner-reported production query succeeded. The connected Vercel integration could not list the Website project (`0` matching projects) or deployments; prior project/environment lookups returned 404 and deployment lookup returned 403. No variable values were requested. Therefore the values of `YS_SYS_001_PREFLIGHT_ENABLED` and `YS_SYS_001_PREFLIGHT_WAF_CONFIRMED`, a subsequent Production redeployment, and the owner-authenticated 404 response are **unverified**.
+1. Exactly the same seven IDs, revisions, archive values, and explicitly projected legacy fields.
+2. Exactly eleven original audit events with unchanged per-entry counts and audit fingerprints; zero orphans.
+3. Existing entry/audit trigger behavior and constraints remain valid; audit update/delete/truncate is still rejected.
+4. Migrations 0001–0022 retain their prior checksums; 0023 is applied with the reviewed checksum.
 
-The temporary mode is removed by this cleanup PR. After the PR is reviewed and merged through the normal GitHub/Vercel process, the owner must separately verify that the Production flags are false/removed and that the resulting Production deployment serves 404 for the mode while preserving the legacy leads diagnostic. Do not manually deploy or change production settings as part of this work.
+## Audit foreign key
 
-## Readiness decision
+Migration 0020 intentionally defines `entry_id` without a foreign key to `system_directory_entries`; the immutable audit table can retain history independently of a live entry. This is consistent with append-only retention, but the migration contains no explicit rationale. Keep the no-FK behavior in PR 1 and continue checking the zero-orphan invariant. Do not add an FK or cleanup policy that could delete or block retained history.
 
-- **PR 1 implementation: NO-GO for schema or migration implementation at this time.** The aggregate baseline is owner-reported and endpoint-mapped, but the exact private row-level evidence was unavailable for review. Recovery remains untested and the pre-migration point is not confirmed. Spec and disposable-database test preparation may continue; no production migration or activation is authorized.
-- **Production migration: NO-GO.** Require private seven-row parity review, verified usable recovery point, tested disposable restore/upgrade/backout, owner-approved RPO/RTO and explicit production authorization.
+## Current recovery gate
 
-No production SQL, DDL, data, configuration, backup, or deployment operation was performed by this review.
+Read-only Neon metadata was rechecked on 2026-11-02: the matched project reports six-hour history retention and plan `free_v3`; no snapshot schedule or saved snapshots were listed. A specific currently usable point was not confirmed and no restore was tested. See [`recovery-runbook.md`](./recovery-runbook.md) for the point-in-time options, durable backup choices, disposable restore rehearsal, data-exposure assessment, and required owner approvals.
+
+## Readiness
+
+- **PR 1 design and disposable verification preparation: GO.** Current main ends at migration 0022; 0023 is the next repository candidate. The proposed design and compatibility contract are in `plan.md`.
+- **Production migration: NO-GO.** Close the private row-level parity review, verify the chosen recovery point and backup durability, pass the disposable restore/migration rehearsal, establish accepted RPO/RTO and reconciliation ownership, and obtain separate scoped production authorization first.
+- No production query, data/DDL write, backup mutation, environment change, branch creation, merge, or deployment was performed in this readiness update.
