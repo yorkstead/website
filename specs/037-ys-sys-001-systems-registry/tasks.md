@@ -19,8 +19,12 @@
 - [ ] **Blocked for production migration:** independently review private IDs/revisions/archive state, all seven entry values, per-entry audit counts/fingerprints and exact capture provenance.
 - [ ] Verify a specific pre-migration recovery point; agree RPO/RTO and acceptable data exposure; rehearse restore on disposable PostgreSQL/Neon only.
 - [x] Prepare migration 0023 design, six-class and legacy DTO compatibility contract, default-off authorization boundaries, parity procedure and disposable verification plan in `plan.md`.
-- [ ] Implement migration 0023 only after separate implementation approval; prove seven entries and eleven audits survive fresh/repeat/populated disposable upgrades unchanged.
-- [ ] Run migration checks and required application verification; update exact-head evidence.
+- [x] Implement additive migration 0023 with six checked classes, provenance/verification metadata, normalized FK-backed relationships, revision/audit protection, and indexes; no existing rows are updated or seeded.
+- [x] Preserve the legacy service DTO and filter it to provider/service records; add a default-off exact-value feature gate that also requires server-derived owner authorization.
+- [x] Author a synthetic seven-entry/eleven-audit populated-upgrade parity test, relationship integrity/audit tests, class constraints, and legacy DTO compatibility test.
+- [ ] Execute database-backed migration and preservation tests on disposable PostgreSQL; local PostgreSQL and Docker daemon are unavailable, so wait for disposable CI evidence.
+- [ ] Rehearse restore from an authorized recovery artifact; none is available in this workspace.
+- [ ] Run complete repository verification and update exact-head evidence.
 
 ## PR 0 follow-up — production identity diagnostic and retirement
 

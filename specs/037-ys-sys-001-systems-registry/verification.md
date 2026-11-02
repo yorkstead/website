@@ -1,5 +1,17 @@
 # YS-SYS-001 verification record — PR 0
 
+## PR 1 implementation preparation — 2026-11-02
+
+- Isolated branch is based on PR #91 head `6629324a7c6c9cdbc9ce91cd13d962dd0345b4ef`, stacked on main `b521af85b00334f69c4cb089cdb6458c1e3e5ec9`. `docs/handoffs/CURRENT.md` is unchanged; this slice uses standalone redacted `docs/handoffs/YS-SYS-001-STATUS.md`.
+- Migration `0023_systems-registry-foundation.sql` is additive. It adds six checked classes and provenance/verification/role fields without updating legacy rows; adds normalized owner-scoped relationships with endpoint FKs and audit protection; and adds indexes. No seed or data migration is included.
+- Legacy directory service filters to `provider_service` and returns the existing explicit DTO projection. Typed access requires exact `YS_SYS_001_ENABLED=true` and server-derived owner authorization; no typed route is introduced.
+- Added a disposable upgrade test with seven synthetic entries and eleven synthetic audit events. It compares explicit migration-0020 legacy-column projections, per-entry counts, deterministic SHA-256 fingerprints, and all audit rows after 0023; it also checks class/FK/immutability and legacy DTO behavior. CI's existing disposable PostgreSQL workflow runs the full migration runner twice; exact PR-head CI is pending.
+- `bun run db:migrate:check` passes with 23 ordered migrations; `bun run yorkstead:check` passes (39 active specs); `bun run typecheck`, `bun run build`, and `bun run lint` pass. Lint retains the existing warning at `components/login-panel.tsx:62`.
+- Full `bun test`: 437 passed, 117 skipped, 0 failed. The new PostgreSQL preservation test is among the skips because no PostgreSQL service is running and Docker cannot reach a daemon.
+- `bun run test:e2e`: 25 passed, 10 failed. Failures include database-dependent owner-session requests against unavailable `127.0.0.1:5432` and unrelated public/browser navigation timeouts; CI browser execution with disposable PostgreSQL is pending.
+- No authorized production recovery artifact was available, so private row-level parity and restore rehearsal remain incomplete. Production migration is **NO-GO** pending private evidence, owner decisions, and a passed isolated restore rehearsal.
+- No production data/schema/configuration/backup/branch changed. No PR was merged or production deployment triggered.
+
 ## PR #89 — rebased read-only production diagnostic
 
 - PR #89 has been refreshed onto newer `main` at `798c9ed7f6115a332c8c35cee8456ae16d5010a7` (PR #88 merge). Its diagnostic changes are preserved; PR remains draft and unmerged.
