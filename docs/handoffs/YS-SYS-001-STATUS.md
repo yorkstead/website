@@ -1,6 +1,16 @@
-# YS-SYS-001 review handoff — 2026-11-02
+# YS-SYS-001 current handoff — 2026-11-03
 
-This redacted status covers PRs #90–#93. `docs/handoffs/CURRENT.md` is unchanged; its historical contents are not republished here.
+## Current verified state
+
+- GitHub reports Website `main` at `d5b419e69edc38b5da4f9d5c2b29a82e149f4e3b`; PRs #90, #91 and #93 are merged. PR #92 is open and its prior head is being reconciled with that `main` without rewriting its shared history.
+- PR #92 contains additive migration 0023, default-off typed-registry access and disposable synthetic preservation tests. It does not update or seed the existing directory rows. No production migration, export, backup, restore, configuration change, merge or deployment is authorized here.
+- The PR #93 recovery rehearsal on `main` is synthetic-only; its successful CI does not establish private production parity or production restore readiness.
+- `docs/handoffs/CURRENT.md` now has a short dated, redacted status entry; the earlier handoff body remains historical and was not republished.
+- Production export and migration remain **NO-GO** pending independent private seven-entry/eleven-audit row-level parity review, an authorized and usable recovery artifact, isolated restore rehearsal, outstanding owner decisions and separate operation-specific approval.
+
+## Historical status snapshot — 2026-11-02
+
+The following sections preserve the status as recorded on 2026-11-02. Current GitHub state and the dated update above supersede their readiness statements.
 
 ## Repository and review sequence
 

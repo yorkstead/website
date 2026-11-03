@@ -39,11 +39,13 @@ const routes: PrivateRoute[] = [];
 let leadActions: Array<{ name: string; action: (formData: FormData) => Promise<void> }> = [];
 let workspacePut: Handler;
 let marketingPut: Handler;
+let leadsDiagnostic: Handler;
 
 beforeAll(async () => {
   process.env.DATABASE_URL = "postgres://test.invalid/database";
   const workspace = await import("@/app/api/workspace/route");
   const marketing = await import("@/app/api/marketing-workspace/route");
+  leadsDiagnostic = (await import("@/app/api/dashboard/leads/diagnostic/route")).GET;
   const consultations = await import("@/app/api/consultations/route");
   const projectImport = await import("@/app/api/project-import/route");
   const projectStatus = await import("@/app/api/project-status/route");
@@ -86,6 +88,26 @@ afterAll(() => {
 });
 
 describe("private API authorization", () => {
+  test("leads diagnostic preserves the owner-only normal route and rejects retired modes", async () => {
+    const url = "https://example.test/api/dashboard/leads/diagnostic";
+    ownerAuthorized = false;
+    const callsBefore = sqlCalls.length;
+    expect((await leadsDiagnostic(new Request(url))).status).toBe(401);
+    expect(sqlCalls.length).toBe(callsBefore);
+
+    ownerAuthorized = true;
+    const retired = await leadsDiagnostic(new Request(`${url}?mode=ys-sys-001-preflight`));
+    expect(retired.status).toBe(404);
+    expect(retired.headers.get("cache-control")).toContain("no-store");
+    expect(sqlCalls.length).toBe(callsBefore);
+
+    const normal = await leadsDiagnostic(new Request(url));
+    expect(normal.status).toBe(200);
+    expect(await normal.json()).toEqual({ hostname: "test.invalid", database: "database", total: 0, active: 0 });
+    expect(normal.headers.get("cache-control")).toContain("no-store");
+    expect(sqlCalls.length).toBe(callsBefore + 1);
+  });
+
   test("every private handler rejects before parsing a body or opening storage", async () => {
     ownerAuthorized = false;
     const checksBefore = authorizationChecks;

@@ -7,7 +7,7 @@ Use this procedure at the start of every new or resumed Codex session. Recover c
 Read, in order:
 
 1. `AGENTS.md` and `.specify/memory/constitution.md` for project rules and authorization boundaries.
-2. `docs/handoffs/CURRENT.md` for the latest handoff and production restrictions. Read `docs/handoffs/SESSION-END.md` if it contains relevant prior-session details; treat both as recorded claims until verified.
+2. `docs/handoffs/CURRENT.md` for the latest handoff and production restrictions. Read `docs/handoffs/SESSION-END.md` if it contains relevant prior-session details; treat both as recorded claims until verified. For YS-SYS-001, also read `docs/handoffs/YS-SYS-001-RELEASE-STATUS.md` for the dated redacted release state; the older YS-SYS-001 heading in `CURRENT.md` is historical pending an approved patch-only update.
 3. The relevant existing `specs/<feature>/` specification, plan, tasks, verification, operations and review-correction documents, plus referenced architecture decisions under `docs/decisions/`. Select the active task from the user's request and verified state; do not resume an old feature merely because its handoff says "active."
 4. `docs/workflow.md`, `docs/github-conventions.md`, `docs/RELEASE_WORKFLOW.md`, `docs/verification.md`, and relevant `.agents/skills/*/SKILL.md`. Use code-change-verification and spec-convergence for changes; select security-review, database-migration, production-hardening or release-verification only when their scope applies. Release guidance does not grant release authorization.
 

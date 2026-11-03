@@ -30,7 +30,7 @@
 
 - [x] Record planning choice of encrypted custom-format `pg_dump`, 30-day artifact retention, and 60-minute incident-to-service RTO target in `recovery-runbook.md`.
 - [x] Prepare synthetic-only backup/encryption/local-upload/restore scripts, automated failure and integrity tests, private evidence template and narrow owner-decision checklist.
-- [x] Verify the synthetic restore rehearsal on disposable PostgreSQL with age; [PR #93 CI run 41504298230](https://github.com/yorkstead/website/actions/runs/41504298230) passed the then-current head. Recheck the consolidated head. A synthetic pass is not a production-derived restore.
+- [x] Verify the synthetic restore rehearsal on disposable PostgreSQL with age; PR #93's exact-head [Actions run 41552395705](https://github.com/yorkstead/website/actions/runs/41552395705) passed its isolated recovery job. A synthetic pass is not a production-derived restore.
 - [ ] Owner approves RPO/cadence, exact storage and cost, key custody/recovery, primary/secondary operators and reviewer, coverage, and source-specific production export procedure.
 - [ ] Independently review private production seven-entry/eleven-audit parity and capture provenance.
 - [ ] Separately authorize a specific production export, verify remote storage/retention/retrieval, and complete an isolated restore rehearsal before any production migration request.
@@ -44,7 +44,7 @@
 - [x] Run focused/full tests and repository verification; keep PR 1 blocked until verified production evidence is reviewed.
 - [x] Owner reports a successful production diagnostic; Neon endpoint/project/branch/database mapping and aggregate facts are documented without public IDs or fingerprints.
 - [x] Cleanup PR #90 removes temporary code/helper/tests/docs; latest Actions and Preview pass. PR remains draft/unmerged.
-- [ ] Owner confirms temporary flags are false/removed, Production redeployment, and owner-authenticated 404; provider integration lacks access.
+- [x] Owner reports both temporary flags disabled, Production cleanup deployed, and owner-authenticated retired-mode 404; no protected values or response bodies recorded.
 ## PR 2 — staged inventory and ownership
 
 - [ ] Add unverified candidate staging, duplicate review, owner/recovery roles and provenance.

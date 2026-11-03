@@ -10,7 +10,7 @@
 
 ## PR 0 follow-up — read-only production identity diagnostic (merged as PR #89)
 
-The temporary mode reused the existing owner-only leads diagnostic route, returned only fixed-SELECT redacted evidence, and was executed by the owner against production. Cleanup PR #90 removes the temporary mode/helper/tests while preserving the legacy no-query route. The owner still needs to verify production flag deactivation and post-cleanup deployment separately; see `production-preflight.md`.
+The temporary mode reused the existing owner-only leads diagnostic route, returned only fixed-SELECT redacted evidence, and was executed by the owner against production. Cleanup PR #90 removed the temporary mode/helper/tests while preserving the legacy no-query route and is merged/deployed. The owner reported both preflight flags disabled and the authenticated retired mode returning 404; see `production-preflight.md`.
 
 ## PR 1 — preservation foundation
 
