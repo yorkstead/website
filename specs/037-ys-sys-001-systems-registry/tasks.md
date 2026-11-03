@@ -13,7 +13,7 @@ The PR 0 / PR 1 sections below are historical completion records. Their former-d
 - [x] Add migration upgrade coverage for empty and partial synthetic states; populated synthetic migration preservation remains covered by the existing migration test.
 - [x] Address PR #97 review findings with ISO renewal-date serialization, legacy provenance round-trip, immutable legacy identity, and transaction-client relationship reads covered by focused regression tests.
 - [ ] Keep migration 0023 unapplied to Production and do not reconstruct Production records in this PR.
-- [ ] Run repository checks, tests, lint, typecheck, browser tests where applicable, and build; report unavailable checks explicitly.
+- [x] Run repository checks, tests, lint, typecheck, browser tests, disposable PostgreSQL integration, and build; exact-head CI evidence is recorded in `verification.md`.
 - [ ] Review exact PR branch diff; do not merge or deploy without separate authorization.
 
 ## PR 0 — discovery and decision

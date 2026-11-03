@@ -5,7 +5,7 @@
 - PR #97 is receiving focused fixes for review findings covering renewal-date serialization, legacy entry editing and identity, and concurrent transactional relationship reads.
 - CC-023 remains the authoritative Systems Directory. Retain the configured Production and Preview databases; support empty, partial, or populated starting data and preserve entries and audit history present at release.
 - Production migration 0023 remains unapplied and separately gated. `YS_SYS_001_ENABLED` remains off in Production. This work performs no Production queries, writes, configuration changes, or deployments.
-- Final head and exact-head CI evidence will be recorded here after the corrections pass verification.
+- Review corrections passed exact-head GitHub Actions on code head `146e1d448176f9d01e2f1e0dbd607521b7232aae` (run [41652675738](https://github.com/yorkstead/website/actions/runs/41652675738)): 562 tests passed, including disposable PostgreSQL migration/integration and browser workflows; lint, typecheck, build, and isolated synthetic recovery rehearsal passed. Vercel Preview is Ready. A following handoff-only commit is being rechecked; Production migration 0023 was not executed.
 
 ## Historical recovery handoff — 2026-11-03 (superseded by active handoff above)
 
