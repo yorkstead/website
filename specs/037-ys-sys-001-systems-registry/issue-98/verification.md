@@ -10,9 +10,15 @@
 - `bun run build`: PASS.
 - Focused verification/migration tests: 27 passed, 1 PostgreSQL test skipped locally.
 
-## CI and Preview
+## Exact-head CI and Preview
 
-Pending exact-head draft PR CI and Vercel Preview. Do not treat local skipped PostgreSQL tests as integration verification. Require the CI disposable PostgreSQL migrations, service/integration tests, and Registry browser workflow to pass before review readiness.
+- GitHub Actions run 41667921530: PASS on head 4e48cf694c20cd1d9ce2ee6fa90e7d31b257c835.
+- Verify application: PASS, including disposable PostgreSQL migration application, deterministic and database integration tests, lint, typecheck, browser tests (including the Registry workflow), and production build.
+- Isolated synthetic recovery rehearsal: PASS.
+- Vercel Preview: Ready for the same head. Preview routes were not queried because Preview database isolation is unverified.
+- PR #99 has no unresolved review threads at final review.
+
+Local database-test skips are covered by the successful disposable PostgreSQL CI job. CI setup and browser-evidence upload steps skipped conditionally are non-test cleanup/evidence steps; no critical integration/browser tests were skipped.
 
 ## Safety
 

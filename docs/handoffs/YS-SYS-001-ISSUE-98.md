@@ -14,12 +14,13 @@
 
 ## Verification status
 
-- Local: migration plan, scaffold check, unit tests, lint, typecheck, and production build pass. PostgreSQL-backed integration tests were skipped locally because Docker is unavailable; exact-head GitHub Actions must run those tests against disposable PostgreSQL before the PR is considered verified.
-- Current local full suite: 449 passed, 121 skipped, 0 failed. The skip count includes the new database integration tests.
-- GitHub Actions and Vercel Preview results are pending.
+- Local: migration plan, scaffold check, unit tests, lint, typecheck, and production build pass. PostgreSQL-backed integration tests were skipped locally because Docker is unavailable.
+- Exact-head GitHub Actions run 41667921530 on 4e48cf694c20cd1d9ce2ee6fa90e7d31b257c835: both application verification and the isolated synthetic recovery rehearsal passed. Disposable PostgreSQL migration/integration checks, complete browser workflows, lint, typecheck, and build passed.
+- Vercel Preview for the same head is Ready. No Preview application routes were queried because Preview database isolation is unverified.
+- No unresolved PR review threads were present at final review.
 
 ## Next
 
-Review the draft PR and exact-head CI, including migration 0024 application, populated/empty/partial synthetic fixtures, concurrent billing allocation protection, audit immutability, legacy compatibility, and the Registry browser workflow. Keep Production migration, feature activation, merge, and deployment separately authorized.
+Review draft PR #99 and its final exact-head evidence. The disposable PostgreSQL workflow applies the ordered migrations, exercises populated and partial registry fixtures, billing allocation protection, audit behavior, compatibility, and browser flows. Keep Production migration, feature activation, merge, and deployment separately authorized.
 
 `docs/handoffs/CURRENT.md` is preserved as-is. This standalone note provides the Issue #98 active state without republishing its historical operational contents.
