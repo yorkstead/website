@@ -1,5 +1,13 @@
 # YS-SYS-001 verification record — PR 0
 
+## PR #94 release gate and backup setup preparation — 2026-11-03
+
+- Live GitHub PR #94 at prior head `90e50e734a353ad310832bc39a5b9d3b6f75e46e` was open/draft, mergeable, based on main `e698dbc3db2d1e7e5958d23d6d320b1e10bcaf87`; GitHub proposed merge SHA `a701b541135f94c6125d2f59e8e1eab26e62dd32`. Exact-head Actions run [41582815628](https://github.com/yorkstead/website/actions/runs/41582815628) passed both jobs and Vercel Preview was Ready. These facts must be rechecked after this documentation update.
+- The reviewed PR diff consists only of six Markdown files (roadmap, handoff, recovery package/runbook, tasks, verification); no application code, migration, workflow, shell script, or executable backup path is changed. Merge does initiate the normal Vercel Production build/deployment; the documented build wrapper does not apply migrations.
+- Added a controlled-release recommendation and read-only post-release smoke tests; step-by-step owner R2 setup checklist; private seven-entry/eleven-audit comparison with fingerprint caveats; single-operator exception acknowledgment; and a one-time first-backup authorization scope. No R2 resource, production data, configuration, or database was changed.
+- `git diff --check`, `bun run yorkstead:check`, and `bun run db:migrate:check` passed on the documentation worktree. The migration check validated 0001–0023 ordering only; it did not apply a migration. Exact-head CI and Preview remain required after pushing this update.
+- Production release of PR #94 requires separate authorization. Production storage activation/export/backup, recurring schedule, restore, and migration 0023 remain **NO-GO** pending exact setup approval, private parity, exception acknowledgment, one-time export authorization, and later recovery verification.
+
 ## Recovery policy decision and PR #94 update — 2026-11-03
 
 - Owner approved a 24-hour RPO implemented by daily encrypted PostgreSQL custom-format backups, with 30-day retention and a 60-minute RTO target pending timed restore verification.

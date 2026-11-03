@@ -29,6 +29,8 @@
 ## Recovery preparation — owner planning decision, no production execution
 
 - [x] Prepare a specific production recovery approval package with encrypted custom-format dumps, owner-approved daily cadence/24-hour RPO, 30-day retention, 60-minute RTO target, cost verification procedure, one-time first-backup authorization request, single-operator exception, and isolated restore rehearsal plan. Exact storage/key/cost approvals and production execution remain open.
+- [x] Add a step-by-step private R2 setup checklist, verified provider links, region/jurisdiction irreversibility warning, bucket-scoped credentials, key custody, retention, logging, and cost verification steps; do not provision R2 resources.
+- [x] Add the private row-level parity comparison method, concise owner exception acknowledgment, and PR #94 release recommendation with expected Production impact and smoke checks.
 
 - [x] Record planning choice of encrypted custom-format `pg_dump`, 30-day artifact retention, and 60-minute incident-to-service RTO target in `recovery-runbook.md`.
 - [x] Prepare synthetic-only backup/encryption/local-upload/restore scripts, automated failure and integrity tests, private evidence template and narrow owner-decision checklist.
