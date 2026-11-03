@@ -1,4 +1,13 @@
-# Current status — YS-SYS-001 single-operator recovery policy — 2026-11-03
+# Current status — YS-SYS-001 PR #97 review corrections — 2026-11-03
+
+## Active handoff
+
+- PR #97 is receiving focused fixes for review findings covering renewal-date serialization, legacy entry editing and identity, and concurrent transactional relationship reads.
+- CC-023 remains the authoritative Systems Directory. Retain the configured Production and Preview databases; support empty, partial, or populated starting data and preserve entries and audit history present at release.
+- Production migration 0023 remains unapplied and separately gated. `YS_SYS_001_ENABLED` remains off in Production. This work performs no Production queries, writes, configuration changes, or deployments.
+- Review corrections passed exact-head GitHub Actions on code head `146e1d448176f9d01e2f1e0dbd607521b7232aae` (run [41652675738](https://github.com/yorkstead/website/actions/runs/41652675738)): 562 tests passed, including disposable PostgreSQL migration/integration and browser workflows; lint, typecheck, build, and isolated synthetic recovery rehearsal passed. Vercel Preview is Ready. A following handoff-only commit is being rechecked; Production migration 0023 was not executed.
+
+## Historical recovery handoff — 2026-11-03 (superseded by active handoff above)
 
 - PRs #90–#93 are merged. PR #92 production deployment `dpl_Fc1LKCvWKqwWEfoHvRTk7MrRfAkT` is owner-reported to pass homepage, intake, owner dashboard, and Systems Directory smoke checks (4/4).
 - Read-only post-deployment evidence reports 22 applied migrations through 0022, no 0023 entry, seven unarchived Systems Directory rows, eleven audit events, no missing/orphan audit history, and three enabled revision/audit triggers. The private row-level preservation comparison remains pending.

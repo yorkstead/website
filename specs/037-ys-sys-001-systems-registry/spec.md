@@ -1,12 +1,22 @@
 # YS-SYS-001 — Systems Registry Upgrade
 
+## Owner direction — 2026-11-03
+
+- Retain the currently configured Production and Preview databases. Do not pursue former-database recovery or historical row-level parity.
+- Accept empty, partially populated, or populated initial Systems Directory states. Preserve the records and append-only audit history that are present when implementation is released.
+- Reconstruct Systems Directory and original Opportunity Discovery records only from documented source evidence. Reconstructed records must be identified as reconstructed, never as recovered historical rows.
+- CC-023 remains the Registry's authoritative architectural foundation; do not create a parallel registry.
+- Migration 0023 remains unapplied to Production until separately authorized.
+
+These owner decisions supersede the earlier seven-row/eleven-event historical-preservation gate and former-database recovery plan below. They do not authorize production queries, data entry, migration, configuration changes, or deployment.
+
 ## User value
 
 Give the Yorkstead owner one reliable, evidence-backed registry of the systems the business operates, what each system depends on, who owns its recovery, what subscriptions cost, and which operational facts are known or unknown.
 
 ## Authority and compatibility
 
-Upgrade the existing CC-023 Systems Directory. The authoritative persistence remains the existing `system_directory_entries` and `system_directory_audit` model, extended additively. Preserve all seven original records, IDs, account labels, costs, URLs, notes, renewal dates, audit histories, owner scoping, page/API routes and existing response contracts. Never create a parallel registry or delete/rekey/migrate legacy entries without a separately reviewed, evidence-backed mapping.
+Upgrade the existing CC-023 Systems Directory. The authoritative persistence remains the existing `system_directory_entries` and `system_directory_audit` model, extended additively. Preserve every record and audit event present in the retained database, along with its IDs, account labels, costs, URLs, notes, renewal dates, owner scoping, page/API routes, and existing response contracts. Do not assume a record count or create a parallel registry. Never delete/rekey/migrate existing entries without a separately reviewed, evidence-backed mapping.
 
 ## Registry classes
 
@@ -24,7 +34,9 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 ## Scope
 
 - Extend the existing owner-only directory with typed inventory, relationships and evidence, preserving the current entry model and compatibility routes.
-- Before schema work, allow a temporary, default-off, owner-only read-only preflight mode on the existing owner diagnostic route. It must expose only safe database/Neon endpoint identity, schema/migration status, counts, stable entry IDs/revisions/archive state and deterministic fingerprints; it must not create a new route or return raw entry/audit fields.
+- Preserve each pre-existing Directory entry's immutable legacy identity independently of editable provenance; old Directory rows stay in its compatibility list, and their `legacy` provenance round-trips through Registry edits.
+- Serialize PostgreSQL renewal dates as calendar-date strings (`YYYY-MM-DD`) so reads can be submitted unchanged in date inputs and later edits.
+- Historical preflight work used the existing owner diagnostic route and was retired in PR #90. It is not an active Registry feature or prerequisite for this implementation slice.
 - Stage newly discovered candidates as unverified; detect duplicates against existing records and require owner review before they become authoritative.
 - Represent account ownership and recovery responsibility without storing credentials, recovery codes, payment data or customer operational records.
 - Represent subscription cost evidence as actual, estimated or unknown, with currency, period, source/evidence reference and shared-entitlement allocation. Totals must not count one shared entitlement multiple times or turn missing evidence into zero.
@@ -43,8 +55,8 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 
 ## Acceptance criteria
 
-1. CC-023 remains the sole authoritative directory, retaining its page, APIs, DTO compatibility, authorization and audit stream.
-2. All seven production legacy records retain their exact IDs and material values; existing immutable audit history remains queryable and unchanged. A redacted before/after reconciliation proves this.
+1. CC-023 remains the sole authoritative directory, retaining its page, APIs, DTO compatibility, authorization and audit stream. Existing rows carry an immutable legacy marker that cannot be changed or reclassified out of the legacy Directory view.
+2. Any records and immutable audit history present in the retained database remain intact. Fresh, empty, partially populated, and populated states are supported; tests use synthetic records and do not assume historical counts.
 3. Six registry classes and typed, bounded relationships are represented without conflating provider, account, subscription, workload, infrastructure and component.
 4. New candidates remain staged/unverified until explicit owner review; duplicates are surfaced without silently merging records.
 5. Ownership, recovery responsibility, provenance and evidence state are explicit; unknown is never converted to a positive assertion.

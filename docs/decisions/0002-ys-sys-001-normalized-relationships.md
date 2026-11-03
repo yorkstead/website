@@ -24,4 +24,8 @@ The relationship-audit table intentionally has no foreign key to the live relati
 
 - Existing IDs, legacy fields, routes, DTOs, entry audit events, and `relationships` JSON remain intact.
 - New links are referentially valid and have a separate immutable history stream; a later API slice must present legacy and relationship history coherently.
-- Production migration remains blocked pending private row-level parity, recovery readiness, and separate owner authorization.
+- Production migration remains separately gated by the current recovery policy and explicit owner authorization; historical row-level parity is not an active requirement.
+
+## Owner clarification — 2026-11-03
+
+Former-database recovery and historical row-level parity are stopped by owner decision. Relationship CRUD must therefore preserve whatever entries and audit events are present in the retained database, including an empty state. This does not alter the normalized relation, foreign-key, revision, or append-only audit design. Migration 0023 remains unapplied to Production until separately authorized.

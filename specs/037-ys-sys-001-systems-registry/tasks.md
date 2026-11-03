@@ -1,5 +1,21 @@
 # YS-SYS-001 tasks
 
+The PR 0 / PR 1 sections below are historical completion records. Their former-database and fixed seven-entry/eleven-audit production-baseline gates are superseded by the 2026-11-03 owner direction and are not active tasks.
+
+## PR 2 — staged inventory and ownership (owner direction 2026-11-03)
+
+- [x] Reconcile spec, plan, tasks, and ADRs with retained Production/Preview database decision; remove historical row-count parity and former-database recovery as active gates while keeping prior evidence labeled historical.
+- [x] Implement six-class Registry DTO/schema, canonical-entry service, typed routes, owner + default-off gate, safe errors, revision conflicts, and append-only audit.
+- [x] Implement typed relationship listing/mutation using migration 0023's normalized tables, foreign keys, revisioning, and audit history.
+- [x] Add owner Registry page with class filters, search, type-specific field groups, role/provenance fields, clear empty/partial states, and links to existing systems.
+- [x] Keep `/api/systems-directory`, its DTO, and legacy page behavior compatible, with a guard against reclassifying legacy rows.
+- [x] Add owner/flag/origin/input boundary tests and synthetic database tests for six classes, audit, revision conflict, and legacy DTO shape.
+- [x] Add migration upgrade coverage for empty and partial synthetic states; populated synthetic migration preservation remains covered by the existing migration test.
+- [x] Address PR #97 review findings with ISO renewal-date serialization, legacy provenance round-trip, immutable legacy identity, and transaction-client relationship reads covered by focused regression tests.
+- [ ] Keep migration 0023 unapplied to Production and do not reconstruct Production records in this PR.
+- [x] Run repository checks, tests, lint, typecheck, browser tests, disposable PostgreSQL integration, and build; exact-head CI evidence is recorded in `verification.md`.
+- [ ] Review exact PR branch diff; do not merge or deploy without separate authorization.
+
 ## PR 0 — discovery and decision
 
 - [x] Verify GitHub default branch and current main SHA using GitHub API evidence.

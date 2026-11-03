@@ -100,14 +100,17 @@ describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
       expect(auditCountsAfter).toEqual(auditCountsBefore);
       expect((await client.query("SELECT count(*)::int AS count FROM system_directory_entries WHERE entity_class='provider_service' AND verification_state='unknown' AND provenance_kind='legacy'")).rows[0].count).toBe(7);
       expect((await client.query("SELECT count(*)::int AS count FROM system_directory_audit")).rows[0].count).toBe(11);
+      expect((await client.query("SELECT count(*)::int AS count FROM system_directory_entries WHERE legacy_directory_entry")).rows[0].count).toBe(7);
 
       const classes = ["provider_service", "provider_account", "subscription", "application_workload", "infrastructure_asset", "stack_component"];
       for (const [index, entityClass] of classes.entries()) {
-        await client.query(`INSERT INTO system_directory_entries(id,tenant_id,name,category,provider,entity_class)
-          VALUES($1,'yorkstead-owner',$2,'other','Synthetic Provider',$3)`, [randomUUID(), `Synthetic class ${index}`, entityClass]);
+        await client.query(`INSERT INTO system_directory_entries(id,tenant_id,name,category,provider,entity_class,legacy_directory_entry)
+          VALUES($1,'yorkstead-owner',$2,'other','Synthetic Provider',$3,FALSE)`, [randomUUID(), `Synthetic class ${index}`, entityClass]);
       }
       await expectDatabaseError(() => client.query(`INSERT INTO system_directory_entries(id,tenant_id,name,category,provider,entity_class)
         VALUES($1,'yorkstead-owner','Invalid class','other','Synthetic Provider','unknown_class')`, [randomUUID()]), "23514");
+      await expectDatabaseError(() => client.query("UPDATE system_directory_entries SET entity_class='application_workload' WHERE id=$1", ["00000000-0000-4000-8000-000000000001"]), "23514");
+      await expectDatabaseError(() => client.query("UPDATE system_directory_entries SET legacy_directory_entry=FALSE WHERE id=$1", ["00000000-0000-4000-8000-000000000001"]), "23514");
 
       const parentIds = rowsBefore.slice(0, 2).map((row: { id: string }) => row.id);
       const relationshipId = randomUUID();
