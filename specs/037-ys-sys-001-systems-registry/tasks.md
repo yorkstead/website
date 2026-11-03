@@ -24,7 +24,7 @@
 - [x] Author a synthetic seven-entry/eleven-audit populated-upgrade parity test, relationship integrity/audit tests, class constraints, and legacy DTO compatibility test.
 - [x] Execute database-backed migration and preservation tests on disposable PostgreSQL; [PR #92 CI run 41499404998](https://github.com/yorkstead/website/actions/runs/41499404998) passed the then-current head. Recheck the consolidated head before review completion.
 - [ ] Rehearse restore from an authorized recovery artifact; none is available in this workspace.
-- [ ] Run complete repository verification and update exact-head evidence.
+- [x] Run complete repository verification on the reconciled proposed merge; record the initial exact-head evidence in `verification.md` and rerun on the final documentation head.
 
 ## Recovery preparation — owner planning decision, no production execution
 

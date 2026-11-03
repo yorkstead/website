@@ -2,11 +2,18 @@
 
 ## Current verified state
 
-- GitHub reports Website `main` at `d5b419e69edc38b5da4f9d5c2b29a82e149f4e3b`; PRs #90, #91 and #93 are merged. PR #92 is open and its prior head is being reconciled with that `main` without rewriting its shared history.
+- GitHub reports Website `main` at `d5b419e69edc38b5da4f9d5c2b29a82e149f4e3b`; PRs #90, #91 and #93 are merged. PR #92 was reconciled from its prior head by non-rewriting merge commit `b2930735f2a73968042009aa9d1caa908371ca43` and pushed to its existing branch. Exact proposed-merge run [41565610202](https://github.com/yorkstead/website/actions/runs/41565610202) passed on that head; the handoff/verification update is pending a final exact-head run. PR #92 remains open and unmerged.
 - PR #92 contains additive migration 0023, default-off typed-registry access and disposable synthetic preservation tests. It does not update or seed the existing directory rows. No production migration, export, backup, restore, configuration change, merge or deployment is authorized here.
 - The PR #93 recovery rehearsal on `main` is synthetic-only; its successful CI does not establish private production parity or production restore readiness.
 - `docs/handoffs/CURRENT.md` now has a short dated, redacted status entry; the earlier handoff body remains historical and was not republished.
 - Production export and migration remain **NO-GO** pending independent private seven-entry/eleven-audit row-level parity review, an authorized and usable recovery artifact, isolated restore rehearsal, outstanding owner decisions and separate operation-specific approval.
+
+## Reconciliation and review update — 2026-11-03
+
+- Current main `d5b419e69edc38b5da4f9d5c2b29a82e149f4e3b` is included as the second parent of merge commit `b2930735f2a73968042009aa9d1caa908371ca43`; PR branch history was not rewritten. The only content conflict was the recorded PR #93 synthetic-run evidence in `tasks.md`, resolved to the current main evidence.
+- Exact proposed-merge Actions run [41565610202](https://github.com/yorkstead/website/actions/runs/41565610202) passed both independent jobs. The application job passed 553 Bun tests (0 failures, 0 skipped), migration plan/application checks, lint, typecheck, the 35-test Playwright suite and all dedicated browser flows, then production build. The separate isolated synthetic recovery job passed its seven-entry/eleven-audit encrypted restore test (1 pass, 0 failures) in its own internal-network PostgreSQL/container environment.
+- Vercel Preview status for the reconciled head succeeded. The current handoff/verification documentation update requires another exact-head run; final review-thread resolution is pending that run.
+- PR #92 preserves additive migration 0023 and default-off access. No production schema/data/configuration, backup, export, restore, merge or deployment action occurred. Production migration remains **NO-GO**.
 
 ## Historical status snapshot — 2026-11-02
 

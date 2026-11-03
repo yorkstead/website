@@ -1,5 +1,14 @@
 # YS-SYS-001 verification record — PR 0
 
+## PR #92 reconciliation — 2026-11-03
+
+- Reconciled the existing PR branch without rewriting history. Main `d5b419e69edc38b5da4f9d5c2b29a82e149f4e3b` is the second parent of merge commit `b2930735f2a73968042009aa9d1caa908371ca43`; GitHub calculated proposed merge SHA `56399ba7f87ad74628d97ceec9796fa36ef90794`.
+- Exact proposed-merge GitHub Actions run [41565610202](https://github.com/yorkstead/website/actions/runs/41565610202) completed successfully. Its application job passed 553 Bun tests (0 failures, 0 skipped), migration validation and disposable PostgreSQL application, lint, typecheck, the 35-test Playwright suite, dedicated browser workflows (including Systems Directory and Opportunity Discovery), and production build. The isolated recovery job ran independently and passed the encrypted synthetic seven-entry/eleven-audit restore (1 pass, 0 failures).
+- The recovery job provisioned its own fresh PostgreSQL container and Docker internal network, verified the disposable database was the only attached peer, ran the dedicated recovery image/entry point, and removed resources. This is synthetic recovery evidence only.
+- Vercel Preview status on the reconciled PR head succeeded. A documentation-only evidence/handoff commit is being prepared; GitHub checks must be reconfirmed on that final head before review completion.
+- The conflict was limited to the PR #93 synthetic-run reference in `tasks.md`; it now points at the current mainline recovery CI evidence. Migration 0023, additive-only behavior, default-off authorization, existing build safeguards, and the mainline recovery isolation implementation remain preserved. `CURRENT.md` has only a short dated YS-SYS-001 status substitution; the historical body remains untouched.
+- Local checks on the reconciled tree: scaffold check and 23-migration ordering check passed; lint passed with one existing warning; typecheck and build passed; local `bun test` reported 436 pass, 117 database-dependent skips, 0 failures. Those local skips are covered by the exact Actions PostgreSQL job above; no critical database suite was skipped there.
+
 ## PR 1 implementation preparation — 2026-11-02
 
 - Isolated branch is based on PR #91 head `6629324a7c6c9cdbc9ce91cd13d962dd0345b4ef`, stacked on main `b521af85b00334f69c4cb089cdb6458c1e3e5ec9`. `docs/handoffs/CURRENT.md` is unchanged; this slice uses standalone redacted `docs/handoffs/YS-SYS-001-STATUS.md`.
