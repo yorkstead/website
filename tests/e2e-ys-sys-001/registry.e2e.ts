@@ -30,9 +30,8 @@ test("owner can stage all Registry classes, search, add evidence-backed dependen
   await page.getByLabel("Search records").fill(`Synthetic application_workload ${suffix}`);
   await page.getByLabel("Inspect a system").selectOption(ids[3]!);
   await expect(page.getByRole("heading",{name:`Synthetic application_workload ${suffix}`})).toBeVisible();
-  await expect(page.locator("section").filter({has:page.getByRole("heading",{name:"Upstream dependencies"})}).getByRole("link",{name:`Synthetic provider_service ${suffix}`})).toBeVisible();
-  await expect(page.getByText("Unverified path")).toBeVisible();
-  await expect(page.getByRole("link",{name:`Synthetic provider_service ${suffix}`})).toHaveAttribute("href",new RegExp("/dashboard/systems/registry#"));
+  const upstreamPanel=page.locator("section").filter({has:page.getByRole("heading",{name:"Upstream dependencies"})});const providerLink=upstreamPanel.getByRole("link",{name:`Synthetic provider_service ${suffix}`});
+  await expect(providerLink).toBeVisible();await expect(page.getByText("Unverified path")).toBeVisible();await expect(providerLink).toHaveAttribute("href",new RegExp("/dashboard/systems/registry#"));
   await page.goto("/dashboard/systems/registry/readiness");await expect(page.getByRole("heading",{name:"Activation readiness"})).toBeVisible();
   await expect(page.getByText("Blocked",{exact:true})).toBeVisible();
   await expect(page.getByRole("heading",{name:"Missing recovery role"})).toBeVisible();
