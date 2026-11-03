@@ -28,6 +28,8 @@
 
 ## Recovery preparation — owner planning decision, no production execution
 
+- [x] Prepare a specific production recovery approval package with an encrypted custom-format dump proposal, 30-day retention, 60-minute RTO, cost scenarios, owner authorization request, and isolated restore rehearsal plan. RPO/storage/key custody/operators remain open; no production export is authorized.
+
 - [x] Record planning choice of encrypted custom-format `pg_dump`, 30-day artifact retention, and 60-minute incident-to-service RTO target in `recovery-runbook.md`.
 - [x] Prepare synthetic-only backup/encryption/local-upload/restore scripts, automated failure and integrity tests, private evidence template and narrow owner-decision checklist.
 - [x] Verify the synthetic restore rehearsal on disposable PostgreSQL with age; PR #93's exact-head [Actions run 41552395705](https://github.com/yorkstead/website/actions/runs/41552395705) passed its isolated recovery job. A synthetic pass is not a production-derived restore.

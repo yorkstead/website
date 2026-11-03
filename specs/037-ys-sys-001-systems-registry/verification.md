@@ -1,5 +1,13 @@
 # YS-SYS-001 verification record — PR 0
 
+## PR #92 production acceptance and recovery planning — 2026-11-03
+
+- Owner reports Production smoke checks passed for homepage, intake, owner dashboard, and Systems Directory (4/4) after deployment `dpl_Fc1LKCvWKqwWEfoHvRTk7MrRfAkT`.
+- Read-only Neon SQL verification after deployment reported 22 applied migrations through 0022; migration 0023 absent; 7 unarchived directory entries; 11 audit events; 0 entries without audit and 0 orphaned events; three enabled directory revision/audit protection triggers. Revision and per-entry audit-count aggregates matched. No row values, stable IDs, or fingerprints are copied here.
+- The private row-level comparison against the independently captured baseline was not available in this verification record and remains required before any production migration. The verified aggregates do not authorize a backup/export or migration.
+- Added `production-recovery-approval-package.md`: proposes a bucket-scoped, client-side encrypted PostgreSQL custom dump in private R2 storage with 30-day bucket lock/lifecycle expiry; contains usage-based storage estimates, an ungranted one-time export request, RPO choices, key/operator decisions, and an isolated recovery acceptance procedure. Official provider pricing and platform controls are linked there. No storage service or Neon settings were activated or changed.
+- Production export/backup, production-derived restore, and migration 0023 remain **NO-GO**. No production data or configuration was modified.
+
 ## PR #92 reconciliation — 2026-11-03
 
 - Reconciled the existing PR branch without rewriting history. Main `d5b419e69edc38b5da4f9d5c2b29a82e149f4e3b` is the second parent of merge commit `b2930735f2a73968042009aa9d1caa908371ca43`; GitHub calculated proposed merge SHA `56399ba7f87ad74628d97ceec9796fa36ef90794`.
