@@ -93,8 +93,8 @@ beforeAll(async () => {
     await owner.query("BEGIN");
     await owner.query("SELECT set_config('yorkstead.system_directory_actor','synthetic-fixture',true)");
     for (let index = 1; index <= 7; index += 1) {
-      await owner.query(`INSERT INTO system_directory_entries(id,tenant_id,name,category,provider,account_identity,amount,archived_at)
-        VALUES($1,'yorkstead-owner',$2,'other','Synthetic provider',$3,$4,NULL)`, [
+      await owner.query(`INSERT INTO system_directory_entries(id,tenant_id,name,category,provider,account_identity,billing_cadence,amount,amount_basis,archived_at)
+        VALUES($1,'yorkstead-owner',$2,'other','Synthetic provider',$3,'monthly',$4,'actual',NULL)`, [
         `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
         `Synthetic system ${index}`,
         `synthetic-account-${index}`,
