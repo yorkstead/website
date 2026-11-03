@@ -27,7 +27,7 @@ test("owner can stage all Registry classes, search, add evidence-backed dependen
   await page.getByLabel("Relationship source").selectOption(ids[3]!);await page.getByLabel("Relationship target").selectOption(ids[0]!);
   await page.getByLabel("Relationship evidence").fill("synthetic dependency fixture");await page.getByRole("button",{name:"Link",exact:true}).click();
   await expect(page.getByText(new RegExp(`Synthetic application_workload ${suffix}.*depends on.*Synthetic provider_service ${suffix}`))).toBeVisible();
-  const analysisResponse=await context.request.get(`/api/systems-registry/analysis?selected=${ids[3]}`);expect(analysisResponse.status()).toBe(200);const analysisBody=await analysisResponse.json();expect(analysisBody.analysis.upstream.records.map((record:{id:string})=>record.id)).toContain(ids[0]);
+  const analysisResponse=await context.request.get(`/api/systems-registry/analysis?selected=${ids[3]}`);expect(analysisResponse.status()).toBe(200);const analysisBody=await analysisResponse.json();expect(analysisBody.analysis.edges).toContainEqual(expect.objectContaining({sourceId:ids[3],targetId:ids[0],kind:"depends_on"}));expect(analysisBody.analysis.upstream.records.map((record:{id:string})=>record.id)).toContain(ids[0]);
   await page.goto("/dashboard/systems/registry/impact");await expect(page.getByRole("heading",{name:"Dependency impact"})).toBeVisible();
   await page.getByLabel("Search records").fill(`Synthetic application_workload ${suffix}`);
   await page.getByLabel("Inspect a system").selectOption(ids[3]!);
