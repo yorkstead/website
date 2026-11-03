@@ -48,3 +48,6 @@ Read-only Neon metadata was rechecked on 2026-11-02: the matched project reports
 - **PR 1 design and disposable verification preparation: GO.** Current main ends at migration 0022; 0023 is the next repository candidate. The proposed design and compatibility contract are in `plan.md`.
 - **Production migration: NO-GO.** Close the private row-level parity review, verify the chosen recovery point and backup durability, pass the disposable restore/migration rehearsal, establish accepted RPO/RTO and reconciliation ownership, and obtain separate scoped production authorization first.
 - No production query, data/DDL write, backup mutation, environment change, branch creation, merge, or deployment was performed in this readiness update.
+# Historical diagnostic record — superseded for release gating (2026-11-03)
+
+The owner has retained the currently configured databases and stopped former-database recovery. The historical seven-entry/eleven-audit baseline and its private row-level parity review are **not** current requirements. Do not use the counts or fingerprints below as a current pre-migration baseline. Use [`activation-runbook.md`](activation-runbook.md) to prepare a new prospective baseline of whatever data is present before any separately authorized Production migration. The diagnostic facts below remain historical, owner-reported source evidence only.

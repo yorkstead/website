@@ -1,5 +1,21 @@
 # YS-SYS-001 implementation plan
 
+## Current continuation — dependency impact and activation readiness
+
+PR #97/#99 provide the six canonical classes, evidence, billing, monitoring and explicitly sourced relationships on the CC-023 record model. This continuation adds read-only analysis and owner views; it introduces no schema migration. Before implementation, the class relationship semantics and readiness severity rules are recorded in [`dependency-impact-readiness/spec.md`](dependency-impact-readiness/spec.md), with file-level slices and test evidence in its plan and task list.
+
+1. Add one owner/feature-flag gated `GET /api/systems-registry/analysis` snapshot using a repeatable-read, read-only transaction and strict record/edge caps. Return only the minimum fields needed for graph and readiness; no account labels, notes, evidence contents, or private billing values.
+2. Compute upstream/downstream traversals, explicit edge classification, cycle paths, blast radius, readiness gaps, and bounded/truncated indicators in a pure deterministic module. Unknown or missing edges never become verified or healthy.
+3. Add responsive, accessible impact and readiness views linked from the existing Registry. Provide a semantic table/list alongside the visual graph and direct record links to the existing Registry cards.
+4. Add synthetic unit, controller, PostgreSQL, and browser coverage for empty/partial inventories, all six classes, traversal direction, cycles, filtering, relationship labels, limits, readiness, authorization, and legacy compatibility.
+5. Add a controlled 0023/0024 Production rollout plan to operations docs. Production identity/data, backup/retrieval, migration, activation, smoke tests, and rollback/forward recovery remain separate, owner-approved gates.
+
+The feature flag remains default-off, and the runbook does not grant Production access, migration, backup, or activation permission.
+
+### Prior plan status reconciliation — 2026-11-03
+
+The phase labels below predate the GitHub PR sequence and are historical ordering, not outstanding scope: six-class inventory/ownership/relationships shipped in merged PR #97; evidence-backed verification, subscription billing provenance and manual monitoring shipped in merged PR #99. The next product slice is the dependency-impact/readiness continuation above. Do not treat the former seven-entry/eleven-audit or former-database recovery gates in older plan prose as current requirements.
+
 ## Current execution direction — 2026-11-03
 
 The owner has selected the existing Production and Preview databases and reconstruction from documented evidence for the specifically missing Systems Directory and original Opportunity Discovery records. Former-database recovery and the historical seven-entry/eleven-audit parity exercise are stopped. The Registry must preserve whatever data and audit history exists at release and support empty, partial, and populated starting states. CC-023 remains authoritative. Migration 0023 is not applied to Production by this work and still requires separate authorization.
@@ -57,39 +73,41 @@ The temporary mode reused the existing owner-only leads diagnostic route, return
 7. **Rollback:** revert the application to legacy readers/writers while retaining additive schema. Do not implement a destructive down migration. Any schema correction is forward-only.
 8. **Preservation report:** do not perform or claim historical row-level parity. For any future separately authorized Production migration, record the actual pre-change current-state counts and compare a versioned migration-0020 legacy projection and every audit row present before/after. Public artifacts contain aggregate pass/fail only.
 
-## PR 2 — candidate inventory and ownership (current slice)
+## Historical phase — candidate inventory and ownership (delivered by PR #97)
 
 1. Add typed provider/service, account, application/workload, infrastructure/asset and stack-component staging using existing owner scope.
 2. Import no candidate automatically. Add provenance, owner/recovery roles, duplicate review and unverified state.
 3. Keep legacy entries available through existing APIs and UI; test preservation and owner-only behavior.
 
-## PR 3 — subscriptions and cost evidence
+## Historical phase — subscriptions and cost evidence (delivered by PR #99)
 
 1. Add evidence-backed subscription records, periods, entitlement-sharing and reconciliation states.
 2. Distinguish actual, estimated and unknown; prove shared entitlements are counted once and unknown is not zero.
 3. Preserve legacy billing values without treating the historical subtotal as current truth.
 
-## PR 4 — workload and asset links
+## Historical phase — workload and asset links (covered by PR #97 six-class relationship support)
 
 1. Link applications/workloads to provider accounts, infrastructure/assets and stack components.
 2. Add scoped search and source/provenance rendering; leave external provider refresh out of scope.
 
-## PR 5 — dependencies and impact
+## Dependency impact and readiness — current continuation
 
 1. Add typed dependency edges with evidence/provenance and bounded graph traversal.
 2. Provide accessible table-first impact inspection; show direct/transitive scope, cycle/truncation and unknown state.
 3. Do not infer health from graph connectivity.
 
-## PR 6 — monitoring evidence
+## Historical phase — monitoring evidence (delivered by PR #99)
 
 1. Represent monitor configuration and owner-approved observations, preserving `unknown`, `not_monitored`, stale and unavailable.
 2. Reuse only existing read-only trusted checks; no arbitrary URL probes, polling, alerts, or credentials.
 
-## PR 7 — activation readiness and rehearsal
+## Controlled Production activation — separately gated
 
-1. Review current-state preservation and compatibility endpoints against the final schema and DTOs; do not claim historical parity.
+1. Review current-state preservation and compatibility endpoints against the final schema and DTOs; use a new prospective baseline with no fixed historic row count.
 2. Rehearse restoration/rollback against disposable data and document migration forward-fix limits.
 3. Keep activation default-off until separate written authorization covers the exact release/migration scope; this plan does not authorize merge, deployment or production change.
+
+The controlled migration and activation sequence is maintained in [`activation-runbook.md`](activation-runbook.md).
 
 ## Cross-workstream sequencing
 

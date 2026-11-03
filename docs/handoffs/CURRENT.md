@@ -1,11 +1,12 @@
-# Current status — YS-SYS-001 PR #97 review corrections — 2026-11-03
+# Current status — YS-SYS-001 dependency impact and activation readiness — 2026-11-03
 
 ## Active handoff
 
-- PR #97 is receiving focused fixes for review findings covering renewal-date serialization, legacy entry editing and identity, and concurrent transactional relationship reads.
-- CC-023 remains the authoritative Systems Directory. Retain the configured Production and Preview databases; support empty, partial, or populated starting data and preserve entries and audit history present at release.
-- Production migration 0023 remains unapplied and separately gated. `YS_SYS_001_ENABLED` remains off in Production. This work performs no Production queries, writes, configuration changes, or deployments.
-- Review corrections passed exact-head GitHub Actions on code head `146e1d448176f9d01e2f1e0dbd607521b7232aae` (run [41652675738](https://github.com/yorkstead/website/actions/runs/41652675738)): 562 tests passed, including disposable PostgreSQL migration/integration and browser workflows; lint, typecheck, build, and isolated synthetic recovery rehearsal passed. Vercel Preview is Ready. A following handoff-only commit is being rechecked; Production migration 0023 was not executed.
+- Verified at session start: GitHub `main` is `64be4915e42fbff8fe9474f8a9ced81309bb800c` (PR #99 merge). Implementation is isolated on `feat/ys-sys-001-dependency-impact`; the original dirty checkout remains untouched.
+- Current scope adds read-only dependency impact and activation readiness over CC-023/Registry records and relationships. Use only explicit recorded edges; do not infer health or dependencies. The legacy Systems Directory API/DTO remains unchanged.
+- The owner retains current Production/Preview databases and has stopped former-database recovery and historical seven-entry/eleven-audit parity. A new prospective baseline is required before any separately authorized Production migration.
+- Production migrations 0023/0024, `YS_SYS_001_ENABLED`, backups/exports, Production queries, merge and deployment remain outside this work authorization. No Production action is performed.
+- Specification-first artifacts: `specs/037-ys-sys-001-systems-registry/dependency-impact-readiness/`; controlled rollout gates: `activation-runbook.md`. Next: finish implementation, disposable verification, draft PR and exact-head CI review.
 
 ## Historical recovery handoff — 2026-11-03 (superseded by active handoff above)
 

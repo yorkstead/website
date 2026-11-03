@@ -8,6 +8,8 @@ test.afterAll(async()=>disposeCc023Owner());
 
 test("owner can stage all Registry classes, search, add evidence-backed dependencies, and review audit",async({page,context,baseURL})=>{
   expect((await context.request.get("/api/systems-registry")).status()).toBe(401);
+  await page.goto("/dashboard/systems/registry/impact");await expect(page).toHaveURL(/\/login\?next=\/dashboard\/systems\/registry\/impact/);
+  await page.goto("/dashboard/systems/registry/readiness");await expect(page).toHaveURL(/\/login\?next=\/dashboard\/systems\/registry\/readiness/);
   await page.goto("/dashboard/systems/registry");await expect(page).toHaveURL(/\/login\?next=\/dashboard\/systems\/registry/);
   const origin=baseURL!;const login=await context.request.post("/api/auth/sign-in/email",{headers:{origin},data:cc023Owner});expect(login.status()).toBe(200);
   const suffix=randomUUID().slice(0,8);const ids:string[]=[];
@@ -17,6 +19,7 @@ test("owner can stage all Registry classes, search, add evidence-backed dependen
     expect(response.status(),entityClass).toBe(201);ids.push((await response.json()).entry.id);
   }
   await page.goto("/dashboard/systems/registry");await expect(page.getByRole("heading",{name:"Systems Registry"})).toBeVisible();
+  await expect(page.getByRole("navigation",{name:"Systems Registry views"})).toBeVisible();
   await page.getByLabel("Search Registry").fill(`Synthetic application_workload ${suffix}`);
   const filteredCard=page.locator("article").filter({has:page.getByRole("heading",{name:`Synthetic application_workload ${suffix}`})});
   await expect(filteredCard).toBeVisible();await expect(filteredCard.getByText("Application / workload",{exact:true})).toBeVisible();
@@ -24,6 +27,17 @@ test("owner can stage all Registry classes, search, add evidence-backed dependen
   await page.getByLabel("Relationship source").selectOption(ids[3]!);await page.getByLabel("Relationship target").selectOption(ids[0]!);
   await page.getByLabel("Relationship evidence").fill("synthetic dependency fixture");await page.getByRole("button",{name:"Link",exact:true}).click();
   await expect(page.getByText(new RegExp(`Synthetic application_workload ${suffix}.*depends on.*Synthetic provider_service ${suffix}`))).toBeVisible();
+  await page.goto("/dashboard/systems/registry/impact");await expect(page.getByRole("heading",{name:"Dependency impact"})).toBeVisible();
+  await page.getByLabel("Search records").fill(`Synthetic application_workload ${suffix}`);
+  await page.getByLabel("Inspect a system").selectOption(ids[3]!);
+  await expect(page.getByRole("heading",{name:`Synthetic application_workload ${suffix}`})).toBeVisible();
+  await expect(page.getByText("Provider / service",{exact:true}).first()).toBeVisible();
+  await expect(page.getByText("Unverified path")).toBeVisible();
+  await expect(page.getByRole("link",{name:`Synthetic provider_service ${suffix}`})).toHaveAttribute("href",new RegExp("/dashboard/systems/registry#"));
+  await page.goto("/dashboard/systems/registry/readiness");await expect(page.getByRole("heading",{name:"Activation readiness"})).toBeVisible();
+  await expect(page.getByText("Blocked",{exact:true})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Missing recovery role"})).toBeVisible();
+  await page.goto("/dashboard/systems/registry");
   await page.getByRole("button",{name:"Add record"}).click();const name=`Synthetic UI service ${suffix}`;
   await page.getByLabel("Name",{exact:true}).fill(name);await page.getByLabel("Provider / technology").fill("Synthetic provider");
   await page.getByRole("button",{name:"Save record"}).click();const card=page.locator("article").filter({has:page.getByRole("heading",{name})});await expect(card).toBeVisible();
