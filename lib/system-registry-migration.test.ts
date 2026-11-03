@@ -28,7 +28,7 @@ const migration = async (client: { query: (sql: string) => Promise<unknown> }, f
 
 afterAll(async () => { await admin?.end(); });
 
-describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
+describe("YS-SYS-001 migrations 0023–0024 preservation and compatibility", () => {
   databaseTest("preserves seven synthetic legacy rows and eleven audit events while adding typed schema", async () => {
     const databaseName = `ys_sys_001_test_${randomUUID().replaceAll("-", "")}`;
     await admin!.query(`CREATE DATABASE ${databaseName}`);
@@ -87,6 +87,7 @@ describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
       expect(preMigrationView.every((entry) => !("entityClass" in entry) && !("verificationState" in entry))).toBe(true);
 
       await migration(client, "0023_systems-registry-foundation.sql");
+      await migration(client, "0024_registry-evidence-billing-monitoring.sql");
 
       const rowsAfter = (await client.query(`SELECT ${legacyColumns} FROM system_directory_entries ORDER BY id`)).rows;
       const auditsAfter = (await client.query(`SELECT id::text,tenant_id,entry_id::text,revision,action,actor_id,
@@ -101,6 +102,7 @@ describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
       expect((await client.query("SELECT count(*)::int AS count FROM system_directory_entries WHERE entity_class='provider_service' AND verification_state='unknown' AND provenance_kind='legacy'")).rows[0].count).toBe(7);
       expect((await client.query("SELECT count(*)::int AS count FROM system_directory_audit")).rows[0].count).toBe(11);
       expect((await client.query("SELECT count(*)::int AS count FROM system_directory_entries WHERE legacy_directory_entry")).rows[0].count).toBe(7);
+      expect((await client.query("SELECT count(*)::int AS count FROM system_directory_entries WHERE verification_status='unknown' AND monitoring_configuration='unknown' AND monitoring_outcome='unknown'")).rows[0].count).toBe(7);
 
       const classes = ["provider_service", "provider_account", "subscription", "application_workload", "infrastructure_asset", "stack_component"];
       for (const [index, entityClass] of classes.entries()) {
@@ -138,12 +140,12 @@ describe("YS-SYS-001 migration 0023 preservation and compatibility", () => {
     }
   }, 60000);
 
-  test("migration 0023 is the next ordered migration and remains additive", async () => {
+  test("migration 0024 is the next ordered migration and remains additive", async () => {
     const migrationFiles = (await readdir("migrations")).filter((fileName) => fileName.endsWith(".sql")).sort();
-    expect(migrationFiles.at(-1)).toBe("0023_systems-registry-foundation.sql");
-    const source = await readFile("migrations/0023_systems-registry-foundation.sql", "utf8");
+    expect(migrationFiles.at(-1)).toBe("0024_registry-evidence-billing-monitoring.sql");
+    const source = await readFile("migrations/0024_registry-evidence-billing-monitoring.sql", "utf8");
     expect(source).not.toMatch(/\b(UPDATE|DELETE)\s+system_directory_entries\b/i);
     expect(source).not.toMatch(/\b(DROP|TRUNCATE)\s+(TABLE|system_directory_)/i);
-    expect(source).toContain("REFERENCES system_directory_entries(id) ON DELETE RESTRICT");
+    expect(source).toContain("REFERENCES system_directory_entries(id,tenant_id,entity_class) ON DELETE RESTRICT ON UPDATE RESTRICT");
   });
 });

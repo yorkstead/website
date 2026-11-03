@@ -22,7 +22,7 @@ describe("CC-023 disposable PostgreSQL persistence",()=>{
   try{
    await adminClient.query(`CREATE SCHEMA ${schema}`);
    await adminClient.query(`SET search_path TO ${schema}`);
-   for(const fileName of ["0020_systems-directory.sql","0023_systems-registry-foundation.sql"]){
+   for(const fileName of ["0020_systems-directory.sql","0023_systems-registry-foundation.sql","0024_registry-evidence-billing-monitoring.sql"]){
     const migration=parseMigration(fileName,await readFile(`migrations/${fileName}`,"utf8"));
     for(const statement of migration.statements)await adminClient.query(statement);
    }
