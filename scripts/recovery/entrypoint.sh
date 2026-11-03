@@ -22,7 +22,7 @@ cleanup() { rm -rf -- "$RECOVERY_WORKSPACE"; }
 trap cleanup EXIT
 export RECOVERY_TEST_HOST="$RECOVERY_DB_HOST" RECOVERY_TEST_PORT="${RECOVERY_DB_PORT:-5432}" RECOVERY_TEST_USER="$RECOVERY_DB_USER" RECOVERY_TEST_PASSWORD="$RECOVERY_DB_PASSWORD" RECOVERY_TEST_DB="$RECOVERY_DB_NAME"
 unset RECOVERY_DB_HOST RECOVERY_DB_PORT RECOVERY_DB_USER RECOVERY_DB_PASSWORD RECOVERY_DB_NAME
-if bun test ./scripts/recovery/rehearsal.integration.ts; then status=0; else status=$?; fi
+if bun test ./scripts/recovery/rehearsal.integration.ts ./scripts/recovery/preservation-baseline.integration.ts; then status=0; else status=$?; fi
 cleanup
 trap - EXIT
 exit "$status"

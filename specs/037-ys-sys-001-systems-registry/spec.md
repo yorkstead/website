@@ -41,6 +41,14 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 - No new paid service or provider integration is implied by catalog presence.
 - Production remains read-only until a separate explicit release/migration authorization. No production migration, write, configuration change, merge or deployment is authorized by this feature request.
 
+## Trusted preservation baseline runner
+
+- Provide a local owner-operated Ubuntu WSL CLI that captures only the fixed Systems Directory rows, related audit rows, migration ledger and relevant trigger/role metadata.
+- Require a dedicated least-privileged read-only PostgreSQL role, current private target/storage attestations, a separate one-time capture approval and an interactive owner confirmation. Do not create the role or capture production data in implementation/CI.
+- Use one repeatable-read, read-only transaction; verify database/role identity, migrations 0001–0022 and absent 0023, seven unique entries, eleven audits, zero orphans, and enabled revision/append/immutability triggers.
+- Store all row-level values and deterministic versioned SHA-256 fingerprints only in the private evidence bundle. Encrypt locally with age before any R2 upload, retrieve ciphertext independently, compare checksums, decrypt and recompute integrity, and emit only redacted aggregate status.
+- Synthetic CI must prove capture, encryption, storage/retrieval, decryption, tamper/key/access failures and cleanup without provider credentials or production network/data access.
+
 ## Acceptance criteria
 
 1. CC-023 remains the sole authoritative directory, retaining its page, APIs, DTO compatibility, authorization and audit stream.
