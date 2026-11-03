@@ -31,3 +31,24 @@ test("owner can stage all Registry classes, search, add evidence-backed dependen
   const archive=await context.request.patch("/api/systems-registry",{headers:{origin},data:{id:ids[5],expectedRevision:1,action:"archive"}});expect(archive.status()).toBe(200);
   expect(systemEntityClasses).toHaveLength(6);
 });
+
+test("owner records verification, monitoring, and one shared billing source with audit provenance",async({page,context,baseURL})=>{
+  const origin=baseURL!;const login=await context.request.post("/api/auth/sign-in/email",{headers:{origin},data:cc023Owner});expect(login.status()).toBe(200);
+  const suffix=randomUUID().slice(0,8);
+  const makeEntry=(name:string,entityClass:"provider_account"|"subscription",monitoringConfiguration="unknown")=>context.request.post("/api/systems-registry",{headers:{origin},data:{entityClass,details:{name,category:"other",provider:"Synthetic billing vendor",purpose:"Synthetic issue 98 workflow",accountIdentity:"",billingEntity:"",notes:"",relationships:[],billingCadence:"unknown",currency:"USD",amount:null,amountBasis:"unknown",costConfirmation:"unverified",renewalDate:null,pinned:false,manualHealth:"not_monitored",manualHealthSummary:"",manualHealthCheckedAt:null},responsibleRole:"Synthetic owner",recoveryRole:"Synthetic operator",verificationState:"unknown",provenanceKind:"unknown",provenanceReference:null,observedAt:null,monitoringConfiguration}});
+  const accountResponse=await makeEntry(`Synthetic billing account ${suffix}`,"provider_account");expect(accountResponse.status()).toBe(201);const account=(await accountResponse.json()).entry.id;
+  const firstResponse=await makeEntry(`Synthetic subscription A ${suffix}`,"subscription","configured");expect(firstResponse.status()).toBe(201);const first=(await firstResponse.json()).entry.id;
+  const secondResponse=await makeEntry(`Synthetic subscription B ${suffix}`,"subscription");expect(secondResponse.status()).toBe(201);const second=(await secondResponse.json()).entry.id;
+  const registry=await context.request.get("/api/systems-registry");const registryBody=await registry.json();
+  const firstEntry=registryBody.entries.find((entry:{id:string})=>entry.id===first);
+  const verified=await context.request.post("/api/systems-registry/verification",{headers:{origin},data:{id:first,expectedRevision:firstEntry.revision,evidence:{status:"verified",subject:"Synthetic subscription is listed in provider account",method:"provider_console",reference:`synthetic-console-${suffix}`,observedAt:new Date().toISOString(),reviewDue:null}}});expect(verified.status()).toBe(200);
+  const verifiedEntry=(await verified.json()).entry;
+  const monitoring=await context.request.post("/api/systems-registry/monitoring",{headers:{origin},data:{id:first,expectedRevision:verifiedEntry.revision,evidence:{outcome:"unavailable",method:"status_page",reference:`synthetic-status-${suffix}`,observedAt:new Date().toISOString(),reviewDue:null,summary:"Synthetic provider status page unavailable"}}});expect(monitoring.status()).toBe(200);
+  const billing=await context.request.post("/api/systems-registry/billing",{headers:{origin},data:{type:"evidence",evidence:{providerAccountId:account,sourceKind:"invoice",reference:`synthetic-invoice-${suffix}`,observedAt:new Date().toISOString(),periodStart:"2026-10-01",periodEnd:"2026-10-31",amountBasis:"actual",amount:120,currency:"USD",payerLabel:"Synthetic owner",status:"unverified",reviewDue:null}}});expect(billing.status()).toBe(201);const evidence=(await billing.json()).evidence;
+  for(const [subscriptionId,amount] of [[first,80],[second,40]] as const){const allocation=await context.request.post("/api/systems-registry/billing",{headers:{origin},data:{type:"allocation",allocation:{evidenceId:evidence.id,subscriptionId,amount}}});expect(allocation.status()).toBe(201);}
+  const rollup=await context.request.get("/api/systems-registry/billing");const rollupBody=await rollup.json();expect(rollupBody.rollup).toContainEqual(expect.objectContaining({amountBasis:"actual",currency:"USD",amountTotal:"120.00",sourceCount:1}));
+  const billingAudit=await context.request.get(`/api/systems-registry/billing?audit=${evidence.id}`);expect((await billingAudit.json()).audit).toHaveLength(3);
+  await page.goto("/dashboard/systems/registry");await expect(page.getByRole("heading",{name:"Systems Registry"})).toBeVisible();
+  const card=page.locator("article").filter({has:page.getByRole("heading",{name:`Synthetic subscription A ${suffix}`})});await expect(card).toBeVisible();await expect(card.getByText(/Monitoring configured \/ unavailable/)).toBeVisible();
+  const billingCard=page.locator("article").filter({hasText:`synthetic-invoice-${suffix}`});await expect(billingCard).toBeVisible();await billingCard.getByRole("button",{name:"Audit"}).click();await expect(billingCard.getByText(/Billing source audit/)).toBeVisible();
+});

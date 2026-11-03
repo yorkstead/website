@@ -18,13 +18,13 @@ async function schemaPool(adminPool:Pool,name:string,includeRegistry:boolean){
   const schema=`registry_${name}_${randomUUID().replaceAll("-","")}`;const client=await adminPool.connect();
   try{
     await client.query(`CREATE SCHEMA ${schema}`);await client.query(`SET search_path TO ${schema}`);
-    const files=includeRegistry?["0020_systems-directory.sql","0023_systems-registry-foundation.sql"]:["0020_systems-directory.sql"];
+    const files=includeRegistry?["0020_systems-directory.sql","0023_systems-registry-foundation.sql","0024_registry-evidence-billing-monitoring.sql"]:["0020_systems-directory.sql"];
     for(const fileName of files){const migration=parseMigration(fileName,await readFile(`migrations/${fileName}`,"utf8"));for(const statement of migration.statements)await client.query(statement);}
   }catch(error){await client.query("RESET search_path").catch(()=>undefined);await client.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`).catch(()=>undefined);client.release();throw error;}
   await client.query("RESET search_path");client.release();
   return {schema,pool:new Pool({connectionString:configured,options:`-c search_path=${schema}`,max:2,connectionTimeoutMillis:1500})};
 }
-function typedInput(entityClass:SystemRegistryInput["entityClass"],name:string):SystemRegistryInput{return{entityClass,details:{...emptySystemDirectoryInput,name,provider:"Synthetic provider",purpose:`Synthetic ${entityClass}`,category:"other",billingCadence:entityClass==="subscription"?"annual":"unknown",currency:"USD",amount:entityClass==="subscription"?120:null,amountBasis:entityClass==="subscription"?"actual":"unknown",costConfirmation:entityClass==="subscription"?"confirmed":"unverified",renewalDate:entityClass==="subscription"?"2026-12-31":null},responsibleRole:"Synthetic operator",recoveryRole:"Synthetic recovery",verificationState:"unknown",provenanceKind:"unknown",provenanceReference:null,observedAt:null};}
+function typedInput(entityClass:SystemRegistryInput["entityClass"],name:string):SystemRegistryInput{return{entityClass,details:{...emptySystemDirectoryInput,name,provider:"Synthetic provider",purpose:`Synthetic ${entityClass}`,category:"other",billingCadence:entityClass==="subscription"?"annual":"unknown",currency:"USD",amount:entityClass==="subscription"?120:null,amountBasis:entityClass==="subscription"?"actual":"unknown",costConfirmation:entityClass==="subscription"?"confirmed":"unverified",renewalDate:entityClass==="subscription"?"2026-12-31":null},responsibleRole:"Synthetic operator",recoveryRole:"Synthetic recovery",verificationState:"unknown",provenanceKind:"unknown",provenanceReference:null,observedAt:null,monitoringConfiguration:"unknown"};}
 
 describe("YS-SYS-001 synthetic PostgreSQL Registry",()=>{
   dbTest("supports empty start, all six classes, revision conflicts, relationships, and immutable audit",async()=>{
@@ -61,7 +61,7 @@ describe("YS-SYS-001 synthetic PostgreSQL Registry",()=>{
       const record=await legacy.create(details,"registry-test-owner");
       const before=(await pool.query("SELECT id,revision,name,provider,account_identity,amount,archived_at FROM system_directory_entries WHERE id=$1",[record.id])).rows;
       const auditBefore=(await pool.query("SELECT id,entry_id,revision,action,actor_id,created_at,before_state,after_state FROM system_directory_audit WHERE entry_id=$1 ORDER BY id",[record.id])).rows;
-      await adminClient.query(`SET search_path TO ${schema}`);const migration=parseMigration("0023_systems-registry-foundation.sql",await readFile("migrations/0023_systems-registry-foundation.sql","utf8"));for(const statement of migration.statements)await adminClient.query(statement);await adminClient.query("RESET search_path");
+      await adminClient.query(`SET search_path TO ${schema}`);for(const fileName of ["0023_systems-registry-foundation.sql","0024_registry-evidence-billing-monitoring.sql"]){const migration=parseMigration(fileName,await readFile(`migrations/${fileName}`,"utf8"));for(const statement of migration.statements)await adminClient.query(statement);}await adminClient.query("RESET search_path");
       scoped=new Pool({connectionString:configured,options:`-c search_path=${schema}`,max:2});const registry=createSystemRegistryService(scoped);
       expect((await registry.list({})).map(item=>({id:item.id,revision:item.revision,name:item.name,entityClass:item.entityClass}))).toEqual([{id:record.id,revision:record.revision,name:record.name,entityClass:"provider_service"}]);
       const [registryRecord]=await registry.list({});

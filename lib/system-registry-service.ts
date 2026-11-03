@@ -1,12 +1,13 @@
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { SystemDirectoryInput } from "@/lib/system-directory";
-import type { SystemRegistryInput, SystemRegistryRecord, SystemRegistryRelationshipInput } from "@/lib/system-registry";
+import type { SystemRegistryInput, SystemRegistryRecord, SystemRegistryRelationshipInput, SystemRegistryVerificationInput, SystemRegistryMonitoringInput } from "@/lib/system-registry";
 
 const tenant = "yorkstead-owner";
-const entryColumns = `id,revision,name,category,provider,purpose,dashboard_url,documentation_url,account_identity,billing_entity,notes,relationships,billing_cadence,currency,amount,amount_basis,cost_confirmation,renewal_date::text AS renewal_date,pinned,archived_at,manual_health,manual_health_summary,manual_health_checked_at,entity_class,responsible_role,recovery_role,verification_state,provenance_kind,provenance_reference,observed_at,confirmed_at,created_at,updated_at`;
+const entryColumns = `id,revision,name,category,provider,purpose,dashboard_url,documentation_url,account_identity,billing_entity,notes,relationships,billing_cadence,currency,amount,amount_basis,cost_confirmation,renewal_date::text AS renewal_date,pinned,archived_at,manual_health,manual_health_summary,manual_health_checked_at,entity_class,responsible_role,recovery_role,verification_state,provenance_kind,provenance_reference,observed_at,confirmed_at,monitoring_configuration,verification_status,verification_subject,verification_method,verification_reference,verification_observed_at,verification_review_due::text AS verification_review_due,verification_reviewed_at,monitoring_outcome,monitoring_method,monitoring_reference,monitoring_observed_at,monitoring_review_due::text AS monitoring_review_due,monitoring_reviewed_at,monitoring_summary,created_at,updated_at`;
 const detailValues = (input: SystemDirectoryInput) => [input.name,input.category,input.provider,input.purpose,input.dashboardURL ?? null,input.documentationURL ?? null,input.accountIdentity,input.billingEntity,input.notes,JSON.stringify(input.relationships),input.billingCadence,input.currency,input.amount,input.amountBasis,input.costConfirmation,input.renewalDate,input.pinned,input.manualHealth,input.manualHealthSummary,input.manualHealthCheckedAt];
 type Row = Record<string, unknown>;
+const utcDateKey=(value:Date)=>`${value.getUTCFullYear()}-${String(value.getUTCMonth()+1).padStart(2,"0")}-${String(value.getUTCDate()).padStart(2,"0")}`;
 
 function mapDetails(row: Row): SystemDirectoryInput {
   const relationships = typeof row.relationships === "string" ? JSON.parse(row.relationships) : row.relationships;
@@ -22,12 +23,26 @@ function mapDetails(row: Row): SystemDirectoryInput {
   };
 }
 function mapRecord(row: Row, links: SystemRegistryRecord["links"]): SystemRegistryRecord {
+  const today=utcDateKey(new Date());
+  const verificationDue=row.verification_review_due?String(row.verification_review_due).slice(0,10):null;
+  const monitoringDue=row.monitoring_review_due?String(row.monitoring_review_due).slice(0,10):null;
+  const storedVerification=row.verification_status as SystemRegistryRecord["verificationStatus"];
+  const storedMonitoring=row.monitoring_outcome as SystemRegistryRecord["monitoringOutcome"];
   return {
     ...mapDetails(row), entityClass: row.entity_class as SystemRegistryInput["entityClass"], responsibleRole: row.responsible_role as string | null,
     recoveryRole: row.recovery_role as string | null, verificationState: row.verification_state as SystemRegistryInput["verificationState"],
     provenanceKind: row.provenance_kind as SystemRegistryInput["provenanceKind"], provenanceReference: row.provenance_reference as string | null,
     observedAt: row.observed_at ? new Date(String(row.observed_at)).toISOString() : null, id: String(row.id), revision: Number(row.revision),
     confirmedAt: row.confirmed_at ? new Date(String(row.confirmed_at)).toISOString() : null, archivedAt: row.archived_at ? new Date(String(row.archived_at)).toISOString() : null,
+    monitoringConfiguration: row.monitoring_configuration as SystemRegistryInput["monitoringConfiguration"],
+    verificationStatus: storedVerification==="verified"&&verificationDue&&verificationDue<today?"stale":storedVerification, verificationSubject: row.verification_subject as string | null,
+    verificationMethod: row.verification_method as SystemRegistryRecord["verificationMethod"], verificationReference: row.verification_reference as string | null,
+    verificationObservedAt: row.verification_observed_at ? new Date(String(row.verification_observed_at)).toISOString() : null,
+    verificationReviewDue: verificationDue, verificationReviewedAt: row.verification_reviewed_at ? new Date(String(row.verification_reviewed_at)).toISOString() : null,
+    monitoringOutcome: storedMonitoring!=="unknown"&&storedMonitoring!=="unavailable"&&monitoringDue&&monitoringDue<today?"stale":storedMonitoring, monitoringMethod: row.monitoring_method as SystemRegistryRecord["monitoringMethod"],
+    monitoringReference: row.monitoring_reference as string | null, monitoringObservedAt: row.monitoring_observed_at ? new Date(String(row.monitoring_observed_at)).toISOString() : null,
+    monitoringReviewDue: monitoringDue, monitoringReviewedAt: row.monitoring_reviewed_at ? new Date(String(row.monitoring_reviewed_at)).toISOString() : null,
+    monitoringSummary: String(row.monitoring_summary ?? ""),
     createdAt: new Date(String(row.created_at)).toISOString(), updatedAt: new Date(String(row.updated_at)).toISOString(), links,
   };
 }
@@ -90,9 +105,9 @@ export function createSystemRegistryService(pool: Pool) {
         const id = randomUUID();
         const values = detailValues(input.details);
         if (input.provenanceKind === "legacy") throw Object.assign(new Error("Legacy provenance is reserved for existing Directory entries"),{code:"YS_LEGACY_PROVENANCE_LOCKED"});
-        const result = await client.query<Row>(`INSERT INTO system_directory_entries(id,tenant_id,name,category,provider,purpose,dashboard_url,documentation_url,account_identity,billing_entity,notes,relationships,billing_cadence,currency,amount,amount_basis,cost_confirmation,renewal_date,pinned,manual_health,manual_health_summary,manual_health_checked_at,entity_class,responsible_role,recovery_role,verification_state,provenance_kind,provenance_reference,observed_at,confirmed_at,legacy_directory_entry)
-          VALUES($1,$2,${Array.from({length:20},(_,i)=>`$${i+3}`).join(",")},$23,$24,$25,$26,$27,$28,$29::timestamptz,CASE WHEN $26='owner_reviewed' THEN clock_timestamp() ELSE NULL END,FALSE) RETURNING ${entryColumns}`,
-        [id, tenant, ...values, input.entityClass, input.responsibleRole, input.recoveryRole, input.verificationState, input.provenanceKind, input.provenanceReference, input.observedAt]);
+        const result = await client.query<Row>(`INSERT INTO system_directory_entries(id,tenant_id,name,category,provider,purpose,dashboard_url,documentation_url,account_identity,billing_entity,notes,relationships,billing_cadence,currency,amount,amount_basis,cost_confirmation,renewal_date,pinned,manual_health,manual_health_summary,manual_health_checked_at,entity_class,responsible_role,recovery_role,verification_state,provenance_kind,provenance_reference,observed_at,confirmed_at,legacy_directory_entry,monitoring_configuration)
+          VALUES($1,$2,${Array.from({length:20},(_,i)=>`$${i+3}`).join(",")},$23,$24,$25,$26,$27,$28,$29::timestamptz,CASE WHEN $26='owner_reviewed' THEN clock_timestamp() ELSE NULL END,FALSE,$30) RETURNING ${entryColumns}`,
+        [id, tenant, ...values, input.entityClass, input.responsibleRole, input.recoveryRole, input.verificationState, input.provenanceKind, input.provenanceReference, input.observedAt, input.monitoringConfiguration]);
         const links = await loadLinks([id], client);
         return mapRecord(result.rows[0]!, links.get(id) ?? []);
       });
@@ -107,8 +122,8 @@ export function createSystemRegistryService(pool: Pool) {
         if (current.rows[0].legacy_directory_entry && input.provenanceKind !== "legacy") throw Object.assign(new Error("Legacy provenance must be preserved on existing Directory entries"),{code:"YS_LEGACY_PROVENANCE_LOCKED"});
         if (input.provenanceKind === "legacy" && !current.rows[0].legacy_directory_entry) throw Object.assign(new Error("Legacy provenance is reserved for existing Directory entries"),{code:"YS_LEGACY_PROVENANCE_LOCKED"});
         const values = detailValues(input.details);
-        const result = await client.query<Row>(`UPDATE system_directory_entries SET name=$4,category=$5,provider=$6,purpose=$7,dashboard_url=$8,documentation_url=$9,account_identity=$10,billing_entity=$11,notes=$12,relationships=$13::jsonb,billing_cadence=$14,currency=$15,amount=$16,amount_basis=$17,cost_confirmation=$18,renewal_date=$19::date,pinned=$20,manual_health=$21,manual_health_summary=$22,manual_health_checked_at=$23::timestamptz,entity_class=$24,responsible_role=$25,recovery_role=$26,verification_state=$27,provenance_kind=CASE WHEN legacy_directory_entry THEN 'legacy' ELSE $28 END,provenance_reference=$29,observed_at=$30::timestamptz,confirmed_at=CASE WHEN $27='owner_reviewed' THEN clock_timestamp() ELSE NULL END
-          WHERE tenant_id=$1 AND id=$2 AND revision=$3 RETURNING ${entryColumns}`, [tenant, id, expectedRevision, ...values, input.entityClass, input.responsibleRole, input.recoveryRole, input.verificationState, input.provenanceKind, input.provenanceReference, input.observedAt]);
+        const result = await client.query<Row>(`UPDATE system_directory_entries SET name=$4,category=$5,provider=$6,purpose=$7,dashboard_url=$8,documentation_url=$9,account_identity=$10,billing_entity=$11,notes=$12,relationships=$13::jsonb,billing_cadence=$14,currency=$15,amount=$16,amount_basis=$17,cost_confirmation=$18,renewal_date=$19::date,pinned=$20,manual_health=$21,manual_health_summary=$22,manual_health_checked_at=$23::timestamptz,entity_class=$24,responsible_role=$25,recovery_role=$26,verification_state=$27,provenance_kind=CASE WHEN legacy_directory_entry THEN 'legacy' ELSE $28 END,provenance_reference=$29,observed_at=$30::timestamptz,confirmed_at=CASE WHEN $27='owner_reviewed' THEN clock_timestamp() ELSE NULL END,monitoring_configuration=$31
+          WHERE tenant_id=$1 AND id=$2 AND revision=$3 RETURNING ${entryColumns}`, [tenant, id, expectedRevision, ...values, input.entityClass, input.responsibleRole, input.recoveryRole, input.verificationState, input.provenanceKind, input.provenanceReference, input.observedAt, input.monitoringConfiguration]);
         if (!result.rows[0]) return null;
         const links = await loadLinks([id], client);
         return mapRecord(result.rows[0], links.get(id) ?? []);
@@ -120,6 +135,26 @@ export function createSystemRegistryService(pool: Pool) {
         if (!result.rows[0]) return null;
         const links = await loadLinks([id], client);
         return mapRecord(result.rows[0], links.get(id) ?? []);
+      });
+    },
+    async updateVerification(id: string, expectedRevision: number, input: SystemRegistryVerificationInput, actor: string) {
+      return transaction(pool, actor, async (client) => {
+        const result = await client.query<Row>(`UPDATE system_directory_entries SET verification_status=$4,verification_subject=$5,verification_method=$6,verification_reference=$7,verification_observed_at=$8::timestamptz,verification_review_due=$9::date,verification_reviewed_at=CASE WHEN $4='unknown' THEN NULL ELSE clock_timestamp() END
+          WHERE tenant_id=$1 AND id=$2 AND revision=$3 AND archived_at IS NULL RETURNING ${entryColumns}`,
+        [tenant,id,expectedRevision,input.status,input.subject,input.method,input.reference,input.observedAt,input.reviewDue]);
+        if (!result.rows[0]) return null;
+        const links=await loadLinks([id],client);
+        return mapRecord(result.rows[0],links.get(id)??[]);
+      });
+    },
+    async recordMonitoring(id: string, expectedRevision: number, input: SystemRegistryMonitoringInput, actor: string) {
+      return transaction(pool, actor, async (client) => {
+        const result = await client.query<Row>(`UPDATE system_directory_entries SET monitoring_outcome=$4,monitoring_method=$5,monitoring_reference=$6,monitoring_observed_at=$7::timestamptz,monitoring_review_due=$8::date,monitoring_summary=$9,monitoring_reviewed_at=CASE WHEN $4='unknown' THEN NULL ELSE clock_timestamp() END
+          WHERE tenant_id=$1 AND id=$2 AND revision=$3 AND archived_at IS NULL RETURNING ${entryColumns}`,
+        [tenant,id,expectedRevision,input.outcome,input.method,input.reference,input.observedAt,input.reviewDue,input.summary]);
+        if (!result.rows[0]) return null;
+        const links=await loadLinks([id],client);
+        return mapRecord(result.rows[0],links.get(id)??[]);
       });
     },
     async createRelationship(sourceId: string, input: SystemRegistryRelationshipInput, actor: string) {
