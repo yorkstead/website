@@ -17,9 +17,9 @@ test("owner can stage all Registry classes, search, add evidence-backed dependen
     expect(response.status(),entityClass).toBe(201);ids.push((await response.json()).entry.id);
   }
   await page.goto("/dashboard/systems/registry");await expect(page.getByRole("heading",{name:"Systems Registry"})).toBeVisible();
-  await expect(page.getByText("Provider / service",{exact:true}).first()).toBeVisible();
   await page.getByLabel("Search Registry").fill(`Synthetic application_workload ${suffix}`);
-  await expect(page.getByRole("heading",{name:`Synthetic application_workload ${suffix}`})).toBeVisible();
+  const filteredCard=page.locator("article").filter({has:page.getByRole("heading",{name:`Synthetic application_workload ${suffix}`})});
+  await expect(filteredCard).toBeVisible();await expect(filteredCard.getByText("Application / workload",{exact:true})).toBeVisible();
   await page.getByLabel("Search Registry").fill("");
   await page.getByLabel("Relationship source").selectOption(ids[3]!);await page.getByLabel("Relationship target").selectOption(ids[0]!);
   await page.getByLabel("Relationship evidence").fill("synthetic dependency fixture");await page.getByRole("button",{name:"Link",exact:true}).click();
