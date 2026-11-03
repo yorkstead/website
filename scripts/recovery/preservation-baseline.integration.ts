@@ -61,7 +61,7 @@ const source = {
   branch: "production" as const,
   endpointId: "ep-synthetic-only",
   hostname: host!,
-  database: "neondb" as const,
+  database: testDatabase,
   deploymentSha: "0".repeat(40),
   verifiedAtUtc: new Date().toISOString(),
 };

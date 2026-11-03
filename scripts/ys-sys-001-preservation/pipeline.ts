@@ -73,7 +73,7 @@ function validateBaselineEvidence(evidence: Record<string, unknown>) {
   const role = evidence.roleVerification as Record<string, unknown> | undefined;
   const triggers = evidence.protectionTriggers;
   if (evidence.format !== "ys-sys-001-preservation-baseline/v1"
-      || source?.provider !== "neon" || source.project !== "website" || source.branch !== "production" || source.database !== "neondb"
+      || source?.provider !== "neon" || source.project !== "website" || source.branch !== "production" || typeof source.database !== "string" || !source.database
       || migration?.appliedCount !== 22 || migration.latestVersion !== "0022" || migration.migration0023Applied !== false
       || !Array.isArray(migration.migrations) || migration.migrations.length !== 22
       || preservation?.entryCount !== 7 || preservation.auditEventCount !== 11 || preservation.orphanAuditCount !== 0

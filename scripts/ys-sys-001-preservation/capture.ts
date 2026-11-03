@@ -20,7 +20,7 @@ export type SourceAttestation = {
   branch: "production";
   endpointId: string;
   hostname: string;
-  database: "neondb";
+  database: string;
   deploymentSha: string;
   verifiedAtUtc: string;
 };
@@ -69,7 +69,7 @@ function validateRepositoryLedger(migrations: RepositoryMigration[], rows: Recor
   }
 }
 
-async function assertReadOnlyRole(client: CaptureClient) {
+async function assertReadOnlyRole(client: CaptureClient, expectedDatabase: string) {
   const result = await client.query(`
     SELECT current_user AS role_name,
       current_database() AS database_name,
@@ -94,7 +94,7 @@ async function assertReadOnlyRole(client: CaptureClient) {
     FROM pg_roles r WHERE r.rolname = current_user
   `);
   const role = result.rows[0];
-  if (!role || role.role_name !== REQUIRED_ROLE || role.database_name !== "neondb" || role.transaction_read_only !== "on") fail("read_only_role_invalid");
+  if (!role || role.role_name !== REQUIRED_ROLE || role.database_name !== expectedDatabase || role.transaction_read_only !== "on") fail("read_only_role_invalid");
   if (role.is_superuser || role.can_create_database || role.can_create_role || role.can_replicate || role.bypasses_rls
       || role.can_create_schema || role.can_create_in_public || role.can_write_entries || role.can_write_audit
       || role.can_write_migrations || role.has_broad_read_role || role.has_broad_write_role || role.can_execute_server_program
@@ -210,7 +210,7 @@ function verifyTriggers(rows: Record<string, unknown>[]) {
 
 export async function captureSystemDirectoryBaseline(options: CaptureOptions) {
   if (options.source.provider !== "neon" || options.source.project !== "website" || options.source.branch !== "production"
-      || options.source.database !== "neondb" || !options.source.endpointId || !options.source.deploymentSha
+      || !options.source.database || !options.source.endpointId || !options.source.deploymentSha
       || options.connectedHostname !== options.source.hostname) fail("source_identity_unverified");
   if (!Number.isFinite(Date.parse(options.source.verifiedAtUtc)) || !Number.isFinite(Date.parse(options.capturedAtUtc))) fail("source_attestation_timestamp_invalid");
 
@@ -228,7 +228,7 @@ export async function captureSystemDirectoryBaseline(options: CaptureOptions) {
     const connection = await client.query("SELECT current_database() AS database_name, current_user AS role_name, current_setting('server_version') AS server_version");
     const actual = connection.rows[0];
     if (actual?.database_name !== options.source.database || actual?.role_name !== REQUIRED_ROLE) fail("source_database_or_role_mismatch");
-    const role = await assertReadOnlyRole(client);
+    const role = await assertReadOnlyRole(client, options.source.database);
 
     const migrationRows = await client.query("SELECT version, name, checksum, applied_at::text AS applied_at_utc FROM public.application_migrations ORDER BY version");
     validateRepositoryLedger(options.migrations, migrationRows.rows);
