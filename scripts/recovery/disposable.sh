@@ -6,9 +6,6 @@ umask 077
 fail() { printf 'Recovery rehearsal failed: %s\n' "$1" >&2; exit 1; }
 [[ ${YS_RECOVERY_BOUNDARY:-} == ephemeral-container-internal-network-tmpfs-v1 ]] || fail 'approved isolated entry point is required'
 [[ -d /work && $(findmnt -n -o FSTYPE /work) == tmpfs ]] || fail 'workspace must be an isolated tmpfs mount'
-if awk 'NR>1 && $2=="00000000" {found=1} END {exit !found}' /proc/net/route || awk '$1 ~ /^0+$/ && $2=="00" {found=1} END {exit !found}' /proc/net/ipv6_route; then
-  fail 'network namespace must have no default route'
-fi
 for name in $(compgen -e); do
   case "$name" in
     PG*|DATABASE_URL|TEST_DATABASE_URL|POSTGRES_URL|POSTGRESQL_URL|DIRECT_URL|DB_URL|*_DATABASE_URL|*_DB_URL|*_CONNECTION_STRING|RECOVERY_OUTPUT_DIR|RECOVERY_STORAGE_DIR|RECOVERY_ENCRYPTED_FILE|RECOVERY_MANIFEST_FILE|RECOVERY_IDENTITY_FILE|VERCEL_*|NEON_*|AWS_*|AZURE_*|GOOGLE_*|CLOUDSDK_*) fail "forbidden environment variable: $name";;

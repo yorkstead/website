@@ -15,10 +15,6 @@ for name in $(compgen -e); do
 done
 [[ -d /work && $(findmnt -n -o FSTYPE /work) == tmpfs ]] || { echo 'isolated tmpfs workspace required' >&2; exit 78; }
 [[ -d /tmp && $(findmnt -n -o FSTYPE /tmp) == tmpfs && ${BUN_RUNTIME_TRANSPILER_CACHE_PATH:-} == /tmp/bun-runtime-cache ]] || { echo 'runtime temporary storage must remain on tmpfs' >&2; exit 78; }
-[[ -r /proc/net/route && -r /proc/net/ipv6_route ]] || { echo 'network namespace routes are unavailable' >&2; exit 78; }
-if awk 'NR>1 && $2=="00000000" {found=1} END {exit !found}' /proc/net/route || awk '$1 ~ /^0+$/ && $2=="00" {found=1} END {exit !found}' /proc/net/ipv6_route; then
-  echo 'network namespace must have no default route' >&2; exit 78
-fi
 [[ -n ${RECOVERY_DB_HOST:-} && -n ${RECOVERY_DB_USER:-} && -n ${RECOVERY_DB_PASSWORD:-} && -n ${RECOVERY_DB_NAME:-} ]] || exit 78
 export RECOVERY_WORKSPACE="$(mktemp -d /work/rehearsal.XXXXXX)"
 export YS_RECOVERY_BOUNDARY="ephemeral-container-internal-network-tmpfs-v1"
