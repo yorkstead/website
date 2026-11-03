@@ -19,14 +19,18 @@
 - [ ] **Blocked for production migration:** independently review private IDs/revisions/archive state, all seven entry values, per-entry audit counts/fingerprints and exact capture provenance.
 - [ ] Verify a specific pre-migration recovery point; agree RPO/RTO and acceptable data exposure; rehearse restore on disposable PostgreSQL/Neon only.
 - [x] Prepare migration 0023 design, six-class and legacy DTO compatibility contract, default-off authorization boundaries, parity procedure and disposable verification plan in `plan.md`.
-- [ ] Implement migration 0023 only after separate implementation approval; prove seven entries and eleven audits survive fresh/repeat/populated disposable upgrades unchanged.
-- [ ] Run migration checks and required application verification; update exact-head evidence.
+- [x] Implement additive migration 0023 with six checked classes, provenance/verification metadata, normalized FK-backed relationships, revision/audit protection, and indexes; no existing rows are updated or seeded.
+- [x] Preserve the legacy service DTO and filter it to provider/service records; add a default-off exact-value feature gate that also requires server-derived owner authorization.
+- [x] Author a synthetic seven-entry/eleven-audit populated-upgrade parity test, relationship integrity/audit tests, class constraints, and legacy DTO compatibility test.
+- [x] Execute database-backed migration and preservation tests on disposable PostgreSQL; [PR #92 CI run 41499404998](https://github.com/yorkstead/website/actions/runs/41499404998) passed the then-current head. Recheck the consolidated head before review completion.
+- [ ] Rehearse restore from an authorized recovery artifact; none is available in this workspace.
+- [x] Run complete repository verification on the reconciled proposed merge; record the initial exact-head evidence in `verification.md` and rerun on the final documentation head.
 
 ## Recovery preparation — owner planning decision, no production execution
 
 - [x] Record planning choice of encrypted custom-format `pg_dump`, 30-day artifact retention, and 60-minute incident-to-service RTO target in `recovery-runbook.md`.
 - [x] Prepare synthetic-only backup/encryption/local-upload/restore scripts, automated failure and integrity tests, private evidence template and narrow owner-decision checklist.
-- [x] Verify the synthetic restore rehearsal on disposable PostgreSQL with age in CI; exact-head Actions run 41550926291 passed on the proposed merge. A synthetic pass is not a production-derived restore.
+- [x] Verify the synthetic restore rehearsal on disposable PostgreSQL with age; PR #93's exact-head [Actions run 41552395705](https://github.com/yorkstead/website/actions/runs/41552395705) passed its isolated recovery job. A synthetic pass is not a production-derived restore.
 - [ ] Owner approves RPO/cadence, exact storage and cost, key custody/recovery, primary/secondary operators and reviewer, coverage, and source-specific production export procedure.
 - [ ] Independently review private production seven-entry/eleven-audit parity and capture provenance.
 - [ ] Separately authorize a specific production export, verify remote storage/retention/retrieval, and complete an isolated restore rehearsal before any production migration request.
@@ -40,7 +44,7 @@
 - [x] Run focused/full tests and repository verification; keep PR 1 blocked until verified production evidence is reviewed.
 - [x] Owner reports a successful production diagnostic; Neon endpoint/project/branch/database mapping and aggregate facts are documented without public IDs or fingerprints.
 - [x] Cleanup PR #90 removes temporary code/helper/tests/docs; latest Actions and Preview pass. PR remains draft/unmerged.
-- [ ] Owner confirms temporary flags are false/removed, Production redeployment, and owner-authenticated 404; provider integration lacks access.
+- [x] Owner reports both temporary flags disabled, Production cleanup deployed, and owner-authenticated retired-mode 404; no protected values or response bodies recorded.
 ## PR 2 — staged inventory and ownership
 
 - [ ] Add unverified candidate staging, duplicate review, owner/recovery roles and provenance.

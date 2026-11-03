@@ -46,6 +46,18 @@ PITR alone does not satisfy the durable pre-migration artifact requirement. A 30
 
 The redacted [evidence template](recovery-evidence-template.md) records PASS/FAIL/NOT RUN and private artifact references without disclosing identifiers. Public PR/issue comments may carry aggregate results only.
 
+For the currently reported `free_v3` plan, retained PITR is the lowest-cost available provider recovery path, but its six-hour expiry does not meet the durable pre-migration requirement. An encrypted `pg_dump` in an already approved private storage location is the lowest-cost durable candidate without a Neon plan change; storage and operator costs still require owner confirmation. One-time snapshot eligibility and price remain unverified, so do not select or purchase one from this runbook.
+
+## Independent private parity checklist
+
+An owner-authorized operator and a separate reviewer must complete this checklist in private storage; only aggregate pass/fail and the capture time may enter GitHub.
+
+1. Record the capture UTC time, deployed source SHA, diagnostic/code revision, fingerprint algorithm/version, and exact Neon project, branch, endpoint, and database identity. Confirm the connection is the production binding without revealing credentials.
+2. Capture the pre-migration legacy-column projection for exactly seven entries and the full original audit projection for exactly eleven events. Record each stable entry ID, revision, archive state, per-entry audit count, and deterministic entry/audit fingerprints in the private evidence bundle.
+3. Independently recalculate all fingerprints from the same ordered, versioned projections. Confirm seven unique IDs, eleven distinct audit events, zero orphan events, all seven expected archive states, and migration ledger 0001–0022 with checksums. Sign off on any discrepancy before proceeding.
+4. After an authorized disposable rehearsal, compare every original entry ID, revision, archive state, account relationship, legacy field, and original audit event against the private before-state. Confirm unchanged fingerprints and per-entry counts; record new migration 0023 separately. Retain the private comparison report and reviewer sign-off.
+5. Repeat the same comparison against production only if a later, separately authorized production migration occurs. A synthetic fixture pass does not substitute for this independent review.
+
 Neon provider references: [PITR and branch restore](https://neon.com/blog/announcing-point-in-time-restore), [snapshot recovery and retention](https://neon.com/blog/three-ways-to-use-your-snapshots), [snapshot schedule plan requirement](https://api-docs.neon.tech/reference/setsnapshotschedule), and [restore snapshot into a new branch](https://api-docs.neon.tech/reference/restoresnapshot).
 
 ## Non-production restore rehearsal
@@ -65,13 +77,24 @@ The synthetic script uses restrictive staging permissions and removes plaintext 
 
 For any future restore, first restore into a new branch/database with no production traffic. Check database identity, expected recovery timestamp, schema and migration ledger, all seven stable IDs, revisions and archive states, all eleven original audit records, per-entry counts, zero orphans, immutable audit protections, and a privacy-safe legacy-field comparison. Preserve the source and restored candidate until the owner approves a cutover.
 
-Estimate potential data exposure as the interval from the selected recovery point to the incident/migration. With the current six-hour PITR window, choosing the oldest available point could lose up to the full retained window of legitimate writes; a pre-migration point selected immediately before execution narrows this interval but does not make it zero. A restore may also remove later audit events and unrelated writes. Snapshot or export restore exposure is the interval between capture and failure. Record affected business writes and audit events for reconciliation before any cutover. Current RPO/RTO are unmeasured.
+Estimate potential data exposure as the interval from the selected recovery point to the incident/migration. With the current six-hour PITR window, choosing the oldest available point could lose up to the full retained window of legitimate writes; a pre-migration point selected immediately before execution narrows this interval but does not make it zero. A restore may also remove later audit events and unrelated writes. Snapshot or export restore exposure is the interval between capture and failure. Record affected business writes and audit events for reconciliation before any cutover. RPO remains open and the accepted 60-minute RTO target is unmeasured.
+
+## Recovery objectives and operating model
+
+- **Registry preservation requirement:** no loss or alteration of the seven original entries or eleven original audit events across migration and rollback. This is a required parity outcome, not evidence that the private row-level baseline has been independently verified.
+- **General production RPO:** not yet approved. The six-hour PITR history is a maximum recovery lookback, not a six-hour RPO commitment. If restoring to the oldest point currently available, potential exposure is up to six hours of legitimate writes; the exact exposure depends on the chosen recovery timestamp and must be calculated immediately before use.
+- **RTO target:** the owner accepted 60 minutes from incident declaration through verified service recovery for planning. This target is unmeasured; revise the proposed procedure if a production-like rehearsal cannot meet it.
+- **Storage and retention:** retain a verified encrypted artifact for 30 days from its UTC capture time. The exact private storage location, access controls, expiration/deletion proof, legal-hold exceptions, and cost still require owner approval before creating an artifact.
+- **Responsibilities:** the owner approves recovery method, objectives, acceptable exposure, operator, storage, retention, and cutover. A named database operator creates/restores the artifact. A separate reviewer verifies redacted parity evidence. The application operator performs only separately approved deployment/cutover steps. Named operators are not yet assigned.
+- **Rehearsal:** the synthetic seven-entry/eleven-audit encrypted dump and isolated restore passed in disposable PostgreSQL in [CI run 41504298230](https://github.com/yorkstead/website/actions/runs/41504298230). This is not a production-derived artifact or a measured production-like RTO. An authorized production-derived artifact and isolated rehearsal remain outstanding; compare the private legacy projection and all audit fingerprints, verify post-point markers are absent, and exercise the pre-migration application against the restored state.
 
 ## Required owner approvals
 
 Before creating a production recovery point or export, obtain explicit owner approval for the selected method, time, target, storage location, access list, retention/deletion, and any cost. Before any restore, obtain separate approval for the exact source/target, point in time, expected data loss, reconciliation owner, and whether endpoint reassignment/cutover is allowed. Production migration, branch restore, traffic switch, and deployment each require their own scoped approval. This runbook authorizes none of those operations. The 60-minute RTO is measured from incident declaration through artifact acquisition/decryption, isolated restore, required configuration, application smoke checks and owner-approved service readiness; it has not been measured.
 
 ## Migration gate
+
+Merging source must not run migration 0023. `vercel-build` only builds the application; a named operator must run `bun run db:migrate` as a separate, explicitly authorized production operation after all gates below pass. CI migration commands use only the disposable PostgreSQL service.
 
 Production migration remains **NO-GO** until all of the following are privately evidenced and independently reviewed:
 

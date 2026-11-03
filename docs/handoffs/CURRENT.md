@@ -1,4 +1,11 @@
-# Active work — YS-SYS-001 read-only preflight PR #89 — 2026-11-02
+# Current status — YS-SYS-001 PR 1 — 2026-11-03
+
+- PRs #90, #91, and #93 are merged. PR #92 is reconciled with `main` at `d5b419e69edc38b5da4f9d5c2b29a82e149f4e3b` by a non-rewriting merge commit. Its reconciliation CI passed on head `b2930735f2a73968042009aa9d1caa908371ca43`; a final exact-head run is pending for this handoff update. PR #92 remains unmerged.
+- Migration 0023 is additive and default-off. Its seven-entry/eleven-audit checks use synthetic disposable data; they do not authorize or prove a production migration or production recovery.
+- Production export, backup, restore, and migration 0023 remain **NO-GO** pending independent private row-level parity review, recovery readiness and rehearsal, owner decisions, and separate operation-specific authorization. A PR merge also requires separate release authorization.
+- Detailed redacted status and verification: [`YS-SYS-001-STATUS.md`](YS-SYS-001-STATUS.md). The dated handoff below is retained as historical evidence; its earlier active-state claims are superseded by this update.
+
+# Historical handoff — YS-SYS-001 read-only preflight PR #89 — 2026-11-02
 
 - Updated against the newer `main` after PR #88 merged; verified main SHA: `798c9ed7f6115a332c8c35cee8456ae16d5010a7`. PR #87 and PR #88 are merged.
 - PR #89 reuses the existing owner-only `GET /api/dashboard/leads/diagnostic` route. Its temporary mode is production-only, owner-session protected, no-store, fixed-SELECT, and requires both default-off flags plus a separately verified Vercel WAF rate rule.

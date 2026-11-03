@@ -22,8 +22,10 @@ describe("CC-023 disposable PostgreSQL persistence",()=>{
   try{
    await adminClient.query(`CREATE SCHEMA ${schema}`);
    await adminClient.query(`SET search_path TO ${schema}`);
-   const migration=parseMigration("0020_systems-directory.sql",await readFile("migrations/0020_systems-directory.sql","utf8"));
-   for(const statement of migration.statements)await adminClient.query(statement);
+   for(const fileName of ["0020_systems-directory.sql","0023_systems-registry-foundation.sql"]){
+    const migration=parseMigration(fileName,await readFile(`migrations/${fileName}`,"utf8"));
+    for(const statement of migration.statements)await adminClient.query(statement);
+   }
    scoped=new Pool({connectionString:configured,options:`-c search_path=${schema}`,max:4});
    const service=createSystemDirectoryService(scoped);
    const name=`CC-023 ${randomUUID()}`;
