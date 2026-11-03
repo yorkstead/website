@@ -1,9 +1,10 @@
-# Current status — YS-SYS-001 recovery approval — 2026-11-03
+# Current status — YS-SYS-001 single-operator recovery policy — 2026-11-03
 
 - PRs #90–#93 are merged. PR #92 production deployment `dpl_Fc1LKCvWKqwWEfoHvRTk7MrRfAkT` is owner-reported to pass homepage, intake, owner dashboard, and Systems Directory smoke checks (4/4).
 - Read-only post-deployment evidence reports 22 applied migrations through 0022, no 0023 entry, seven unarchived Systems Directory rows, eleven audit events, no missing/orphan audit history, and three enabled revision/audit triggers. The private row-level preservation comparison remains pending.
-- Recovery approval proposal: [`production-recovery-approval-package.md`](../../specs/037-ys-sys-001-systems-registry/production-recovery-approval-package.md). Owner decisions remain open for RPO, storage/service activation and spend cap, encryption-key custody, and named operators/reviewer.
-- Production export/backup, recovery rehearsal using production-derived data, restore/cutover, and migration 0023 remain **NO-GO** until their specific approvals and evidence gates are complete. The historical handoff below is preserved unchanged.
+- Owner approved planning for daily encrypted custom-format backups (24-hour RPO), 30-day retention, and 60-minute RTO target. Timed recovery verification remains pending. The owner is primary recovery operator and approver; secondary operator and independent human reviewer are unassigned. Automated checks are compensating controls, not independent review; explicit private owner acknowledgment of the single-operator exception is required before production execution.
+- Recovery package: [`production-recovery-approval-package.md`](../../specs/037-ys-sys-001-systems-registry/production-recovery-approval-package.md). Exact R2 account/bucket/region/permissions, key custody, measured cost cap, private parity review, exception acknowledgment, and one-time backup authorization remain open.
+- Production export/backup, recurring schedule, production-derived restore, cutover, and migration 0023 remain **NO-GO** pending their separate approvals and evidence gates. The historical handoff below is preserved unchanged.
 
 # Historical handoff — YS-SYS-001 read-only preflight PR #89 — 2026-11-02
 

@@ -1,7 +1,7 @@
 # YS-SYS-001 — Production Recovery Approval Package
 
 **Status:** Proposal only; no production export, backup, storage activation, restore, migration, or configuration change is authorized.
-**Prepared:** 2026-11-03
+**Prepared:** 2026-11-03; owner policy update 2026-11-03
 **Tracking:** [Issue #86](https://github.com/yorkstead/website/issues/86)
 
 ## Production acceptance and current boundary
@@ -28,40 +28,42 @@ This aggregate check does not replace an independent comparison of private row-l
 - Keep the bucket private and separate the export token from bucket-administration credentials. Before export, verify the bucket lock, lifecycle, access scope, no-public-access setting, audit visibility, and a test retrieval. Do not store plaintext there.
 - Stage plaintext only in restrictive ephemeral storage with a bounded size. Encrypt it, validate `pg_restore --list`, compute SHA-256 over the encrypted artifact, then remove plaintext staging on success, failure, and interrupt. Record UTC capture time, redacted source token, PostgreSQL/tool versions, migration version, encryption recipient key identifier, encrypted size/checksum, expiry, and operator/reviewer initials. Upload only ciphertext; verify the remote object checksum and independently retrieve the encrypted bytes.
 
-R2 requires enabling/purchasing the service before creating API tokens. No R2 service, bucket, token, lifecycle, lock, or storage billing will be activated as part of this proposal.
+R2 requires enabling/purchasing the service before creating API tokens. Exact account, bucket, region, permissions, cost cap, and retention configuration remain pending owner approval. No R2 service, bucket, token, lifecycle, lock, or storage billing will be activated as part of this proposal.
 
 ## Cost estimate
 
-Cloudflare currently lists R2 Standard storage at **$0.015 per GB-month**, with 10 GB-month, one million Class A operations, and ten million Class B operations included monthly; Standard has no retrieval or internet-egress charge ([R2 pricing](https://developers.cloudflare.com/r2/pricing/)). The free allowance is account-wide and may already be consumed.
+At the time of this update, Cloudflare lists R2 Standard storage at **$0.015 per GB-month**, with monthly included usage of 10 GB-month, one million Class A operations, and ten million Class B operations. Standard has no retrieval processing or Internet-egress fee. Cloudflare rounds billable units upward; the free allowance is account-wide and may already be consumed ([R2 pricing](https://developers.cloudflare.com/r2/pricing/)). Verify the live pricing page and the account's actual remaining allowances again before the authorization request.
 
-Let **D** be the measured encrypted archive size in GB and **F** the remaining included storage (0–10 GB-month):
+For a steady-state daily schedule, let **D** be the measured encrypted artifact size in GB, **F** the remaining Standard storage allowance in GB-month (0–10), and **P** the current Standard rate per GB-month. Approximate storage cost is `max(0, 30 × D − F) × P` per month after the 30-artifact retention window fills. Cloudflare's day-weighted GB-month accounting, billable-unit rounding, account-wide use, and the first-month ramp mean the final estimate must use actual per-object sizes and stored days, not this steady-state approximation. A single first backup retained 30 days is approximately `D × P` before remaining free allowance and rounding.
 
-- One pre-migration artifact retained for 30 days: approximately `max(0, D − F) × $0.015` for storage.
-- Daily full dumps with 30-day retention: approximately `max(0, 30D − F) × $0.015/month` at steady state.
+- One first backup retained for 30 days: approximately `max(0, D − F) × P` for storage.
+- Daily full dumps with 30-day retention: approximately `max(0, 30 × D − F) × P/month` at steady state.
 
-| Measured archive size | One artifact, 30 days (assuming 10 GB free remains) | Daily full dumps, 30-day retention (same assumption) |
+| Measured encrypted artifact size | One artifact, 30 days (assuming 10 GB free remains) | Daily full dumps, 30-day steady state (same assumption) |
 | ---: | ---: | ---: |
 | 1 GB | $0.00 | $0.30/month |
 | 10 GB | $0.00 | $4.35/month |
 | 50 GB | $0.60 | $22.35/month |
 | 100 GB | $1.35 | $44.85/month |
 
-These are storage-only estimates, before any account-wide free usage, rounding, R2 activation/billing terms, tax, operator time, or Neon compute/data-transfer charges. Neon advises checking account-specific egress usage in its billing console ([Neon data-transfer allowance](https://neon.com/blog/more-data-transfer-on-paid-plans)). Obtain a measured database/archive size and an owner-approved spend cap before authorization. If a 15-minute or one-hour RPO is selected, full `pg_dump` cadence would require 2,880 or 720 full artifacts per 30 days; price and operational load would be materially higher. Evaluate a separately approved continuous/PITR option instead.
+These are storage-only illustrations, before account-wide usage, rounding, activation/billing terms, tax, operator time, or Neon compute/data-transfer charges. **Cost verification procedure before any production export:** (1) re-open the current R2 pricing page and record URL/date/rates privately; (2) in the owner-approved Cloudflare account, inspect current bucket charges, included usage remaining, existing bucket count, region/jurisdiction and any account-specific plan/activation charges; (3) estimate encrypted artifact size from non-production rehearsal data and approved read-only size evidence, without exporting production; (4) compute the first artifact and 30-artifact steady-state estimate with actual expected storage-days, rounded billing units, Class A/B requests, lifecycle/lock operations, bucket fee, and taxes; (5) estimate Neon transfer/compute using the account's current billing view and measured/approved source-size estimate; (6) present monthly recurring and one-time estimates plus a hard owner-approved spend cap; (7) stop if actual size, quote, free-tier balance or projected amount exceeds that cap. Keep the account evidence private. Neon account-specific transfer allowances and overage must be checked in the billing console ([Neon data-transfer allowance](https://neon.com/blog/more-data-transfer-on-paid-plans)).
 
 ## Recovery objectives and proposed operating model
 
 - **Retention:** 30 days from successful encrypted upload and remote checksum verification. Keep an expiry timestamp in the manifest. Verify lifecycle/lock configuration before each export and confirm deletion after expiration, allowing for the provider's documented processing delay. A legal hold requires owner approval and a recorded revised expiry.
 - **RTO:** 60 minutes from incident declaration through artifact retrieval/decryption, isolated restore, security/consistency verification, configuration, and verified application readiness. This remains an unproven target until a timed rehearsal passes.
-- **RPO:** still requires an owner decision. A one-time pre-migration dump protects only its capture point. Daily full dumps are a possible starting design for an owner-approved approximately 24-hour maximum gap; actual RPO must be measured between successful backup points, including failures and runtime. A 1-hour or 15-minute target should trigger a design and cost review for continuous/PITR recovery rather than assuming full dumps meet it.
+- **RPO:** owner-approved **24 hours**, implemented as daily encrypted full custom-format dumps. This is a maximum recovery-point age objective, not a guarantee from scheduling alone: each backup must complete, encrypt, upload, pass remote integrity/retrieval checks, and alert on failure. Missed/late backups breach the objective until a verified newer point exists. Do not claim 24-hour protection before monitoring and a successful end-to-end rehearsal demonstrate the cadence.
 - **Existing Neon recovery:** the latest recorded provider inspection reports a six-hour PITR history window, with no scheduled snapshots or saved snapshots. Treat PITR as a short-window complement, not the 30-day artifact or a 6-hour RPO guarantee; verify an exact recoverable point at the time of any separately authorized operation.
-- **Responsibilities:** name a primary exporter/restorer, a secondary operator, an independent parity reviewer, an approval authority, and key custodians. The uploader receives only bucket-scoped access and the public encryption recipient; private-key retrieval and decryption require the separately approved recovery process.
+- **Responsibilities:** the Yorkstead owner is the sole currently assigned primary recovery operator and approver. Secondary operator: **unassigned**. Independent human reviewer: **unassigned**. Automated independent validation, immutable evidence, a separately protected recovery-key copy, restore rehearsal, and explicit owner sign-off are compensating controls; they do **not** provide separation of duties or count as independent human review.
+- **Single-operator exception:** because no secondary personnel are available, this is a time-bounded policy exception to any independent-review requirement, not an open staffing task. Before the first production export, the owner must explicitly acknowledge in the private approval record the residual risks of one person initiating, validating, and approving recovery, including mistaken target selection, compromised owner credentials/key access, and undetected errors. If the owner does not acknowledge that exception, production export remains blocked. Reassess the exception whenever staffing changes and at least annually.
+- **Compensating controls:** a fail-closed scripted procedure; machine-generated checks and checksums; append-only/immutable evidence in a separately protected location; a recovery-key copy protected separately from the artifact and export credentials; a successful isolated restore rehearsal; failure alerts; and explicit owner sign-off for each production operation. These reduce operational risk but are not equivalent to independent review.
 - **Coverage:** this proposal covers only the Website production database. Other Yorkstead databases need separate inventories and policies.
 
 ## Production-export authorization request — not yet granted
 
-The requested approval is for **one production read/export operation only**, after all fields and gates below are completed. Approval for this export does not authorize migration 0023, production restore/cutover, environment changes, a recurring schedule, or additional exports.
+The requested approval is for **one initial production backup/export only** to establish and verify the selected recovery method. The long-term policy is a daily cadence with 30-day retention and a 24-hour RPO, but approval of this first operation does not authorize a recurring scheduler, subsequent exports, migration 0023, production restore/cutover, environment changes, or additional database operations. A separate authorization is required for an ongoing schedule and for each other production operation.
 
-> I request authorization for one read-only custom-format PostgreSQL export of the verified Website production database during the owner-approved UTC window below. The dump will use the approved direct/unpooled source and least-privileged full-row dump identity, be client-side encrypted before upload, and be stored in the approved private 30-day-locked destination. The operator will verify the encrypted checksum and independent retrieval, then delete plaintext staging. No migration, production restore, application change, or database/configuration write is included. Stop if identity, size, client compatibility, permissions, checksum, retention, estimated charges, or private parity do not match this approved plan.
+> I request authorization for one initial read-only custom-format PostgreSQL backup/export of the verified Website production database, only after the approval fields and gates below are complete. It will use the approved direct/unpooled source and least-privileged dump identity, be encrypted client-side before upload, and be stored in the exact approved private R2 bucket with approved 30-day protection. The owner is the named sole operator and approver; I explicitly acknowledge the documented single-operator exception and residual risk. Automated validation and immutable evidence are compensating controls, not independent human review. The operator will verify the artifact and remote bytes, retrieve it independently, and remove plaintext staging. This authorization covers one backup only; it does not set up daily automation or authorize later backups, migration 0023, restore/cutover, application changes, or production configuration/database writes. Stop if source identity, archive size, client compatibility, permissions, encryption, bucket policy, retention, cost cap, parity evidence, or validation differs from the approved plan.
 
 Complete and approve privately before executing:
 
@@ -70,9 +72,9 @@ Complete and approve privately before executing:
 - Dump role and secure credential injection.
 - Approved bucket/account/jurisdiction/prefix, access policy, bucket-lock and lifecycle evidence.
 - Age recipient/key custodian, key recovery and rotation procedure.
-- RPO and cadence decision; 30-day retention start/expiry procedure.
+- Owner-acknowledged 24-hour RPO and daily cadence policy; for this request, approval is one initial backup only. Define retention commencement at successful remote checksum and independent retrieval, plus expiry/deletion verification.
 - Measured archive-size estimate, Neon egress estimate, total spend cap, and cost approver.
-- Named primary/secondary operators, independent reviewer, and out-of-band contacts.
+- Primary operator/approver: Yorkstead owner. Secondary and independent human reviewer: unassigned. Attach explicit owner acknowledgment of the single-operator exception and residual risk; do not represent automated checks as a reviewer.
 - Independent private seven-record/eleven-event parity review and evidence provenance.
 - Separate authorization for this single export. Absence of an explicit approval means **do not execute**.
 
@@ -87,15 +89,15 @@ The rehearsal uses an authorized encrypted recovery artifact only after export a
 5. In private evidence, compare all seven stable entry IDs, revisions, archive flags, legacy values, per-entry audit counts, and eleven audit fingerprints against the independently reviewed pre-export baseline. Verify zero orphans and no missing audit history. Do not place row-level values or hashes in public GitHub.
 6. Verify legacy Systems Directory behavior and owner/tenant authorization on the isolated target. Confirm outbound effects remain disabled.
 7. Measure end-to-end time from rehearsal/incident start to validated application readiness against the 60-minute target. Record actual RPO gap and any restore/data exposure.
-8. Have the independent reviewer sign the redacted result. Destroy the disposable target and plaintext staging under the approved retention policy; confirm cleanup. A rehearsal pass does not authorize a production restore or migration.
+8. Automated checks produce a signed/checksummed machine evidence record; keep it immutable and separately protected. The owner reviews and signs the outcome. Because no independent reviewer is assigned, record that the one-person review is not independent and invoke the explicitly acknowledged exception. Destroy the disposable target and plaintext staging under the approved handling policy; confirm cleanup. A rehearsal pass does not authorize a production restore or migration.
 
-## Owner decisions still required
+## Remaining owner approvals and explicit exception
 
-1. Select RPO (15 minutes, 1 hour, 24 hours, or another explicit target) and acceptable backup cadence.
-2. Approve or replace the proposed R2 account, US jurisdiction, private bucket, 30-day lock/expiry controls, and the required R2 service activation.
-3. Approve age key custody, emergency recovery, rotation, named operators/reviewer, and secure credential-injection method.
-4. Approve a measured cost cap after database size/egress review.
-5. Confirm this policy covers only Website production.
-6. Complete the private row-level parity review and approve the specific one-time export request.
+1. **Approved:** 24-hour RPO implemented as daily encrypted custom-format backups; 30-day retention; 60-minute RTO target pending timed restore verification. Confirm the daily failure alert and objective-breach escalation before starting recurring backups.
+2. Approve exact R2 account, bucket, region/jurisdiction, bucket-scoped permissions, no-public-access controls, 30-day lock/lifecycle semantics, and service activation.
+3. Approve age key custody/recovery/rotation, separately protected recovery-key copy, and secure credential injection. The owner is the primary operator and approver; secondary and independent reviewer remain unassigned.
+4. Record the owner's explicit acknowledgment of the single-operator exception and residual risk. This is a required approval gate, not a pending staffing assignment. Automated controls do not satisfy independent human review.
+5. Approve a measured storage/transfer estimate and hard spend cap; confirm this policy covers only Website production.
+6. Complete private row-level parity review and fill the source/window/target details in the one-time first-backup authorization request.
 
-Until those decisions and separate export approval are recorded, production export/backup and recovery rehearsal from production data remain **NO-GO**. Migration 0023 and any production restore/cutover remain separately **NO-GO**.
+Until the storage/key/cost approvals, exception acknowledgment, private row-level parity, exact-target details, and separate one-time export approval are recorded, production export/backup and recovery rehearsal from production data remain **NO-GO**. Daily scheduled exports require later separate authorization. Migration 0023 and any production restore/cutover remain separately **NO-GO**.

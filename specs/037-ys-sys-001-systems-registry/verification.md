@@ -1,5 +1,13 @@
 # YS-SYS-001 verification record — PR 0
 
+## Recovery policy decision and PR #94 update — 2026-11-03
+
+- Owner approved a 24-hour RPO implemented by daily encrypted PostgreSQL custom-format backups, with 30-day retention and a 60-minute RTO target pending timed restore verification.
+- Yorkstead owner is the sole assigned primary recovery operator and approver. Secondary operator and independent human reviewer remain unassigned due to current staffing. The package now describes the residual single-person risk and requires explicit private owner acknowledgment of the exception before production export or migration approval. Automated validation, immutable evidence, separately protected recovery-key copy, rehearsal, and owner sign-off are compensating controls only; none constitutes independent human review.
+- Updated `production-recovery-approval-package.md` with a cost-verification procedure against current provider pricing and account usage, and a one-time first-production-backup authorization template. It does not authorize recurring backup automation or any production operation.
+- At the previous PR #94 head `015a246d5972f2d210926657c7a87874ed7899c7`, application CI run [41580257466](https://github.com/yorkstead/website/actions/runs/41580257466) passed both application verification and isolated synthetic recovery rehearsal; Vercel Preview status succeeded. No human review or inline review comments were present at that head. Re-run exact-head CI after this documentation update.
+- No production storage activation, export/backup, restore, environment change, migration 0023, or deployment occurred. Production execution remains **NO-GO** pending exact storage/key/cost approvals, exception acknowledgment, private parity review, and a specific separate operation authorization.
+
 ## PR #92 production acceptance and recovery planning — 2026-11-03
 
 - Owner reports Production smoke checks passed for homepage, intake, owner dashboard, and Systems Directory (4/4) after deployment `dpl_Fc1LKCvWKqwWEfoHvRTk7MrRfAkT`.
