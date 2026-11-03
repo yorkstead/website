@@ -66,14 +66,14 @@ export function createSystemRegistryController(deps:Dependencies) {
       if(request.method==="POST"){
         const parsed=systemRegistryInputSchema.safeParse(body); if(!parsed.success)return directoryJSON({error:`Registry details are invalid: ${parsed.error.issues[0]?.message??"check the required fields"}`},400);
         try{return directoryJSON({entry:await deps.service.create(parsed.data,gate.owner.user.id)},201);}
-        catch(error){if((error as {code?:string})?.code==="23505")return directoryJSON({error:"A record with that name and provider already exists"},409);if((error as {code?:string})?.code==="23514")return directoryJSON({error:"Registry details do not meet the database constraints"},400);throw error;}
+        catch(error){if((error as {code?:string})?.code==="23505")return directoryJSON({error:"A record with that name and provider already exists"},409);if((error as {code?:string})?.code==="23514"||(error as {code?:string})?.code==="YS_LEGACY_PROVENANCE_LOCKED")return directoryJSON({error:"Legacy provenance is reserved for and must be preserved on existing Directory entries"},400);throw error;}
       }
       if(request.method==="PATCH"){
         const archive=archiveEntity.safeParse(body);
         if(archive.success){const entry=await deps.service.archive(archive.data.id,archive.data.expectedRevision,archive.data.action==="archive",gate.owner.user.id);return entry?directoryJSON({entry}):directoryJSON({error:"Record changed; reload before retrying"},409);}
         const parsed=patchEntity.safeParse(body);if(!parsed.success)return directoryJSON({error:`Registry details are invalid: ${parsed.error.issues[0]?.message??"check the required fields"}`},400);
         try{const entry=await deps.service.update(parsed.data.id,parsed.data.expectedRevision,parsed.data.entry,gate.owner.user.id);return entry?directoryJSON({entry}):directoryJSON({error:"Record changed; reload before retrying"},409);}
-        catch(error){if((error as {code?:string})?.code==="YS_CLASS_LOCKED")return directoryJSON({error:"This legacy service must remain classified as a provider/service so the existing Systems Directory stays compatible"},409);throw error;}
+        catch(error){if((error as {code?:string})?.code==="YS_CLASS_LOCKED")return directoryJSON({error:"This legacy service must remain classified as a provider/service so the existing Systems Directory stays compatible"},409);if((error as {code?:string})?.code==="YS_LEGACY_PROVENANCE_LOCKED")return directoryJSON({error:"Legacy provenance must be preserved on existing Directory entries"},409);throw error;}
       }
       return directoryJSON({error:"Method not allowed"},405);
     }catch{return directoryJSON({error:"Systems Registry temporarily unavailable"},503);}

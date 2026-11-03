@@ -1,5 +1,13 @@
 # YS-SYS-001 verification record — PR 0
 
+## PR #97 review corrections — 2026-11-03
+
+- Added focused corrections for PostgreSQL `DATE` serialization (`renewal_date::text`), preserving legacy provenance when editing existing directory entries, and an immutable `legacy_directory_entry` marker that controls compatibility independently of provenance.
+- Registry-created typed records explicitly set the legacy marker false; existing rows are marked true by the additive 0023 default. The database constraint and trigger prevent marked rows from being reclassified or losing legacy identity. Legacy provenance remains valid only for unknown/unverified existing entries and cannot be newly assigned or removed through the typed Registry API.
+- Relationship reads made during create, update, and archive now use the transaction's checked-out client. The disposable PostgreSQL suite uses a two-connection pool and concurrent creates to catch pool-starvation regressions.
+- Regression coverage includes ISO renewal-date results, legacy provenance round-trip and rejection of attempted removal/reclassification, immutable marker protection, retained Directory visibility, audit history append behavior, concurrent writes, and legacy provenance input validation.
+- This is an intentional additive migration 0023 schema change. `bun run db:migrate:check` validates repository ordering/checksum only; migration 0023 was not run against Production. Exact-head disposable PostgreSQL CI and browser tests remain required before resolving the review threads.
+
 ## PR #94 release gate and backup setup preparation — 2026-11-03
 
 - Live GitHub PR #94 at prior head `90e50e734a353ad310832bc39a5b9d3b6f75e46e` was open/draft, mergeable, based on main `e698dbc3db2d1e7e5958d23d6d320b1e10bcaf87`; GitHub proposed merge SHA `a701b541135f94c6125d2f59e8e1eab26e62dd32`. Exact-head Actions run [41582815628](https://github.com/yorkstead/website/actions/runs/41582815628) passed both jobs and Vercel Preview was Ready. These facts must be rechecked after this documentation update.

@@ -13,12 +13,27 @@ ALTER TABLE system_directory_entries
     CHECK (responsible_role IS NULL OR (length(responsible_role) BETWEEN 1 AND 120 AND responsible_role = btrim(responsible_role))),
   ADD COLUMN recovery_role TEXT
     CHECK (recovery_role IS NULL OR (length(recovery_role) BETWEEN 1 AND 120 AND recovery_role = btrim(recovery_role))),
+  ADD COLUMN legacy_directory_entry BOOLEAN NOT NULL DEFAULT TRUE,
   ADD CONSTRAINT system_directory_entries_verification_provenance_check
     CHECK (
       (verification_state = 'unknown' AND confirmed_at IS NULL)
       OR (verification_state = 'candidate' AND provenance_kind NOT IN ('legacy','unknown') AND provenance_reference IS NOT NULL AND confirmed_at IS NULL)
       OR (verification_state = 'owner_reviewed' AND provenance_kind NOT IN ('legacy','unknown') AND provenance_reference IS NOT NULL AND confirmed_at IS NOT NULL)
-    );
+    ),
+  ADD CONSTRAINT system_directory_entries_legacy_class_check
+    CHECK (NOT legacy_directory_entry OR entity_class = 'provider_service');
+--> statement-breakpoint
+CREATE FUNCTION system_directory_legacy_identity_immutable() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.legacy_directory_entry IS DISTINCT FROM OLD.legacy_directory_entry THEN
+    RAISE EXCEPTION 'Legacy directory identity is immutable' USING ERRCODE='23514';
+  END IF;
+  RETURN NEW;
+END $$;
+--> statement-breakpoint
+CREATE TRIGGER system_directory_legacy_identity_immutable
+  BEFORE UPDATE OF legacy_directory_entry ON system_directory_entries
+  FOR EACH ROW EXECUTE FUNCTION system_directory_legacy_identity_immutable();
 --> statement-breakpoint
 CREATE INDEX system_directory_entries_class_scope_idx
   ON system_directory_entries(tenant_id, entity_class, archived_at, lower(name));

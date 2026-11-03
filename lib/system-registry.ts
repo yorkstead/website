@@ -13,6 +13,7 @@ export type SystemEntityClass = (typeof systemEntityClasses)[number];
 
 export const registryVerificationStates = ["unknown", "candidate", "owner_reviewed"] as const;
 export const registryProvenanceKinds = ["owner_observation", "provider_export", "invoice", "contract", "vendor_document", "manual_entry", "unknown"] as const;
+export const registryEntryProvenanceKinds = ["legacy", ...registryProvenanceKinds] as const;
 export const registryRelationshipKinds = ["owns", "billed_through", "runs_on", "depends_on", "uses", "integrates_with"] as const;
 const privateMaterial = /(?:\b(?:password|credential|secret|api[_ -]?key|access[_ -]?token|auth[_ -]?token|recovery[_ -]?code)\s*[:=]|\bbearer\s+[a-z0-9._~+/=-]{12,}|\b(?:gh[pousr]_[a-z0-9]{20,}|github_pat_[a-z0-9_]{20,}|sk_(?:live|test)_[a-z0-9]{12,}|rk_(?:live|test)_[a-z0-9]{12,}|re_[a-z0-9]{16,}|whsec_[a-z0-9]{16,}|xox[baprs]-[a-z0-9-]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{30,})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)/i;
 const safeRole = z.string().trim().min(1).max(120).refine(value => !privateMaterial.test(value), "Credentials cannot be stored in Registry fields").nullable();
@@ -24,17 +25,17 @@ export const systemRegistryInputSchema = z.object({
   responsibleRole: safeRole,
   recoveryRole: safeRole,
   verificationState: z.enum(registryVerificationStates),
-  provenanceKind: z.enum(registryProvenanceKinds),
+  provenanceKind: z.enum(registryEntryProvenanceKinds),
   provenanceReference: safeRegistryReference,
   observedAt: z.string().datetime({ offset: true }).nullable(),
 }).strict().superRefine((value, ctx) => {
   if (value.verificationState === "unknown") {
-    if (value.provenanceKind !== "unknown" && value.provenanceKind !== "manual_entry") {
+    if (value.provenanceKind !== "unknown" && value.provenanceKind !== "manual_entry" && value.provenanceKind !== "legacy") {
       ctx.addIssue({ code: "custom", path: ["provenanceKind"], message: "Unknown verification must use unknown or manual-entry provenance" });
     }
     if (value.provenanceReference !== null) ctx.addIssue({ code: "custom", path: ["provenanceReference"], message: "Unknown verification cannot have a confirming evidence reference" });
   } else {
-    if (value.provenanceKind === "unknown" || !value.provenanceReference) {
+    if (value.provenanceKind === "unknown" || value.provenanceKind === "legacy" || !value.provenanceReference) {
       ctx.addIssue({ code: "custom", path: ["provenanceReference"], message: "Candidate and reviewed records need a provenance type and evidence reference" });
     }
   }

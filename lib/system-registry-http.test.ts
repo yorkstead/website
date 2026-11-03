@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createSystemRegistryController, createSystemRegistryRelationshipsController } from "@/lib/system-registry-http";
+import { emptySystemDirectoryInput, systemRegistryInputSchema } from "@/lib/system-registry";
 import type { createSystemRegistryService } from "@/lib/system-registry-service";
 
 function request(url:string,method="GET",body?:unknown){return new Request(url,{method,headers:method==="GET"?{}:{origin:"https://yorkstead.com","sec-fetch-site":"same-origin","content-type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)});}
@@ -20,6 +21,11 @@ function setup(options:{owner?:boolean;flag?:string}={}){
 }
 
 describe("typed Systems Registry boundary",()=>{
+  test("allows legacy provenance only as an unknown existing-entry value",()=>{
+    const legacy={entityClass:"provider_service",details:{...emptySystemDirectoryInput,name:"Synthetic legacy",provider:"Synthetic provider"},responsibleRole:null,recoveryRole:null,verificationState:"unknown",provenanceKind:"legacy",provenanceReference:null,observedAt:null};
+    expect(systemRegistryInputSchema.safeParse(legacy).success).toBe(true);
+    expect(systemRegistryInputSchema.safeParse({...legacy,verificationState:"candidate"}).success).toBe(false);
+  });
   test("denies anonymous requests before checking the feature flag or querying",async()=>{
     const context=setup({owner:false,flag:"true"});
     const response=await context.controller(request("https://yorkstead.com/api/systems-registry"));

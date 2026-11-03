@@ -34,6 +34,8 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 ## Scope
 
 - Extend the existing owner-only directory with typed inventory, relationships and evidence, preserving the current entry model and compatibility routes.
+- Preserve each pre-existing Directory entry's immutable legacy identity independently of editable provenance; old Directory rows stay in its compatibility list, and their `legacy` provenance round-trips through Registry edits.
+- Serialize PostgreSQL renewal dates as calendar-date strings (`YYYY-MM-DD`) so reads can be submitted unchanged in date inputs and later edits.
 - Historical preflight work used the existing owner diagnostic route and was retired in PR #90. It is not an active Registry feature or prerequisite for this implementation slice.
 - Stage newly discovered candidates as unverified; detect duplicates against existing records and require owner review before they become authoritative.
 - Represent account ownership and recovery responsibility without storing credentials, recovery codes, payment data or customer operational records.
@@ -53,7 +55,7 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 
 ## Acceptance criteria
 
-1. CC-023 remains the sole authoritative directory, retaining its page, APIs, DTO compatibility, authorization and audit stream.
+1. CC-023 remains the sole authoritative directory, retaining its page, APIs, DTO compatibility, authorization and audit stream. Existing rows carry an immutable legacy marker that cannot be changed or reclassified out of the legacy Directory view.
 2. Any records and immutable audit history present in the retained database remain intact. Fresh, empty, partially populated, and populated states are supported; tests use synthetic records and do not assume historical counts.
 3. Six registry classes and typed, bounded relationships are represented without conflating provider, account, subscription, workload, infrastructure and component.
 4. New candidates remain staged/unverified until explicit owner review; duplicates are surfaced without silently merging records.
