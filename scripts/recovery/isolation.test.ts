@@ -7,7 +7,7 @@ const helper = resolve(import.meta.dir, "disposable.sh");
 const cleanEnv = { PATH: process.env.PATH ?? "/usr/bin:/bin", HOME: process.env.HOME ?? "/tmp" };
 
 function runEntrypoint(extra: Record<string, string> = {}) {
-  return spawnSync("bash", [entrypoint], { encoding: "utf8", timeout: 10_000, env: { ...cleanEnv, ...extra } as NodeJS.ProcessEnv });
+  return spawnSync("bash", [entrypoint], { encoding: "utf8", timeout: 10_000, env: { ...cleanEnv, ...extra } as unknown as NodeJS.ProcessEnv });
 }
 
 test("rejects external PostgreSQL URLs and inherited PG overrides", () => {
@@ -38,7 +38,7 @@ test("fails closed outside the approved container and refuses direct helper invo
   const entry = runEntrypoint();
   expect(entry.status).not.toBe(0);
   expect(entry.stderr).toContain("isolated tmpfs workspace required");
-  const direct = spawnSync("bash", [helper, "backup"], { encoding: "utf8", timeout: 10_000, env: cleanEnv as NodeJS.ProcessEnv });
+  const direct = spawnSync("bash", [helper, "backup"], { encoding: "utf8", timeout: 10_000, env: cleanEnv as unknown as NodeJS.ProcessEnv });
   expect(direct.status).not.toBe(0);
   expect(direct.stderr).toContain("approved isolated entry point is required");
 });
