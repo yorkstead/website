@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { SystemDirectoryInput } from "@/lib/system-directory";
 import type { SystemRegistryInput, SystemRegistryRecord, SystemRegistryRelationshipInput, SystemRegistryVerificationInput, SystemRegistryMonitoringInput } from "@/lib/system-registry";
+import type { RegistryAnalysisEdge, RegistryAnalysisInput, RegistryAnalysisNode } from "@/lib/system-registry-analysis";
 
 const tenant = "yorkstead-owner";
 const entryColumns = `id,revision,name,category,provider,purpose,dashboard_url,documentation_url,account_identity,billing_entity,notes,relationships,billing_cadence,currency,amount,amount_basis,cost_confirmation,renewal_date::text AS renewal_date,pinned,archived_at,manual_health,manual_health_summary,manual_health_checked_at,entity_class,responsible_role,recovery_role,verification_state,provenance_kind,provenance_reference,observed_at,confirmed_at,monitoring_configuration,verification_status,verification_subject,verification_method,verification_reference,verification_observed_at,verification_review_due::text AS verification_review_due,verification_reviewed_at,monitoring_outcome,monitoring_method,monitoring_reference,monitoring_observed_at,monitoring_review_due::text AS monitoring_review_due,monitoring_reviewed_at,monitoring_summary,created_at,updated_at`;
@@ -77,6 +78,60 @@ export function createSystemRegistryService(pool: Pool) {
     return rows.map((row) => mapRecord(row, links.get(String(row.id)) ?? []));
   }
   return {
+    async analysisSnapshot(): Promise<RegistryAnalysisInput> {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
+        const today = utcDateKey(new Date());
+        const entriesResult = await client.query<Row>(`SELECT id::text,name,entity_class,revision,
+            responsible_role IS NOT NULL AND btrim(responsible_role)<>'' AS responsible_role_present,
+            recovery_role IS NOT NULL AND btrim(recovery_role)<>'' AS recovery_role_present,
+            verification_state,
+            CASE WHEN verification_status='verified' AND verification_review_due<$2::date THEN 'stale' ELSE verification_status END AS verification_status,
+            verification_review_due::text AS verification_review_due,
+            monitoring_configuration,
+            CASE WHEN monitoring_outcome NOT IN ('unknown','unavailable') AND monitoring_review_due<$2::date THEN 'stale' ELSE monitoring_outcome END AS monitoring_outcome,
+            monitoring_review_due::text AS monitoring_review_due
+          FROM system_directory_entries WHERE tenant_id=$1 AND archived_at IS NULL ORDER BY lower(name),id LIMIT 501`, [tenant, today]);
+        const allEntryRows = entriesResult.rows;
+        const entryRows = allEntryRows.slice(0, 500);
+        const ids = entryRows.map((row) => String(row.id));
+        const edgesResult = ids.length ? await client.query<Row>(`SELECT r.id::text,r.source_entry_id::text,r.target_entry_id::text,r.relationship_kind,r.verification_state,r.provenance_kind,
+              (source.id IS NOT NULL AND target.id IS NOT NULL) AS endpoints_present
+            FROM system_directory_relationships r
+            LEFT JOIN system_directory_entries source ON source.id=r.source_entry_id AND source.tenant_id=r.tenant_id AND source.archived_at IS NULL
+            LEFT JOIN system_directory_entries target ON target.id=r.target_entry_id AND target.tenant_id=r.tenant_id AND target.archived_at IS NULL
+            WHERE r.tenant_id=$1 AND r.archived_at IS NULL
+              AND (r.source_entry_id=ANY($2::uuid[]) OR r.target_entry_id=ANY($2::uuid[]))
+            ORDER BY r.id LIMIT 3001`, [tenant, ids]) : { rows: [] as Row[] };
+        const edgeRows = edgesResult.rows.slice(0, 3000);
+        const billingResult = ids.length ? await client.query<Row>(`SELECT a.subscription_id::text AS subscription_id,
+              bool_or(e.evidence_status='verified' AND e.amount_basis IN ('actual','estimated') AND (e.review_due IS NULL OR e.review_due>=$3::date)) AS billing_ready
+            FROM system_directory_billing_allocations a
+            JOIN system_directory_billing_evidence e ON e.id=a.evidence_id AND e.tenant_id=a.tenant_id
+            WHERE a.tenant_id=$1 AND a.archived_at IS NULL AND e.archived_at IS NULL AND a.subscription_id=ANY($2::uuid[])
+            GROUP BY a.subscription_id`, [tenant, ids, today]) : { rows: [] as Row[] };
+        const billingReady = new Map(billingResult.rows.map((row) => [String(row.subscription_id), row.billing_ready === true]));
+        const nodes: RegistryAnalysisNode[] = entryRows.map((row) => ({
+          id: String(row.id), name: String(row.name), entityClass: row.entity_class as RegistryAnalysisNode["entityClass"], revision: Number(row.revision),
+          responsibleRolePresent: row.responsible_role_present === true, recoveryRolePresent: row.recovery_role_present === true,
+          verificationState: row.verification_state as RegistryAnalysisNode["verificationState"], verificationStatus: row.verification_status as RegistryAnalysisNode["verificationStatus"],
+          verificationReviewDue: row.verification_review_due ? String(row.verification_review_due).slice(0, 10) : null,
+          monitoringConfiguration: row.monitoring_configuration as RegistryAnalysisNode["monitoringConfiguration"], monitoringOutcome: row.monitoring_outcome as RegistryAnalysisNode["monitoringOutcome"],
+          monitoringReviewDue: row.monitoring_review_due ? String(row.monitoring_review_due).slice(0, 10) : null,
+          billingReady: row.entity_class === "subscription" ? billingReady.get(String(row.id)) === true : null,
+        }));
+        const edges: RegistryAnalysisEdge[] = edgeRows.map((row) => ({
+          id: String(row.id), sourceId: String(row.source_entry_id), targetId: String(row.target_entry_id), kind: row.relationship_kind as RegistryAnalysisEdge["kind"],
+          verificationState: row.verification_state as RegistryAnalysisEdge["verificationState"], provenanceKind: String(row.provenance_kind), endpointsPresent: row.endpoints_present === true,
+        }));
+        await client.query("COMMIT");
+        return { nodes, edges, truncated: { entries: allEntryRows.length > 500, relationships: edgesResult.rows.length > 3000 } };
+      } catch (error) {
+        await client.query("ROLLBACK").catch(() => undefined);
+        throw error;
+      } finally { client.release(); }
+    },
     async list(query: { entityClass?: string; search?: string; includeArchived?: boolean }) {
       const params: unknown[] = [tenant];
       let where = "tenant_id=$1";

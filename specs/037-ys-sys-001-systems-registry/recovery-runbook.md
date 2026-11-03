@@ -2,6 +2,10 @@
 
 **Status:** Planning policy accepted; no production export, backup, storage activation, restore, migration, or configuration change has been authorized. A production-derived recovery point and successful restore have not been verified.
 
+## Current owner direction — 2026-11-03
+
+The owner retains the currently configured Production and Preview databases and has stopped recovery of the former database. Do not require or claim historical parity with the unavailable seven-entry/eleven-audit state. A future separately authorized migration uses a **new prospective baseline** captured from the then-current retained database. Capture its actual record/audit set, schema, revisions, archive states and evidence provenance without assuming row counts; compare that same set after migration. The seven-entry/eleven-audit fixture below is synthetic test data only. The earlier private historical parity request is superseded.
+
 ## Owner policy decision (updated 2026-11-03)
 
 | Item | Planning decision | Execution state |
@@ -59,11 +63,11 @@ For the currently reported `free_v3` plan, retained PITR is the lowest-cost avai
 
 Complete this checklist in private storage. Normally an independent reviewer verifies it; currently no reviewer is available. The owner must explicitly acknowledge the single-operator exception and personally sign off. Such owner sign-off and automated recalculation are not independent review; only aggregate pass/fail and capture time may enter GitHub.
 
-1. Record the capture UTC time, deployed source SHA, diagnostic/code revision, fingerprint algorithm/version, and exact Neon project, branch, endpoint, and database identity. Confirm the connection is the production binding without revealing credentials.
-2. Capture the pre-migration legacy-column projection for exactly seven entries and the full original audit projection for exactly eleven events. Record each stable entry ID, revision, archive state, per-entry audit count, and deterministic entry/audit fingerprints in the private evidence bundle.
-3. Independently recalculate all fingerprints from the same ordered, versioned projections. Confirm seven unique IDs, eleven distinct audit events, zero orphan events, all seven expected archive states, and migration ledger 0001–0022 with checksums. Sign off on any discrepancy before proceeding.
-4. After an authorized disposable rehearsal, compare every original entry ID, revision, archive state, account relationship, legacy field, and original audit event against the private before-state. Confirm unchanged fingerprints and per-entry counts; record new migration 0023 separately. Retain the private comparison report and reviewer sign-off.
-5. Repeat the same comparison against production only if a later, separately authorized production migration occurs. A synthetic fixture pass does not substitute for this independent review.
+1. Record capture UTC time, deployed source SHA, runner/method revision, fingerprint algorithm/version, and verified Neon project, branch, endpoint and database identity in private evidence. Do not reveal credentials.
+2. Capture every active and archived Systems Directory/Registry entry and every related entry/relationship audit event in the approved scope, including IDs, revisions, archive state, relevant fields, per-record audit counts and deterministic fingerprints. Record counts as observed; do not impose a historical expected count.
+3. Independently recalculate fingerprints from the same ordered, versioned projections. Verify uniqueness, referential/orphan checks, audit protections and the read-only migration ledger actually present. Record discrepancies; never silently repair the baseline.
+4. After an authorized disposable rehearsal, compare each captured ID, revision, archive state, field projection and audit event against the private before-state. Confirm unchanged fingerprints and per-record counts; record migration versions separately. Preserve the private comparison report and owner sign-off, noting the current single-operator exception.
+5. Production capture and post-migration comparison each require separate scoped authorization. A synthetic fixture pass does not substitute for a current prospective baseline or restore test.
 
 Neon provider references: [PITR and branch restore](https://neon.com/blog/announcing-point-in-time-restore), [snapshot recovery and retention](https://neon.com/blog/three-ways-to-use-your-snapshots), [snapshot schedule plan requirement](https://api-docs.neon.tech/reference/setsnapshotschedule), and [restore snapshot into a new branch](https://api-docs.neon.tech/reference/restoresnapshot).
 
@@ -72,9 +76,9 @@ Neon provider references: [PITR and branch restore](https://neon.com/blog/announ
 Perform this rehearsal before production migration authorization:
 
 1. Use an isolated disposable PostgreSQL instance or a separately authorized non-production Neon project. Do not create a branch from production for rehearsal under this runbook.
-2. Load a synthetic seven-entry / eleven-audit fixture with privacy-safe values and a known marker before backup. Record expected migration ledger, entry IDs, revisions, archive flags, audit counts, and stable legacy-field comparisons.
+2. Load a synthetic fixture (the current CI case includes seven entries and eleven audit events) with privacy-safe values and a known marker before backup. These are test-fixture quantities only. Record expected migration ledger, entry IDs, revisions, archive flags, audit counts, and stable legacy-field comparisons.
 3. Capture a disposable snapshot/export and record its creation time. Apply candidate migration `0023` only to this disposable database; add a test marker after migration to simulate writes that must not be silently assumed recoverable.
-4. Restore the backup to a separate disposable database/branch without finalizing over or reassigning any source endpoint. Verify the restored state is exactly the intended pre-migration state, the post-point marker is absent, and all seven entries and eleven audit rows match the recorded fixture.
+4. Restore the backup to a separate disposable database without finalizing over or reassigning any source endpoint. Verify the restored state is exactly the intended pre-migration state, the post-point marker is absent, and all fixture entries/audit rows match their recorded values.
 5. Test application rollback by using the pre-migration application against the restored state. Separately test forward-only recovery for the migrated database: disable new reads/writes in the disposable app, keep additive schema/data/audit, and validate the forward-fix path. Do not use a destructive down migration.
 6. Record measured elapsed time for restore, verification, and application readiness. These observations inform RTO; they do not establish a production RTO until an owner approves the target and a production-like rehearsal is authorized.
 
@@ -82,18 +86,18 @@ The synthetic script uses restrictive staging permissions and removes plaintext 
 
 ## Restore verification and data exposure
 
-For any future restore, first restore into a new branch/database with no production traffic. Check database identity, expected recovery timestamp, schema and migration ledger, all seven stable IDs, revisions and archive states, all eleven original audit records, per-entry counts, zero orphans, immutable audit protections, and a privacy-safe legacy-field comparison. Preserve the source and restored candidate until the owner approves a cutover.
+For any future restore, restore into a new isolated disposable target with no production traffic. Check database identity, expected recovery timestamp, schema and migration ledger, every entry/revision/archive state and every audit record in the selected current baseline, per-record counts, orphan checks, immutable audit protections, and a privacy-safe field comparison. Preserve the source and restored candidate until separately approved.
 
 Estimate potential data exposure as the interval from the selected recovery point to the incident/migration. With the current six-hour PITR window, choosing the oldest available point could lose up to the full retained window of legitimate writes; a pre-migration point selected immediately before execution narrows this interval but does not make it zero. A restore may also remove later audit events and unrelated writes. Snapshot or export restore exposure is the interval between capture and failure. Record affected business writes and audit events for reconciliation before any cutover. RPO remains open and the accepted 60-minute RTO target is unmeasured.
 
 ## Recovery objectives and operating model
 
-- **Registry preservation requirement:** no loss or alteration of the seven original entries or eleven original audit events across migration and rollback. This is a required parity outcome, not evidence that the private row-level baseline has been independently verified.
+- **Registry preservation requirement:** no loss or alteration of any record and audit history present in the new prospective baseline across an authorized migration and rollback. There is no fixed row-count or former-database parity requirement.
 - **General production RPO:** owner-approved **24 hours**, supported by a planned daily encrypted full custom-format dump. This is an objective, not evidence of achieved recovery. It is met only while a current backup completes and passes remote integrity/retrieval checks; alert/escalate on every missed or failed cycle. The six-hour PITR history is a maximum recovery lookback, not a six-hour RPO commitment. If restoring to the oldest available PITR point, potential exposure is up to six hours of writes.
 - **RTO target:** the owner accepted 60 minutes from incident declaration through verified service recovery for planning. This target is unmeasured; revise the proposed procedure if a production-like rehearsal cannot meet it.
 - **Storage and retention:** retain a verified encrypted artifact for 30 days from its UTC capture time. The exact private storage location, access controls, expiration/deletion proof, legal-hold exceptions, and cost still require owner approval before creating an artifact.
 - **Responsibilities:** the Yorkstead owner is the primary recovery operator and approver. A secondary operator and independent human reviewer are unassigned due to current staffing. The explicit single-operator exception and acknowledgment gate above apply. Automated verification, immutable evidence, a separately protected recovery-key copy and restore rehearsal are compensating controls only. The application operator performs only separately approved deployment/cutover steps.
-- **Rehearsal:** the synthetic seven-entry/eleven-audit encrypted dump and isolated restore passed in disposable PostgreSQL in [CI run 41504298230](https://github.com/yorkstead/website/actions/runs/41504298230). This is not a production-derived artifact or a measured production-like RTO. An authorized production-derived artifact and isolated rehearsal remain outstanding; compare the private legacy projection and all audit fingerprints, verify post-point markers are absent, and exercise the pre-migration application against the restored state.
+- **Rehearsal:** an earlier synthetic seven-entry/eleven-audit encrypted dump and isolated restore passed in disposable PostgreSQL in [CI run 41504298230](https://github.com/yorkstead/website/actions/runs/41504298230). This is synthetic evidence, not a production-derived artifact or measured production-like RTO. The recovery setup does not establish production recovery readiness; verify the current prospective artifact and restore procedure before separately authorized migration.
 
 ## Required owner approvals
 
@@ -103,10 +107,10 @@ Before the first production backup, obtain explicit owner approval for the exact
 
 Merging source must not run migration 0023. `vercel-build` only builds the application; a named operator must run `bun run db:migrate` as a separate, explicitly authorized production operation after all gates below pass. CI migration commands use only the disposable PostgreSQL service.
 
-Production migration remains **NO-GO** until all of the following are privately evidenced and independently reviewed:
+Production migration remains **NO-GO** until all of the following are privately evidenced and reviewed under the acknowledged single-operator exception:
 
 - The selected recovery point is available, appropriately durable for the migration window, and restorable.
 - The non-production restore rehearsal and migration/rollback verification pass.
-- The exact private seven-entry / eleven-audit baseline has been reviewed and its stable legacy data reconciles.
+- A new prospective baseline of the actual then-current entry and audit state has been captured and reconciles; no historical seven/eleven count is required.
 - Owner-approved recovery exposure, RPO/RTO, restore operator, reconciliation owner, and cutover/rollback decision are documented.
 - Separate explicit authorization names the production migration and any backup/restore/configuration operations.

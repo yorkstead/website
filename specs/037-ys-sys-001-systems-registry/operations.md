@@ -12,15 +12,9 @@ The owner reports both temporary Production flags are disabled, and after PR #90
 
 ## Pre-migration gate
 
-Before PR 1 implementation:
+The following gates are maintained in the current [`activation runbook`](activation-runbook.md). Owner direction on 2026-11-03 retained the currently configured databases, stopped former-database recovery, and removed fixed seven-entry/eleven-audit historical parity as a production release requirement. `production-preflight.md` and older row-specific recovery instructions are historical source evidence only; do not use their counts or fingerprints as a current baseline.
 
-1. Use the exact provider endpoint mapping and migration evidence recorded in `production-preflight.md`; never copy a DSN, host, secret, or credential into GitHub.
-2. Independently review the private seven-entry / eleven-event inventory, stable IDs, revisions, archive state, material legacy values, audit counts, and fingerprints. Keep these details in private evidence only.
-3. Select and confirm a usable recovery point and perform the disposable rehearsal in `recovery-runbook.md`. No production recovery operation is implied.
-4. Confirm audit triggers/permissions and compatibility contracts. Review the versioned legacy-column fingerprint projection before/after schema change; the all-column entry fingerprint is expected to change when columns are added.
-5. Have an independent reviewer approve preservation evidence, migration 0023, compatibility and backout before implementation. Production migration remains a separate explicit approval.
-
-If private row-level evidence or a usable recovery point is unavailable, production migration remains blocked. Do not improvise with deployment secrets, shell environment dumps, client requests, or a different database. PR 1 design and disposable tests may continue without claiming production parity.
+Before any separately authorized Production migration, verify the actual deployed database identity and read-only migration/schema prerequisites, then create a new prospective encrypted baseline of whatever records and audit history exist at that time. Record its timestamp and source provenance privately. Verify the encrypted artifact can be retrieved and validated using the owner-approved recovery process. No fixed starting row count is expected. Preserve existing rows, relationships, audit history and revisions exactly across the migration. Perform migration 0023/0024 tests and recovery rehearsal using disposable PostgreSQL only. Production migration and activation require separate, explicit authorization.
 
 ## Recovery readiness
 

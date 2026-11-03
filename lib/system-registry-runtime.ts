@@ -3,6 +3,7 @@ import { getAuthConfiguration } from "@/lib/auth";
 import { getOwnerSession } from "@/lib/owner-session";
 import { explicitVerifyFullSSL } from "@/lib/database-url";
 import { createSystemRegistryService } from "@/lib/system-registry-service";
+import { createSystemRegistryAnalysisController } from "@/lib/system-registry-analysis-http";
 import { createSystemRegistryController, createSystemRegistryRelationshipsController, } from "@/lib/system-registry-http";
 import { createSystemRegistryBillingService } from "@/lib/system-registry-billing-service";
 import { createSystemRegistryBillingController, createSystemRegistryMonitoringController, createSystemRegistryVerificationController } from "@/lib/system-registry-workflow-http";
@@ -16,6 +17,10 @@ function dependencies() {
 export async function handleSystemRegistry(request:Request) {
   try{return await createSystemRegistryController(dependencies())(request);}
   catch{return Response.json({error:"Systems Registry temporarily unavailable"},{status:503,headers:{"Cache-Control":"private, no-store","Referrer-Policy":"no-referrer","X-Content-Type-Options":"nosniff"}});}
+}
+export async function handleSystemRegistryAnalysis(request:Request) {
+  try{return await createSystemRegistryAnalysisController(dependencies())(request);}
+  catch{return Response.json({error:"Registry analysis temporarily unavailable"},{status:503,headers:{"Cache-Control":"private, no-store","Referrer-Policy":"no-referrer","X-Content-Type-Options":"nosniff"}});}
 }
 export async function handleSystemRegistryRelationships(request:Request) {
   try{return await createSystemRegistryRelationshipsController(dependencies())(request);}

@@ -1,8 +1,25 @@
 # YS-SYS-001 tasks
 
+## Dependency impact and activation readiness continuation
+
+Detailed acceptance, semantics and limits: [`dependency-impact-readiness/spec.md`](dependency-impact-readiness/spec.md).
+
+- [ ] Confirm the existing relationship table and migration 0024 fields are the only data sources; no migration or speculative edges.
+- [ ] Add bounded read-only snapshot loading behind owner authorization and exact default-off feature flag.
+- [ ] Implement deterministic dependency traversal, reverse impact, cycle detection and truncation reporting.
+- [ ] Implement truthful readiness classification for verification, roles, billing, monitoring, links and activation conditions.
+- [ ] Add impact graph with semantic table/list, search/class filters and links to Registry records.
+- [ ] Add readiness overview with counts, severity, actionable record navigation and explicit unknown/incomplete states.
+- [ ] Add focused unit/controller/synthetic PostgreSQL/browser tests, including empty and partial inventories and all six classes.
+- [ ] Verify the legacy `/api/systems-directory` DTO/view remains unchanged; no production migration or feature activation.
+- [ ] Run migration check, lint, typecheck, complete tests, browser suite and build; document skips and Preview isolation limits.
+- [ ] Review the exact PR diff, Actions and Preview; stop at draft PR pending separate merge/deploy authorization.
+
 The PR 0 / PR 1 sections below are historical completion records. Their former-database and fixed seven-entry/eleven-audit production-baseline gates are superseded by the 2026-11-03 owner direction and are not active tasks.
 
 ## PR 2 — staged inventory and ownership (owner direction 2026-11-03)
+
+**Status note:** The implementation items below are represented on current main by merged PR #97 (inventory, typed routes/relationships, access gates, UI and regression tests). Only Production migration, activation, merge/deployment, and unrelated separately authorized data reconstruction are outside that completed code delivery; historical private parity is superseded.
 
 - [x] Reconcile spec, plan, tasks, and ADRs with retained Production/Preview database decision; remove historical row-count parity and former-database recovery as active gates while keeping prior evidence labeled historical.
 - [x] Implement six-class Registry DTO/schema, canonical-entry service, typed routes, owner + default-off gate, safe errors, revision conflicts, and append-only audit.
@@ -66,33 +83,33 @@ The PR 0 / PR 1 sections below are historical completion records. Their former-d
 - [x] Owner reports a successful production diagnostic; Neon endpoint/project/branch/database mapping and aggregate facts are documented without public IDs or fingerprints.
 - [x] Cleanup PR #90 removes temporary code/helper/tests/docs; latest Actions and Preview pass. PR remains draft/unmerged.
 - [x] Owner reports both temporary flags disabled, Production cleanup deployed, and owner-authenticated retired-mode 404; no protected values or response bodies recorded.
-## PR 2 — staged inventory and ownership
+## Historical phase — staged inventory and ownership (merged PR #97)
 
-- [ ] Add unverified candidate staging, duplicate review, owner/recovery roles and provenance.
-- [ ] Preserve legacy endpoints and test owner/cross-tenant boundaries.
+- [x] Add unverified candidate staging, duplicate review, owner/recovery roles and provenance.
+- [x] Preserve legacy endpoints and test owner/cross-tenant boundaries.
 
-## PR 3 — subscription evidence and reconciliation
+## Historical phase — subscription evidence and reconciliation (merged PR #99)
 
-- [ ] Add actual/estimated/unknown subscription evidence and shared-entitlement dedupe.
-- [ ] Prove unknown values do not become zero and legacy values remain intact.
+- [x] Add actual/estimated/unknown subscription evidence and shared-entitlement dedupe.
+- [x] Prove unknown values do not become zero and legacy values remain intact.
 
-## PR 4 — applications, infrastructure and stack usage
+## Historical phase — applications, infrastructure and stack usage (six-class model merged PR #97)
 
-- [ ] Link workload, infrastructure/asset and stack-component records with evidence.
-- [ ] Verify compatibility and source visibility.
+- [x] Link workload, infrastructure/asset and stack-component records with evidence.
+- [x] Verify compatibility and source visibility.
 
-## PR 5 — dependencies and impact
+## Dependency impact and readiness — current continuation
 
 - [ ] Add typed, bounded dependency edges and accessible impact inspection.
 - [ ] Test cycles, truncation, provenance and non-inference of health.
 
-## PR 6 — monitoring evidence
+## Historical phase — monitoring evidence (merged PR #99)
 
-- [ ] Add truthful monitored/not-configured/unknown/stale states and history.
-- [ ] Reuse existing trusted read-only checks only; no arbitrary probes or alerts.
+- [x] Add truthful monitored/not-configured/unknown/stale states and history.
+- [x] Reuse existing trusted read-only checks only; no arbitrary probes or alerts.
 
-## PR 7 — activation readiness
+## Controlled Production activation — separately gated
 
-- [ ] Verify compatibility, seven-record preservation and audit parity.
+- [ ] Verify compatibility and current-state preservation against a new prospective baseline; no historic row count assumed.
 - [ ] Rehearse restore/rollback on disposable data and document remaining gates.
 - [ ] Seek separate authorization before any production operation, merge or deployment.

@@ -8,7 +8,7 @@ Store the completed copy in owner-approved private storage. Public issue/PR upda
 | Source project/branch/endpoint/database and production deployment binding | Pending | NOT RUN |
 | Source identity capture time and reviewer | Pending | NOT RUN |
 | Client/server versions, extensions, schemas, roles, ACLs, RLS | Pending | NOT RUN |
-| Seven-entry / eleven-audit parity report, fingerprint algorithm/version, reviewer | Pending | NOT RUN |
+| Prospective current-state preservation report (no fixed row-count assumption), fingerprint algorithm/version, owner sign-off | Pending | NOT RUN |
 | Artifact UTC capture, migration ledger, key identifier, encrypted size/SHA-256 | Pending | NOT RUN |
 | Storage provider/region/object, access audit, cost and encryption settings | Pending | NOT RUN |
 | Remote byte checksum, independent retrieval and decryption test | Pending | NOT RUN |

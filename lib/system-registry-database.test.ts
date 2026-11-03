@@ -5,6 +5,7 @@ import { Pool } from "pg";
 import { parseMigration } from "@/scripts/migration-plan";
 import { createSystemDirectoryService } from "@/lib/system-directory-service";
 import { createSystemRegistryService } from "@/lib/system-registry-service";
+import { createSystemRegistryBillingService } from "@/lib/system-registry-billing-service";
 import { emptySystemDirectoryInput } from "@/lib/system-registry";
 import type { SystemRegistryInput } from "@/lib/system-registry";
 
@@ -31,10 +32,11 @@ describe("YS-SYS-001 synthetic PostgreSQL Registry",()=>{
     const {schema,pool}=await schemaPool(admin!,"empty",true);const client=await admin!.connect();
     try{
       const service=createSystemRegistryService(pool);expect(await service.list({})).toEqual([]);
+      expect(await service.analysisSnapshot()).toEqual({nodes:[],edges:[],truncated:{entries:false,relationships:false}});
       const concurrent=await Promise.all(["one","two"].map(suffix=>service.create(typedInput("provider_service",`Synthetic concurrent ${suffix}`),"registry-test-owner")));
       expect(concurrent).toHaveLength(2);
       const classes:SystemRegistryInput["entityClass"][]=["provider_service","provider_account","subscription","application_workload","infrastructure_asset","stack_component"];
-      const created=[];
+      const created: Awaited<ReturnType<typeof service.create>>[]=[];
       for(const [index,entityClass] of classes.entries())created.push(await service.create(typedInput(entityClass,`Synthetic ${entityClass} ${index}`),"registry-test-owner"));
       expect(new Set(created.map(record=>record.entityClass))).toEqual(new Set(classes));
       expect(created.every(record=>record.revision===1&&record.verificationState==="unknown"&&record.links.length===0)).toBe(true);
@@ -42,13 +44,26 @@ describe("YS-SYS-001 synthetic PostgreSQL Registry",()=>{
       const candidate={...typedInput("provider_account","Synthetic revised account"),verificationState:"candidate" as const,provenanceKind:"manual_entry" as const,provenanceReference:"synthetic fixture"};
       const updated=await service.update(created[1]!.id,created[1]!.revision,candidate,"registry-test-owner");expect(updated?.revision).toBe(2);expect(updated?.verificationState).toBe("candidate");
       expect(await service.update(created[1]!.id,created[1]!.revision,candidate,"registry-test-owner")).toBeNull();
+      await service.updateVerification(created[1]!.id,updated!.revision,{status:"stale",subject:"Synthetic provider account evidence",method:"provider_console",reference:"synthetic stale fixture",observedAt:new Date().toISOString(),reviewDue:"2000-01-01"},"registry-test-owner");
+      await service.recordMonitoring(created[3]!.id,created[3]!.revision,{outcome:"healthy",method:"local_check",reference:"synthetic stale monitor",observedAt:new Date().toISOString(),reviewDue:"2000-01-01",summary:"Synthetic fixture"},"registry-test-owner");
       const subscription=created.find(record=>record.entityClass==="subscription")!;
+      const account=created.find(record=>record.entityClass==="provider_account")!;
+      const billing=createSystemRegistryBillingService(pool);
+      const source=await billing.create({providerAccountId:account.id,sourceKind:"invoice",reference:"synthetic verified invoice",observedAt:new Date().toISOString(),periodStart:"2026-11-01",periodEnd:"2026-11-30",amountBasis:"actual",amount:120,currency:"USD",payerLabel:"Synthetic test payer",status:"verified",reviewDue:null},"registry-test-owner");
+      await billing.allocate({evidenceId:source.id,subscriptionId:subscription.id,amount:120},"registry-test-owner");
+      expect((await service.analysisSnapshot()).nodes.find(node=>node.id===subscription.id)?.billingReady).toBe(true);
       expect((await service.update(subscription.id,subscription.revision,{...typedInput("subscription",subscription.name),details:{...subscription,renewalDate:"2026-12-31"}},"registry-test-owner"))?.renewalDate).toBe("2026-12-31");
       const link=await service.createRelationship(created[3]!.id,{targetId:created[0]!.id,kind:"depends_on",verificationState:"unknown",provenanceKind:"unknown",provenanceReference:null,observedAt:null},"registry-test-owner");
+      const analysis=await service.analysisSnapshot();
+      expect(analysis.nodes).toHaveLength(8);
+      expect(analysis.nodes.find(node=>node.id===created[1]!.id)?.verificationStatus).toBe("stale");
+      expect(analysis.nodes.find(node=>node.id===created[3]!.id)?.monitoringOutcome).toBe("stale");
+      expect(analysis.edges).toMatchObject([{id:link.id,sourceId:created[3]!.id,targetId:created[0]!.id,kind:"depends_on",verificationState:"unknown",endpointsPresent:true}]);
+      expect(Object.keys(analysis.nodes[0]!).sort()).toEqual(["billingReady","entityClass","id","monitoringConfiguration","monitoringOutcome","monitoringReviewDue","name","recoveryRolePresent","responsibleRolePresent","revision","verificationReviewDue","verificationState","verificationStatus"].sort());
       expect(link.revision).toBe(1);expect((await service.list({entityClass:"application_workload"}))[0]?.links[0]).toMatchObject({id:link.id,targetId:created[0]!.id,kind:"depends_on"});
       expect(await service.archiveRelationship(link.id,link.revision,"registry-test-owner")).toMatchObject({revision:2});
       expect((await service.list({entityClass:"application_workload"}))[0]?.links).toEqual([]);
-      expect((await service.audit(created[1]!.id)).map(event=>event.action)).toEqual(["updated","created"]);
+      expect((await service.audit(created[1]!.id)).sort((a,b)=>b.revision-a.revision).map(event=>[event.revision,event.action])).toEqual([[3,"updated"],[2,"updated"],[1,"created"]]);
       await expect(pool.query("UPDATE system_directory_audit SET action='updated' WHERE entry_id=$1",[created[1]!.id])).rejects.toMatchObject({code:"23514"});
       await expect(pool.query("DELETE FROM system_directory_relationship_audit WHERE relationship_id=$1",[link.id])).rejects.toMatchObject({code:"23514"});
     }finally{await pool.end();await client.query("RESET search_path").catch(()=>undefined);await client.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`).catch(()=>undefined);client.release();}

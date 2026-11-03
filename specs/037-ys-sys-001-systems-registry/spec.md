@@ -66,7 +66,13 @@ Every candidate or imported fact carries source/provenance, observed/confirmed t
 9. Every material mutation is owner-authorized, revision-safe, transactionally audited and compatible with immutable audit constraints.
 10. Ordered additive migration checks, disposable database preservation/integration tests, relevant browser flows and repository verification pass; each slice has independent review/rollback notes.
 11. Roadmap and handoff keep Automation Hub recovery, CC-026 activation/migration evidence and MKT-QR-001 print readiness coordinated as separate dependencies/workstreams.
-12. Cleanup PR #90 removes the temporary preflight from source and is merged/deployed; the owner reported both flags disabled and the authenticated retired mode returning 404. The approved parity and recovery procedures are documented without public row-level evidence.
+12. Cleanup PR #90 removed the temporary preflight from source and is merged/deployed; the owner reported both flags disabled and the authenticated retired mode returning 404. Before any future Production migration, use a new prospective preservation/recovery baseline of the retained database, without historical seven-entry/eleven-audit assumptions or public row-level evidence.
+
+### Dependency impact and activation readiness continuation
+
+The owner-facing dependency and activation-readiness surface is specified in [`dependency-impact-readiness/spec.md`](dependency-impact-readiness/spec.md). It consumes only explicit, non-archived relationships and existing evidence; it never invents a dependency, confirms an inferred relationship, runs probes, or interprets missing links as proof of independence. Relationship kinds `depends_on`, `runs_on`, `uses`, and `integrates_with` participate in dependency traversal. `owns` and `billed_through` remain visible as ownership/billing context but do not expand outage impact. A recorded integration is traversed in its stored direction and is labeled accordingly.
+
+Activation readiness is an evidence summary, not an automatic approval. It reports verification, ownership/recovery responsibility, billing, monitoring, relationship completeness, cycles and bounded/truncated analysis. It distinguishes critical blockers from informational unknowns and provides an explicit count/meaning for each. Empty inventory is supported and is not represented as healthy or ready. The typed interfaces remain owner-only and default-off; no Production flag or migration is changed by this work.
 
 ## Non-goals
 
