@@ -186,7 +186,7 @@ jobs:
           printf 'RECOVERY_DB_USER=%s\nRECOVERY_DB_PASSWORD=%s\nRECOVERY_DB_NAME=%s\nRECOVERY_DOCKER_NETWORK=ys-recovery-%s\n' \
             "$db_user" "$db_password" "$db_name" "$GITHUB_RUN_ID" >> "$GITHUB_ENV"
           docker run -d --rm --name ys-recovery-postgres --network "ys-recovery-${GITHUB_RUN_ID}" \
-            -e POSTGRES_USER="$db_user" -e POSTGRES_PASSWORD="$db_password" -e POSTGRES_DB="$db_name" postgres:16-alpine
+            -e POSTGRES_USER="$db_user" -e POSTGRES_PASSWORD="$db_password" -e POSTGRES_DB="$db_name" postgres:18-alpine
           for attempt in $(seq 1 30); do
             docker exec ys-recovery-postgres pg_isready -U "$db_user" -d "$db_name" && exit 0
             sleep 1

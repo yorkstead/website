@@ -1,5 +1,13 @@
 FROM oven/bun:1.3.14
-RUN apt-get update && apt-get install -y --no-install-recommends age postgresql-client util-linux && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends age ca-certificates curl gpg util-linux \
+  && install -d /usr/share/postgresql-common/pgdg \
+  && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+  && printf 'Types: deb\nURIs: https://apt.postgresql.org/pub/repos/apt\nSuites: trixie-pgdg\nComponents: main\nSigned-By: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc\n' > /etc/apt/sources.list.d/pgdg.sources \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends postgresql-client-18 \
+  && pg_dump --version \
+  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
