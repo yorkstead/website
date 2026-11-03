@@ -121,7 +121,13 @@ disposableTest("encrypts, verifies, uploads locally, and restores a synthetic se
     await copyFile(resolve(store, "backup.dump.age.saved"), resolve(store, "backup.dump.age"));
     await rm(resolve(store, "backup.dump.age.saved"));
     expect((await target.query("SELECT count(*)::int AS n FROM pg_class WHERE relkind='r' AND relnamespace='public'::regnamespace")).rows[0].n).toBe(0);
-    expect(command(["bash", script, "restore"], restoreEnv).status).toBe(0);
+    const restore = command(["bash", script, "restore"], restoreEnv);
+    if (restore.status !== 0) {
+      const details = `${restore.stderr}\n${restore.stdout}`.replaceAll(sourceName, "[synthetic-db]")
+        .replaceAll(targetName, "[synthetic-db]").replaceAll(process.env.RECOVERY_TEST_USER!, "[synthetic-role]")
+        .slice(0, 500);
+      throw new Error(`synthetic restore exited ${restore.status}: ${details}`);
+    }
     expect((await target.query("SELECT id,tenant_id,revision,account_identity,archived_at FROM system_directory_entries ORDER BY id")).rows).toEqual(entriesBefore);
     expect((await target.query("SELECT id,entry_id,revision,action,before_state,after_state FROM system_directory_audit ORDER BY id")).rows).toEqual(auditBefore);
     expect((await target.query("SELECT count(*)::int AS n FROM system_directory_entries WHERE archived_at IS NOT NULL")).rows[0].n).toBe(0);
