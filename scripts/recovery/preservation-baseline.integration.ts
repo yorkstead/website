@@ -156,7 +156,7 @@ test("captures seven synthetic entries and eleven audit events, then encrypts, u
   expect(evidence.preservation.orphanAuditCount).toBe(0);
   expect(evidence.preservation.entries.map((row) => row.auditCount)).toEqual([2, 2, 2, 2, 1, 1, 1]);
   expect(evidence.protectionTriggers.map((trigger) => trigger.name)).toEqual([
-    "system_directory_audit_entry", "system_directory_audit_immutable", "system_directory_revision",
+    "system_directory_audit_entry", "system_directory_revision", "system_directory_audit_immutable",
   ]);
   expect(evidence.roleVerification.writePrivileges).toBe(false);
   expect(canonicalize({ z: 1, a: { d: true, c: null } })).toBe('{"a":{"c":null,"d":true},"z":1}');
@@ -193,7 +193,7 @@ test("fails closed on source mismatch, ledger mismatch, missing grants, and extr
   try {
     await owner.query("UPDATE application_migrations SET checksum = repeat('0',64) WHERE version='0022'");
     await expect(capture()).rejects.toMatchObject({ code: "migration_ledger_mismatch" });
-    const migration = migrations.at(-1)!;
+    const migration = migrations.find((entry) => entry.version === "0022")!;
     await owner.query("UPDATE application_migrations SET checksum=$1 WHERE version='0022'", [migration.checksum]);
     await owner.query("REVOKE SELECT ON public.system_directory_audit FROM ys_sys_001_baseline_reader");
     await expect(capture()).rejects.toMatchObject({ code: "read_only_role_missing_scope" });
