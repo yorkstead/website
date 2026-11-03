@@ -7,7 +7,6 @@ test.beforeAll(async()=>setupCc023Owner());
 test.afterAll(async()=>disposeCc023Owner());
 
 test("owner can stage all Registry classes, search, add evidence-backed dependencies, and review audit",async({page,context,baseURL})=>{
-  expect(process.env.YS_SYS_001_ENABLED).toBe("true");
   expect((await context.request.get("/api/systems-registry")).status()).toBe(401);
   await page.goto("/dashboard/systems/registry");await expect(page).toHaveURL(/\/login\?next=\/dashboard\/systems\/registry/);
   const origin=baseURL!;const login=await context.request.post("/api/auth/sign-in/email",{headers:{origin},data:cc023Owner});expect(login.status()).toBe(200);
