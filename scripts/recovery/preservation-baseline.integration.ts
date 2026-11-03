@@ -156,7 +156,7 @@ test("captures seven synthetic entries and eleven audit events, then encrypts, u
   expect(evidence.preservation.orphanAuditCount).toBe(0);
   expect(evidence.preservation.entries.map((row) => row.auditCount)).toEqual([2, 2, 2, 2, 1, 1, 1]);
   expect(evidence.protectionTriggers.map((trigger) => trigger.name)).toEqual([
-    "system_directory_audit_entry", "system_directory_revision", "system_directory_audit_immutable",
+    "system_directory_audit_immutable", "system_directory_audit_entry", "system_directory_revision",
   ]);
   expect(evidence.roleVerification.writePrivileges).toBe(false);
   expect(canonicalize({ z: 1, a: { d: true, c: null } })).toBe('{"a":{"c":null,"d":true},"z":1}');
