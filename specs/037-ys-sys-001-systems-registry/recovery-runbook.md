@@ -1,16 +1,23 @@
 # YS-SYS-001 — Neon recovery readiness runbook
 
-**Status:** Preparation only. No Neon branch, snapshot, database, schedule, connection, or production configuration has been changed. A recovery point and a successful restore have not been verified.
+**Status:** Planning policy accepted; no production export, backup, storage activation, restore, migration, or configuration change has been authorized. A production-derived recovery point and successful restore have not been verified.
 
-## Owner policy decision (2026-11-02)
+## Owner policy decision (updated 2026-11-03)
 
 | Item | Planning decision | Execution state |
 | --- | --- | --- |
 | Recovery artifact | PostgreSQL custom-format `pg_dump`, encrypted client-side with an approved age recipient | Production export **not authorized** |
 | Retention | 30 days from the UTC timestamp of a successfully verified encrypted artifact | Storage expiration and deletion proof still need design/approval; legal hold pauses deletion only with documented owner approval |
 | RTO | 60 minutes from incident declaration to verified service recovery | Target accepted for planning; not demonstrated |
-| RPO and backup cadence | Open | Owner must approve maximum data loss and backup frequency; one pre-migration dump is not ongoing protection |
-| Storage, key custody, operators, cost | Open | Owner must approve exact destination, region, encryption/key recovery, access, cost, primary/secondary operators and independent reviewer |
+| RPO and backup cadence | 24-hour RPO; daily encrypted custom-format backups | First production backup and any recurring schedule require separate authorization; objective is unproven until completion monitoring and recovery rehearsal pass |
+| Retention and RTO | 30 days; 60-minute RTO target | Retention implementation and deletion verification pending exact bucket approval; RTO awaits timed restore verification |
+| Operator | Yorkstead owner is primary recovery operator and approver | Single-person operation; each production action requires scoped owner approval |
+| Secondary operator / independent human reviewer | Unassigned because no additional personnel are available | Not represented by automated checks; explicit owner acknowledgment of exception and residual risk required before export or migration approval |
+| Storage, key custody and cost | Private Cloudflare R2 proposed; separately protected recovery-key copy required | Exact account, bucket, region, permissions, spend cap and key custody remain pending approval; no activation authorized |
+
+### Single-operator exception and compensating controls
+
+Yorkstead currently has no additional personnel available for secondary recovery operations or independent human review. This is an explicit exception to any policy requiring separation of recovery operator and reviewer, not a staffing task left open indefinitely. Before production export or migration approval, the owner must acknowledge privately that one person may initiate, execute, validate and approve recovery, and accept the residual risk of mistaken target selection, compromised credentials/key access, and undetected mistakes. If this acknowledgment is not recorded, the relevant operation remains blocked. Automated validation, immutable evidence, a separately protected recovery-key copy, restore rehearsal and owner sign-off reduce risk but are not independent human review. Reassess the exception when staffing changes and at least annually.
 
 The synthetic rehearsal is now restricted to the dedicated `recovery-rehearsal` GitHub Actions job. That job provisions a new PostgreSQL 18 container on a Docker `--internal` network, verifies the network is internal and initially attached only to that database container, and runs a recovery-only image with minimum read permission. Docker's internal network boundary blocks external network access; the recovery container has no Docker socket, host mounts, cloud credentials, or provider-specific code. Its root filesystem is read-only except for `/work` and `/tmp` tmpfs mounts; the entry point verifies both writable mounts are tmpfs and pins Bun's runtime cache to `/tmp`. It uses the official PostgreSQL Apt Repository's PostgreSQL 18 client against the same-major synthetic service. The container receives no `PG*`, connection-string, Vercel, Neon, cloud, deployment, or caller-selected storage-path environment variables. The helper accepts only generated credentials from the entry point, builds fixed artifact paths inside its private workspace, and simulates upload by copying within that same tmpfs. The recovery-only image copies only the migration fixture, recovery scripts, and required directory service modules; it has no application server or provider SDK execution path. CI also runs negative tests for external URLs, inherited PostgreSQL overrides, alternate storage paths, production/cloud variables, direct helper invocation, and execution outside the approved container. Local execution fails closed. These synthetic controls do not establish production data provenance, durable storage, or recoverability of a production artifact.
 
@@ -32,15 +39,15 @@ The owner selected an encrypted logical export for **planning**. Choose and appr
 2. **One-time Neon snapshot (unselected alternative).** Eligibility, price and retention for the existing plan remain unverified. A snapshot cannot be created as part of this preparation.
 3. **PITR branch within the current window.** Immediately before migration, verify a concrete timestamp/LSN remains available and record it privately. PITR is useful for short-window recovery, but it is not durable beyond the configured six-hour retention and may lose legitimate writes after the chosen point.
 
-PITR alone does not satisfy the durable pre-migration artifact requirement. A 30-day dump retention is not a 30-day history of recoverable points. The maximum loss between dumps remains unbounded until the owner approves an RPO and cadence.
+PITR alone does not satisfy the durable pre-migration artifact requirement. A 30-day dump retention is not a 30-day history of recoverable points. The approved daily cadence targets a 24-hour maximum recovery-point age only when backups complete and are verified; missed or failed backups breach that objective until a newer verified artifact exists.
 
-## Production export approval checklist — all open
+## Production export approval checklist
 
 1. Reconfirm the actual production deployment and protected database binding against the previously matched Neon project, branch, endpoint and database using approved read-only metadata. Record identifiers only in private evidence. Verify the direct connection, server/client versions, schemas, extensions, role ownership, ACLs, RLS and restore privileges without logging credentials.
 2. Owner approves the exact source, least-privileged dump role, time window, procedure and cancellation path. No script in this PR connects to production.
 3. Owner approves a private storage provider/account/bucket/path and region, expected cost, encryption at rest and client-side age recipient, key owner, secondary recovery key access, rotation, and emergency recovery.
 4. Prove upload/download/list/delete permissions, audit logs, no public access, 30-day retention from verified capture, expiration/deletion verification, and documented legal-hold exceptions.
-5. Owner approves ongoing RPO, backup cadence, expected gaps between points, and the 60-minute RTO measurement method. Assign primary and secondary operators, separate reviewer, approval authority and out-of-band contacts.
+5. The owner-approved RPO is 24 hours with a daily cadence; verify a failure alert and escalation for any backup that is not uploaded, checksummed, retrieved, and validated within the objective. The 60-minute RTO remains unverified pending a timed rehearsal. Record the owner's explicit acknowledgment of the single-operator exception and residual risk. The owner is primary operator and approver; secondary and independent reviewer are unassigned. Do not claim separation of duties.
 6. Independently review the private seven-entry/eleven-event row-level baseline and capture provenance. Approve a truly isolated restore target with outbound jobs, mail and webhooks disabled.
 7. Review space, bandwidth, database impact, runtime and charges. Grant a separate explicit approval for the specified production export. Production migration and any restore/cutover each need later separate approvals.
 
@@ -50,7 +57,7 @@ For the currently reported `free_v3` plan, retained PITR is the lowest-cost avai
 
 ## Independent private parity checklist
 
-An owner-authorized operator and a separate reviewer must complete this checklist in private storage; only aggregate pass/fail and the capture time may enter GitHub.
+Complete this checklist in private storage. Normally an independent reviewer verifies it; currently no reviewer is available. The owner must explicitly acknowledge the single-operator exception and personally sign off. Such owner sign-off and automated recalculation are not independent review; only aggregate pass/fail and capture time may enter GitHub.
 
 1. Record the capture UTC time, deployed source SHA, diagnostic/code revision, fingerprint algorithm/version, and exact Neon project, branch, endpoint, and database identity. Confirm the connection is the production binding without revealing credentials.
 2. Capture the pre-migration legacy-column projection for exactly seven entries and the full original audit projection for exactly eleven events. Record each stable entry ID, revision, archive state, per-entry audit count, and deterministic entry/audit fingerprints in the private evidence bundle.
@@ -82,15 +89,15 @@ Estimate potential data exposure as the interval from the selected recovery poin
 ## Recovery objectives and operating model
 
 - **Registry preservation requirement:** no loss or alteration of the seven original entries or eleven original audit events across migration and rollback. This is a required parity outcome, not evidence that the private row-level baseline has been independently verified.
-- **General production RPO:** not yet approved. The six-hour PITR history is a maximum recovery lookback, not a six-hour RPO commitment. If restoring to the oldest point currently available, potential exposure is up to six hours of legitimate writes; the exact exposure depends on the chosen recovery timestamp and must be calculated immediately before use.
+- **General production RPO:** owner-approved **24 hours**, supported by a planned daily encrypted full custom-format dump. This is an objective, not evidence of achieved recovery. It is met only while a current backup completes and passes remote integrity/retrieval checks; alert/escalate on every missed or failed cycle. The six-hour PITR history is a maximum recovery lookback, not a six-hour RPO commitment. If restoring to the oldest available PITR point, potential exposure is up to six hours of writes.
 - **RTO target:** the owner accepted 60 minutes from incident declaration through verified service recovery for planning. This target is unmeasured; revise the proposed procedure if a production-like rehearsal cannot meet it.
 - **Storage and retention:** retain a verified encrypted artifact for 30 days from its UTC capture time. The exact private storage location, access controls, expiration/deletion proof, legal-hold exceptions, and cost still require owner approval before creating an artifact.
-- **Responsibilities:** the owner approves recovery method, objectives, acceptable exposure, operator, storage, retention, and cutover. A named database operator creates/restores the artifact. A separate reviewer verifies redacted parity evidence. The application operator performs only separately approved deployment/cutover steps. Named operators are not yet assigned.
+- **Responsibilities:** the Yorkstead owner is the primary recovery operator and approver. A secondary operator and independent human reviewer are unassigned due to current staffing. The explicit single-operator exception and acknowledgment gate above apply. Automated verification, immutable evidence, a separately protected recovery-key copy and restore rehearsal are compensating controls only. The application operator performs only separately approved deployment/cutover steps.
 - **Rehearsal:** the synthetic seven-entry/eleven-audit encrypted dump and isolated restore passed in disposable PostgreSQL in [CI run 41504298230](https://github.com/yorkstead/website/actions/runs/41504298230). This is not a production-derived artifact or a measured production-like RTO. An authorized production-derived artifact and isolated rehearsal remain outstanding; compare the private legacy projection and all audit fingerprints, verify post-point markers are absent, and exercise the pre-migration application against the restored state.
 
 ## Required owner approvals
 
-Before creating a production recovery point or export, obtain explicit owner approval for the selected method, time, target, storage location, access list, retention/deletion, and any cost. Before any restore, obtain separate approval for the exact source/target, point in time, expected data loss, reconciliation owner, and whether endpoint reassignment/cutover is allowed. Production migration, branch restore, traffic switch, and deployment each require their own scoped approval. This runbook authorizes none of those operations. The 60-minute RTO is measured from incident declaration through artifact acquisition/decryption, isolated restore, required configuration, application smoke checks and owner-approved service readiness; it has not been measured.
+Before the first production backup, obtain explicit owner approval for the exact source, window, method, target bucket, region, access list, key custody, 30-day retention/deletion, measured cost cap, private parity result and the one-time scope. The owner must acknowledge the single-operator exception and residual risk. That authorization does not create a recurring schedule; daily automation and later backup runs require separate authorization. Before any restore, obtain separate approval for exact source/target, point in time, expected data loss, reconciliation owner, and whether endpoint reassignment/cutover is allowed. Production migration, branch restore, traffic switch, and deployment each require their own scoped approval. This runbook authorizes none of those operations. The 60-minute RTO includes artifact acquisition/decryption, isolated restore, configuration, smoke checks and readiness; it remains unmeasured.
 
 ## Migration gate
 

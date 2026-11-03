@@ -1,5 +1,29 @@
 # YS-SYS-001 verification record — PR 0
 
+## PR #94 release gate and backup setup preparation — 2026-11-03
+
+- Live GitHub PR #94 at prior head `90e50e734a353ad310832bc39a5b9d3b6f75e46e` was open/draft, mergeable, based on main `e698dbc3db2d1e7e5958d23d6d320b1e10bcaf87`; GitHub proposed merge SHA `a701b541135f94c6125d2f59e8e1eab26e62dd32`. Exact-head Actions run [41582815628](https://github.com/yorkstead/website/actions/runs/41582815628) passed both jobs and Vercel Preview was Ready. These facts must be rechecked after this documentation update.
+- The reviewed PR diff consists only of six Markdown files (roadmap, handoff, recovery package/runbook, tasks, verification); no application code, migration, workflow, shell script, or executable backup path is changed. Merge does initiate the normal Vercel Production build/deployment; the documented build wrapper does not apply migrations.
+- Added a controlled-release recommendation and read-only post-release smoke tests; step-by-step owner R2 setup checklist; private seven-entry/eleven-audit comparison with fingerprint caveats; single-operator exception acknowledgment; and a one-time first-backup authorization scope. No R2 resource, production data, configuration, or database was changed.
+- `git diff --check`, `bun run yorkstead:check`, and `bun run db:migrate:check` passed on the documentation worktree. The migration check validated 0001–0023 ordering only; it did not apply a migration. Exact-head CI and Preview remain required after pushing this update.
+- Production release of PR #94 requires separate authorization. Production storage activation/export/backup, recurring schedule, restore, and migration 0023 remain **NO-GO** pending exact setup approval, private parity, exception acknowledgment, one-time export authorization, and later recovery verification.
+
+## Recovery policy decision and PR #94 update — 2026-11-03
+
+- Owner approved a 24-hour RPO implemented by daily encrypted PostgreSQL custom-format backups, with 30-day retention and a 60-minute RTO target pending timed restore verification.
+- Yorkstead owner is the sole assigned primary recovery operator and approver. Secondary operator and independent human reviewer remain unassigned due to current staffing. The package now describes the residual single-person risk and requires explicit private owner acknowledgment of the exception before production export or migration approval. Automated validation, immutable evidence, separately protected recovery-key copy, rehearsal, and owner sign-off are compensating controls only; none constitutes independent human review.
+- Updated `production-recovery-approval-package.md` with a cost-verification procedure against current provider pricing and account usage, and a one-time first-production-backup authorization template. It does not authorize recurring backup automation or any production operation.
+- PR #94 exact head `925f5a3974b50cb56d86ce19450e78136245655c`: GitHub Actions [run 41581916344](https://github.com/yorkstead/website/actions/runs/41581916344) passed application verification and isolated synthetic recovery rehearsal. Application verification completed disposable PostgreSQL migration/integration checks, lint, typecheck, browser workflows, and build; the isolated job used its own synthetic PostgreSQL container. Vercel Preview succeeded. GitHub reported no submitted review or inline review comments at that head; review-ready status is **GO for owner review**, with PR #94 still draft/unmerged.
+- No production storage activation, export/backup, restore, environment change, migration 0023, or deployment occurred. Production execution remains **NO-GO** pending exact storage/key/cost approvals, exception acknowledgment, private parity review, and a specific separate operation authorization.
+
+## PR #92 production acceptance and recovery planning — 2026-11-03
+
+- Owner reports Production smoke checks passed for homepage, intake, owner dashboard, and Systems Directory (4/4) after deployment `dpl_Fc1LKCvWKqwWEfoHvRTk7MrRfAkT`.
+- Read-only Neon SQL verification after deployment reported 22 applied migrations through 0022; migration 0023 absent; 7 unarchived directory entries; 11 audit events; 0 entries without audit and 0 orphaned events; three enabled directory revision/audit protection triggers. Revision and per-entry audit-count aggregates matched. No row values, stable IDs, or fingerprints are copied here.
+- The private row-level comparison against the independently captured baseline was not available in this verification record and remains required before any production migration. The verified aggregates do not authorize a backup/export or migration.
+- Added `production-recovery-approval-package.md`: proposes a bucket-scoped, client-side encrypted PostgreSQL custom dump in private R2 storage with 30-day bucket lock/lifecycle expiry; contains usage-based storage estimates, an ungranted one-time export request, RPO choices, key/operator decisions, and an isolated recovery acceptance procedure. Official provider pricing and platform controls are linked there. No storage service or Neon settings were activated or changed.
+- Production export/backup, production-derived restore, and migration 0023 remain **NO-GO**. No production data or configuration was modified.
+
 ## PR #92 reconciliation — 2026-11-03
 
 - Reconciled the existing PR branch without rewriting history. Main `d5b419e69edc38b5da4f9d5c2b29a82e149f4e3b` is the second parent of merge commit `b2930735f2a73968042009aa9d1caa908371ca43`; GitHub calculated proposed merge SHA `56399ba7f87ad74628d97ceec9796fa36ef90794`.
