@@ -63,7 +63,7 @@ describe("YS-SYS-001 synthetic PostgreSQL Registry",()=>{
       expect(link.revision).toBe(1);expect((await service.list({entityClass:"application_workload"}))[0]?.links[0]).toMatchObject({id:link.id,targetId:created[0]!.id,kind:"depends_on"});
       expect(await service.archiveRelationship(link.id,link.revision,"registry-test-owner")).toMatchObject({revision:2});
       expect((await service.list({entityClass:"application_workload"}))[0]?.links).toEqual([]);
-      expect((await service.audit(created[1]!.id)).map(event=>event.action)).toEqual(["updated","updated","created"]);
+      expect((await service.audit(created[1]!.id)).sort((a,b)=>b.revision-a.revision).map(event=>[event.revision,event.action])).toEqual([[3,"updated"],[2,"updated"],[1,"created"]]);
       await expect(pool.query("UPDATE system_directory_audit SET action='updated' WHERE entry_id=$1",[created[1]!.id])).rejects.toMatchObject({code:"23514"});
       await expect(pool.query("DELETE FROM system_directory_relationship_audit WHERE relationship_id=$1",[link.id])).rejects.toMatchObject({code:"23514"});
     }finally{await pool.end();await client.query("RESET search_path").catch(()=>undefined);await client.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`).catch(()=>undefined);client.release();}
