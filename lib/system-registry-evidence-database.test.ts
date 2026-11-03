@@ -34,7 +34,7 @@ describe("YS-SYS-001 issue 98 synthetic PostgreSQL evidence workflows",()=>{
       const verified=await registry.updateVerification(records[0]!.id,records[0]!.revision,{status:"verified",subject:"Provider account exists",method:"provider_console",reference:"synthetic provider console evidence",observedAt:"2026-11-03T12:00:00.000Z",reviewDue:"2026-10-01"},"issue98-owner");
       expect(verified).toMatchObject({verificationStatus:"stale",verificationSubject:"Provider account exists",verificationReference:"synthetic provider console evidence"});expect(verified?.verificationReviewedAt).not.toBeNull();
       expect((await registry.list({entityClass:"provider_service"}))[0]?.verificationStatus).toBe("stale");
-      const audit=await registry.audit(workload.id);expect(audit.map(event=>event.action)).toEqual(["updated","created"]);
+      const audit=await registry.audit(workload.id);expect(audit.map(event=>event.action)).toEqual(["updated","updated","created"]);
       const immutable=(await pool.query("SELECT * FROM system_directory_audit WHERE entry_id=$1 ORDER BY id",[workload.id])).rows;
       expect(immutable.at(-1)?.after_state).toMatchObject({monitoring_configuration:"configured"});
       await expect(pool.query("UPDATE system_directory_audit SET action='updated' WHERE entry_id=$1",[workload.id])).rejects.toMatchObject({code:"23514"});
