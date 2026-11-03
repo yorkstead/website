@@ -26,6 +26,17 @@ describe("YS-SYS-001 runtime database identity comparison", () => {
     expect(compareRuntimeDatabaseIdentity("postgres://user:password@ep-synthetic.aws.neon.tech/", parseExpectedDatabaseIdentity(expected))).toBe("UNVERIFIED");
   });
 
+  test("fails closed when a node-postgres host query parameter overrides the URL authority", () => {
+    expect(compareRuntimeDatabaseIdentity(
+      "postgresql://synthetic-user:synthetic-password@ep-synthetic.aws.neon.tech/neondb?sslmode=require&host=ep-other.aws.neon.tech",
+      parseExpectedDatabaseIdentity(expected),
+    )).toBe("UNVERIFIED");
+    expect(compareRuntimeDatabaseIdentity(
+      "postgresql://synthetic-user:synthetic-password@ep-synthetic.aws.neon.tech/neondb?host=ep-synthetic.aws.neon.tech&host=ep-other.aws.neon.tech",
+      parseExpectedDatabaseIdentity(expected),
+    )).toBe("UNVERIFIED");
+  });
+
   test("rejects missing, ambiguous, malformed, and non-canonical expected targets", () => {
     expect(parseExpectedDatabaseIdentity(null)).toBeNull();
     expect(parseExpectedDatabaseIdentity({ hostname: [expected.hostname], database: expected.database })).toBeNull();

@@ -72,6 +72,11 @@ export function compareRuntimeDatabaseIdentity(
     const configured = new URL(configuredDatabaseUrl);
     if (!["postgres:", "postgresql:"].includes(configured.protocol) || configured.hash) return "UNVERIFIED";
 
+    // node-postgres gives the `host` query parameter precedence over the URL
+    // authority. Do not report the authority as the effective target when the
+    // database client could route the connection elsewhere.
+    if (configured.searchParams.has("host")) return "UNVERIFIED";
+
     const configuredHostname = normalizedHostname(configured.hostname);
     const configuredDatabase = decodeURIComponent(configured.pathname.slice(1));
     if (!configuredHostname || !databasePattern.test(configuredDatabase)) return "UNVERIFIED";
