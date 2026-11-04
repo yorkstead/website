@@ -66,6 +66,16 @@ expect_setup_rejected() {
   fi
 }
 
+expect_rerun_rejected() {
+  local database="$1" label="$2"
+  if admin_psql -d "$database" -v expected_database="$database" -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql" >"$work_dir/rejected-rerun.out" 2>&1; then
+    fail "unsafe effective privilege was accepted on rerun ($label)"
+  fi
+  if ! admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '$role_name')" | grep -qx t; then
+    fail "failed rerun unexpectedly removed the managed role ($label)"
+  fi
+}
+
 prepare_schema ys_sys_001_full true
 prepare_schema ys_sys_001_legacy false
 
@@ -85,15 +95,6 @@ if admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolna
 fi
 
 # PUBLIC grants which widen effective privilege must abort setup transactionally.
-admin_psql -d ys_sys_001_full -c 'GRANT CONNECT ON DATABASE ys_sys_001_full TO PUBLIC WITH GRANT OPTION'
-expect_setup_rejected ys_sys_001_full 'PUBLIC CONNECT grant option'
-admin_psql -d ys_sys_001_full -c 'REVOKE CONNECT ON DATABASE ys_sys_001_full FROM PUBLIC'
-admin_psql -d ys_sys_001_full -c 'GRANT USAGE ON SCHEMA public TO PUBLIC WITH GRANT OPTION'
-expect_setup_rejected ys_sys_001_full 'PUBLIC schema USAGE grant option'
-admin_psql -d ys_sys_001_full -c 'REVOKE USAGE ON SCHEMA public FROM PUBLIC'
-admin_psql -d ys_sys_001_full -c 'GRANT SELECT (id) ON public.system_directory_entries TO PUBLIC WITH GRANT OPTION'
-expect_setup_rejected ys_sys_001_full 'PUBLIC column SELECT grant option'
-admin_psql -d ys_sys_001_full -c 'REVOKE SELECT (id) ON public.system_directory_entries FROM PUBLIC'
 admin_psql -d ys_sys_001_full -c 'GRANT TEMP ON DATABASE ys_sys_001_full TO PUBLIC'
 expect_setup_rejected ys_sys_001_full 'PUBLIC TEMP'
 admin_psql -d ys_sys_001_full -c 'REVOKE TEMP ON DATABASE ys_sys_001_full FROM PUBLIC'
@@ -124,6 +125,21 @@ admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN 
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -Atc "SELECT NOT rolcanlogin AND rolpassword IS NULL FROM pg_catalog.pg_authid WHERE rolname = '$role_name'" | grep -qx t || fail 'new role was not kept NOLOGIN/passwordless'
+
+# Grant options are tested on the managed role; PostgreSQL does not allow
+# granting grant options to PUBLIC itself.
+admin_psql -d ys_sys_001_full -c "GRANT CONNECT ON DATABASE ys_sys_001_full TO $role_name WITH GRANT OPTION"
+expect_rerun_rejected ys_sys_001_full 'CONNECT grant option'
+admin_psql -d ys_sys_001_full -c "REVOKE CONNECT ON DATABASE ys_sys_001_full FROM $role_name"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -d ys_sys_001_full -c "GRANT USAGE ON SCHEMA public TO $role_name WITH GRANT OPTION"
+expect_rerun_rejected ys_sys_001_full 'schema USAGE grant option'
+admin_psql -d ys_sys_001_full -c "REVOKE USAGE ON SCHEMA public FROM $role_name"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -d ys_sys_001_full -c "GRANT SELECT (id) ON public.system_directory_entries TO $role_name WITH GRANT OPTION"
+expect_rerun_rejected ys_sys_001_full 'column SELECT grant option'
+admin_psql -d ys_sys_001_full -c "REVOKE SELECT (id) ON public.system_directory_entries FROM $role_name"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 
@@ -206,4 +222,4 @@ admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/
 if reader_psql ys_sys_001_legacy -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked legacy reader still logged in'; fi
 admin_psql -d ys_sys_001_legacy -c "DROP ROLE $role_name"
 
-printf 'PASS: actual migrations 0020/0023/0024, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, PUBLIC/inherited privilege fail-closed checks, idempotence, output redaction, and revocation.\n'
+printf 'PASS: actual migrations 0020/0023/0024, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'
