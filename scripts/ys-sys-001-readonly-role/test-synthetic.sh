@@ -245,12 +245,12 @@ admin_psql -d ys_sys_001_full -c 'GRANT CONNECT ON DATABASE ys_sys_001_full TO P
 
 # Simulate a cleanup failure after the committed NOLOGIN/password cutoff. This
 # helper can alter the managed role but did not grant the scoped object ACLs.
-admin_psql -d ys_sys_001_full -c "CREATE ROLE $revoker_name LOGIN CREATEROLE PASSWORD '$revoker_password'; GRANT $role_name TO $revoker_name WITH ADMIN OPTION"
+admin_psql -d ys_sys_001_full -c "CREATE ROLE $revoker_name LOGIN CREATEROLE PASSWORD '$revoker_password'; GRANT CONNECT ON DATABASE ys_sys_001_full TO $revoker_name; GRANT $role_name TO $revoker_name WITH ADMIN OPTION"
 if revoker_psql ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql" >"$work_dir/revoke-failure.out" 2>&1; then
   fail 'revocation unexpectedly cleaned grants as a non-grantor'
 fi
 admin_psql -Atc "SELECT NOT rolcanlogin AND rolpassword IS NULL FROM pg_catalog.pg_authid WHERE rolname = '$role_name'" | grep -qx t || fail 'failed revocation did not commit the login/password cutoff'
-admin_psql -d ys_sys_001_full -c "REVOKE $role_name FROM $revoker_name"
+admin_psql -d ys_sys_001_full -c "REVOKE $role_name FROM $revoker_name; REVOKE CONNECT ON DATABASE ys_sys_001_full FROM $revoker_name"
 admin_psql -c "ALTER ROLE $revoker_name NOLOGIN; ALTER ROLE $revoker_name PASSWORD NULL"
 
 # Normal revocation removes only setup-managed grants and preserves unrelated
