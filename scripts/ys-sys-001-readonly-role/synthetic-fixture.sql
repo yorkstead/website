@@ -20,5 +20,3 @@ CREATE TABLE public.application_migrations (
   checksum TEXT NOT NULL CHECK (char_length(checksum) = 64),
   applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
-\i /migrations/0020_systems-directory.sql
