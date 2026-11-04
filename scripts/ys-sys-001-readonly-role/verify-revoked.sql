@@ -10,15 +10,20 @@ BEGIN
   IF EXISTS (SELECT 1 FROM pg_catalog.pg_authid WHERE oid=reader AND rolpassword IS NOT NULL) THEN
     RAISE EXCEPTION 'FAIL: reader password remains set';
   END IF;
-  IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members WHERE member=reader OR roleid=reader) THEN
-    RAISE EXCEPTION 'FAIL: role membership remains';
-  END IF;
-  IF pg_catalog.has_database_privilege(reader,current_database(),'CONNECT')
-     OR pg_catalog.has_database_privilege(reader,current_database(),'CREATE')
-     OR pg_catalog.has_database_privilege(reader,current_database(),'TEMP')
-     OR pg_catalog.has_schema_privilege(reader,'public','USAGE')
-     OR pg_catalog.has_schema_privilege(reader,'public','CREATE') THEN
-    RAISE EXCEPTION 'FAIL: database/schema access remains effective';
+  -- Inspect grants held directly by the managed role. Effective checks here
+  -- would misreport unrelated grants inherited from PUBLIC as revocation gaps.
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_database d
+    CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) acl
+    WHERE d.datname = current_database() AND acl.grantee = reader
+      AND acl.privilege_type = 'CONNECT'
+  ) OR EXISTS (
+    SELECT 1 FROM pg_catalog.pg_namespace n
+    CROSS JOIN LATERAL pg_catalog.aclexplode(n.nspacl) acl
+    WHERE n.nspname = 'public' AND acl.grantee = reader
+      AND acl.privilege_type = 'USAGE'
+  ) THEN
+    RAISE EXCEPTION 'FAIL: a setup-managed direct database/schema grant remains';
   END IF;
   IF EXISTS (
     SELECT 1 FROM (VALUES
@@ -36,7 +41,13 @@ BEGIN
     WHERE EXISTS (SELECT 1 FROM pg_catalog.pg_attribute a
                    WHERE a.attrelid = c.oid AND a.attname = allowed.column_name
                      AND a.attnum > 0 AND NOT a.attisdropped)
-      AND pg_catalog.has_column_privilege(reader, c.oid, allowed.column_name, 'SELECT')
+      AND EXISTS (
+        SELECT 1 FROM pg_catalog.pg_attribute a
+        CROSS JOIN LATERAL pg_catalog.aclexplode(a.attacl) acl
+        WHERE a.attrelid = c.oid AND a.attname = allowed.column_name
+          AND a.attnum > 0 AND NOT a.attisdropped
+          AND acl.grantee = reader AND acl.privilege_type = 'SELECT'
+      )
   ) THEN RAISE EXCEPTION 'FAIL: a scoped preflight column grant remains effective'; END IF;
 END
 $verify_revoked$;

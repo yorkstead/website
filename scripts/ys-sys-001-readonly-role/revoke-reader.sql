@@ -58,8 +58,10 @@ BEGIN
     END IF;
   END LOOP;
 
-  REVOKE ALL PRIVILEGES ON SCHEMA public FROM ys_sys_001_preflight_reader;
-  EXECUTE format('REVOKE CONNECT, TEMPORARY ON DATABASE %I FROM ys_sys_001_preflight_reader', current_database());
+  -- Match the exact grants created above: schema USAGE and current-database
+  -- CONNECT. Do not remove unrelated CREATE/TEMP or other role privileges.
+  REVOKE USAGE ON SCHEMA public FROM ys_sys_001_preflight_reader;
+  EXECUTE format('REVOKE CONNECT ON DATABASE %I FROM ys_sys_001_preflight_reader', current_database());
 END
 $revoke_scoped_privileges$;
 COMMIT;

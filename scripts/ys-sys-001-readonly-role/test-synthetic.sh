@@ -18,8 +18,10 @@ done
 repo_root="$(git rev-parse --show-toplevel)"
 role_name=ys_sys_001_preflight_reader
 writer_name=ys_sys_001_synthetic_writer
+revoker_name=ys_sys_001_synthetic_revoker
 work_dir="$(mktemp -d)"
 reader_password="$(openssl rand -hex 32)"
+revoker_password="$(openssl rand -hex 32)"
 trap 'rm -rf "$work_dir"' EXIT INT TERM
 
 admin_psql() {
@@ -30,6 +32,11 @@ reader_psql() {
   local database="$1"; shift
   env -i PATH="$PATH" HOME="$work_dir" PGHOST=127.0.0.1 PGPORT=5432 PGUSER="$role_name" \
     PGPASSWORD="$reader_password" PGDATABASE="$database" psql -X -q -v ON_ERROR_STOP=1 "$@"
+}
+revoker_psql() {
+  local database="$1"; shift
+  env -i PATH="$PATH" HOME="$work_dir" PGHOST=127.0.0.1 PGPORT=5432 PGUSER="$revoker_name" \
+    PGPASSWORD="$revoker_password" PGDATABASE="$database" psql -X -q -v ON_ERROR_STOP=1 "$@"
 }
 
 admin_psql -c 'CREATE DATABASE ys_sys_001_full'
@@ -146,6 +153,31 @@ admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_roo
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 
+# A live managed login must be disabled even when a rerun detects an unsafe
+# direct privilege and rolls back its transactional grant work.
+admin_psql -d ys_sys_001_full -c "GRANT CREATE ON SCHEMA public TO $role_name"
+expect_rerun_rejected ys_sys_001_full 'direct schema CREATE after login'
+admin_psql -d ys_sys_001_full -c "REVOKE CREATE ON SCHEMA public FROM $role_name"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -d ys_sys_001_full -c "GRANT TEMPORARY ON DATABASE ys_sys_001_full TO $role_name"
+expect_rerun_rejected ys_sys_001_full 'direct database TEMP after login'
+admin_psql -d ys_sys_001_full -c "REVOKE TEMPORARY ON DATABASE ys_sys_001_full FROM $role_name"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name LOGIN"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+
+# The production verifier continues to reject direct unsafe schema/database
+# capabilities even though revocation itself preserves unrelated grants.
+admin_psql -d ys_sys_001_full -c "GRANT CREATE ON SCHEMA public TO $role_name"
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/direct-create.out" 2>&1; then
+  fail 'effective verifier accepted direct schema CREATE'
+fi
+admin_psql -d ys_sys_001_full -c "REVOKE CREATE ON SCHEMA public FROM $role_name; GRANT TEMPORARY ON DATABASE ys_sys_001_full TO $role_name"
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/direct-temp.out" 2>&1; then
+  fail 'effective verifier accepted direct database TEMPORARY'
+fi
+admin_psql -d ys_sys_001_full -c "REVOKE TEMPORARY ON DATABASE ys_sys_001_full FROM $role_name"
+
 # Publicly readable views are treated as another path to data and rejected.
 admin_psql -d ys_sys_001_full -c 'CREATE VIEW public.ys_sensitive_view AS SELECT name FROM public.system_directory_entries; GRANT SELECT ON public.ys_sensitive_view TO PUBLIC'
 if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/view.out" 2>&1; then
@@ -204,15 +236,47 @@ if grep -Eq 'Synthetic Service|SYNTHETIC PRIVATE SENTINEL|SYNTHETIC-BILLING-SENT
 fi
 grep -q '0024' "$work_dir/preflight.out" || fail 'preflight omitted 0024 ledger evidence'
 
-# Each role is restricted to one database. Revoke/remove it before the legacy
-# schema case so it cannot retain CONNECT on the full-schema database.
+# Add unrelated direct grants after setup. They make the role unsafe while live,
+# but revocation must preserve them after disabling its login.
+admin_psql -d ys_sys_001_full -c "GRANT CREATE ON SCHEMA public TO $role_name"
+admin_psql -d ys_sys_001_full -c "GRANT TEMPORARY ON DATABASE ys_sys_001_full TO $role_name"
 admin_psql -d ys_sys_001_full -c "GRANT SELECT ON public.ys_unrelated_permission_probe TO $role_name"
+admin_psql -d ys_sys_001_full -c 'GRANT CONNECT ON DATABASE ys_sys_001_full TO PUBLIC; GRANT USAGE ON SCHEMA public TO PUBLIC; GRANT SELECT (id) ON public.system_directory_entries TO PUBLIC'
+
+# Simulate a cleanup failure after the committed NOLOGIN/password cutoff. This
+# helper can alter the managed role but did not grant the scoped object ACLs.
+admin_psql -d ys_sys_001_full -c "CREATE ROLE $revoker_name LOGIN CREATEROLE PASSWORD '$revoker_password'; GRANT $role_name TO $revoker_name WITH ADMIN OPTION"
+if revoker_psql ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql" >"$work_dir/revoke-failure.out" 2>&1; then
+  fail 'revocation unexpectedly cleaned grants as a non-grantor'
+fi
+admin_psql -Atc "SELECT NOT rolcanlogin AND rolpassword IS NULL FROM pg_catalog.pg_authid WHERE rolname = '$role_name'" | grep -qx t || fail 'failed revocation did not commit the login/password cutoff'
+admin_psql -d ys_sys_001_full -c "REVOKE $role_name FROM $revoker_name"
+admin_psql -c "ALTER ROLE $revoker_name NOLOGIN; ALTER ROLE $revoker_name PASSWORD NULL"
+
+# Normal revocation removes only setup-managed grants and preserves unrelated
+# CREATE, TEMPORARY, and table SELECT privileges.
 admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql"
 admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
 admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_table_privilege('$role_name', 'public.ys_unrelated_permission_probe', 'SELECT')" | grep -qx t || fail 'revocation changed an unrelated permission'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_schema_privilege('$role_name', 'public', 'CREATE')" | grep -qx t || fail 'revocation changed an unrelated schema CREATE grant'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_database_privilege('$role_name', 'ys_sys_001_full', 'TEMPORARY')" | grep -qx t || fail 'revocation changed an unrelated database TEMPORARY grant'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_database_privilege('$role_name', 'ys_sys_001_full', 'CONNECT')" | grep -qx t || fail 'revocation unexpectedly removed inherited PUBLIC CONNECT'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_schema_privilege('$role_name', 'public', 'USAGE')" | grep -qx t || fail 'revocation unexpectedly removed inherited PUBLIC schema USAGE'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_column_privilege('$role_name', 'public.system_directory_entries', 'id', 'SELECT')" | grep -qx t || fail 'revocation unexpectedly removed inherited PUBLIC column SELECT'
 if reader_psql ys_sys_001_full -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked full-schema reader still logged in'; fi
-admin_psql -d ys_sys_001_full -c "REVOKE SELECT ON public.ys_unrelated_permission_probe FROM $role_name"
+
+# Repeating the same revocation is safe and still preserves unrelated grants.
+admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql"
+admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_table_privilege('$role_name', 'public.ys_unrelated_permission_probe', 'SELECT')" | grep -qx t || fail 'repeated revocation changed unrelated table SELECT'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_schema_privilege('$role_name', 'public', 'CREATE')" | grep -qx t || fail 'repeated revocation changed unrelated schema CREATE'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_database_privilege('$role_name', 'ys_sys_001_full', 'TEMPORARY')" | grep -qx t || fail 'repeated revocation changed unrelated database TEMPORARY'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_database_privilege('$role_name', 'ys_sys_001_full', 'CONNECT')" | grep -qx t || fail 'repeated revocation changed inherited PUBLIC CONNECT'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_schema_privilege('$role_name', 'public', 'USAGE')" | grep -qx t || fail 'repeated revocation changed inherited PUBLIC schema USAGE'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_column_privilege('$role_name', 'public.system_directory_entries', 'id', 'SELECT')" | grep -qx t || fail 'repeated revocation changed inherited PUBLIC column SELECT'
+admin_psql -d ys_sys_001_full -c "REVOKE SELECT ON public.ys_unrelated_permission_probe FROM $role_name; REVOKE CREATE ON SCHEMA public FROM $role_name; REVOKE TEMPORARY ON DATABASE ys_sys_001_full FROM $role_name"
 admin_psql -d ys_sys_001_full -c "DROP ROLE $role_name"
+admin_psql -c "DROP ROLE $revoker_name"
 
 # Legacy-only schema confirms optional 0023/0024 relations are not assumed.
 admin_psql -d ys_sys_001_legacy -v expected_database=ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
