@@ -88,7 +88,7 @@ admin_psql -d ys_sys_001_full -c "CREATE ROLE $writer_name NOLOGIN; GRANT UPDATE
 if admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/membership.out" 2>&1; then
   fail 'effective verifier accepted a writer-role membership'
 fi
-admin_psql -d ys_sys_001_full -c "REVOKE $writer_name FROM $role_name; DROP ROLE $writer_name"
+admin_psql -d ys_sys_001_full -c "REVOKE $writer_name FROM $role_name; REVOKE UPDATE ON public.system_directory_entries FROM $writer_name; DROP ROLE $writer_name"
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name INHERIT"
 if admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/inherit.out" 2>&1; then
   fail 'effective verifier accepted INHERIT'
