@@ -18,10 +18,8 @@ done
 repo_root="$(git rev-parse --show-toplevel)"
 role_name=ys_sys_001_preflight_reader
 writer_name=ys_sys_001_synthetic_writer
-revoker_name=ys_sys_001_synthetic_revoker
 work_dir="$(mktemp -d)"
 reader_password="$(openssl rand -hex 32)"
-revoker_password="$(openssl rand -hex 32)"
 trap 'rm -rf "$work_dir"' EXIT INT TERM
 
 admin_psql() {
@@ -33,10 +31,10 @@ reader_psql() {
   env -i PATH="$PATH" HOME="$work_dir" PGHOST=127.0.0.1 PGPORT=5432 PGUSER="$role_name" \
     PGPASSWORD="$reader_password" PGDATABASE="$database" psql -X -q -v ON_ERROR_STOP=1 "$@"
 }
-revoker_psql() {
-  local database="$1"; shift
-  env -i PATH="$PATH" HOME="$work_dir" PGHOST=127.0.0.1 PGPORT=5432 PGUSER="$revoker_name" \
-    PGPASSWORD="$revoker_password" PGDATABASE="$database" psql -X -q -v ON_ERROR_STOP=1 "$@"
+locked_admin_psql() {
+  env -i PATH="$PATH" HOME="$work_dir" PGHOST=127.0.0.1 PGPORT=5432 PGUSER=postgres \
+    PGPASSWORD=postgres PGDATABASE=postgres PGOPTIONS='-c lock_timeout=200ms' \
+    psql -X -q -v ON_ERROR_STOP=1 "$@"
 }
 
 admin_psql -c 'CREATE DATABASE ys_sys_001_full'
@@ -243,15 +241,28 @@ admin_psql -d ys_sys_001_full -c "GRANT TEMPORARY ON DATABASE ys_sys_001_full TO
 admin_psql -d ys_sys_001_full -c "GRANT SELECT ON public.ys_unrelated_permission_probe TO $role_name"
 admin_psql -d ys_sys_001_full -c 'GRANT CONNECT ON DATABASE ys_sys_001_full TO PUBLIC; GRANT USAGE ON SCHEMA public TO PUBLIC; GRANT SELECT (id) ON public.system_directory_entries TO PUBLIC'
 
-# Simulate a cleanup failure after the committed NOLOGIN/password cutoff. This
-# helper can alter the managed role but did not grant the scoped object ACLs.
-admin_psql -d ys_sys_001_full -c "CREATE ROLE $revoker_name LOGIN CREATEROLE PASSWORD '$revoker_password'; GRANT CONNECT ON DATABASE ys_sys_001_full TO $revoker_name; GRANT $role_name TO $revoker_name WITH ADMIN OPTION"
-if revoker_psql ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql" >"$work_dir/revoke-failure.out" 2>&1; then
-  fail 'revocation unexpectedly cleaned grants as a non-grantor'
+# Hold a conflicting relation lock so cleanup fails after the separately
+# committed NOLOGIN/password cutoff.
+admin_psql -d ys_sys_001_full -c 'BEGIN; LOCK TABLE public.application_migrations IN ACCESS EXCLUSIVE MODE; SELECT pg_sleep(2); COMMIT' >"$work_dir/lock-holder.out" 2>&1 &
+lock_holder_pid=$!
+lock_acquired=false
+for attempt in $(seq 1 40); do
+  if admin_psql -d ys_sys_001_full -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_locks l JOIN pg_catalog.pg_class c ON c.oid=l.relation WHERE c.relname='application_migrations' AND l.mode='AccessExclusiveLock' AND l.granted AND l.pid <> pg_backend_pid())" | grep -qx t; then
+    lock_acquired=true
+    break
+  fi
+  sleep 0.05
+done
+if [[ "$lock_acquired" != true ]]; then
+  kill "$lock_holder_pid" 2>/dev/null || true
+  wait "$lock_holder_pid" 2>/dev/null || true
+  fail 'could not establish the synthetic lock needed for the revoke failure case'
 fi
+if locked_admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql" >"$work_dir/revoke-failure.out" 2>&1; then
+  fail 'revocation cleanup unexpectedly succeeded while the relation was locked'
+fi
+wait "$lock_holder_pid"
 admin_psql -Atc "SELECT NOT rolcanlogin AND rolpassword IS NULL FROM pg_catalog.pg_authid WHERE rolname = '$role_name'" | grep -qx t || fail 'failed revocation did not commit the login/password cutoff'
-admin_psql -d ys_sys_001_full -c "REVOKE $role_name FROM $revoker_name; REVOKE CONNECT ON DATABASE ys_sys_001_full FROM $revoker_name"
-admin_psql -c "ALTER ROLE $revoker_name NOLOGIN; ALTER ROLE $revoker_name PASSWORD NULL"
 
 # Normal revocation removes only setup-managed grants and preserves unrelated
 # CREATE, TEMPORARY, and table SELECT privileges.
@@ -276,7 +287,6 @@ admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_schema_privilege('$rol
 admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_column_privilege('$role_name', 'public.system_directory_entries', 'id', 'SELECT')" | grep -qx t || fail 'repeated revocation changed inherited PUBLIC column SELECT'
 admin_psql -d ys_sys_001_full -c "REVOKE SELECT ON public.ys_unrelated_permission_probe FROM $role_name; REVOKE CREATE ON SCHEMA public FROM $role_name; REVOKE TEMPORARY ON DATABASE ys_sys_001_full FROM $role_name"
 admin_psql -d ys_sys_001_full -c "DROP ROLE $role_name"
-admin_psql -c "DROP ROLE $revoker_name"
 
 # Legacy-only schema confirms optional 0023/0024 relations are not assumed.
 admin_psql -d ys_sys_001_legacy -v expected_database=ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
