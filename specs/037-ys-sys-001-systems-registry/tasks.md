@@ -1,5 +1,18 @@
 # YS-SYS-001 tasks
 
+## Temporary Production identity diagnostic — 2026-11-03
+
+Design and implementation specification: [`production-identity-diagnostic.md`](production-identity-diagnostic.md).
+
+- [x] Confirm current main and Production source revision; preserve the original dirty checkout.
+- [x] Reuse Better Auth owner authorization and document its narrowly authorized session-lookup database access.
+- [x] Add a separate no-query identity endpoint that only parses effective `DATABASE_URL` and compares one private expected Neon hostname/database pair.
+- [x] Return only `MATCH`, `MISMATCH`, or `UNVERIFIED` with UTC capture time; keep response private and non-cacheable.
+- [x] Add synthetic tests for authorization, identity comparison, malformed/ambiguous input, non-disclosure, and zero application-data queries.
+- [x] Run local scaffold, migration-order, lint, typecheck, and unit checks; record database/browser environment limits in the PR evidence.
+- [ ] Run exact-head Actions with disposable PostgreSQL and obtain independent PR security review.
+- [ ] Stop at a reviewable PR; Production request, merge, and deployment require separate authorization.
+
 ## Dependency impact and activation readiness continuation
 
 Detailed acceptance, semantics and limits: [`dependency-impact-readiness/spec.md`](dependency-impact-readiness/spec.md).
