@@ -286,6 +286,7 @@ admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_database_privilege('$r
 admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_schema_privilege('$role_name', 'public', 'USAGE')" | grep -qx t || fail 'repeated revocation changed inherited PUBLIC schema USAGE'
 admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_column_privilege('$role_name', 'public.system_directory_entries', 'id', 'SELECT')" | grep -qx t || fail 'repeated revocation changed inherited PUBLIC column SELECT'
 admin_psql -d ys_sys_001_full -c "REVOKE SELECT ON public.ys_unrelated_permission_probe FROM $role_name; REVOKE CREATE ON SCHEMA public FROM $role_name; REVOKE TEMPORARY ON DATABASE ys_sys_001_full FROM $role_name"
+admin_psql -d ys_sys_001_full -c 'REVOKE CONNECT ON DATABASE ys_sys_001_full FROM PUBLIC; REVOKE USAGE ON SCHEMA public FROM PUBLIC; REVOKE SELECT (id) ON public.system_directory_entries FROM PUBLIC'
 admin_psql -d ys_sys_001_full -c "DROP ROLE $role_name"
 
 # Legacy-only schema confirms optional 0023/0024 relations are not assumed.
