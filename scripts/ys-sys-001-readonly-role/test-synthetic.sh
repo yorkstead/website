@@ -351,7 +351,7 @@ admin_psql -d ys_sys_001_createrole -c "GRANT SELECT (version,checksum,applied_a
 
 createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole \
   -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
-admin_psql -Atc "SELECT count(*) = 1 AND bool_and(m.roleid = r.oid AND m.member = a.oid AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option) FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.rolname = '$role_name' JOIN pg_catalog.pg_roles a ON a.rolname = '$createrole_admin' WHERE m.roleid = r.oid OR m.member = r.oid" | grep -qx t || fail 'PostgreSQL did not create exactly the expected non-inheriting, non-SET creator ADMIN membership'
+admin_psql -Atc "SELECT count(*) = 1 AND bool_and(m.roleid = r.oid AND m.member = a.oid AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option AND a.rolcreaterole AND NOT a.rolsuper AND g.rolsuper) FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.rolname = '$role_name' JOIN pg_catalog.pg_roles a ON a.rolname = '$createrole_admin' JOIN pg_catalog.pg_roles g ON g.oid = m.grantor WHERE m.roleid = r.oid OR m.member = r.oid" | grep -qx t || fail 'PostgreSQL did not create exactly the expected bootstrap-superuser-granted creator ADMIN membership'
 admin_psql -Atc "SELECT current_setting('createrole_self_grant') = ''" | grep -qx t || fail 'synthetic PostgreSQL does not use the documented default creator self-grant policy'
 createrole_admin_psql ys_sys_001_createrole -c "ALTER ROLE $role_name PASSWORD '$reader_password' LOGIN"
 if admin_psql -d ys_sys_001_createrole -v expected_database=ys_sys_001_createrole \
@@ -415,7 +415,7 @@ if reader_psql ys_sys_001_createrole -c "SET ROLE $createrole_admin" >/dev/null 
 fi
 createrole_admin_psql ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql"
 admin_psql -d ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
-admin_psql -Atc "SELECT count(*) = 1 AND bool_and(m.roleid = r.oid AND m.member = a.oid AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option) FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.rolname = '$role_name' JOIN pg_catalog.pg_roles a ON a.rolname = '$createrole_admin' WHERE m.roleid = r.oid OR m.member = r.oid" | grep -qx t || fail 'revocation removed or altered the creator ADMIN membership'
+admin_psql -Atc "SELECT count(*) = 1 AND bool_and(m.roleid = r.oid AND m.member = a.oid AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option AND a.rolcreaterole AND NOT a.rolsuper AND g.rolsuper) FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.rolname = '$role_name' JOIN pg_catalog.pg_roles a ON a.rolname = '$createrole_admin' JOIN pg_catalog.pg_roles g ON g.oid = m.grantor WHERE m.roleid = r.oid OR m.member = r.oid" | grep -qx t || fail 'revocation removed or altered the creator ADMIN membership'
 if reader_psql ys_sys_001_createrole -c 'SELECT 1' >/dev/null 2>&1; then fail 'CREATEROLE-admin-revoked reader still logged in'; fi
 admin_psql -c 'DROP DATABASE ys_sys_001_createrole'
 admin_psql -c "DROP ROLE $role_name; DROP ROLE $createrole_admin"

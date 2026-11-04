@@ -22,9 +22,10 @@ BEGIN
       AND NOT r.rolbypassrls AND NOT r.rolinherit
   ) THEN RAISE EXCEPTION 'FAIL: role attributes do not match'; END IF;
   -- A non-superuser CREATEROLE creator is automatically granted ADMIN OPTION
-  -- on roles it creates. Allow only that one relationship to the effective
-  -- verifier role, with INHERIT and SET both disabled. Any reader membership,
-  -- additional administrator, or other incoming relationship is unsafe.
+  -- on roles it creates. PostgreSQL records the bootstrap superuser as the
+  -- grantor. Allow only that exact ADMIN-only relationship to the effective
+  -- non-superuser CREATEROLE verifier, with INHERIT and SET disabled. Any
+  -- reader membership, additional administrator, or other relationship fails.
   IF EXISTS (
     SELECT 1 FROM pg_catalog.pg_auth_members m
      WHERE m.member = reader
@@ -33,6 +34,15 @@ BEGIN
           AND m.admin_option
           AND NOT m.inherit_option
           AND NOT m.set_option
+          AND EXISTS (
+            SELECT 1 FROM pg_catalog.pg_roles operator_role
+             WHERE operator_role.oid = m.member
+               AND operator_role.rolcreaterole AND NOT operator_role.rolsuper
+          )
+          AND EXISTS (
+            SELECT 1 FROM pg_catalog.pg_roles grantor_role
+             WHERE grantor_role.oid = m.grantor AND grantor_role.rolsuper
+          )
         ))
   ) THEN RAISE EXCEPTION 'FAIL: unexpected role membership exists'; END IF;
   IF NOT pg_catalog.has_database_privilege(reader, current_database(), 'CONNECT')
