@@ -75,12 +75,12 @@ BEGIN
       CONTINUE;
     END IF;
 
-    SELECT array_agg(column_name ORDER BY column_name)
+    SELECT array_agg(required_column.column_name ORDER BY required_column.column_name)
       INTO missing_columns
-      FROM unnest(item.required_columns) AS required(column_name)
+      FROM unnest(item.required_columns) AS required_column(column_name)
      WHERE NOT EXISTS (
        SELECT 1 FROM pg_catalog.pg_attribute a
-        WHERE a.attrelid = relation_oid AND a.attname = required.column_name
+        WHERE a.attrelid = relation_oid AND a.attname = required_column.column_name
           AND a.attnum > 0 AND NOT a.attisdropped
      );
     IF missing_columns IS NOT NULL THEN
