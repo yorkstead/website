@@ -113,6 +113,20 @@ admin_psql -d ys_sys_001_full -c 'GRANT UPDATE ON public.system_directory_entrie
 expect_setup_rejected ys_sys_001_full 'PUBLIC UPDATE'
 admin_psql -d ys_sys_001_full -c 'REVOKE UPDATE ON public.system_directory_entries FROM PUBLIC'
 
+# Unrelated public relations must not expose any table/maintenance or
+# column-write capability through PUBLIC. The relation has no SELECT grant,
+# so these specifically exercise the former SELECT-only verification gap.
+for privilege in INSERT UPDATE DELETE TRUNCATE REFERENCES TRIGGER MAINTAIN; do
+  admin_psql -d ys_sys_001_full -c "GRANT $privilege ON TABLE public.ys_unrelated_permission_probe TO PUBLIC"
+  expect_setup_rejected ys_sys_001_full "PUBLIC $privilege on unrelated relation"
+  admin_psql -d ys_sys_001_full -c "REVOKE $privilege ON TABLE public.ys_unrelated_permission_probe FROM PUBLIC"
+done
+for privilege in INSERT UPDATE REFERENCES; do
+  admin_psql -d ys_sys_001_full -c "GRANT $privilege (id) ON TABLE public.ys_unrelated_permission_probe TO PUBLIC"
+  expect_setup_rejected ys_sys_001_full "PUBLIC column $privilege on unrelated relation"
+  admin_psql -d ys_sys_001_full -c "REVOKE $privilege (id) ON TABLE public.ys_unrelated_permission_probe FROM PUBLIC"
+done
+
 # Public routines, sequence grants, and unsafe defaults fail closed too.
 admin_psql -d ys_sys_001_full -c "CREATE FUNCTION public.ys_test_exposed() RETURNS text LANGUAGE sql SECURITY DEFINER AS \$\$ SELECT 'synthetic secret'::text \$\$; GRANT EXECUTE ON FUNCTION public.ys_test_exposed() TO PUBLIC"
 expect_setup_rejected ys_sys_001_full 'PUBLIC EXECUTE on SECURITY DEFINER routine'
@@ -151,6 +165,36 @@ admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_roo
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 
+# The independent verifier rejects the same unrelated PUBLIC write and column
+# privileges. Include the reported TRUNCATE case explicitly, as well as every
+# other supported table and column write class.
+for privilege in INSERT UPDATE DELETE TRUNCATE REFERENCES TRIGGER MAINTAIN; do
+  admin_psql -d ys_sys_001_full -c "GRANT $privilege ON TABLE public.ys_unrelated_permission_probe TO PUBLIC"
+  if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/unrelated-$privilege.out" 2>&1; then
+    fail "effective verifier accepted PUBLIC $privilege on an unrelated relation"
+  fi
+  admin_psql -d ys_sys_001_full -c "REVOKE $privilege ON TABLE public.ys_unrelated_permission_probe FROM PUBLIC"
+done
+for privilege in INSERT UPDATE REFERENCES; do
+  admin_psql -d ys_sys_001_full -c "GRANT $privilege (id) ON TABLE public.ys_unrelated_permission_probe TO PUBLIC"
+  if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/unrelated-column-$privilege.out" 2>&1; then
+    fail "effective verifier accepted PUBLIC column $privilege on an unrelated relation"
+  fi
+  admin_psql -d ys_sys_001_full -c "REVOKE $privilege (id) ON TABLE public.ys_unrelated_permission_probe FROM PUBLIC"
+done
+
+# Grant options are prohibited even when introduced directly on an unrelated
+# relation rather than through PUBLIC; rerun must fail closed and leave LOGIN off.
+admin_psql -d ys_sys_001_full -c "GRANT TRUNCATE ON TABLE public.ys_unrelated_permission_probe TO $role_name WITH GRANT OPTION"
+expect_rerun_rejected ys_sys_001_full 'unrelated TRUNCATE grant option'
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/unrelated-truncate-option.out" 2>&1; then
+  fail 'effective verifier accepted unrelated TRUNCATE grant option'
+fi
+admin_psql -d ys_sys_001_full -c "REVOKE TRUNCATE ON TABLE public.ys_unrelated_permission_probe FROM $role_name"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -d ys_sys_001_full -c 'ALTER ROLE ys_sys_001_preflight_reader LOGIN'
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+
 # A live managed login must be disabled even when a rerun detects an unsafe
 # direct privilege and rolls back its transactional grant work.
 admin_psql -d ys_sys_001_full -c "GRANT CREATE ON SCHEMA public TO $role_name"
@@ -183,11 +227,11 @@ if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_
 fi
 admin_psql -d ys_sys_001_full -c 'DROP VIEW public.ys_sensitive_view'
 
-admin_psql -d ys_sys_001_full -c "CREATE ROLE $writer_name NOLOGIN; GRANT UPDATE ON public.system_directory_entries TO $writer_name; GRANT $writer_name TO $role_name"
+admin_psql -d ys_sys_001_full -c "CREATE ROLE $writer_name NOLOGIN; GRANT TRUNCATE ON public.ys_unrelated_permission_probe TO $writer_name; GRANT $writer_name TO $role_name"
 if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/membership.out" 2>&1; then
-  fail 'effective verifier accepted a writer-role membership'
+  fail 'effective verifier accepted inherited TRUNCATE on an unrelated public relation'
 fi
-admin_psql -d ys_sys_001_full -c "REVOKE $writer_name FROM $role_name; REVOKE UPDATE ON public.system_directory_entries FROM $writer_name; DROP ROLE $writer_name"
+admin_psql -d ys_sys_001_full -c "REVOKE $writer_name FROM $role_name; REVOKE TRUNCATE ON public.ys_unrelated_permission_probe FROM $writer_name; DROP ROLE $writer_name"
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name INHERIT"
 if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/inherit.out" 2>&1; then
   fail 'effective verifier accepted INHERIT'

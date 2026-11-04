@@ -196,6 +196,52 @@ BEGIN
        AND (pg_catalog.has_table_privilege(reader, c.oid, 'SELECT')
             OR pg_catalog.has_any_column_privilege(reader, c.oid, 'SELECT'))
   ) THEN RAISE EXCEPTION 'FAIL: unrelated public relation is readable'; END IF;
+  -- Scoped SELECT above is the only permitted relation access. Validate the
+  -- effective privilege surface on every other public relation kind. The
+  -- membership check above rules out role-inherited ACL paths; has_* checks
+  -- still include PUBLIC grants, including TRUNCATE and grant options.
+  FOR relation_oid IN
+    SELECT c.oid
+      FROM pg_catalog.pg_class c
+      JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+     WHERE n.nspname = 'public' AND c.relkind IN ('r','p','v','m','f')
+       AND c.relname NOT IN (
+         'application_migrations','system_directory_entries','system_directory_audit',
+         'system_directory_relationships','system_directory_relationship_audit',
+         'system_directory_billing_evidence','system_directory_billing_allocations',
+         'system_directory_billing_audit'
+       )
+  LOOP
+    FOREACH privilege IN ARRAY ARRAY['INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER'] LOOP
+      IF pg_catalog.has_table_privilege(reader, relation_oid, privilege) THEN
+        RAISE EXCEPTION 'FAIL: write access to an unrelated public relation is effective';
+      END IF;
+    END LOOP;
+    IF current_setting('server_version_num')::integer >= 170000
+       AND pg_catalog.has_table_privilege(reader, relation_oid, 'MAINTAIN') THEN
+      RAISE EXCEPTION 'FAIL: maintenance access to an unrelated public relation is effective';
+    END IF;
+    IF pg_catalog.has_any_column_privilege(reader, relation_oid, 'INSERT')
+       OR pg_catalog.has_any_column_privilege(reader, relation_oid, 'UPDATE')
+       OR pg_catalog.has_any_column_privilege(reader, relation_oid, 'REFERENCES') THEN
+      RAISE EXCEPTION 'FAIL: column write access to an unrelated public relation is effective';
+    END IF;
+    IF EXISTS (
+      SELECT 1 FROM pg_catalog.pg_class c
+      CROSS JOIN LATERAL pg_catalog.aclexplode(c.relacl) acl
+      WHERE c.oid = relation_oid AND acl.grantee IN (0, reader) AND acl.is_grantable
+        AND acl.privilege_type IN ('INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN')
+        AND (acl.privilege_type <> 'MAINTAIN' OR current_setting('server_version_num')::integer >= 170000)
+    ) OR EXISTS (
+      SELECT 1 FROM pg_catalog.pg_attribute a
+      CROSS JOIN LATERAL pg_catalog.aclexplode(a.attacl) acl
+      WHERE a.attrelid = relation_oid AND a.attnum > 0 AND NOT a.attisdropped
+        AND acl.grantee IN (0, reader) AND acl.is_grantable
+        AND acl.privilege_type IN ('INSERT','UPDATE','REFERENCES')
+    ) THEN
+      RAISE EXCEPTION 'FAIL: write grant option on an unrelated public relation is effective';
+    END IF;
+  END LOOP;
   RAISE NOTICE 'PASS: role attributes, ownership, memberships, and effective scoped privileges verified';
 END
 $verify_reader$;

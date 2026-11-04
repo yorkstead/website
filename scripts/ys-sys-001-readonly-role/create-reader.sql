@@ -298,8 +298,12 @@ BEGIN
       RAISE EXCEPTION 'Preflight role has an effective prohibited column privilege';
     END IF;
   END LOOP;
-  IF EXISTS (
-    SELECT 1
+  -- The allowlist above is the only place where narrowly-scoped reads are
+  -- permitted. Reject every effective write/maintenance path on all other
+  -- public relation kinds, including privileges inherited from PUBLIC. Role
+  -- membership is rejected above, so no inherited role ACL can be overlooked.
+  FOR rel IN
+    SELECT c.oid::regclass
       FROM pg_catalog.pg_class c
       JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
      WHERE n.nspname = 'public' AND c.relkind IN ('r','p','v','m','f')
@@ -309,9 +313,41 @@ BEGIN
          'system_directory_billing_evidence','system_directory_billing_allocations',
          'system_directory_billing_audit'
        )
-       AND (pg_catalog.has_table_privilege(reader, c.oid, 'SELECT')
-            OR pg_catalog.has_any_column_privilege(reader, c.oid, 'SELECT'))
-  ) THEN RAISE EXCEPTION 'Read access to an unrelated public relation is effective'; END IF;
+  LOOP
+    IF pg_catalog.has_table_privilege(reader, rel, 'SELECT')
+       OR pg_catalog.has_any_column_privilege(reader, rel, 'SELECT') THEN
+      RAISE EXCEPTION 'Read access to an unrelated public relation is effective';
+    END IF;
+    FOREACH privilege IN ARRAY ARRAY['INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER'] LOOP
+      IF pg_catalog.has_table_privilege(reader, rel, privilege) THEN
+        RAISE EXCEPTION 'Write access to an unrelated public relation is effective';
+      END IF;
+    END LOOP;
+    IF current_setting('server_version_num')::integer >= 170000
+       AND pg_catalog.has_table_privilege(reader, rel, 'MAINTAIN') THEN
+      RAISE EXCEPTION 'Maintenance access to an unrelated public relation is effective';
+    END IF;
+    IF pg_catalog.has_any_column_privilege(reader, rel, 'INSERT')
+       OR pg_catalog.has_any_column_privilege(reader, rel, 'UPDATE')
+       OR pg_catalog.has_any_column_privilege(reader, rel, 'REFERENCES') THEN
+      RAISE EXCEPTION 'Column write access to an unrelated public relation is effective';
+    END IF;
+    IF EXISTS (
+      SELECT 1 FROM pg_catalog.pg_class c
+      CROSS JOIN LATERAL pg_catalog.aclexplode(c.relacl) acl
+      WHERE c.oid = rel AND acl.grantee IN (0, reader) AND acl.is_grantable
+        AND acl.privilege_type IN ('INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN')
+        AND (acl.privilege_type <> 'MAINTAIN' OR current_setting('server_version_num')::integer >= 170000)
+    ) OR EXISTS (
+      SELECT 1 FROM pg_catalog.pg_attribute a
+      CROSS JOIN LATERAL pg_catalog.aclexplode(a.attacl) acl
+      WHERE a.attrelid = rel AND a.attnum > 0 AND NOT a.attisdropped
+        AND acl.grantee IN (0, reader) AND acl.is_grantable
+        AND acl.privilege_type IN ('INSERT','UPDATE','REFERENCES')
+    ) THEN
+      RAISE EXCEPTION 'Write grant option on an unrelated public relation is effective';
+    END IF;
+  END LOOP;
 END
 $verify_effective_rights$;
 
