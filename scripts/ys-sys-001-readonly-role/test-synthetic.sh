@@ -408,16 +408,17 @@ admin_psql -c "REVOKE ys_sys_001_parent FROM $role_name; DROP ROLE ys_sys_001_pa
 # the reader cannot SET ROLE to its creator or inherit the creator's rights.
 createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+createrole_admin_psql ys_sys_001_createrole -c "ALTER ROLE $role_name LOGIN"
 reader_psql ys_sys_001_createrole -c 'SELECT count(*) FROM public.application_migrations' >/dev/null
 if reader_psql ys_sys_001_createrole -c "SET ROLE $createrole_admin" >/dev/null 2>&1; then
   fail 'reader unexpectedly SET ROLE to its CREATEROLE administrator'
 fi
 createrole_admin_psql ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql"
-createrole_admin_psql ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
+admin_psql -d ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
 admin_psql -Atc "SELECT count(*) = 1 AND bool_and(m.roleid = r.oid AND m.member = a.oid AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option) FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.rolname = '$role_name' JOIN pg_catalog.pg_roles a ON a.rolname = '$createrole_admin' WHERE m.roleid = r.oid OR m.member = r.oid" | grep -qx t || fail 'revocation removed or altered the creator ADMIN membership'
 if reader_psql ys_sys_001_createrole -c 'SELECT 1' >/dev/null 2>&1; then fail 'CREATEROLE-admin-revoked reader still logged in'; fi
-admin_psql -d ys_sys_001_createrole -c "DROP ROLE $role_name; DROP ROLE $createrole_admin"
 admin_psql -c 'DROP DATABASE ys_sys_001_createrole'
+admin_psql -c "DROP ROLE $role_name; DROP ROLE $createrole_admin"
 
 # Legacy-only schema confirms optional 0023/0024 relations are not assumed.
 admin_psql -d ys_sys_001_legacy -v expected_database=ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
