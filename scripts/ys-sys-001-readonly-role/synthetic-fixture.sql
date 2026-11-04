@@ -16,16 +16,7 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 
 -- The isolated baseline mirrors the required production policy: owners that
 -- create routines in public must not inherit PUBLIC EXECUTE by default.
-DO $revoke_future_public_execute$
-DECLARE creator record;
-BEGIN
-  FOR creator IN SELECT rolname FROM pg_catalog.pg_roles
-                  WHERE pg_catalog.has_schema_privilege(oid, 'public', 'CREATE')
-  LOOP
-    EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC', creator.rolname);
-  END LOOP;
-END
-$revoke_future_public_execute$;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
 
 CREATE TABLE public.application_migrations (
   version TEXT PRIMARY KEY,

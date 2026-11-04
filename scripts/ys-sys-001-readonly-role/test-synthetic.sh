@@ -71,9 +71,9 @@ prepare_schema ys_sys_001_legacy false
 
 # Any role able to create public routines must have its implicit PUBLIC
 # EXECUTE default revoked before this reader can be configured.
-admin_psql -d ys_sys_001_full -c 'CREATE ROLE ys_synthetic_creator NOLOGIN; GRANT CREATE ON SCHEMA public TO ys_synthetic_creator'
+admin_psql -d ys_sys_001_full -c 'CREATE ROLE ys_synthetic_creator NOLOGIN; GRANT CREATE ON SCHEMA public TO ys_synthetic_creator; SET ROLE ys_synthetic_creator; CREATE TABLE public.ys_synthetic_creator_owned(id integer); RESET ROLE'
 expect_setup_rejected ys_sys_001_full 'creator with implicit PUBLIC routine defaults'
-admin_psql -d ys_sys_001_full -c 'REVOKE CREATE ON SCHEMA public FROM ys_synthetic_creator; DROP ROLE ys_synthetic_creator'
+admin_psql -d ys_sys_001_full -c 'DROP TABLE public.ys_synthetic_creator_owned; REVOKE CREATE ON SCHEMA public FROM ys_synthetic_creator; DROP ROLE ys_synthetic_creator'
 
 # The fixed scripts refuse a database-name mismatch before changing roles.
 if admin_psql -d ys_sys_001_full -v expected_database=wrong_target -f \
