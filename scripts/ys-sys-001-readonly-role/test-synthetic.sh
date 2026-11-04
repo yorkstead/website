@@ -353,10 +353,12 @@ createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_crea
   -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -Atc "SELECT count(*) = 1 AND bool_and(m.roleid = r.oid AND m.member = a.oid AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option) FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.rolname = '$role_name' JOIN pg_catalog.pg_roles a ON a.rolname = '$createrole_admin' WHERE m.roleid = r.oid OR m.member = r.oid" | grep -qx t || fail 'PostgreSQL did not create exactly the expected non-inheriting, non-SET creator ADMIN membership'
 admin_psql -Atc "SELECT current_setting('createrole_self_grant') = ''" | grep -qx t || fail 'synthetic PostgreSQL does not use the documented default creator self-grant policy'
+createrole_admin_psql ys_sys_001_createrole -c "ALTER ROLE $role_name PASSWORD '$reader_password' LOGIN"
 if admin_psql -d ys_sys_001_createrole -v expected_database=ys_sys_001_createrole \
   -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/wrong-verifier-admin.out" 2>&1; then
   fail 'verifier accepted the creator ADMIN membership when run as a different administrator'
 fi
+grep -q 'unexpected role membership exists' "$work_dir/wrong-verifier-admin.out" || fail 'verifier did not reject the membership for the wrong administrator'
 
 expect_createrole_rerun_rejected() {
   local label="$1"
@@ -371,35 +373,39 @@ expect_createrole_rerun_rejected() {
     fail "failed setup left the managed role login enabled ($label)"
   fi
 }
+expect_membership_verifier_rejected() {
+  local label="$1"
+  if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole \
+    -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/verify-rejected-$label.out" 2>&1; then
+    fail "verifier accepted an unsafe membership ($label)"
+  fi
+  grep -q 'unexpected role membership exists' "$work_dir/verify-rejected-$label.out" ||
+    fail "verifier failed for another reason instead of rejecting the membership ($label)"
+}
 
 # The safe relation is the sole membership accepted. Any altered membership
 # option, additional administrator, or membership granted to the reader itself
 # must make the independent verifier fail closed.
 admin_psql -c "REVOKE $role_name FROM $createrole_admin; GRANT $role_name TO $createrole_admin WITH ADMIN OPTION, INHERIT TRUE, SET FALSE" -d ys_sys_001_createrole
 expect_createrole_rerun_rejected 'inherit-enabled-creator'
-if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/inherit-membership.out" 2>&1; then
-  fail 'verifier accepted creator membership with INHERIT enabled'
-fi
+admin_psql -d ys_sys_001_createrole -c "ALTER ROLE $role_name LOGIN"
+expect_membership_verifier_rejected 'inherit-enabled-creator'
 admin_psql -c "REVOKE $role_name FROM $createrole_admin; GRANT $role_name TO $createrole_admin WITH ADMIN OPTION, INHERIT FALSE, SET TRUE" -d ys_sys_001_createrole
 expect_createrole_rerun_rejected 'set-enabled-creator'
-if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/set-membership.out" 2>&1; then
-  fail 'verifier accepted creator membership with SET enabled'
-fi
+admin_psql -d ys_sys_001_createrole -c "ALTER ROLE $role_name LOGIN"
+expect_membership_verifier_rejected 'set-enabled-creator'
 admin_psql -c "REVOKE $role_name FROM $createrole_admin; GRANT $role_name TO $createrole_admin WITH ADMIN OPTION, INHERIT FALSE, SET FALSE; CREATE ROLE ys_sys_001_extra_admin NOLOGIN; GRANT $role_name TO ys_sys_001_extra_admin WITH ADMIN OPTION" -d ys_sys_001_createrole
 expect_createrole_rerun_rejected 'additional-admin'
-if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/additional-admin.out" 2>&1; then
-  fail 'verifier accepted an additional administrator'
-fi
+admin_psql -d ys_sys_001_createrole -c "ALTER ROLE $role_name LOGIN"
+expect_membership_verifier_rejected 'additional-admin'
 admin_psql -c "REVOKE $role_name FROM ys_sys_001_extra_admin; DROP ROLE ys_sys_001_extra_admin; CREATE ROLE ys_sys_001_parent NOLOGIN; GRANT ys_sys_001_parent TO $role_name" -d ys_sys_001_createrole
 expect_createrole_rerun_rejected 'reader-is-member'
-if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/reader-membership.out" 2>&1; then
-  fail 'verifier accepted the reader being a member of another role'
-fi
+admin_psql -d ys_sys_001_createrole -c "ALTER ROLE $role_name LOGIN"
+expect_membership_verifier_rejected 'reader-is-member'
 admin_psql -c "REVOKE ys_sys_001_parent FROM $role_name; DROP ROLE ys_sys_001_parent" -d ys_sys_001_createrole
 
 # The creator can safely manage the reader credential and rerun setup, while
 # the reader cannot SET ROLE to its creator or inherit the creator's rights.
-createrole_admin_psql ys_sys_001_createrole -c "ALTER ROLE $role_name PASSWORD '$reader_password' LOGIN"
 createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 reader_psql ys_sys_001_createrole -c 'SELECT count(*) FROM public.application_migrations' >/dev/null
