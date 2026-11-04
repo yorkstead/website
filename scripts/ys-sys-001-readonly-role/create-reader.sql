@@ -2,12 +2,7 @@
 -- Run with psql -X -v ON_ERROR_STOP=1 over TLS as an authorized role administrator.
 \set ON_ERROR_STOP on
 
-SELECT current_database() = :'expected_database' AS ys_expected_database_matches \gset
-\if :ys_expected_database_matches
-\else
-  \echo 'Setup stopped: connected database does not match expected_database.'
-  \quit 3
-\endif
+SELECT 1 / (current_database() = :'expected_database')::integer AS ys_expected_database_guard \gset
 
 BEGIN;
 

@@ -2,12 +2,7 @@
 -- No row-level values are selected. Output is private operational evidence.
 \set ON_ERROR_STOP on
 
-SELECT current_database() = :'expected_database' AS ys_expected_database_matches \gset
-\if :ys_expected_database_matches
-\else
-  \echo 'Preflight stopped: connected database does not match expected_database.'
-  \quit 3
-\endif
+SELECT 1 / (current_database() = :'expected_database')::integer AS ys_expected_database_guard \gset
 
 BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;
 SET LOCAL statement_timeout = '15s';

@@ -2,12 +2,7 @@
 -- no Production row data is read. Values are PASS/FAIL only.
 \set ON_ERROR_STOP on
 
-SELECT current_database() = :'expected_database' AS ys_expected_database_matches \gset
-\if :ys_expected_database_matches
-\else
-  \echo 'Verification stopped: connected database does not match expected_database.'
-  \quit 3
-\endif
+SELECT 1 / (current_database() = :'expected_database')::integer AS ys_expected_database_guard \gset
 DO $verify_reader$
 DECLARE
   reader oid := pg_catalog.to_regrole('ys_sys_001_preflight_reader');
