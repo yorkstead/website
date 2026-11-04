@@ -1,6 +1,13 @@
 -- Independent effective-capability check. Run as a role administrator after setup;
 -- no Production row data is read. Values are PASS/FAIL only.
 \set ON_ERROR_STOP on
+
+SELECT current_database() = :'expected_database' AS ys_expected_database_matches \gset
+\if :ys_expected_database_matches
+\else
+  \echo 'Verification stopped: connected database does not match expected_database.'
+  \quit 3
+\endif
 DO $verify_reader$
 DECLARE
   reader oid := pg_catalog.to_regrole('ys_sys_001_preflight_reader');
@@ -66,6 +73,10 @@ BEGIN
       IF relation_record.required_table THEN RAISE EXCEPTION 'FAIL: required relation is absent'; END IF;
       CONTINUE;
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_class c
+                    WHERE c.oid = relation_oid AND c.relkind IN ('r','p')) THEN
+      RAISE EXCEPTION 'FAIL: expected a base table is absent';
+    END IF;
     IF EXISTS (SELECT 1 FROM pg_catalog.pg_class WHERE oid = relation_oid AND relrowsecurity) THEN
       RAISE EXCEPTION 'FAIL: row-level security could make aggregates incomplete';
     END IF;
@@ -113,6 +124,41 @@ BEGIN
       RAISE EXCEPTION 'FAIL: a prohibited column privilege is effective';
     END IF;
   END LOOP;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relkind = 'S'
+      AND (pg_catalog.has_sequence_privilege(reader, c.oid, 'USAGE')
+           OR pg_catalog.has_sequence_privilege(reader, c.oid, 'SELECT')
+           OR pg_catalog.has_sequence_privilege(reader, c.oid, 'UPDATE'))
+  ) THEN RAISE EXCEPTION 'FAIL: unexpected sequence privileges are effective'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_proc p
+    JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.prokind IN ('f','p')
+      AND p.prorettype NOT IN ('pg_catalog.trigger'::regtype, 'pg_catalog.event_trigger'::regtype)
+      AND pg_catalog.has_function_privilege(reader, p.oid, 'EXECUTE')
+  ) THEN RAISE EXCEPTION 'FAIL: executable public routines are effective'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_default_acl d
+    CROSS JOIN LATERAL pg_catalog.aclexplode(d.defaclacl) a
+    WHERE d.defaclnamespace IN (0, 'public'::regnamespace)
+      AND a.grantee IN (0, reader)
+      AND ((d.defaclobjtype = 'r' AND a.privilege_type IN
+              ('SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN'))
+        OR (d.defaclobjtype = 'S' AND a.privilege_type IN ('SELECT','USAGE','UPDATE'))
+        OR (d.defaclobjtype IN ('f','p') AND a.privilege_type = 'EXECUTE'))
+  ) THEN RAISE EXCEPTION 'FAIL: unsafe PUBLIC/reader default privileges exist'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_roles creator
+    WHERE pg_catalog.has_schema_privilege(creator.oid, 'public', 'CREATE')
+      AND NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_default_acl d
+        CROSS JOIN LATERAL pg_catalog.aclexplode(d.defaclacl) a
+        WHERE d.defaclrole = creator.oid AND d.defaclnamespace = 0
+          AND d.defaclobjtype = 'f' AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+      )
+  ) THEN RAISE EXCEPTION 'FAIL: implicit PUBLIC EXECUTE defaults remain'; END IF;
   IF EXISTS (
     SELECT 1
       FROM pg_catalog.pg_class c

@@ -9,27 +9,27 @@ Repository review found no existing dedicated PostgreSQL read-only role definiti
 
 The prepared scripts grant column-level `SELECT` only for migration version/checksum/time, record and audit IDs/revisions/archive state, the Registry class/legacy markers used for grouped counts, and relationship keys needed to calculate aggregate and orphan counts. They do not grant access to account labels, names, notes, URLs, billing amounts/references, actor IDs, or audit JSON. PostgreSQL catalogs expose schema definitions, constraints, indexes, foreign keys, and trigger definitions without granting application-table content access.
 
-`create-reader.sql` creates `ys_sys_001_preflight_reader` as a dedicated login role with no password, no role memberships, `NOINHERIT`, no superuser/database/role/replication/RLS-bypass attributes, and conservative session defaults. It grants only the fixed read columns and `CONNECT`/schema `USAGE`. It is idempotent for the expected role attributes and grants; if a same-named role has unexpected attributes or memberships, it stops without changing it. It does not create users, alter existing roles, revoke privileges from `PUBLIC`, or change database-wide ACLs.
+`create-reader.sql` creates `ys_sys_001_preflight_reader` as a dedicated `NOLOGIN` role without a password, with no role memberships, `NOINHERIT`, no superuser/database/role/replication/RLS-bypass attributes, and conservative session defaults. It grants only the fixed read columns and `CONNECT`/schema `USAGE`. The owner sets its password interactively and enables `LOGIN` only after reviewing the grants. Setup checks the expected database name, requires scoped objects to be base tables, and fails closed on effective sequence access, callable public routines, unsafe default ACLs, RLS, or excessive table/column grants. It does not revoke privileges from `PUBLIC` or change database-wide ACLs.
 
 ### PostgreSQL privilege limitation
 
 PostgreSQL has no per-role `DENY` that overrides privileges inherited from `PUBLIC`. The setup script checks effective rights and aborts if the reader effectively has database `CREATE` or `TEMP`, access to another database, schema `CREATE`, table-level `SELECT`, unapproved column reads, DML, `TRUNCATE`, `REFERENCES`, trigger/maintenance rights, ownership, or role memberships. In particular, many databases grant `CONNECT`/`TEMP` to `PUBLIC` by default. If those rights make another database accessible or permit temporary-object creation in Production, this plan deliberately stops rather than changing a database-wide grant. Any broader ACL change or relaxation of the no-`CREATE` requirement needs separate security review and owner authorization.
 
-The role cannot alter or drop existing objects because it is neither superuser nor owner and has no owner-role membership. It cannot administer other roles because it has no `CREATEROLE` or role memberships. PostgreSQL allows a login role to manage its own password; this is credential self-service, not authority over other roles. The role does not bypass row-level security. Setup and preflight stop if RLS is enabled on a scoped relation, because counts could otherwise be incomplete. The role has no general-purpose application path and should be used only with the fixed SQL file below.
+The role cannot alter or drop existing objects because it is neither superuser nor owner and has no owner-role membership. It cannot administer other roles because it has no `CREATEROLE` or role memberships. PostgreSQL allows a login role to manage its own password; this is credential self-service, not authority over other roles. The role does not bypass row-level security. Setup and preflight stop if RLS is enabled on a scoped relation, because counts could otherwise be incomplete. The scripts require an expected database name but cannot prove Neon project/branch identity; verify the direct endpoint, project, and branch privately through trusted provider metadata and TLS hostname verification before connecting. This is a short, owner-operated preflight credential and must be disabled/revoked immediately afterward.
 
 ## Files
 
 - `scripts/ys-sys-001-readonly-role/create-reader.sql` — owner-run role/grant setup; not yet run against Production.
 - `scripts/ys-sys-001-readonly-role/verify-reader.sql` — independent effective-capability assertion; checks attributes, ownership, memberships, and allowed/prohibited privileges.
 - `scripts/ys-sys-001-readonly-role/preflight-readonly.sql` — fixed repeatable-read, read-only aggregate and metadata queries; no row-level business fields.
-- `scripts/ys-sys-001-readonly-role/revoke-reader.sql` — disable future logins and revoke the dedicated role's direct grants; existing sessions must also be terminated.
+- `scripts/ys-sys-001-readonly-role/revoke-reader.sql` — disable future logins, clear the password, and revoke only the exact column, schema, and current-database grants this setup creates; unrelated grants are preserved for review. Existing sessions must also be terminated.
 - `scripts/ys-sys-001-readonly-role/test-synthetic.sh` and fixtures — disposable-cluster tests only; rejects inherited database URLs, cloud variables, and non-local PostgreSQL connections.
 
 ## Synthetic validation
 
 The dedicated `.github/workflows/ci.yml` job provisions a fresh PostgreSQL 18 service container for each run. It has only `contents: read`, no repository secrets, no deployment permissions, and no shared database service with the application test job. The runner is CI-only, rejects caller-supplied PostgreSQL/database/cloud environment variables, and uses fixed loopback connection settings inside the job with generated synthetic reader credentials. It creates no external storage or provider connections.
 
-The runner applies the actual YS schema migrations 0020, 0023, and 0024 to an empty synthetic database and only 0020 to a legacy-only synthetic database. It records SHA-256 checksums for each applied migration in the fixture ledger and inserts fictional Registry fixtures only into the 0024 database. It intentionally omits unrelated migrations 0021 and 0022, which have separate prerequisites and are outside this reader's schema scope. Role setup, effective privilege verification, fixed preflight execution, and revocation run against these databases. The runner tests `PUBLIC` grants and role memberships that would widen privileges, actual password-authenticated reader connections, allowed aggregate/metadata reads, sensitive-column denial, write/DDL denial, idempotent setup, and revocation. The captured preflight output is checked for synthetic business labels, notes, actor data, and evidence-reference sentinels.
+The runner applies the actual YS schema migrations 0020, 0023, and 0024 to an empty synthetic database and only 0020 to a legacy-only synthetic database. It records SHA-256 checksums for each applied migration in the fixture ledger and inserts fictional Registry fixtures only into the 0024 database. It intentionally omits unrelated migrations 0021 and 0022, which have separate prerequisites and are outside this reader's schema scope. Role setup, effective privilege verification, fixed preflight execution, and revocation run against these databases. The runner tests wrong database names, `PUBLIC` grants, memberships, unsafe default ACLs, executable routines, sequence privileges, actual password-authenticated reader connections, allowed aggregate/metadata reads, sensitive-column denial, write/DDL denial, idempotent setup, unrelated-grant preservation on revocation, and cleanup.
 
 The runner is not a local/Production preflight command. Its target is determined by the isolated Actions service declared in the workflow, not by a user-supplied URL or hostname. It cannot be considered proof of Production ACLs, schema, role presence, database identity, or data contents.
 
@@ -77,21 +77,22 @@ If the local libpq requires an explicit CA, set a private `sslrootcert` path to 
 
 ### Create and validate the dedicated credential
 
-1. After separate owner authorization, use `psql -X -W "service=ys-sys-001-admin"` over verified TLS as the authorized role administrator and run `scripts/ys-sys-001-readonly-role/create-reader.sql` with `ON_ERROR_STOP` enabled. The setup transaction fails closed on unexpected schema/ACL/role state. Do not apply a global `REVOKE` to make it pass.
-2. Set the reader password interactively with psql's `\password ys_sys_001_preflight_reader`; do not include the password in SQL, command arguments, environment output, or shell history. Use a unique high-entropy credential stored only in the owner's approved local secret manager. The setup script itself never accepts or writes a password.
-3. Open a fresh reader connection using `psql -X -W "service=ys-sys-001-reader"`. Confirm TLS verification and the effective user/database privately. Run `verify-reader.sql` as the authorized role administrator, then connect as the new login and recheck the role/database identity. If any check fails, stop and revoke/disable; do not query application records.
+1. After separate owner authorization, privately verify the direct Neon endpoint/project/production branch against trusted provider metadata. Confirm the `pg_service.conf` entry has the approved endpoint, `dbname=neondb`, and `sslmode=verify-full`; never infer the branch from the database name or migration count. Use `psql -X -W "service=ys-sys-001-admin" -v expected_database=neondb` over verified TLS as the authorized role administrator and run `create-reader.sql`. The setup transaction fails closed on unexpected schema/ACL/role state. Do not apply a global `REVOKE` to make it pass.
+2. The new role remains `NOLOGIN`. Set its password interactively with psql's `\password ys_sys_001_preflight_reader`; do not include the password in SQL, command arguments, environment output, or shell history. Use a unique high-entropy credential stored only in the owner's approved local secret manager. Then explicitly run `ALTER ROLE ys_sys_001_preflight_reader LOGIN` in that trusted administrator session.
+3. Open a fresh reader connection using `psql -X -W "service=ys-sys-001-reader"`. Confirm TLS verification and the effective user/database privately. Run `verify-reader.sql` as the authorized role administrator with `-v expected_database=neondb`, then connect as the new login and recheck the role/database identity. If any check fails, stop and revoke/disable; do not query application records.
 4. Run only `preflight-readonly.sql` in the approved transaction. Keep output private. This output contains migration checksums and aggregate counts; do not paste it into public issues, PRs, logs, or this conversation. Return only approved redacted counts/status.
 
 Commands, after the private service file is configured:
 
 ```sh
-psql -X -W "service=ys-sys-001-admin" -v ON_ERROR_STOP=1 \
+psql -X -W "service=ys-sys-001-admin" -v expected_database=neondb -v ON_ERROR_STOP=1 \
   -f scripts/ys-sys-001-readonly-role/create-reader.sql
 psql -X -W "service=ys-sys-001-admin"
 # At the interactive psql prompt only: \password ys_sys_001_preflight_reader
-psql -X -W "service=ys-sys-001-admin" \
+psql -X -W "service=ys-sys-001-admin" -c 'ALTER ROLE ys_sys_001_preflight_reader LOGIN'
+psql -X -W "service=ys-sys-001-admin" -v expected_database=neondb \
   -v ON_ERROR_STOP=1 -f scripts/ys-sys-001-readonly-role/verify-reader.sql
-psql -X -W "service=ys-sys-001-reader" \
+psql -X -W "service=ys-sys-001-reader" -v expected_database=neondb \
   -v ON_ERROR_STOP=1 -f scripts/ys-sys-001-readonly-role/preflight-readonly.sql
 ```
 

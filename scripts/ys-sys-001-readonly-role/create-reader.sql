@@ -2,6 +2,13 @@
 -- Run with psql -X -v ON_ERROR_STOP=1 over TLS as an authorized role administrator.
 \set ON_ERROR_STOP on
 
+SELECT current_database() = :'expected_database' AS ys_expected_database_matches \gset
+\if :ys_expected_database_matches
+\else
+  \echo 'Setup stopped: connected database does not match expected_database.'
+  \quit 3
+\endif
+
 BEGIN;
 
 DO $create_role$
@@ -13,7 +20,7 @@ BEGIN
    WHERE rolname = 'ys_sys_001_preflight_reader';
 
   IF NOT FOUND THEN
-    EXECUTE 'CREATE ROLE ys_sys_001_preflight_reader LOGIN PASSWORD NULL '
+    EXECUTE 'CREATE ROLE ys_sys_001_preflight_reader NOLOGIN PASSWORD NULL '
          || 'NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT';
     role_oid := pg_catalog.to_regrole('ys_sys_001_preflight_reader');
     EXECUTE format('COMMENT ON ROLE %I IS %L', 'ys_sys_001_preflight_reader',
@@ -21,7 +28,7 @@ BEGIN
   ELSE
     IF role_record.rolsuper OR role_record.rolcreatedb OR role_record.rolcreaterole
        OR role_record.rolreplication OR role_record.rolbypassrls
-       OR NOT role_record.rolcanlogin OR role_record.rolinherit THEN
+       OR role_record.rolinherit THEN
       RAISE EXCEPTION 'Existing preflight role has unexpected attributes; no changes made';
     END IF;
     role_oid := pg_catalog.to_regrole('ys_sys_001_preflight_reader');
@@ -35,6 +42,8 @@ BEGIN
   END IF;
 END
 $create_role$;
+
+ALTER ROLE ys_sys_001_preflight_reader NOLOGIN;
 
 DO $grant_connect$
 BEGIN
@@ -73,6 +82,10 @@ BEGIN
         RAISE EXCEPTION 'Required preflight relation is absent: public.%', item.table_name;
       END IF;
       CONTINUE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_class c
+                    WHERE c.oid = relation_oid AND c.relkind IN ('r','p')) THEN
+      RAISE EXCEPTION 'Expected a base table for public.%', item.table_name;
     END IF;
 
     SELECT array_agg(required_column.column_name ORDER BY required_column.column_name)
@@ -145,7 +158,7 @@ BEGIN
   IF EXISTS (
     SELECT 1 FROM pg_catalog.pg_roles r WHERE r.oid = reader
       AND (r.rolsuper OR r.rolcreatedb OR r.rolcreaterole OR r.rolreplication
-           OR r.rolbypassrls OR r.rolinherit OR NOT r.rolcanlogin)
+           OR r.rolbypassrls OR r.rolinherit OR r.rolcanlogin)
   ) THEN RAISE EXCEPTION 'Preflight role attributes are not least-privileged'; END IF;
 
   IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members WHERE member = reader OR roleid = reader) THEN
@@ -171,6 +184,41 @@ BEGIN
        AND (pg_catalog.has_schema_privilege(reader, n.nspname, 'USAGE')
             OR pg_catalog.has_schema_privilege(reader, n.nspname, 'CREATE'))
   ) THEN RAISE EXCEPTION 'Access to an unrelated schema is effective'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relkind = 'S'
+      AND (pg_catalog.has_sequence_privilege(reader, c.oid, 'USAGE')
+           OR pg_catalog.has_sequence_privilege(reader, c.oid, 'SELECT')
+           OR pg_catalog.has_sequence_privilege(reader, c.oid, 'UPDATE'))
+  ) THEN RAISE EXCEPTION 'Unexpected sequence privileges are effective'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_proc p
+    JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.prokind IN ('f','p')
+      AND p.prorettype NOT IN ('pg_catalog.trigger'::regtype, 'pg_catalog.event_trigger'::regtype)
+      AND pg_catalog.has_function_privilege(reader, p.oid, 'EXECUTE')
+  ) THEN RAISE EXCEPTION 'Executable public routines are effective'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_default_acl d
+    CROSS JOIN LATERAL pg_catalog.aclexplode(d.defaclacl) a
+    WHERE d.defaclnamespace IN (0, 'public'::regnamespace)
+      AND a.grantee IN (0, reader)
+      AND ((d.defaclobjtype = 'r' AND a.privilege_type IN
+              ('SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN'))
+        OR (d.defaclobjtype = 'S' AND a.privilege_type IN ('SELECT','USAGE','UPDATE'))
+        OR (d.defaclobjtype IN ('f','p') AND a.privilege_type = 'EXECUTE'))
+  ) THEN RAISE EXCEPTION 'Unsafe PUBLIC/reader default privileges are configured'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_roles creator
+    WHERE pg_catalog.has_schema_privilege(creator.oid, 'public', 'CREATE')
+      AND NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_default_acl d
+        CROSS JOIN LATERAL pg_catalog.aclexplode(d.defaclacl) a
+        WHERE d.defaclrole = creator.oid AND d.defaclnamespace = 0
+          AND d.defaclobjtype = 'f' AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+      )
+  ) THEN RAISE EXCEPTION 'A public-schema creator retains implicit PUBLIC EXECUTE defaults'; END IF;
   IF EXISTS (SELECT 1 FROM pg_catalog.pg_database WHERE datdba = reader)
      OR EXISTS (SELECT 1 FROM pg_catalog.pg_namespace WHERE nspowner = reader)
      OR EXISTS (SELECT 1 FROM pg_catalog.pg_class WHERE relowner = reader)
@@ -188,6 +236,9 @@ BEGIN
   LOOP
     rel := pg_catalog.to_regclass(format('public.%I', target.table_name));
     IF rel IS NULL THEN CONTINUE; END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_class WHERE oid = rel AND relkind IN ('r','p')) THEN
+      RAISE EXCEPTION 'Expected a base table for public.%', target.table_name;
+    END IF;
     IF EXISTS (SELECT 1 FROM pg_catalog.pg_class WHERE oid = rel AND relrowsecurity) THEN
       RAISE EXCEPTION 'Row-level security could make aggregate counts incomplete';
     END IF;

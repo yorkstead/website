@@ -14,9 +14,15 @@ BEGIN
 END $$;
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 
+-- The isolated baseline mirrors the required production policy: owners that
+-- create routines in public must not inherit PUBLIC EXECUTE by default.
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+
 CREATE TABLE public.application_migrations (
   version TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   checksum TEXT NOT NULL CHECK (char_length(checksum) = 64),
   applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE public.ys_unrelated_permission_probe (id integer PRIMARY KEY);

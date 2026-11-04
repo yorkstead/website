@@ -5,37 +5,48 @@
 BEGIN;
 DO $revoke_scoped_privileges$
 DECLARE
-  relation_record record;
-  column_name text;
+  target record;
+  relation_oid oid;
+  allowed_columns text;
 BEGIN
   IF pg_catalog.to_regrole('ys_sys_001_preflight_reader') IS NULL THEN
     RAISE NOTICE 'Preflight role is already absent';
     RETURN;
   END IF;
 
-  FOR relation_record IN
-    SELECT c.oid, n.nspname, c.relname
-      FROM pg_catalog.pg_class c
-      JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-     WHERE n.nspname = 'public' AND c.relkind IN ('r','p','v','m','f')
+  -- Disable authentication first. Revoke only privileges this fixed setup
+  -- script grants; preserve any unrelated permissions for manual review.
+  EXECUTE 'ALTER ROLE ys_sys_001_preflight_reader NOLOGIN';
+  EXECUTE 'ALTER ROLE ys_sys_001_preflight_reader PASSWORD NULL';
+
+  FOR target IN SELECT * FROM (VALUES
+    ('application_migrations', ARRAY['version','checksum','applied_at']::text[]),
+    ('system_directory_entries', ARRAY['id','revision','archived_at','entity_class','legacy_directory_entry']::text[]),
+    ('system_directory_audit', ARRAY['id','entry_id','revision']::text[]),
+    ('system_directory_relationships', ARRAY['id','source_entry_id','target_entry_id','archived_at']::text[]),
+    ('system_directory_relationship_audit', ARRAY['id','relationship_id','revision']::text[]),
+    ('system_directory_billing_evidence', ARRAY['id','archived_at']::text[]),
+    ('system_directory_billing_allocations', ARRAY['id','evidence_id','subscription_id','archived_at']::text[]),
+    ('system_directory_billing_audit', ARRAY['id','evidence_id','allocation_id','revision']::text[])
+  ) AS scoped(table_name, column_names)
   LOOP
-    EXECUTE format('REVOKE ALL PRIVILEGES ON TABLE %I.%I FROM ys_sys_001_preflight_reader',
-                   relation_record.nspname, relation_record.relname);
-    FOR column_name IN
-      SELECT a.attname FROM pg_catalog.pg_attribute a
-       WHERE a.attrelid = relation_record.oid AND a.attnum > 0 AND NOT a.attisdropped
-    LOOP
-      EXECUTE format(
-        'REVOKE SELECT (%1$I), INSERT (%1$I), UPDATE (%1$I), REFERENCES (%1$I) ON TABLE %2$I.%3$I FROM ys_sys_001_preflight_reader',
-        column_name, relation_record.nspname, relation_record.relname
-      );
-    END LOOP;
+    relation_oid := pg_catalog.to_regclass(format('public.%I', target.table_name));
+    IF relation_oid IS NOT NULL THEN
+      SELECT string_agg(format('%I', allowed.column_name), ', ' ORDER BY allowed.column_name)
+        INTO allowed_columns
+        FROM unnest(target.column_names) AS allowed(column_name)
+       WHERE EXISTS (SELECT 1 FROM pg_catalog.pg_attribute a
+                      WHERE a.attrelid = relation_oid AND a.attname = allowed.column_name
+                        AND a.attnum > 0 AND NOT a.attisdropped);
+      IF allowed_columns IS NOT NULL THEN
+        EXECUTE format('REVOKE SELECT (%s) ON TABLE public.%I FROM ys_sys_001_preflight_reader',
+                       allowed_columns, target.table_name);
+      END IF;
+    END IF;
   END LOOP;
 
-  EXECUTE format('REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM ys_sys_001_preflight_reader');
   REVOKE ALL PRIVILEGES ON SCHEMA public FROM ys_sys_001_preflight_reader;
   EXECUTE format('REVOKE CONNECT, TEMPORARY ON DATABASE %I FROM ys_sys_001_preflight_reader', current_database());
-  ALTER ROLE ys_sys_001_preflight_reader NOLOGIN PASSWORD NULL;
 END
 $revoke_scoped_privileges$;
 COMMIT;

@@ -58,7 +58,7 @@ prepare_schema() {
 
 expect_setup_rejected() {
   local database="$1" label="$2"
-  if admin_psql -d "$database" -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql" >"$work_dir/rejected.out" 2>&1; then
+  if admin_psql -d "$database" -v expected_database="$database" -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql" >"$work_dir/rejected.out" 2>&1; then
     fail "unsafe effective privilege was accepted ($label)"
   fi
   if admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '$role_name')" | grep -qx t; then
@@ -68,6 +68,21 @@ expect_setup_rejected() {
 
 prepare_schema ys_sys_001_full true
 prepare_schema ys_sys_001_legacy false
+
+# Any role able to create public routines must have its implicit PUBLIC
+# EXECUTE default revoked before this reader can be configured.
+admin_psql -d ys_sys_001_full -c 'CREATE ROLE ys_synthetic_creator NOLOGIN; GRANT CREATE ON SCHEMA public TO ys_synthetic_creator'
+expect_setup_rejected ys_sys_001_full 'creator with implicit PUBLIC routine defaults'
+admin_psql -d ys_sys_001_full -c 'REVOKE CREATE ON SCHEMA public FROM ys_synthetic_creator; DROP ROLE ys_synthetic_creator'
+
+# The fixed scripts refuse a database-name mismatch before changing roles.
+if admin_psql -d ys_sys_001_full -v expected_database=wrong_target -f \
+  "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql" >"$work_dir/wrong-target.out" 2>&1; then
+  fail 'setup accepted a database-name mismatch'
+fi
+if admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '$role_name')" | grep -qx t; then
+  fail 'wrong-target setup created a role'
+fi
 
 # PUBLIC grants which widen effective privilege must abort setup transactionally.
 admin_psql -d ys_sys_001_full -c 'GRANT TEMP ON DATABASE ys_sys_001_full TO PUBLIC'
@@ -80,25 +95,49 @@ admin_psql -d ys_sys_001_full -c 'GRANT UPDATE ON public.system_directory_entrie
 expect_setup_rejected ys_sys_001_full 'PUBLIC UPDATE'
 admin_psql -d ys_sys_001_full -c 'REVOKE UPDATE ON public.system_directory_entries FROM PUBLIC'
 
-admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
-admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
-admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+# Public routines, sequence grants, and unsafe defaults fail closed too.
+admin_psql -d ys_sys_001_full -c "CREATE FUNCTION public.ys_test_exposed() RETURNS text LANGUAGE sql SECURITY DEFINER AS \$\$ SELECT 'synthetic secret'::text \$\$; GRANT EXECUTE ON FUNCTION public.ys_test_exposed() TO PUBLIC"
+expect_setup_rejected ys_sys_001_full 'PUBLIC EXECUTE on SECURITY DEFINER routine'
+admin_psql -d ys_sys_001_full -c 'DROP FUNCTION public.ys_test_exposed()'
+admin_psql -d ys_sys_001_full -c 'CREATE SEQUENCE public.ys_test_sequence; GRANT USAGE ON SEQUENCE public.ys_test_sequence TO PUBLIC'
+expect_setup_rejected ys_sys_001_full 'PUBLIC sequence USAGE'
+admin_psql -d ys_sys_001_full -c 'DROP SEQUENCE public.ys_test_sequence'
+admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT SELECT ON TABLES TO PUBLIC'
+expect_setup_rejected ys_sys_001_full 'PUBLIC default table SELECT'
+admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE SELECT ON TABLES FROM PUBLIC'
+admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT USAGE ON SEQUENCES TO PUBLIC'
+expect_setup_rejected ys_sys_001_full 'PUBLIC default sequence USAGE'
+admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE USAGE ON SEQUENCES FROM PUBLIC'
+admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO PUBLIC'
+expect_setup_rejected ys_sys_001_full 'PUBLIC default routine EXECUTE'
+admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC'
+
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -Atc "SELECT NOT rolcanlogin AND rolpassword IS NULL FROM pg_catalog.pg_authid WHERE rolname = '$role_name'" | grep -qx t || fail 'new role was not kept NOLOGIN/passwordless'
+admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+
+# Publicly readable views are treated as another path to data and rejected.
+admin_psql -d ys_sys_001_full -c 'CREATE VIEW public.ys_sensitive_view AS SELECT name FROM public.system_directory_entries; GRANT SELECT ON public.ys_sensitive_view TO PUBLIC'
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/view.out" 2>&1; then
+  fail 'effective verifier accepted a PUBLIC-readable view'
+fi
+admin_psql -d ys_sys_001_full -c 'DROP VIEW public.ys_sensitive_view'
 
 admin_psql -d ys_sys_001_full -c "CREATE ROLE $writer_name NOLOGIN; GRANT UPDATE ON public.system_directory_entries TO $writer_name; GRANT $writer_name TO $role_name"
-if admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/membership.out" 2>&1; then
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/membership.out" 2>&1; then
   fail 'effective verifier accepted a writer-role membership'
 fi
 admin_psql -d ys_sys_001_full -c "REVOKE $writer_name FROM $role_name; REVOKE UPDATE ON public.system_directory_entries FROM $writer_name; DROP ROLE $writer_name"
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name INHERIT"
-if admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/inherit.out" 2>&1; then
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/inherit.out" 2>&1; then
   fail 'effective verifier accepted INHERIT'
 fi
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name NOINHERIT"
 admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 
 # Password exists only in this process and the synthetic CI database.
-admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'"
-admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name LOGIN"
 admin_psql -d ys_sys_001_full -c 'CREATE ROLE ys_sys_001_forbidden_target NOLOGIN'
 reader_psql ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/synthetic-privilege-tests.sql"
 admin_psql -d ys_sys_001_full -c 'DROP ROLE ys_sys_001_forbidden_target'
@@ -128,7 +167,10 @@ for command in \
   if reader_psql ys_sys_001_full -c "$command" >/dev/null 2>&1; then fail 'actual login performed prohibited operation'; fi
 done
 
-reader_psql ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" >"$work_dir/preflight.out"
+reader_psql ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" >"$work_dir/preflight.out"
+if reader_psql ys_sys_001_full -v expected_database=wrong_target -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" >"$work_dir/wrong-preflight.out" 2>&1; then
+  fail 'preflight accepted a database-name mismatch'
+fi
 if grep -Eq 'Synthetic Service|SYNTHETIC PRIVATE SENTINEL|SYNTHETIC-BILLING-SENTINEL|synthetic-fixture-actor' "$work_dir/preflight.out"; then
   fail 'fixed preflight exposed synthetic row-level content'
 fi
@@ -136,17 +178,19 @@ grep -q '0024' "$work_dir/preflight.out" || fail 'preflight omitted 0024 ledger 
 
 # Each role is restricted to one database. Revoke/remove it before the legacy
 # schema case so it cannot retain CONNECT on the full-schema database.
+admin_psql -d ys_sys_001_full -c "GRANT SELECT ON public.ys_unrelated_permission_probe TO $role_name"
 admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql"
 admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
+admin_psql -Atc "SELECT pg_catalog.has_table_privilege('$role_name', 'public.ys_unrelated_permission_probe', 'SELECT')" | grep -qx t || fail 'revocation changed an unrelated permission'
 if reader_psql ys_sys_001_full -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked full-schema reader still logged in'; fi
+admin_psql -d ys_sys_001_full -c "REVOKE SELECT ON public.ys_unrelated_permission_probe FROM $role_name"
 admin_psql -d ys_sys_001_full -c "DROP ROLE $role_name"
 
 # Legacy-only schema confirms optional 0023/0024 relations are not assumed.
-admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
-admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
-admin_psql -d ys_sys_001_legacy -c "ALTER ROLE $role_name PASSWORD '$reader_password'"
-admin_psql -d ys_sys_001_legacy -c "ALTER ROLE $role_name LOGIN"
-reader_psql ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" >"$work_dir/legacy-preflight.out"
+admin_psql -d ys_sys_001_legacy -v expected_database=ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -d ys_sys_001_legacy -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
+admin_psql -d ys_sys_001_legacy -v expected_database=ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+reader_psql ys_sys_001_legacy -v expected_database=ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" >"$work_dir/legacy-preflight.out"
 
 admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql"
 admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
