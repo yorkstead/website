@@ -2,6 +2,22 @@
 -- Requires an authorized role administrator and TLS.
 \set ON_ERROR_STOP on
 
+-- Commit the access cutoff before grant cleanup begins. If later cleanup fails,
+-- the role still has no password and cannot accept new sessions.
+DO $disable_managed_login$
+DECLARE role_oid oid := pg_catalog.to_regrole('ys_sys_001_preflight_reader');
+BEGIN
+  IF role_oid IS NOT NULL THEN
+    IF pg_catalog.shobj_description(role_oid, 'pg_authid') IS DISTINCT FROM
+       'Managed by YS-SYS-001 fixed preflight role script v1' THEN
+      RAISE EXCEPTION 'Refusing to revoke an unmanaged role with the reserved name';
+    END IF;
+    EXECUTE 'ALTER ROLE ys_sys_001_preflight_reader NOLOGIN';
+    EXECUTE 'ALTER ROLE ys_sys_001_preflight_reader PASSWORD NULL';
+  END IF;
+END
+$disable_managed_login$;
+
 BEGIN;
 DO $revoke_scoped_privileges$
 DECLARE
@@ -16,9 +32,6 @@ BEGIN
 
   -- Disable authentication first. Revoke only privileges this fixed setup
   -- script grants; preserve any unrelated permissions for manual review.
-  EXECUTE 'ALTER ROLE ys_sys_001_preflight_reader NOLOGIN';
-  EXECUTE 'ALTER ROLE ys_sys_001_preflight_reader PASSWORD NULL';
-
   FOR target IN SELECT * FROM (VALUES
     ('application_migrations', ARRAY['version','checksum','applied_at']::text[]),
     ('system_directory_entries', ARRAY['id','revision','archived_at','entity_class','legacy_directory_entry']::text[]),

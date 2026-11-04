@@ -4,6 +4,19 @@
 
 SELECT 1 / (current_database() = :'expected_database')::integer AS ys_expected_database_guard \gset
 
+-- Persistently disable an already-managed login before any later check can
+-- fail and roll back. A same-named unmanaged role is never altered here.
+DO $disable_managed_login$
+DECLARE role_oid oid := pg_catalog.to_regrole('ys_sys_001_preflight_reader');
+BEGIN
+  IF role_oid IS NOT NULL
+     AND pg_catalog.shobj_description(role_oid, 'pg_authid') =
+         'Managed by YS-SYS-001 fixed preflight role script v1' THEN
+    EXECUTE 'ALTER ROLE ys_sys_001_preflight_reader NOLOGIN';
+  END IF;
+END
+$disable_managed_login$;
+
 BEGIN;
 
 DO $create_role$

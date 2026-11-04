@@ -74,6 +74,9 @@ expect_rerun_rejected() {
   if ! admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '$role_name')" | grep -qx t; then
     fail "failed rerun unexpectedly removed the managed role ($label)"
   fi
+  if ! admin_psql -Atc "SELECT NOT rolcanlogin FROM pg_catalog.pg_roles WHERE rolname = '$role_name'" | grep -qx t; then
+    fail "failed rerun left the managed role login enabled ($label)"
+  fi
 }
 
 prepare_schema ys_sys_001_full true
