@@ -129,7 +129,7 @@ for command in \
 done
 
 reader_psql ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" >"$work_dir/preflight.out"
-if rg -q 'Synthetic Service|SYNTHETIC PRIVATE SENTINEL|SYNTHETIC-BILLING-SENTINEL|synthetic-fixture-actor' "$work_dir/preflight.out"; then
+if grep -Eq 'Synthetic Service|SYNTHETIC PRIVATE SENTINEL|SYNTHETIC-BILLING-SENTINEL|synthetic-fixture-actor' "$work_dir/preflight.out"; then
   fail 'fixed preflight exposed synthetic row-level content'
 fi
 grep -q '0024' "$work_dir/preflight.out" || fail 'preflight omitted 0024 ledger evidence'
