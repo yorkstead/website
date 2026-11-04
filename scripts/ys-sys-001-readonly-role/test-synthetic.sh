@@ -160,7 +160,7 @@ if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_
   fail 'effective verifier accepted INHERIT'
 fi
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name NOINHERIT"
-admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 
 # Password exists only in this process and the synthetic CI database.
 admin_psql -d ys_sys_001_full -c 'CREATE ROLE ys_sys_001_forbidden_target NOLOGIN'
