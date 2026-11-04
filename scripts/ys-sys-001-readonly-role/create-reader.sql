@@ -44,8 +44,17 @@ BEGIN
        'Managed by YS-SYS-001 fixed preflight role script v1' THEN
       RAISE EXCEPTION 'Existing role is not marked as managed by this plan; no changes made';
     END IF;
-    IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members WHERE member = role_oid OR roleid = role_oid) THEN
-      RAISE EXCEPTION 'Existing preflight role has memberships; no changes made';
+    IF EXISTS (
+      SELECT 1 FROM pg_catalog.pg_auth_members m
+       WHERE m.member = role_oid
+          OR (m.roleid = role_oid AND NOT (
+            m.member = pg_catalog.to_regrole(current_user::text)
+            AND m.admin_option
+            AND NOT m.inherit_option
+            AND NOT m.set_option
+          ))
+    ) THEN
+      RAISE EXCEPTION 'Existing preflight role has an unexpected membership; no changes made';
     END IF;
   END IF;
 END
@@ -170,9 +179,20 @@ BEGIN
            OR r.rolbypassrls OR r.rolinherit OR r.rolcanlogin)
   ) THEN RAISE EXCEPTION 'Preflight role attributes are not least-privileged'; END IF;
 
-  IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members WHERE member = reader OR roleid = reader) THEN
-    RAISE EXCEPTION 'Preflight role has a role membership';
-  END IF;
+  -- PostgreSQL grants a non-superuser CREATEROLE creator ADMIN OPTION on
+  -- roles it creates. Permit only that one administrative relationship when
+  -- the creator is this session's effective role; the reader must never be a
+  -- member of another role, inherit privileges, or SET ROLE to/from others.
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_auth_members m
+     WHERE m.member = reader
+        OR (m.roleid = reader AND NOT (
+          m.member = pg_catalog.to_regrole(current_user::text)
+          AND m.admin_option
+          AND NOT m.inherit_option
+          AND NOT m.set_option
+        ))
+  ) THEN RAISE EXCEPTION 'Preflight role has an unexpected role membership'; END IF;
   IF pg_catalog.has_database_privilege(reader, current_database(), 'CREATE')
      OR pg_catalog.has_database_privilege(reader, current_database(), 'TEMP') THEN
     RAISE EXCEPTION 'Database CREATE/TEMP is effectively granted, commonly through PUBLIC';

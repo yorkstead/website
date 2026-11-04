@@ -18,8 +18,10 @@ done
 repo_root="$(git rev-parse --show-toplevel)"
 role_name=ys_sys_001_preflight_reader
 writer_name=ys_sys_001_synthetic_writer
+createrole_admin=ys_sys_001_createrole_admin
 work_dir="$(mktemp -d)"
 reader_password="$(openssl rand -hex 32)"
+createrole_admin_password="$(openssl rand -hex 32)"
 trap 'rm -rf "$work_dir"' EXIT INT TERM
 
 admin_psql() {
@@ -35,6 +37,11 @@ locked_admin_psql() {
   env -i PATH="$PATH" HOME="$work_dir" PGHOST=127.0.0.1 PGPORT=5432 PGUSER=postgres \
     PGPASSWORD=postgres PGDATABASE=postgres PGOPTIONS='-c lock_timeout=200ms' \
     psql -X -q -v ON_ERROR_STOP=1 "$@"
+}
+createrole_admin_psql() {
+  local database="$1"; shift
+  env -i PATH="$PATH" HOME="$work_dir" PGHOST=127.0.0.1 PGPORT=5432 PGUSER="$createrole_admin" \
+    PGPASSWORD="$createrole_admin_password" PGDATABASE="$database" psql -X -q -v ON_ERROR_STOP=1 "$@"
 }
 
 admin_psql -c 'CREATE DATABASE ys_sys_001_full'
@@ -333,6 +340,79 @@ admin_psql -d ys_sys_001_full -c "REVOKE SELECT ON public.ys_unrelated_permissio
 admin_psql -d ys_sys_001_full -c 'REVOKE CONNECT ON DATABASE ys_sys_001_full FROM PUBLIC; REVOKE USAGE ON SCHEMA public FROM PUBLIC; REVOKE SELECT (id) ON public.system_directory_entries FROM PUBLIC'
 admin_psql -d ys_sys_001_full -c "DROP ROLE $role_name"
 
+# PostgreSQL 16+ automatically gives a non-superuser CREATEROLE creator an
+# ADMIN OPTION membership in each role it creates. Exercise the full owner
+# lifecycle under that actual administrator, not a superuser simulation.
+admin_psql -c 'CREATE DATABASE ys_sys_001_createrole'
+prepare_schema ys_sys_001_createrole true
+admin_psql -c "CREATE ROLE $createrole_admin LOGIN CREATEROLE NOINHERIT PASSWORD '$createrole_admin_password'"
+admin_psql -c "GRANT CONNECT ON DATABASE ys_sys_001_createrole TO $createrole_admin; GRANT USAGE ON SCHEMA public TO $createrole_admin WITH GRANT OPTION" -d ys_sys_001_createrole
+admin_psql -d ys_sys_001_createrole -c "GRANT SELECT (version,checksum,applied_at) ON public.application_migrations TO $createrole_admin WITH GRANT OPTION; GRANT SELECT (id,revision,archived_at,entity_class,legacy_directory_entry) ON public.system_directory_entries TO $createrole_admin WITH GRANT OPTION; GRANT SELECT (id,entry_id,revision) ON public.system_directory_audit TO $createrole_admin WITH GRANT OPTION; GRANT SELECT (id,source_entry_id,target_entry_id,archived_at) ON public.system_directory_relationships TO $createrole_admin WITH GRANT OPTION; GRANT SELECT (id,relationship_id,revision) ON public.system_directory_relationship_audit TO $createrole_admin WITH GRANT OPTION; GRANT SELECT (id,archived_at) ON public.system_directory_billing_evidence TO $createrole_admin WITH GRANT OPTION; GRANT SELECT (id,evidence_id,subscription_id,archived_at) ON public.system_directory_billing_allocations TO $createrole_admin WITH GRANT OPTION; GRANT SELECT (id,evidence_id,allocation_id,revision) ON public.system_directory_billing_audit TO $createrole_admin WITH GRANT OPTION"
+
+createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole \
+  -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -Atc "SELECT count(*) = 1 AND bool_and(m.roleid = r.oid AND m.member = a.oid AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option) FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.rolname = '$role_name' JOIN pg_catalog.pg_roles a ON a.rolname = '$createrole_admin' WHERE m.roleid = r.oid OR m.member = r.oid" | grep -qx t || fail 'PostgreSQL did not create exactly the expected non-inheriting, non-SET creator ADMIN membership'
+admin_psql -Atc "SELECT current_setting('createrole_self_grant') = ''" | grep -qx t || fail 'synthetic PostgreSQL does not use the documented default creator self-grant policy'
+if admin_psql -d ys_sys_001_createrole -v expected_database=ys_sys_001_createrole \
+  -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/wrong-verifier-admin.out" 2>&1; then
+  fail 'verifier accepted the creator ADMIN membership when run as a different administrator'
+fi
+
+expect_createrole_rerun_rejected() {
+  local label="$1"
+  if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole \
+    -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql" >"$work_dir/create-rejected-$label.out" 2>&1; then
+    fail "setup accepted an unsafe membership ($label)"
+  fi
+  if ! admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '$role_name')" | grep -qx t; then
+    fail "failed setup removed the managed role ($label)"
+  fi
+  if ! admin_psql -Atc "SELECT NOT rolcanlogin FROM pg_catalog.pg_roles WHERE rolname = '$role_name'" | grep -qx t; then
+    fail "failed setup left the managed role login enabled ($label)"
+  fi
+}
+
+# The safe relation is the sole membership accepted. Any altered membership
+# option, additional administrator, or membership granted to the reader itself
+# must make the independent verifier fail closed.
+admin_psql -c "REVOKE $role_name FROM $createrole_admin; GRANT $role_name TO $createrole_admin WITH ADMIN OPTION, INHERIT TRUE, SET FALSE" -d ys_sys_001_createrole
+expect_createrole_rerun_rejected 'inherit-enabled-creator'
+if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/inherit-membership.out" 2>&1; then
+  fail 'verifier accepted creator membership with INHERIT enabled'
+fi
+admin_psql -c "REVOKE $role_name FROM $createrole_admin; GRANT $role_name TO $createrole_admin WITH ADMIN OPTION, INHERIT FALSE, SET TRUE" -d ys_sys_001_createrole
+expect_createrole_rerun_rejected 'set-enabled-creator'
+if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/set-membership.out" 2>&1; then
+  fail 'verifier accepted creator membership with SET enabled'
+fi
+admin_psql -c "REVOKE $role_name FROM $createrole_admin; GRANT $role_name TO $createrole_admin WITH ADMIN OPTION, INHERIT FALSE, SET FALSE; CREATE ROLE ys_sys_001_extra_admin NOLOGIN; GRANT $role_name TO ys_sys_001_extra_admin WITH ADMIN OPTION" -d ys_sys_001_createrole
+expect_createrole_rerun_rejected 'additional-admin'
+if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/additional-admin.out" 2>&1; then
+  fail 'verifier accepted an additional administrator'
+fi
+admin_psql -c "REVOKE $role_name FROM ys_sys_001_extra_admin; DROP ROLE ys_sys_001_extra_admin; CREATE ROLE ys_sys_001_parent NOLOGIN; GRANT ys_sys_001_parent TO $role_name" -d ys_sys_001_createrole
+expect_createrole_rerun_rejected 'reader-is-member'
+if createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/reader-membership.out" 2>&1; then
+  fail 'verifier accepted the reader being a member of another role'
+fi
+admin_psql -c "REVOKE ys_sys_001_parent FROM $role_name; DROP ROLE ys_sys_001_parent" -d ys_sys_001_createrole
+
+# The creator can safely manage the reader credential and rerun setup, while
+# the reader cannot SET ROLE to its creator or inherit the creator's rights.
+createrole_admin_psql ys_sys_001_createrole -c "ALTER ROLE $role_name PASSWORD '$reader_password' LOGIN"
+createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+createrole_admin_psql ys_sys_001_createrole -v expected_database=ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+reader_psql ys_sys_001_createrole -c 'SELECT count(*) FROM public.application_migrations' >/dev/null
+if reader_psql ys_sys_001_createrole -c "SET ROLE $createrole_admin" >/dev/null 2>&1; then
+  fail 'reader unexpectedly SET ROLE to its CREATEROLE administrator'
+fi
+createrole_admin_psql ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql"
+createrole_admin_psql ys_sys_001_createrole -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
+admin_psql -Atc "SELECT count(*) = 1 AND bool_and(m.roleid = r.oid AND m.member = a.oid AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option) FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.rolname = '$role_name' JOIN pg_catalog.pg_roles a ON a.rolname = '$createrole_admin' WHERE m.roleid = r.oid OR m.member = r.oid" | grep -qx t || fail 'revocation removed or altered the creator ADMIN membership'
+if reader_psql ys_sys_001_createrole -c 'SELECT 1' >/dev/null 2>&1; then fail 'CREATEROLE-admin-revoked reader still logged in'; fi
+admin_psql -d ys_sys_001_createrole -c "DROP ROLE $role_name; DROP ROLE $createrole_admin"
+admin_psql -c 'DROP DATABASE ys_sys_001_createrole'
+
 # Legacy-only schema confirms optional 0023/0024 relations are not assumed.
 admin_psql -d ys_sys_001_legacy -v expected_database=ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_legacy -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
@@ -344,4 +424,4 @@ admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/
 if reader_psql ys_sys_001_legacy -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked legacy reader still logged in'; fi
 admin_psql -d ys_sys_001_legacy -c "DROP ROLE $role_name"
 
-printf 'PASS: actual migrations 0020/0023/0024, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'
+printf 'PASS: actual migrations 0020/0023/0024, PostgreSQL 18 non-superuser CREATEROLE lifecycle and automatic ADMIN membership, unexpected INHERIT/SET/additional/reader memberships rejected, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'

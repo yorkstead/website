@@ -21,9 +21,20 @@ BEGIN
       AND NOT r.rolcreaterole AND NOT r.rolreplication
       AND NOT r.rolbypassrls AND NOT r.rolinherit
   ) THEN RAISE EXCEPTION 'FAIL: role attributes do not match'; END IF;
-  IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members WHERE member = reader OR roleid = reader) THEN
-    RAISE EXCEPTION 'FAIL: unexpected role membership exists';
-  END IF;
+  -- A non-superuser CREATEROLE creator is automatically granted ADMIN OPTION
+  -- on roles it creates. Allow only that one relationship to the effective
+  -- verifier role, with INHERIT and SET both disabled. Any reader membership,
+  -- additional administrator, or other incoming relationship is unsafe.
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_auth_members m
+     WHERE m.member = reader
+        OR (m.roleid = reader AND NOT (
+          m.member = pg_catalog.to_regrole(current_user::text)
+          AND m.admin_option
+          AND NOT m.inherit_option
+          AND NOT m.set_option
+        ))
+  ) THEN RAISE EXCEPTION 'FAIL: unexpected role membership exists'; END IF;
   IF NOT pg_catalog.has_database_privilege(reader, current_database(), 'CONNECT')
      OR pg_catalog.has_database_privilege(reader, current_database(), 'CREATE')
      OR pg_catalog.has_database_privilege(reader, current_database(), 'TEMP')
