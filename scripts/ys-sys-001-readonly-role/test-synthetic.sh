@@ -206,7 +206,7 @@ grep -q '0024' "$work_dir/preflight.out" || fail 'preflight omitted 0024 ledger 
 admin_psql -d ys_sys_001_full -c "GRANT SELECT ON public.ys_unrelated_permission_probe TO $role_name"
 admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/revoke-reader.sql"
 admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-revoked.sql"
-admin_psql -Atc "SELECT pg_catalog.has_table_privilege('$role_name', 'public.ys_unrelated_permission_probe', 'SELECT')" | grep -qx t || fail 'revocation changed an unrelated permission'
+admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_table_privilege('$role_name', 'public.ys_unrelated_permission_probe', 'SELECT')" | grep -qx t || fail 'revocation changed an unrelated permission'
 if reader_psql ys_sys_001_full -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked full-schema reader still logged in'; fi
 admin_psql -d ys_sys_001_full -c "REVOKE SELECT ON public.ys_unrelated_permission_probe FROM $role_name"
 admin_psql -d ys_sys_001_full -c "DROP ROLE $role_name"
