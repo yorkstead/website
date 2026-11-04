@@ -33,6 +33,17 @@ BEGIN
   END IF;
   IF EXISTS (
     SELECT 1 FROM pg_catalog.pg_database d
+    CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) a
+    WHERE d.datname = current_database() AND a.grantee IN (0, reader)
+      AND a.privilege_type = 'CONNECT' AND a.is_grantable
+  ) OR EXISTS (
+    SELECT 1 FROM pg_catalog.pg_namespace n
+    CROSS JOIN LATERAL pg_catalog.aclexplode(n.nspacl) a
+    WHERE n.nspname = 'public' AND a.grantee IN (0, reader)
+      AND a.privilege_type = 'USAGE' AND a.is_grantable
+  ) THEN RAISE EXCEPTION 'FAIL: database/schema grant option is effective'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_database d
      WHERE d.datallowconn AND d.datname <> current_database()
        AND (pg_catalog.has_database_privilege(reader, d.oid, 'CONNECT')
             OR pg_catalog.has_database_privilege(reader, d.oid, 'CREATE')
@@ -119,6 +130,12 @@ BEGIN
        OR pg_catalog.has_any_column_privilege(reader, relation_oid, 'REFERENCES') THEN
       RAISE EXCEPTION 'FAIL: a prohibited column privilege is effective';
     END IF;
+    IF EXISTS (
+      SELECT 1 FROM pg_catalog.pg_attribute a
+      CROSS JOIN LATERAL pg_catalog.aclexplode(a.attacl) acl
+      WHERE a.attrelid = relation_oid AND a.attnum > 0 AND NOT a.attisdropped
+        AND acl.grantee IN (0, reader) AND acl.privilege_type = 'SELECT' AND acl.is_grantable
+    ) THEN RAISE EXCEPTION 'FAIL: column SELECT grant option is effective'; END IF;
   END LOOP;
   IF EXISTS (
     SELECT 1 FROM pg_catalog.pg_class c
@@ -154,6 +171,9 @@ BEGIN
   )
   SELECT creator.role_oid INTO creator_role FROM current_creators creator
    WHERE NOT EXISTS (
+     SELECT 1 FROM pg_catalog.pg_default_acl d
+      WHERE d.defaclrole = creator.role_oid AND d.defaclnamespace = 0 AND d.defaclobjtype = 'f'
+   ) OR EXISTS (
      SELECT 1 FROM pg_catalog.pg_default_acl d
      CROSS JOIN LATERAL pg_catalog.aclexplode(d.defaclacl) a
       WHERE d.defaclrole = creator.role_oid AND d.defaclnamespace = 0

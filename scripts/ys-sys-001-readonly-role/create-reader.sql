@@ -166,6 +166,18 @@ BEGIN
   END IF;
   IF EXISTS (
     SELECT 1 FROM pg_catalog.pg_database d
+    CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) a
+    WHERE d.datname = current_database() AND a.grantee IN (0, reader)
+      AND a.privilege_type = 'CONNECT' AND a.is_grantable
+  ) THEN RAISE EXCEPTION 'CONNECT grant option is effective'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_namespace n
+    CROSS JOIN LATERAL pg_catalog.aclexplode(n.nspacl) a
+    WHERE n.nspname = 'public' AND a.grantee IN (0, reader)
+      AND a.privilege_type = 'USAGE' AND a.is_grantable
+  ) THEN RAISE EXCEPTION 'Schema USAGE grant option is effective'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_database d
      WHERE d.datallowconn AND d.datname <> current_database()
        AND (pg_catalog.has_database_privilege(reader, d.oid, 'CONNECT')
             OR pg_catalog.has_database_privilege(reader, d.oid, 'CREATE')
@@ -215,6 +227,9 @@ BEGIN
   SELECT creator.role_oid INTO creator_role FROM current_creators creator
    WHERE NOT EXISTS (
      SELECT 1 FROM pg_catalog.pg_default_acl d
+      WHERE d.defaclrole = creator.role_oid AND d.defaclnamespace = 0 AND d.defaclobjtype = 'f'
+   ) OR EXISTS (
+     SELECT 1 FROM pg_catalog.pg_default_acl d
      CROSS JOIN LATERAL pg_catalog.aclexplode(d.defaclacl) a
       WHERE d.defaclrole = creator.role_oid AND d.defaclnamespace = 0
         AND d.defaclobjtype = 'f' AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
@@ -253,6 +268,12 @@ BEGIN
         RAISE EXCEPTION 'Preflight role has an effective prohibited table privilege';
       END IF;
     END LOOP;
+    IF EXISTS (
+      SELECT 1 FROM pg_catalog.pg_attribute a
+      CROSS JOIN LATERAL pg_catalog.aclexplode(a.attacl) acl
+      WHERE a.attrelid = rel AND a.attnum > 0 AND NOT a.attisdropped
+        AND acl.grantee IN (0, reader) AND acl.privilege_type = 'SELECT' AND acl.is_grantable
+    ) THEN RAISE EXCEPTION 'Column SELECT grant option is effective'; END IF;
     IF current_setting('server_version_num')::integer >= 170000 THEN
       IF pg_catalog.has_table_privilege(reader, rel, 'MAINTAIN') THEN
         RAISE EXCEPTION 'Preflight role has an effective prohibited table privilege';

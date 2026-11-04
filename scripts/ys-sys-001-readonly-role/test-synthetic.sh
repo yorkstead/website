@@ -85,6 +85,15 @@ if admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolna
 fi
 
 # PUBLIC grants which widen effective privilege must abort setup transactionally.
+admin_psql -d ys_sys_001_full -c 'GRANT CONNECT ON DATABASE ys_sys_001_full TO PUBLIC WITH GRANT OPTION'
+expect_setup_rejected ys_sys_001_full 'PUBLIC CONNECT grant option'
+admin_psql -d ys_sys_001_full -c 'REVOKE CONNECT ON DATABASE ys_sys_001_full FROM PUBLIC'
+admin_psql -d ys_sys_001_full -c 'GRANT USAGE ON SCHEMA public TO PUBLIC WITH GRANT OPTION'
+expect_setup_rejected ys_sys_001_full 'PUBLIC schema USAGE grant option'
+admin_psql -d ys_sys_001_full -c 'REVOKE USAGE ON SCHEMA public FROM PUBLIC'
+admin_psql -d ys_sys_001_full -c 'GRANT SELECT (id) ON public.system_directory_entries TO PUBLIC WITH GRANT OPTION'
+expect_setup_rejected ys_sys_001_full 'PUBLIC column SELECT grant option'
+admin_psql -d ys_sys_001_full -c 'REVOKE SELECT (id) ON public.system_directory_entries FROM PUBLIC'
 admin_psql -d ys_sys_001_full -c 'GRANT TEMP ON DATABASE ys_sys_001_full TO PUBLIC'
 expect_setup_rejected ys_sys_001_full 'PUBLIC TEMP'
 admin_psql -d ys_sys_001_full -c 'REVOKE TEMP ON DATABASE ys_sys_001_full FROM PUBLIC'
