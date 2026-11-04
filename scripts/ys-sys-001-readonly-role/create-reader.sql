@@ -148,6 +148,7 @@ DECLARE
   target record;
   rel regclass;
   privilege text;
+  creator_role oid;
   reader oid := 'ys_sys_001_preflight_reader'::regrole;
 BEGIN
   IF EXISTS (
@@ -204,22 +205,23 @@ BEGIN
         OR (d.defaclobjtype = 'S' AND a.privilege_type IN ('SELECT','USAGE','UPDATE'))
         OR (d.defaclobjtype IN ('f','p') AND a.privilege_type = 'EXECUTE'))
   ) THEN RAISE EXCEPTION 'Unsafe PUBLIC/reader default privileges are configured'; END IF;
-  IF EXISTS (
-    WITH current_creators AS (
-      SELECT c.relowner AS role_oid FROM pg_catalog.pg_class c
-      JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public'
-      UNION SELECT p.proowner FROM pg_catalog.pg_proc p
-      JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public'
-      UNION SELECT d.datdba FROM pg_catalog.pg_database d WHERE d.datname = current_database()
-    )
-    SELECT 1 FROM current_creators creator
-    WHERE NOT EXISTS (
-        SELECT 1 FROM pg_catalog.pg_default_acl d
-        CROSS JOIN LATERAL pg_catalog.aclexplode(d.defaclacl) a
-        WHERE d.defaclrole = creator.role_oid AND d.defaclnamespace = 0
-          AND d.defaclobjtype = 'f' AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
-      )
-  ) THEN RAISE EXCEPTION 'A public-schema creator retains implicit PUBLIC EXECUTE defaults'; END IF;
+  WITH current_creators AS (
+    SELECT c.relowner AS role_oid FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public'
+    UNION SELECT p.proowner FROM pg_catalog.pg_proc p
+    JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public'
+    UNION SELECT d.datdba FROM pg_catalog.pg_database d WHERE d.datname = current_database()
+  )
+  SELECT creator.role_oid INTO creator_role FROM current_creators creator
+   WHERE NOT EXISTS (
+     SELECT 1 FROM pg_catalog.pg_default_acl d
+     CROSS JOIN LATERAL pg_catalog.aclexplode(d.defaclacl) a
+      WHERE d.defaclrole = creator.role_oid AND d.defaclnamespace = 0
+        AND d.defaclobjtype = 'f' AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+   ) LIMIT 1;
+  IF creator_role IS NOT NULL THEN
+    RAISE EXCEPTION 'A current public-object owner retains implicit PUBLIC EXECUTE defaults (%).', creator_role::regrole;
+  END IF;
   IF EXISTS (SELECT 1 FROM pg_catalog.pg_database WHERE datdba = reader)
      OR EXISTS (SELECT 1 FROM pg_catalog.pg_namespace WHERE nspowner = reader)
      OR EXISTS (SELECT 1 FROM pg_catalog.pg_class WHERE relowner = reader)
