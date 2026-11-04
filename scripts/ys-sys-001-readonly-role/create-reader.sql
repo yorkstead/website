@@ -317,4 +317,4 @@ $verify_effective_rights$;
 
 COMMIT;
 
-\echo 'Role and scoped grants configured. Set its password using the interactive psql \password command; do not put a password in SQL, shell arguments, history, or logs.'
+\echo 'Role and scoped grants configured with NOLOGIN. Set the password interactively, then enable LOGIN only after reviewing the grants.'

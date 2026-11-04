@@ -33,7 +33,10 @@ BEGIN
     ) AS scoped(table_name, column_names)
     JOIN pg_catalog.pg_class c ON c.oid = pg_catalog.to_regclass(format('public.%I', table_name))
     CROSS JOIN LATERAL unnest(column_names) AS allowed(column_name)
-    WHERE pg_catalog.has_column_privilege(reader, c.oid, allowed.column_name, 'SELECT')
+    WHERE EXISTS (SELECT 1 FROM pg_catalog.pg_attribute a
+                   WHERE a.attrelid = c.oid AND a.attname = allowed.column_name
+                     AND a.attnum > 0 AND NOT a.attisdropped)
+      AND pg_catalog.has_column_privilege(reader, c.oid, allowed.column_name, 'SELECT')
   ) THEN RAISE EXCEPTION 'FAIL: a scoped preflight column grant remains effective'; END IF;
 END
 $verify_revoked$;
