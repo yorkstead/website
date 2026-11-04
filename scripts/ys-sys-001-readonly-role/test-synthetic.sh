@@ -100,7 +100,7 @@ admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/ve
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'"
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name LOGIN"
 admin_psql -d ys_sys_001_full -c 'CREATE ROLE ys_sys_001_forbidden_target NOLOGIN'
-admin_psql -d ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/synthetic-privilege-tests.sql"
+reader_psql ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/synthetic-privilege-tests.sql"
 admin_psql -d ys_sys_001_full -c 'DROP ROLE ys_sys_001_forbidden_target'
 for sql in \
   'SELECT count(id) FROM public.system_directory_entries' \
