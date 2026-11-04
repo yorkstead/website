@@ -10,7 +10,7 @@ fail() { printf 'Synthetic role test failed: %s\n' "$1" >&2; exit 1; }
 [[ "${GITHUB_ACTIONS:-}" == true && "${CI:-}" == true ]] || fail 'must run inside the dedicated GitHub Actions job'
 for name in $(compgen -e); do
   case "$name" in
-    PG*|DATABASE_URL|TEST_DATABASE_URL|POSTGRES_URL|POSTGRESQL_URL|DIRECT_URL|DB_URL|*_DATABASE_URL|*_DB_URL|*_CONNECTION_STRING|VERCEL_*|NEON_*|AWS_*|AZURE_*|GOOGLE_*|CLOUDSDK_*)
+    PG*|DATABASE_URL|TEST_DATABASE_URL|POSTGRES_URL|POSTGRESQL_URL|DIRECT_URL|DB_URL|*_DATABASE_URL|*_DB_URL|*_CONNECTION_STRING|VERCEL_*|NEON_*|AWS_*|GOOGLE_*|CLOUDSDK_*|AZURE_CLIENT_*|AZURE_TENANT_ID|AZURE_SUBSCRIPTION_ID|AZURE_CREDENTIALS|AZURE_FEDERATED_TOKEN_FILE|AZURE_CONFIG_DIR|ARM_*|*_TOKEN|*_SECRET|*_PRIVATE_KEY|*_CREDENTIALS)
       fail "external database/cloud environment is not accepted: $name" ;;
   esac
 done
