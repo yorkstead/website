@@ -7,6 +7,9 @@ BEGIN
   IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE oid=reader AND rolcanlogin) THEN
     RAISE EXCEPTION 'FAIL: reader login remains enabled';
   END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_authid WHERE oid=reader AND rolpassword IS NOT NULL) THEN
+    RAISE EXCEPTION 'FAIL: reader password remains set';
+  END IF;
   IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members WHERE member=reader OR roleid=reader) THEN
     RAISE EXCEPTION 'FAIL: role membership remains';
   END IF;
