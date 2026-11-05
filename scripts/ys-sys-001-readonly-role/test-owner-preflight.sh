@@ -4,6 +4,7 @@ umask 077
 
 fail() { printf 'Synthetic owner-preflight test failed: %s\n' "$1" >&2; exit 1; }
 pass() { printf 'PASS: %s\n' "$1"; }
+phase=environment-preflight
 
 [[ "${GITHUB_ACTIONS:-}" == true && "${CI:-}" == true ]] || fail 'must run inside the isolated GitHub Actions job'
 for name in $(compgen -e); do
@@ -17,6 +18,7 @@ for command_name in docker openssl psql bun python3; do
   command -v "$command_name" >/dev/null 2>&1 || fail "required synthetic test tool is unavailable: $command_name"
 done
 
+phase=initialize-workspace
 repo_root="$(git rev-parse --show-toplevel)"
 work_dir="$(mktemp -d /tmp/ys-owner-preflight.XXXXXXXXXX)"
 chmod 700 "$work_dir"
@@ -37,13 +39,20 @@ container_started=false
 docker_local() { env -i PATH="$PATH" HOME="$work_dir" docker "$@"; }
 
 cleanup() {
+  local status=$?
+  trap - EXIT
+  if [[ "$status" -ne 0 ]]; then printf 'Synthetic owner-preflight test stopped during %s (exit %s).\n' "$phase" "$status" >&2; fi
   if [[ "$container_started" == true ]]; then docker_local rm -f "$container_name" >/dev/null 2>&1 || true; fi
   docker_local network rm "$network_name" >/dev/null 2>&1 || true
   docker_local image rm "$image_tag" >/dev/null 2>&1 || true
   rm -rf "$work_dir"
+  return "$status"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
+phase=generate-synthetic-tls
 openssl req -x509 -newkey rsa:2048 -nodes \
   -keyout "$image_dir/server.key" -out "$image_dir/server.crt" \
   -days 1 -subj '/CN=127.0.0.1' \
@@ -65,6 +74,7 @@ USER postgres
 CMD ["postgres", "-c", "ssl=on", "-c", "ssl_cert_file=/ys-tls/server.crt", "-c", "ssl_key_file=/ys-tls/server.key"]
 DOCKERFILE
 
+phase=build-synthetic-postgres-image
 docker_local build --quiet --file "$image_dir/Dockerfile" --tag "$image_tag" "$image_dir" >"$work_dir/docker-build.out" 2>"$work_dir/docker-build.err" ||
   fail 'could not build the disposable TLS PostgreSQL image'
 
@@ -75,6 +85,7 @@ POSTGRES_DB=$database_name
 EOF
 chmod 600 "$work_dir/postgres.env"
 
+phase=start-synthetic-postgres
 docker_local network create --driver bridge --internal "$network_name" >"$work_dir/network-id.out" 2>"$work_dir/network-create.err" ||
   fail 'could not create isolated disposable database network'
 
@@ -100,6 +111,7 @@ admin_psql() {
     psql -X -q -v ON_ERROR_STOP=1 "$@"
 }
 
+phase=apply-synthetic-schema
 admin_psql -f "$repo_root/scripts/ys-sys-001-readonly-role/synthetic-fixture.sql" \
   >"$work_dir/fixture.out" 2>"$work_dir/fixture.err" ||
   fail 'synthetic baseline fixture failed'
@@ -115,6 +127,7 @@ canonical_checksum() {
   ')
 }
 
+phase=verify-canonical-lf-checksum
 bun -e '
   import { parseMigration } from "./scripts/migration-plan.ts";
   const lf = parseMigration("0001_synthetic.sql", "SELECT 1;\n");
@@ -234,6 +247,7 @@ private_file() {
   [[ "$(stat -c '%a' "$1")" == 600 ]] || fail "private file mode is not 0600: $2"
 }
 
+phase=verify-reviewed-source-blobs
 preflight_sql="$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql"
 assert_blob() {
   local path="$1" expected="$2" label="$3" actual
@@ -247,6 +261,7 @@ assert_blob migrations/0024_registry-evidence-billing-monitoring.sql 13103175ba0
 
 success_out="$work_dir/preflight.out"
 success_err="$work_dir/preflight.err"
+phase=execute-owner-style-preflight
 owner_psql owner-preflight "$database_name" "$operator_password" "$success_out" "$success_err" "$preflight_sql" ||
   fail 'owner-operated psql invocation failed against the disposable TLS database'
 
@@ -282,6 +297,7 @@ expect_failure() {
   pass "rejects $label with private output"
 }
 
+phase=exercise-failure-cases
 expect_failure wrong-host wrong-host "$database_name" "$operator_password" "$preflight_sql" 'certificate|verify|SSL'
 expect_failure wrong-target wrong-target "$database_name" "$operator_password" "$preflight_sql" 'division by zero'
 expect_failure missing-service missing-service "$database_name" "$operator_password" "$preflight_sql" 'service'
@@ -296,6 +312,7 @@ expect_failure sql-error owner-preflight "$database_name" "$operator_password" "
 
 # A hostile inherited libpq override must not reach psql: the owner invocation
 # uses env -i and sets only the reviewed service file and safe client options.
+phase=verify-sanitized-environment
 if env PGHOST=invalid.invalid DATABASE_URL=synthetic-invalid-target \
   bash -c 'env -i PATH="$PATH" HOME="$1" PGSERVICEFILE="$2" PGPASSFILE="$3" PGOPTIONS="-c search_path=pg_catalog" psql -X -w "service=owner-preflight" -At -c "SELECT current_database()" ' \
   _ "$work_dir" "$work_dir/pg_service.conf" "$work_dir/operator.pgpass" \
@@ -311,5 +328,6 @@ grep -Eiq 'invalid\.invalid|synthetic-invalid-target' \
   "$work_dir/sanitized-env.out" "$work_dir/sanitized-env.err" &&
   fail 'inherited connection override leaked into output'
 
+phase=complete
 pass 'TLS verify-full, private libpq service file, isolated operator credentials, same sanitized psql invocation, read-only repeatable snapshot, expected-target guard, schema/auth/SQL failure handling, output permissions/redaction, and LF-canonical migration checksums'
 
