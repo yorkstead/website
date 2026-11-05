@@ -73,12 +73,13 @@ disposableTest("backs up and restores the current 0022 empty Directory state and
         throw error;
       }
     }
+    await source.query("CREATE EXTENSION citext");
     await admin!.query("CREATE ROLE ys_backup_fixture_owner NOLOGIN");
     await admin!.query("CREATE ROLE ys_backup_fixture_reader NOLOGIN");
     await admin!.query(`ALTER DATABASE "${sourceName}" OWNER TO ys_backup_fixture_owner`);
     await admin!.query(`GRANT CONNECT ON DATABASE "${sourceName}" TO ys_backup_fixture_reader`);
     await source.query("CREATE SCHEMA backup_fixture AUTHORIZATION ys_backup_fixture_owner");
-    await source.query("CREATE TABLE backup_fixture.records(id integer PRIMARY KEY, payload text NOT NULL)");
+    await source.query("CREATE TABLE backup_fixture.records(id integer PRIMARY KEY, payload citext NOT NULL)");
     await source.query("ALTER TABLE backup_fixture.records OWNER TO ys_backup_fixture_owner");
     await source.query("GRANT USAGE ON SCHEMA backup_fixture TO ys_backup_fixture_reader");
     await source.query("GRANT SELECT ON backup_fixture.records TO ys_backup_fixture_reader");
@@ -163,6 +164,8 @@ disposableTest("backs up and restores the current 0022 empty Directory state and
     expect((await target.query("SELECT to_jsonb(e) AS row FROM system_directory_entries e ORDER BY id")).rows).toEqual(entriesBefore);
     expect((await target.query("SELECT to_jsonb(a) AS row FROM system_directory_audit a ORDER BY id")).rows).toEqual(auditBefore);
     expect((await target.query("SELECT * FROM backup_fixture.records ORDER BY id")).rows).toEqual(applicationDataBefore);
+    expect((await target.query("SELECT extname FROM pg_extension WHERE extname='citext'")).rows).toEqual([{ extname: "citext" }]);
+    expect((await target.query("SELECT payload = 'SYNTHETIC FIXTURE ONLY' AS equal FROM backup_fixture.records WHERE id=1")).rows[0]?.equal).toBe(true);
     expect((await target.query("SELECT version,name,checksum FROM application_migrations ORDER BY version")).rows).toEqual(migrationLedgerBefore);
     expect((await target.query("SELECT count(*)::int AS n FROM application_migrations WHERE version IN ('0023','0024')")).rows[0].n).toBe(0);
     expect((await target.query("SELECT pg_get_userbyid(c.relowner) AS owner FROM pg_class c WHERE c.oid='backup_fixture.records'::regclass")).rows[0].owner).toBe("ys_backup_fixture_owner");
