@@ -23,7 +23,8 @@ describe("YS-SYS-001 issue 98 synthetic PostgreSQL evidence workflows",()=>{
   dbTest("records source-backed verification and keeps monitoring configuration separate from observations",async()=>{
     const {schema,pool}=await makeSchema();
     try{
-      const registry=createSystemRegistryService(pool);const classes:SystemRegistryInput["entityClass"][]=["provider_service","provider_account","subscription","application_workload","infrastructure_asset","stack_component"];
+      const evaluationTime = new Date("2026-11-03T12:00:00.000Z");
+      const registry=createSystemRegistryService(pool,{now:()=>new Date(evaluationTime)});const classes:SystemRegistryInput["entityClass"][]=["provider_service","provider_account","subscription","application_workload","infrastructure_asset","stack_component"];
       const records=[];for(const entityClass of classes)records.push(await registry.create(input(entityClass,`Synthetic ${entityClass}`),"issue98-owner"));
       expect(new Set(records.map(item=>item.entityClass))).toEqual(new Set(classes));
       const workload=records[3]!;
@@ -31,10 +32,12 @@ describe("YS-SYS-001 issue 98 synthetic PostgreSQL evidence workflows",()=>{
       expect(configured).toMatchObject({monitoringConfiguration:"configured",monitoringOutcome:"unknown",monitoringReviewedAt:null});
       const observed=await registry.recordMonitoring(workload.id,configured!.revision,{outcome:"healthy",method:"provider_console",reference:"synthetic status page",observedAt:"2026-11-03T12:00:00.000Z",reviewDue:"2026-11-04",summary:"Synthetic observation only"},"issue98-owner");
       expect(observed).toMatchObject({monitoringConfiguration:"configured",monitoringOutcome:"healthy",monitoringMethod:"provider_console"});expect(observed?.monitoringReviewedAt).not.toBeNull();
+      const stale=await registry.recordMonitoring(workload.id,observed!.revision,{outcome:"healthy",method:"provider_console",reference:"synthetic status page",observedAt:"2026-11-03T12:00:00.000Z",reviewDue:"2026-11-02",summary:"Synthetic observation is now stale"},"issue98-owner");
+      expect(stale).toMatchObject({monitoringConfiguration:"configured",monitoringOutcome:"stale",monitoringMethod:"provider_console"});expect(stale?.monitoringReviewedAt).not.toBeNull();
       const verified=await registry.updateVerification(records[0]!.id,records[0]!.revision,{status:"verified",subject:"Provider account exists",method:"provider_console",reference:"synthetic provider console evidence",observedAt:"2026-11-03T12:00:00.000Z",reviewDue:"2026-10-01"},"issue98-owner");
       expect(verified).toMatchObject({verificationStatus:"stale",verificationSubject:"Provider account exists",verificationReference:"synthetic provider console evidence"});expect(verified?.verificationReviewedAt).not.toBeNull();
       expect((await registry.list({entityClass:"provider_service"}))[0]?.verificationStatus).toBe("stale");
-      const audit=await registry.audit(workload.id);expect(audit.map(event=>event.action)).toEqual(["updated","updated","created"]);
+      const audit=await registry.audit(workload.id);expect(audit.map(event=>event.action)).toEqual(["updated","updated","updated","created"]);
       const immutable=(await pool.query("SELECT * FROM system_directory_audit WHERE entry_id=$1 ORDER BY id",[workload.id])).rows;
       expect(immutable.at(-1)?.after_state).toMatchObject({monitoring_configuration:"configured"});
       await expect(pool.query("UPDATE system_directory_audit SET action='updated' WHERE entry_id=$1",[workload.id])).rejects.toMatchObject({code:"23514"});
