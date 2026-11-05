@@ -98,6 +98,7 @@ psql -X -W "service=ys-sys-001-admin"
 psql -X -W "service=ys-sys-001-admin" -c 'ALTER ROLE ys_sys_001_preflight_reader LOGIN'
 psql -X -W "service=ys-sys-001-admin" -v expected_database=neondb \
   -v ON_ERROR_STOP=1 -f scripts/ys-sys-001-readonly-role/verify-reader.sql
+set +x
 umask 077
 preflight_dir="$(mktemp -d /tmp/ys-sys-001-preflight.XXXXXXXX)"
 chmod 700 "$preflight_dir"
@@ -108,14 +109,14 @@ if ! env -i PATH=/usr/bin:/bin HOME="$HOME" \
     -v expected_database=neondb -v ON_ERROR_STOP=1 -A -t -F '|' \
     -f scripts/ys-sys-001-readonly-role/preflight-readonly.sql \
     >"$preflight_dir/preflight.out" 2>"$preflight_dir/preflight.err"; then
-  printf 'FAIL: fixed preflight failed; inspect output privately.\\n' >&2
+  printf 'FAIL: fixed preflight failed; inspect output privately.\n' >&2
   exit 1
 fi
 chmod 600 "$preflight_dir/preflight.out" "$preflight_dir/preflight.err"
-printf 'PASS: preflight completed; inspect output only in the private directory.\\n'
+printf 'PASS: preflight completed; inspect output only in the private directory.\n'
 ```
 
-`-W` prompts without placing the password in an argument or environment variable. The password and query output stay in the owner's private terminal/secret manager.
+`-W` prompts without placing the password in an argument or environment variable. The preflight output and errors remain in the mode-restricted local temporary directory; inspect them privately, report only approved redacted aggregates, and securely remove the files when they are no longer needed.
 
 ### Effective privilege validation
 
