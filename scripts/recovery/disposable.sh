@@ -80,7 +80,7 @@ case $mode in
     manifest_partial="$output/.manifest.txt.age.partial"
     age -r "$BACKUP_RECIPIENT" -o "$manifest_partial" "$output/manifest.txt" >/dev/null
     mv -- "$manifest_partial" "$output/manifest.txt.age"; manifest_partial=''
-    rm -f -- "$stage/plain.dump" "$stage/archive.list"; rmdir "$stage"; stage=''
+    rm -rf -- "$stage"; stage=''
     ;;
   upload-local)
     # In-memory tmpfs simulator only. This does not access a provider or network storage.
