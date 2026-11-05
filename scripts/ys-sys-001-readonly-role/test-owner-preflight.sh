@@ -85,23 +85,26 @@ POSTGRES_DB=$database_name
 EOF
 chmod 600 "$work_dir/postgres.env"
 
-phase=start-synthetic-postgres
+phase=create-internal-database-network
 docker_local network create --driver bridge --internal "$network_name" >"$work_dir/network-id.out" 2>"$work_dir/network-create.err" ||
   fail 'could not create isolated disposable database network'
 
+phase=launch-disposable-postgres
 docker_local run --detach --rm --name "$container_name" --network "$network_name" --env-file "$work_dir/postgres.env" \
   --publish 127.0.0.1::5432 "$image_tag" >"$work_dir/container-id.out" 2>"$work_dir/container-start.err" ||
   fail 'could not start the disposable TLS PostgreSQL container'
 container_started=true
 
+phase=wait-for-disposable-postgres
 for attempt in $(seq 1 40); do
   if docker_local exec "$container_name" pg_isready -U postgres -d "$database_name" >/dev/null 2>&1; then break; fi
   [[ "$attempt" -lt 40 ]] || fail 'disposable PostgreSQL did not become ready'
   sleep 1
 done
 
-published_port="$(docker_local port "$container_name" 5432/tcp 2>"$work_dir/docker-port.err" | sed -n 's/.*://p')"
-[[ "$published_port" =~ ^[0-9]+$ ]] || fail 'disposable PostgreSQL did not publish a local port'
+phase=resolve-loopback-port
+published_port="$(docker_local port "$container_name" 5432/tcp 2>"$work_dir/docker-port.err" | sed -n 's/^127\.0\.0\.1:\([0-9][0-9]*\)$/\1/p')" || fail 'could not inspect disposable PostgreSQL port mapping'
+[[ "$published_port" =~ ^[0-9]+$ ]] || fail 'disposable PostgreSQL did not publish exactly one loopback port'
 
 admin_psql() {
   env -i PATH="$PATH" HOME="$work_dir" \
