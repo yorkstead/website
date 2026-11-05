@@ -146,6 +146,9 @@ mv -- "$stage/backup.dump.age.partial" "$stage/backup.dump.age"
 sha256sum "$stage/backup.dump.age" > "$stage/ciphertext.sha256"
 chmod 0600 "$stage/ciphertext.sha256"
 server_version_num="$(cut -d '|' -f 3 "$stage/source-check.txt")"
+backup_bytes=$(stat -c %s "$stage/backup.dump.age")
+estimated_storage_cost="$(awk -v bytes="$((backup_bytes + 1048576))" -v unused="$R2_UNUSED_GB_MONTH" \
+  'BEGIN { gb=bytes/1000000000; billable=gb-unused; if (billable<0) billable=0; printf "%.4f", billable*0.015 }')"
 cat > "$stage/manifest.txt" <<EOF
 format=ys-sys-001-full-database-backup-v1
 captured_at_utc=$capture_utc
@@ -164,6 +167,7 @@ age_key_id=$AGE_KEY_ID
 retention_days=30
 encrypted_dump_bytes=$(stat -c %s "$stage/backup.dump.age")
 encrypted_dump_sha256=$(cut -d ' ' -f 1 "$stage/ciphertext.sha256")
+estimated_incremental_storage_usd_month=$estimated_storage_cost
 EOF
 chmod 0600 "$stage/manifest.txt"
 age --encrypt --recipient "$AGE_PUBLIC_RECIPIENT" --output "$stage/manifest.age.partial" \
@@ -174,7 +178,10 @@ chmod 0600 "$stage/manifest.sha256"
 artifact_bytes=$(( $(stat -c %s "$stage/backup.dump.age") + $(stat -c %s "$stage/manifest.age") ))
 estimated_cost="$(awk -v bytes="$artifact_bytes" -v unused="$R2_UNUSED_GB_MONTH" \
   'BEGIN { gb=bytes/1000000000; billable=gb-unused; if (billable<0) billable=0; printf "%.4f", billable*0.015 }')"
-[[ $(awk -v cost="$estimated_cost" 'BEGIN { print (cost <= 5.00) ? 1 : 0 }') == 1 ]]
+[[ $(awk -v cost="$estimated_cost" 'BEGIN { print (cost <= 5.00) ? 1 : 0 }') == 1 ]] || {
+  printf 'Cost gate exceeded; no upload was attempted.\n' >&2
+  exit 1
+}
 printf 'Pre-upload encrypted size: %s bytes; estimated incremental R2 Standard storage: $%s/month (excluding shared request usage).\n' \
   "$artifact_bytes" "$estimated_cost"
 
@@ -246,6 +253,7 @@ The first Production dump does not prove restoration. A separately authorized re
 The archive size and remaining account-wide free-tier usage are unknown until an approved dump exists, so a dollar estimate cannot yet be verified. The command calculates an estimate after local encryption and before upload, using the ciphertext bytes and the remaining free storage amount confirmed privately in Cloudflare billing. It stops if the storage estimate exceeds $5/month. This does not include any billed request usage already exceeding the shared allowance, so verify the owner billing view. At current Cloudflare R2 Standard published rates, storage is `$0.015/GB-month`; Class A operations are `$4.50/million`, Class B `$0.36/million`, egress is free, and current monthly included usage is 10 GB-month, 1 million Class A and 10 million Class B operations. Verify current prices and account usage in the owner billing view immediately before approval. [Cloudflare R2 pricing](https://developers.cloudflare.com/r2/pricing/)
 
 - One dump plus its encrypted manifest stored for 30 days: approximately `encrypted_GB × $0.015`, less unused Standard storage allowance; two PUTs and two GETs are below operation allowances unless the account has already consumed them.
+- Preliminary storage-only sensitivity with no free allowance remaining: 100 GB is about `$1.50/month`, 250 GB about `$3.75/month`, and 333 GB about `$5.00/month`; with free allowance remaining, subtract that amount first. Actual database/archive size and account usage are not known, so these are examples, not a verified bill estimate. Multipart request charges depend on final size; compare the calculated upload/download request estimate with the live billing view before approval.
 - Daily full archives and encrypted manifests at steady state with 30-day retention: approximately `30 × daily_encrypted_GB × $0.015` before unused free allowance, plus about 60 PUTs and 60 verification GETs per month. Do not enable that schedule here.
 - Confirm lock and lifecycle rules jointly enforce a minimum 30-day hold and eventual expiration. Cloudflare notes lifecycle removal typically completes within 24 hours after the expiration time; lock rules can defer lifecycle deletion. Use the measured configured rule precedence, not an assumption of exact deletion at the 30-day instant. [R2 lifecycle behavior](https://developers.cloudflare.com/r2/buckets/object-lifecycles/) [R2 bucket-lock overview](https://developers.cloudflare.com/changelog/post/2025-03-06-r2-bucket-locks/)
 - Stop before upload if the estimated incremental monthly charge, including account-wide usage and any applicable tier overages, could exceed the accepted `$5/month` threshold.
