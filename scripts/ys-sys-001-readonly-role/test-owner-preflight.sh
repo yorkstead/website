@@ -123,6 +123,14 @@ admin_psql() {
     psql -X -q -v ON_ERROR_STOP=1 "$@"
 }
 
+phase=verify-synthetic-tls-connection
+for attempt in $(seq 1 40); do
+  if admin_psql -Atc 'SELECT 1' >"$work_dir/tls-probe.out" 2>"$work_dir/tls-probe.err"; then break; fi
+  [[ "$attempt" -lt 40 ]] || fail 'TLS-verified connection to the disposable database did not become ready'
+  sleep 1
+done
+[[ "$(cat "$work_dir/tls-probe.out")" == 1 ]] || fail 'disposable TLS connection returned an unexpected result'
+
 phase=apply-synthetic-schema
 admin_psql -f "$repo_root/scripts/ys-sys-001-readonly-role/synthetic-fixture.sql" \
   >"$work_dir/fixture.out" 2>"$work_dir/fixture.err" ||
