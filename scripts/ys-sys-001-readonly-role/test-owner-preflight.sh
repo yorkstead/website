@@ -245,7 +245,7 @@ chmod 600 "$work_dir/pg_service.conf"
 owner_psql() {
   local service="$1" expected_database="$2" password="$3" output_file="$4" error_file="$5" sql_file="$6"
   printf '%s\n' "$password" |
-    env -i PATH="$PATH" HOME="$work_dir" \
+    env -i PATH=/usr/bin:/bin HOME="$work_dir" \
       PGSERVICEFILE="$work_dir/pg_service.conf" PGPASSFILE=/dev/null \
       PGOPTIONS='-c search_path=pg_catalog' \
       psql -X -W "service=$service" \
@@ -326,7 +326,7 @@ expect_failure sql-error owner-preflight "$database_name" "$operator_password" "
 # uses env -i and sets only the reviewed service file and safe client options.
 phase=verify-sanitized-environment
 if env PGHOST=invalid.invalid DATABASE_URL=synthetic-invalid-target \
-  bash -c 'env -i PATH="$PATH" HOME="$1" PGSERVICEFILE="$2" PGPASSFILE="$3" PGOPTIONS="-c search_path=pg_catalog" psql -X -w "service=owner-preflight" -At -c "SELECT current_database()" ' \
+  bash -c 'env -i PATH=/usr/bin:/bin HOME="$1" PGSERVICEFILE="$2" PGPASSFILE="$3" PGOPTIONS="-c search_path=pg_catalog" psql -X -w "service=owner-preflight" -At -c "SELECT current_database()" ' \
   _ "$work_dir" "$work_dir/pg_service.conf" "$work_dir/operator.pgpass" \
   >"$work_dir/sanitized-env.out" 2>"$work_dir/sanitized-env.err"; then
   [[ "$(cat "$work_dir/sanitized-env.out")" == "$database_name" ]] ||
