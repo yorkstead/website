@@ -191,7 +191,7 @@ export function createSystemRegistryService(pool: Pool, options: { now?: () => D
         const result = await client.query<Row>(`UPDATE system_directory_entries SET archived_at=${archived ? "clock_timestamp()" : "NULL"} WHERE tenant_id=$1 AND id=$2 AND revision=$3 RETURNING ${entryColumns}`, [tenant, id, expectedRevision]);
         if (!result.rows[0]) return null;
         const links = await loadLinks([id], client);
-        return mapRecord(result.rows[0], links.get(id) ?? []);
+        return mapRecord(result.rows[0], links.get(id) ?? [], now());
       });
     },
     async updateVerification(id: string, expectedRevision: number, input: SystemRegistryVerificationInput, actor: string) {
@@ -211,7 +211,7 @@ export function createSystemRegistryService(pool: Pool, options: { now?: () => D
         [tenant,id,expectedRevision,input.outcome,input.method,input.reference,input.observedAt,input.reviewDue,input.summary]);
         if (!result.rows[0]) return null;
         const links=await loadLinks([id],client);
-        return mapRecord(result.rows[0],links.get(id)??[]);
+        return mapRecord(result.rows[0],links.get(id)??[],now());
       });
     },
     async createRelationship(sourceId: string, input: SystemRegistryRelationshipInput, actor: string) {
