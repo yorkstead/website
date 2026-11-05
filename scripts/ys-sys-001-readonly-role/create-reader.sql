@@ -44,8 +44,26 @@ BEGIN
        'Managed by YS-SYS-001 fixed preflight role script v1' THEN
       RAISE EXCEPTION 'Existing role is not marked as managed by this plan; no changes made';
     END IF;
-    IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members WHERE member = role_oid OR roleid = role_oid) THEN
-      RAISE EXCEPTION 'Existing preflight role has memberships; no changes made';
+    IF EXISTS (
+      SELECT 1 FROM pg_catalog.pg_auth_members m
+       WHERE m.member = role_oid
+          OR (m.roleid = role_oid AND NOT (
+            m.member = pg_catalog.to_regrole(current_user::text)
+            AND m.admin_option
+            AND NOT m.inherit_option
+            AND NOT m.set_option
+            AND EXISTS (
+              SELECT 1 FROM pg_catalog.pg_roles operator_role
+               WHERE operator_role.oid = m.member
+                 AND operator_role.rolcreaterole AND NOT operator_role.rolsuper
+            )
+            AND EXISTS (
+              SELECT 1 FROM pg_catalog.pg_roles grantor_role
+               WHERE grantor_role.oid = m.grantor AND grantor_role.rolsuper
+            )
+          ))
+    ) THEN
+      RAISE EXCEPTION 'Existing preflight role has an unexpected membership; no changes made';
     END IF;
   END IF;
 END
@@ -170,9 +188,29 @@ BEGIN
            OR r.rolbypassrls OR r.rolinherit OR r.rolcanlogin)
   ) THEN RAISE EXCEPTION 'Preflight role attributes are not least-privileged'; END IF;
 
-  IF EXISTS (SELECT 1 FROM pg_catalog.pg_auth_members WHERE member = reader OR roleid = reader) THEN
-    RAISE EXCEPTION 'Preflight role has a role membership';
-  END IF;
+  -- PostgreSQL's bootstrap superuser grants a non-superuser CREATEROLE creator
+  -- ADMIN OPTION on roles it creates. Permit only that exact catalog
+  -- relationship to this effective CREATEROLE operator; the reader must never
+  -- be a member of another role, inherit privileges, or SET ROLE to/from others.
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_auth_members m
+     WHERE m.member = reader
+        OR (m.roleid = reader AND NOT (
+          m.member = pg_catalog.to_regrole(current_user::text)
+          AND m.admin_option
+          AND NOT m.inherit_option
+          AND NOT m.set_option
+          AND EXISTS (
+            SELECT 1 FROM pg_catalog.pg_roles operator_role
+             WHERE operator_role.oid = m.member
+               AND operator_role.rolcreaterole AND NOT operator_role.rolsuper
+          )
+          AND EXISTS (
+            SELECT 1 FROM pg_catalog.pg_roles grantor_role
+             WHERE grantor_role.oid = m.grantor AND grantor_role.rolsuper
+          )
+        ))
+  ) THEN RAISE EXCEPTION 'Preflight role has an unexpected role membership'; END IF;
   IF pg_catalog.has_database_privilege(reader, current_database(), 'CREATE')
      OR pg_catalog.has_database_privilege(reader, current_database(), 'TEMP') THEN
     RAISE EXCEPTION 'Database CREATE/TEMP is effectively granted, commonly through PUBLIC';
