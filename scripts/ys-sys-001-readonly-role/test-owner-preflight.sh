@@ -85,9 +85,18 @@ POSTGRES_DB=$database_name
 EOF
 chmod 600 "$work_dir/postgres.env"
 
-phase=create-internal-database-network
-docker_local network create --driver bridge --internal "$network_name" >"$work_dir/network-id.out" 2>"$work_dir/network-create.err" ||
+phase=create-restricted-database-network
+docker_local network create --driver bridge \
+  --opt com.docker.network.bridge.enable_ip_masquerade=false \
+  --opt com.docker.network.bridge.enable_icc=false \
+  "$network_name" >"$work_dir/network-id.out" 2>"$work_dir/network-create.err" ||
   fail 'could not create isolated disposable database network'
+masquerade_option="$(docker_local network inspect --format '{{index .Options "com.docker.network.bridge.enable_ip_masquerade"}}' "$network_name")" ||
+  fail 'could not verify database network egress restriction'
+[[ "$masquerade_option" == false ]] || fail 'disposable database network permits outbound masquerading'
+intercontainer_option="$(docker_local network inspect --format '{{index .Options "com.docker.network.bridge.enable_icc"}}' "$network_name")" ||
+  fail 'could not verify database network peer isolation'
+[[ "$intercontainer_option" == false ]] || fail 'disposable database network permits peer container access'
 
 phase=launch-disposable-postgres
 docker_local run --detach --rm --name "$container_name" --network "$network_name" --env-file "$work_dir/postgres.env" \
