@@ -211,6 +211,17 @@ admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_roo
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 
+# The independent verifier also rejects the observed inherited PUBLIC grants
+# when they appear on other databases. This does not change the reader's ACL.
+admin_psql -c 'GRANT CONNECT ON DATABASE postgres TO PUBLIC; GRANT CONNECT ON DATABASE ys_sys_001_legacy TO PUBLIC; GRANT TEMPORARY ON DATABASE ys_sys_001_legacy TO PUBLIC'
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f \
+  "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/cross-db-verifier.out" 2>&1; then
+  fail 'effective verifier accepted inherited PUBLIC access to another database'
+fi
+grep -Fq 'role has access to another database' "$work_dir/cross-db-verifier.out" || fail 'verifier rejected the observed ACL for a different reason'
+admin_psql -c 'REVOKE CONNECT ON DATABASE postgres FROM PUBLIC; REVOKE CONNECT ON DATABASE ys_sys_001_legacy FROM PUBLIC; REVOKE TEMPORARY ON DATABASE ys_sys_001_legacy FROM PUBLIC'
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+
 # TEMP is inherited from PUBLIC. The role may override its session default
 # and write its own temp table; transaction-level READ ONLY still permits temp
 # DML. Keep the shadow table and search_path alive while running the fixed
@@ -494,4 +505,4 @@ admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/
 if reader_psql ys_sys_001_legacy -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked legacy reader still logged in'; fi
 admin_psql -d ys_sys_001_legacy -c "DROP ROLE $role_name"
 
-printf 'PASS: actual migrations 0020/0023/0024, PostgreSQL 18 non-superuser CREATEROLE lifecycle, inherited PUBLIC TEMP compatibility without direct reader TEMP or application writes, temp-table shadowing against schema-qualified fixed preflight, unexpected INHERIT/SET/additional/reader memberships rejected, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, other PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'
+printf 'PASS: actual migrations 0020/0023/0024, PostgreSQL 18 non-superuser CREATEROLE lifecycle, cross-database PUBLIC CONNECT/TEMP denial matching the reported 2/0/1 ACL, inherited PUBLIC TEMP compatibility without direct reader TEMP or application writes, temp-table shadowing against schema-qualified fixed preflight, unexpected INHERIT/SET/additional/reader memberships rejected, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, other PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'
