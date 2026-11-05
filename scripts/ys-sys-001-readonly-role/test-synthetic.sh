@@ -94,6 +94,40 @@ expect_rerun_rejected() {
 prepare_schema ys_sys_001_full true
 prepare_schema ys_sys_001_legacy false
 
+# Reproduce the owner-reported PUBLIC ACL shape in disposable PostgreSQL 18:
+# two other connectable databases permit CONNECT, one also permits TEMP, and
+# none permits CREATE. The fixed setup must fail closed without changing ACLs.
+admin_psql -c 'GRANT CONNECT ON DATABASE postgres TO PUBLIC; GRANT CONNECT ON DATABASE ys_sys_001_legacy TO PUBLIC; GRANT TEMPORARY ON DATABASE ys_sys_001_legacy TO PUBLIC'
+observed_public_counts="$(admin_psql -At -F '|' -c "
+  WITH other_db_acl AS (
+    SELECT d.datname,
+           COALESCE(bool_or(a.privilege_type = 'CONNECT'), false) AS has_connect,
+           COALESCE(bool_or(a.privilege_type = 'CREATE'), false) AS has_create,
+           COALESCE(bool_or(a.privilege_type = 'TEMPORARY'), false) AS has_temp
+      FROM pg_catalog.pg_database d
+      LEFT JOIN LATERAL pg_catalog.aclexplode(
+        COALESCE(d.datacl, pg_catalog.acldefault('d', d.datdba))
+      ) a ON a.grantee = 0
+     WHERE d.datallowconn AND d.datname <> 'ys_sys_001_full'
+     GROUP BY d.datname
+  )
+  SELECT count(*) FILTER (WHERE has_connect)::text || '|' ||
+         count(*) FILTER (WHERE has_create)::text || '|' ||
+         count(*) FILTER (WHERE has_temp)::text
+    FROM other_db_acl
+")"
+[[ "$observed_public_counts" == "2|0|1" ]] || fail "synthetic PUBLIC ACL did not match the reported aggregate shape"
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f \
+  "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql" >"$work_dir/cross-db-setup.out" 2>&1; then
+  fail 'setup accepted inherited PUBLIC access to another database'
+fi
+grep -Fq 'Preflight role has access to another database' "$work_dir/cross-db-setup.out" || fail 'setup rejected the observed ACL for a different reason'
+if admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '$role_name')" | grep -qx t; then
+  fail 'cross-database setup failure left a role behind'
+fi
+admin_psql -c 'REVOKE CONNECT ON DATABASE postgres FROM PUBLIC; REVOKE CONNECT ON DATABASE ys_sys_001_legacy FROM PUBLIC; REVOKE TEMPORARY ON DATABASE ys_sys_001_legacy FROM PUBLIC'
+
+
 # Any role able to create public routines must have its implicit PUBLIC
 # EXECUTE default revoked before this reader can be configured.
 admin_psql -d ys_sys_001_full -c 'CREATE ROLE ys_synthetic_creator NOLOGIN; GRANT CREATE ON SCHEMA public TO ys_synthetic_creator; SET ROLE ys_synthetic_creator; CREATE TABLE public.ys_synthetic_creator_owned(id integer); RESET ROLE'
