@@ -23,8 +23,8 @@ function mapDetails(row: Row): SystemDirectoryInput {
     manualHealthSummary: String(row.manual_health_summary ?? ""), manualHealthCheckedAt: row.manual_health_checked_at ? new Date(String(row.manual_health_checked_at)).toISOString() : null,
   };
 }
-function mapRecord(row: Row, links: SystemRegistryRecord["links"]): SystemRegistryRecord {
-  const today=utcDateKey(new Date());
+function mapRecord(row: Row, links: SystemRegistryRecord["links"], asOf: Date): SystemRegistryRecord {
+  const today=utcDateKey(asOf);
   const verificationDue=row.verification_review_due?String(row.verification_review_due).slice(0,10):null;
   const monitoringDue=row.monitoring_review_due?String(row.monitoring_review_due).slice(0,10):null;
   const storedVerification=row.verification_status as SystemRegistryRecord["verificationStatus"];
@@ -59,7 +59,8 @@ async function transaction<T>(pool: Pool, actor: string, work: (client: PoolClie
   finally { client.release(); }
 }
 
-export function createSystemRegistryService(pool: Pool) {
+export function createSystemRegistryService(pool: Pool, options: { now?: () => Date } = {}) {
+  const now = options.now ?? (() => new Date());
   async function loadLinks(entryIds: string[], connection: Pool | PoolClient = pool) {
     const result = await connection.query<Row>(`SELECT r.id,r.revision,r.source_entry_id,r.target_entry_id,r.relationship_kind,r.verification_state,r.provenance_kind,r.provenance_reference,r.observed_at,t.name AS target_name
       FROM system_directory_relationships r JOIN system_directory_entries t ON t.id=r.target_entry_id AND t.tenant_id=r.tenant_id
@@ -75,14 +76,15 @@ export function createSystemRegistryService(pool: Pool) {
   }
   async function mapRows(rows: Row[]) {
     const links = await loadLinks(rows.map((row) => String(row.id)));
-    return rows.map((row) => mapRecord(row, links.get(String(row.id)) ?? []));
+    const asOf = now();
+    return rows.map((row) => mapRecord(row, links.get(String(row.id)) ?? [], asOf));
   }
   return {
     async analysisSnapshot(): Promise<RegistryAnalysisInput> {
       const client = await pool.connect();
       try {
         await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
-        const today = utcDateKey(new Date());
+        const today = utcDateKey(now());
         const entriesResult = await client.query<Row>(`SELECT id::text,name,entity_class,revision,
             responsible_role IS NOT NULL AND btrim(responsible_role)<>'' AS responsible_role_present,
             recovery_role IS NOT NULL AND btrim(recovery_role)<>'' AS recovery_role_present,
@@ -164,7 +166,7 @@ export function createSystemRegistryService(pool: Pool) {
           VALUES($1,$2,${Array.from({length:20},(_,i)=>`$${i+3}`).join(",")},$23,$24,$25,$26,$27,$28,$29::timestamptz,CASE WHEN $26='owner_reviewed' THEN clock_timestamp() ELSE NULL END,FALSE,$30) RETURNING ${entryColumns}`,
         [id, tenant, ...values, input.entityClass, input.responsibleRole, input.recoveryRole, input.verificationState, input.provenanceKind, input.provenanceReference, input.observedAt, input.monitoringConfiguration]);
         const links = await loadLinks([id], client);
-        return mapRecord(result.rows[0]!, links.get(id) ?? []);
+        return mapRecord(result.rows[0]!, links.get(id) ?? [], now());
       });
     },
     async update(id: string, expectedRevision: number, input: SystemRegistryInput, actor: string) {
@@ -181,7 +183,7 @@ export function createSystemRegistryService(pool: Pool) {
           WHERE tenant_id=$1 AND id=$2 AND revision=$3 RETURNING ${entryColumns}`, [tenant, id, expectedRevision, ...values, input.entityClass, input.responsibleRole, input.recoveryRole, input.verificationState, input.provenanceKind, input.provenanceReference, input.observedAt, input.monitoringConfiguration]);
         if (!result.rows[0]) return null;
         const links = await loadLinks([id], client);
-        return mapRecord(result.rows[0], links.get(id) ?? []);
+        return mapRecord(result.rows[0], links.get(id) ?? [], now());
       });
     },
     async archive(id: string, expectedRevision: number, archived: boolean, actor: string) {
@@ -199,7 +201,7 @@ export function createSystemRegistryService(pool: Pool) {
         [tenant,id,expectedRevision,input.status,input.subject,input.method,input.reference,input.observedAt,input.reviewDue]);
         if (!result.rows[0]) return null;
         const links=await loadLinks([id],client);
-        return mapRecord(result.rows[0],links.get(id)??[]);
+        return mapRecord(result.rows[0],links.get(id)??[],now());
       });
     },
     async recordMonitoring(id: string, expectedRevision: number, input: SystemRegistryMonitoringInput, actor: string) {
