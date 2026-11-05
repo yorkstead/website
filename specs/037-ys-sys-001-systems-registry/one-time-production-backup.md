@@ -145,7 +145,7 @@ test -s "$stage/backup.dump.age.partial"
 mv -- "$stage/backup.dump.age.partial" "$stage/backup.dump.age"
 sha256sum "$stage/backup.dump.age" > "$stage/ciphertext.sha256"
 chmod 0600 "$stage/ciphertext.sha256"
-server_version_num="$(cut -d '|' -f 2 "$stage/source-check.txt")"
+server_version_num="$(cut -d '|' -f 3 "$stage/source-check.txt")"
 cat > "$stage/manifest.txt" <<EOF
 format=ys-sys-001-full-database-backup-v1
 captured_at_utc=$capture_utc
