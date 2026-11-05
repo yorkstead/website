@@ -157,7 +157,7 @@ admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_roo
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 admin_psql -Atc "SELECT pg_catalog.has_database_privilege('$role_name', 'ys_sys_001_full', 'TEMPORARY') AND NOT pg_catalog.has_database_privilege('$role_name', 'ys_sys_001_full', 'CREATE') AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_database d CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) a WHERE d.datname = 'ys_sys_001_full' AND a.grantee = '$role_name'::regrole AND a.privilege_type = 'TEMPORARY')" | grep -qx t || fail 'PUBLIC TEMP compatibility granted more than inherited temporary-object capability'
 
-admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql'
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -Atc "SELECT NOT rolcanlogin AND rolpassword IS NULL FROM pg_catalog.pg_authid WHERE rolname = '$role_name'" | grep -qx t || fail 'new role was not kept NOLOGIN/passwordless'
 
