@@ -27,8 +27,17 @@ BEGIN
   IF pg_catalog.has_column_privilege(current_user, 'public.system_directory_entries', 'name', 'SELECT') THEN
     RAISE EXCEPTION 'Sensitive business field is readable';
   END IF;
-  IF pg_catalog.has_database_privilege(current_user, current_database(), 'TEMP') THEN
-    RAISE EXCEPTION 'TEMP/CREATE privilege is inherited';
+  IF NOT pg_catalog.has_database_privilege(current_user, current_database(), 'TEMP') THEN
+    RAISE EXCEPTION 'Expected the synthetic PUBLIC TEMP compatibility grant';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_database d
+    CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) acl
+    WHERE d.datname = current_database()
+      AND acl.grantee = current_user::regrole
+      AND acl.privilege_type = 'TEMPORARY'
+  ) THEN
+    RAISE EXCEPTION 'TEMP must remain inherited from PUBLIC, not directly granted';
   END IF;
 END
 $allowed_reads$;
@@ -55,10 +64,6 @@ BEGIN
   BEGIN
     EXECUTE 'CREATE TABLE public.ys_sys_001_forbidden (id integer)';
     RAISE EXCEPTION 'CREATE unexpectedly succeeded';
-  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
-  BEGIN
-    EXECUTE 'CREATE TEMP TABLE ys_sys_001_forbidden_temp (id integer)';
-    RAISE EXCEPTION 'TEMP/CREATE unexpectedly succeeded';
   EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   BEGIN
     EXECUTE 'ALTER TABLE public.system_directory_entries ADD COLUMN forbidden integer';
@@ -94,3 +99,17 @@ BEGIN
   EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END
 $still_denied$;
+
+-- PUBLIC TEMP is explicitly present in this synthetic fixture. The reader may
+-- create only session-local objects; application-schema DDL and data writes
+-- remain denied by the separate assertions above and below.
+CREATE TEMP TABLE ys_sys_001_allowed_temp (id integer);
+INSERT INTO pg_temp.ys_sys_001_allowed_temp VALUES (1);
+DO $temp_write$
+BEGIN
+  IF (SELECT count(*) FROM pg_temp.ys_sys_001_allowed_temp) <> 1 THEN
+    RAISE EXCEPTION 'Synthetic temporary-table write did not persist in-session';
+  END IF;
+END
+$temp_write$;
+DROP TABLE pg_temp.ys_sys_001_allowed_temp;

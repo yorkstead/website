@@ -109,10 +109,8 @@ if admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolna
   fail 'wrong-target setup created a role'
 fi
 
-# PUBLIC grants which widen effective privilege must abort setup transactionally.
-admin_psql -d ys_sys_001_full -c 'GRANT TEMP ON DATABASE ys_sys_001_full TO PUBLIC'
-expect_setup_rejected ys_sys_001_full 'PUBLIC TEMP'
-admin_psql -d ys_sys_001_full -c 'REVOKE TEMP ON DATABASE ys_sys_001_full FROM PUBLIC'
+# PUBLIC application-data grants remain prohibited. PUBLIC TEMP is exercised
+# as the one accepted inherited capability after the other unsafe grants below.
 admin_psql -d ys_sys_001_full -c 'GRANT SELECT (name) ON public.system_directory_entries TO PUBLIC'
 expect_setup_rejected ys_sys_001_full 'PUBLIC sensitive-column SELECT'
 admin_psql -d ys_sys_001_full -c 'REVOKE SELECT (name) ON public.system_directory_entries FROM PUBLIC'
@@ -151,6 +149,13 @@ admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN 
 expect_setup_rejected ys_sys_001_full 'PUBLIC default routine EXECUTE'
 admin_psql -d ys_sys_001_full -c 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC'
 
+# Reproduce the owner-confirmed PostgreSQL 18 ACL: TEMP is granted to PUBLIC
+# on this database. Setup/verifier accept the inherited TEMP only; they do not
+# alter the database ACL or grant TEMP directly to the reader.
+admin_psql -d ys_sys_001_full -c 'GRANT TEMPORARY ON DATABASE ys_sys_001_full TO PUBLIC'
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
+admin_psql -Atc "SELECT pg_catalog.has_database_privilege('$role_name', 'ys_sys_001_full', 'TEMPORARY') AND NOT pg_catalog.has_database_privilege('$role_name', 'ys_sys_001_full', 'CREATE') AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_database d CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) a WHERE d.datname = 'ys_sys_001_full' AND a.grantee = '$role_name'::regrole AND a.privilege_type = 'TEMPORARY')" | grep -qx t || fail 'PUBLIC TEMP compatibility granted more than inherited temporary-object capability'
+
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -Atc "SELECT NOT rolcanlogin AND rolpassword IS NULL FROM pg_catalog.pg_authid WHERE rolname = '$role_name'" | grep -qx t || fail 'new role was not kept NOLOGIN/passwordless'
@@ -171,6 +176,28 @@ admin_psql -d ys_sys_001_full -c "REVOKE SELECT (id) ON public.system_directory_
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+
+# TEMP is inherited from PUBLIC. The role may override its session default
+# and write its own temp table; transaction-level READ ONLY still permits temp
+# DML. Keep the shadow table and search_path alive while running the fixed
+# preflight so an unqualified relation regression is detected.
+reader_psql ys_sys_001_full \
+  -c 'SET default_transaction_read_only = off' \
+  -c "CREATE TEMP TABLE system_directory_entries(id uuid, revision integer, archived_at timestamptz, name text); INSERT INTO pg_temp.system_directory_entries VALUES ('00000000-0000-0000-0000-000000000099', 1, NULL, 'synthetic shadow'); SET search_path = pg_temp, public; SELECT name FROM system_directory_entries" \
+  -c 'BEGIN READ ONLY' \
+  -c "INSERT INTO pg_temp.system_directory_entries VALUES ('00000000-0000-0000-0000-000000000098', 1, NULL, 'read-only temp write'); SELECT name FROM system_directory_entries ORDER BY name LIMIT 1" \
+  -c 'ROLLBACK' \
+  -v expected_database=ys_sys_001_full -A -t \
+  -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" \
+  >"$work_dir/preflight-with-shadow.out" || fail 'fixed aggregate preflight failed with inherited PUBLIC TEMP and a shadow relation'
+grep -q 'synthetic shadow' "$work_dir/preflight-with-shadow.out" || fail 'synthetic shadow-table behavior was not exercised in the same reader session'
+grep -Fq '2|2|0|1' "$work_dir/preflight-with-shadow.out" || fail 'preflight did not read the two public synthetic entries through schema-qualified relations'
+if reader_psql ys_sys_001_full -c 'SET default_transaction_read_only = off' -c 'INSERT INTO public.system_directory_entries(id) SELECT NULL WHERE FALSE' >"$work_dir/base-insert.out" 2>&1; then
+  fail 'inherited PUBLIC TEMP enabled a write to the application table even after opting into read-write mode'
+fi
+if reader_psql ys_sys_001_full -c 'SELECT name FROM public.system_directory_entries LIMIT 1' >"$work_dir/private-column.out" 2>&1; then
+  fail 'inherited PUBLIC TEMP enabled a read of a protected application column'
+fi
 
 # The independent verifier rejects the same unrelated PUBLIC write and column
 # privileges. Include the reported TRUNCATE case explicitly, as well as every
@@ -210,6 +237,7 @@ admin_psql -d ys_sys_001_full -c "REVOKE CREATE ON SCHEMA public FROM $role_name
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_full -c "GRANT TEMPORARY ON DATABASE ys_sys_001_full TO $role_name"
 expect_rerun_rejected ys_sys_001_full 'direct database TEMP after login'
+grep -q 'direct database TEMPORARY grant' "$work_dir/rejected-rerun.out" || fail 'direct reader TEMP was rejected for an unrelated reason'
 admin_psql -d ys_sys_001_full -c "REVOKE TEMPORARY ON DATABASE ys_sys_001_full FROM $role_name"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name LOGIN"
@@ -225,6 +253,7 @@ admin_psql -d ys_sys_001_full -c "REVOKE CREATE ON SCHEMA public FROM $role_name
 if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/direct-temp.out" 2>&1; then
   fail 'effective verifier accepted direct database TEMPORARY'
 fi
+grep -q 'direct database TEMPORARY grant exists' "$work_dir/direct-temp.out" || fail 'direct reader TEMP was rejected for an unrelated reason'
 admin_psql -d ys_sys_001_full -c "REVOKE TEMPORARY ON DATABASE ys_sys_001_full FROM $role_name"
 
 # Publicly readable views are treated as another path to data and rejected.
@@ -337,7 +366,7 @@ admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_database_privilege('$r
 admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_schema_privilege('$role_name', 'public', 'USAGE')" | grep -qx t || fail 'repeated revocation changed inherited PUBLIC schema USAGE'
 admin_psql -d ys_sys_001_full -Atc "SELECT pg_catalog.has_column_privilege('$role_name', 'public.system_directory_entries', 'id', 'SELECT')" | grep -qx t || fail 'repeated revocation changed inherited PUBLIC column SELECT'
 admin_psql -d ys_sys_001_full -c "REVOKE SELECT ON public.ys_unrelated_permission_probe FROM $role_name; REVOKE CREATE ON SCHEMA public FROM $role_name; REVOKE TEMPORARY ON DATABASE ys_sys_001_full FROM $role_name"
-admin_psql -d ys_sys_001_full -c 'REVOKE CONNECT ON DATABASE ys_sys_001_full FROM PUBLIC; REVOKE USAGE ON SCHEMA public FROM PUBLIC; REVOKE SELECT (id) ON public.system_directory_entries FROM PUBLIC'
+admin_psql -d ys_sys_001_full -c 'REVOKE CONNECT, TEMPORARY ON DATABASE ys_sys_001_full FROM PUBLIC; REVOKE USAGE ON SCHEMA public FROM PUBLIC; REVOKE SELECT (id) ON public.system_directory_entries FROM PUBLIC'
 admin_psql -d ys_sys_001_full -c "DROP ROLE $role_name"
 
 # PostgreSQL 16+ automatically gives a non-superuser CREATEROLE creator an
@@ -431,4 +460,4 @@ admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/
 if reader_psql ys_sys_001_legacy -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked legacy reader still logged in'; fi
 admin_psql -d ys_sys_001_legacy -c "DROP ROLE $role_name"
 
-printf 'PASS: actual migrations 0020/0023/0024, PostgreSQL 18 non-superuser CREATEROLE lifecycle and automatic ADMIN membership, unexpected INHERIT/SET/additional/reader memberships rejected, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'
+printf 'PASS: actual migrations 0020/0023/0024, PostgreSQL 18 non-superuser CREATEROLE lifecycle, inherited PUBLIC TEMP compatibility without direct reader TEMP or application writes, temp-table shadowing against schema-qualified fixed preflight, unexpected INHERIT/SET/additional/reader memberships rejected, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, other PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'

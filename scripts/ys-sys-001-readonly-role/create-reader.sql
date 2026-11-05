@@ -211,9 +211,20 @@ BEGIN
           )
         ))
   ) THEN RAISE EXCEPTION 'Preflight role has an unexpected role membership'; END IF;
-  IF pg_catalog.has_database_privilege(reader, current_database(), 'CREATE')
-     OR pg_catalog.has_database_privilege(reader, current_database(), 'TEMP') THEN
-    RAISE EXCEPTION 'Database CREATE/TEMP is effectively granted, commonly through PUBLIC';
+  IF pg_catalog.has_database_privilege(reader, current_database(), 'CREATE') THEN
+    RAISE EXCEPTION 'Database CREATE is effectively granted, commonly through PUBLIC';
+  END IF;
+  -- PostgreSQL has no per-role DENY for privileges inherited from PUBLIC.
+  -- Permit only PUBLIC's existing TEMPORARY grant; a direct grant to the
+  -- reader remains unexpected and is rejected.
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_database d
+    CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) a
+    WHERE d.datname = current_database()
+      AND a.grantee = pg_catalog.to_regrole('ys_sys_001_preflight_reader')
+      AND a.privilege_type = 'TEMPORARY'
+  ) THEN
+    RAISE EXCEPTION 'Preflight role has a direct database TEMPORARY grant';
   END IF;
   IF EXISTS (
     SELECT 1 FROM pg_catalog.pg_database d

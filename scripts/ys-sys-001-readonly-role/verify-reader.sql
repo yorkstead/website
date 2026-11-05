@@ -47,11 +47,18 @@ BEGIN
   ) THEN RAISE EXCEPTION 'FAIL: unexpected role membership exists'; END IF;
   IF NOT pg_catalog.has_database_privilege(reader, current_database(), 'CONNECT')
      OR pg_catalog.has_database_privilege(reader, current_database(), 'CREATE')
-     OR pg_catalog.has_database_privilege(reader, current_database(), 'TEMP')
      OR pg_catalog.has_schema_privilege(reader, 'public', 'CREATE')
      OR NOT pg_catalog.has_schema_privilege(reader, 'public', 'USAGE') THEN
     RAISE EXCEPTION 'FAIL: effective database/schema privileges do not match';
   END IF;
+  -- Accept database TEMPORARY only through the database's existing PUBLIC ACL.
+  -- A direct reader grant is not part of this setup and remains a hard failure.
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_database d
+    CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) a
+    WHERE d.datname = current_database() AND a.grantee = reader
+      AND a.privilege_type = 'TEMPORARY'
+  ) THEN RAISE EXCEPTION 'FAIL: direct database TEMPORARY grant exists'; END IF;
   IF EXISTS (
     SELECT 1 FROM pg_catalog.pg_database d
     CROSS JOIN LATERAL pg_catalog.aclexplode(d.datacl) a
