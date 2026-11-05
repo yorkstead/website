@@ -191,7 +191,7 @@ reader_psql ys_sys_001_full \
   -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" \
   >"$work_dir/preflight-with-shadow.out" || fail 'fixed aggregate preflight failed with inherited PUBLIC TEMP and a shadow relation'
 grep -q 'synthetic shadow' "$work_dir/preflight-with-shadow.out" || fail 'synthetic shadow-table behavior was not exercised in the same reader session'
-grep -Eq '^2[|]2[|]0[|]1
+grep -Fq '2|2|0|1' "$work_dir/preflight-with-shadow.out" || fail 'preflight did not read the two public synthetic entries through schema-qualified relations'
 if reader_psql ys_sys_001_full -c 'SET default_transaction_read_only = off' -c 'INSERT INTO public.system_directory_entries(id) SELECT NULL WHERE FALSE' >"$work_dir/base-insert.out" 2>&1; then
   fail 'inherited PUBLIC TEMP enabled a write to the application table even after opting into read-write mode'
 fi
