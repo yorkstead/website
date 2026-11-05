@@ -180,7 +180,7 @@ admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_roo
 # TEMP is inherited from PUBLIC. PostgreSQL permits session-local temporary
 # work, while the fixed preflight remains schema-qualified/read-only for
 # application relations and sensitive columns remain inaccessible.
-reader_psql ys_sys_001_full -c "CREATE TEMP TABLE system_directory_entries(name text); INSERT INTO pg_temp.system_directory_entries VALUES ('synthetic shadow'); SET search_path = pg_temp, public; SELECT name FROM system_directory_entries" | grep -qx 'synthetic shadow' || fail 'reader could not use a session-local temporary table'
+reader_psql ys_sys_001_full -c 'SET default_transaction_read_only = off' -c "CREATE TEMP TABLE system_directory_entries(name text); INSERT INTO pg_temp.system_directory_entries VALUES ('synthetic shadow'); SET search_path = pg_temp, public; SELECT name FROM system_directory_entries" | grep -qx 'synthetic shadow' || fail 'reader could not use a session-local temporary table after overriding its default read-only mode'
 reader_psql ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/preflight-readonly.sql" >/dev/null || fail 'fixed aggregate preflight failed with inherited PUBLIC TEMP'
 if reader_psql ys_sys_001_full -c 'INSERT INTO public.system_directory_entries(id) SELECT NULL WHERE FALSE' >"$work_dir/base-insert.out" 2>&1; then
   fail 'inherited PUBLIC TEMP enabled a write to the application table'
