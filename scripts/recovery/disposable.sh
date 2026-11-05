@@ -116,7 +116,7 @@ case $mode in
     pg_restore --list "$stage/plain.dump" > "$stage/archive.list"
     [[ -s "$stage/archive.list" ]] || fail 'decrypted archive listing is empty'
     pg "$target_db" pg_restore --create --exit-on-error --no-password --dbname="$target_db" "$stage/plain.dump" >/dev/null
-    rm -f -- "$stage/plain.dump" "$stage/archive.list" "$stage/retrieved.dump.age"; rmdir "$stage"; stage=''
+    rm -rf -- "$stage"; stage=''
     ;;
   *) fail 'use backup, upload-local or restore' ;;
 esac
