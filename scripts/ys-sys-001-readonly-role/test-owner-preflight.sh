@@ -103,7 +103,7 @@ for attempt in $(seq 1 40); do
 done
 
 phase=resolve-loopback-port
-published_port="$(docker_local port "$container_name" 5432/tcp 2>"$work_dir/docker-port.err" | sed -n 's/^127\.0\.0\.1:\([0-9][0-9]*\)$/\1/p')" || fail 'could not inspect disposable PostgreSQL port mapping'
+published_port="$(docker_local inspect --format '{{range (index .NetworkSettings.Ports "5432/tcp")}}{{if eq .HostIp "127.0.0.1"}}{{.HostPort}}{{end}}{{end}}' "$container_name" 2>"$work_dir/docker-port.err")" || fail 'could not inspect disposable PostgreSQL port mapping'
 [[ "$published_port" =~ ^[0-9]+$ ]] || fail 'disposable PostgreSQL did not publish exactly one loopback port'
 
 admin_psql() {
