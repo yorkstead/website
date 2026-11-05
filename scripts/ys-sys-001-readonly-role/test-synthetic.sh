@@ -505,6 +505,6 @@ admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/
 if reader_psql ys_sys_001_legacy -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked legacy reader still logged in'; fi
 admin_psql -d ys_sys_001_legacy -c "DROP ROLE $role_name"
 
-scripts/ys-sys-001-readonly-role/test-owner-preflight.sh
+bash scripts/ys-sys-001-readonly-role/test-owner-preflight.sh
 
 printf 'PASS: actual migrations 0020/0023/0024, PostgreSQL 18 non-superuser CREATEROLE lifecycle, cross-database PUBLIC CONNECT/TEMP denial matching the reported 2/0/1 ACL, inherited PUBLIC TEMP compatibility without direct reader TEMP or application writes, temp-table shadowing against schema-qualified fixed preflight, unexpected INHERIT/SET/additional/reader memberships rejected, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, other PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'
