@@ -12,7 +12,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 COPY tsconfig.json ./
-COPY migrations/0020_systems-directory.sql ./migrations/
+COPY migrations/ ./migrations/
 COPY scripts/migration-plan.ts ./scripts/
 COPY scripts/recovery/ ./scripts/recovery/
 COPY lib/system-directory-service.ts lib/system-directory.ts lib/date-time.ts ./lib/
