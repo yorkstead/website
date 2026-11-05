@@ -11,13 +11,19 @@ The owner retains the currently configured Production and Preview databases and 
 | Item | Planning decision | Execution state |
 | --- | --- | --- |
 | Recovery artifact | PostgreSQL custom-format `pg_dump`, encrypted client-side with an approved age recipient | Production export **not authorized** |
-| Retention | 30 days from the UTC timestamp of a successfully verified encrypted artifact | Storage expiration and deletion proof still need design/approval; legal hold pauses deletion only with documented owner approval |
+| Retention | 30 days from the UTC timestamp of a successfully verified encrypted artifact | Owner reports 30-day bucket lock/lifecycle enabled; expiry/deletion enforcement has not been independently tested |
 | RTO | 60 minutes from incident declaration to verified service recovery | Target accepted for planning; not demonstrated |
 | RPO and backup cadence | 24-hour RPO; daily encrypted custom-format backups | First production backup and any recurring schedule require separate authorization; objective is unproven until completion monitoring and recovery rehearsal pass |
-| Retention and RTO | 30 days; 60-minute RTO target | Retention implementation and deletion verification pending exact bucket approval; RTO awaits timed restore verification |
+| Retention and RTO | 30 days; 60-minute RTO target | Retention setting is owner-reported; deletion verification remains pending; RTO awaits timed restore verification |
 | Operator | Yorkstead owner is primary recovery operator and approver | Single-person operation; each production action requires scoped owner approval |
 | Secondary operator / independent human reviewer | Unassigned because no additional personnel are available | Not represented by automated checks; explicit owner acknowledgment of exception and residual risk required before export or migration approval |
-| Storage, key custody and cost | Private Cloudflare R2 proposed; separately protected recovery-key copy required | Exact account, bucket, region, permissions, spend cap and key custody remain pending approval; no activation authorized |
+| Storage, key custody and cost | Existing private Cloudflare R2; client-side age encryption; separately stored recovery-key copy | Owner reports US jurisdiction, private access, bucket-scoped credentials, 30-day controls and synthetic transport/key-copy PASS. Assistant-side policy/cost verification remains unavailable; no production data is stored |
+
+## Owner-reported synthetic storage acceptance and capture runner
+
+The owner reports an existing private US-jurisdiction R2 Standard bucket, bucket-scoped credentials, 30-day lock/lifecycle controls, successful synthetic age encryption/upload/download/ciphertext comparison/decryption/plaintext comparison on Ubuntu WSL, and a separately stored recovery-key copy tested with synthetic ciphertext. This is owner-reported synthetic acceptance only. This session has no R2 connector or credentials and has not independently re-read bucket policy, jurisdiction, lifecycle, cost, or key custody. No production-derived object, scheduled backup, production role, or migration was created or executed.
+
+The synthetic-only baseline runner and owner procedure are documented in [`preservation-baseline-runner.md`](./preservation-baseline-runner.md). Production role creation and baseline capture remain separately unauthorized.
 
 ### Single-operator exception and compensating controls
 
@@ -82,7 +88,7 @@ Perform this rehearsal before production migration authorization:
 5. Test application rollback by using the pre-migration application against the restored state. Separately test forward-only recovery for the migrated database: disable new reads/writes in the disposable app, keep additive schema/data/audit, and validate the forward-fix path. Do not use a destructive down migration.
 6. Record measured elapsed time for restore, verification, and application readiness. These observations inform RTO; they do not establish a production RTO until an owner approves the target and a production-like rehearsal is authorized.
 
-The synthetic script uses restrictive staging permissions and removes plaintext on success, failure and interrupt. The operator must ensure the future approved production staging medium and deletion mechanism meet the private data-handling policy; unlinking a file does not guarantee physical media erasure. Its local upload simulator verifies bytes and removes partial objects on interruption. A provider-specific upload, remote checksum, retention lock, access audit and independent retrieval remain unimplemented until storage is selected. Never log a private download URL.
+The original synthetic backup rehearsal uses restrictive staging and a local upload simulator; that does not test production storage. The newer baseline runner has a fixed Cloudflare R2 adapter that uploads only age ciphertext, performs a fresh GET, compares ciphertext and decrypted-evidence hashes, and deletes only its unique object after a failed verification. Synthetic CI uses an in-memory store, not Cloudflare. Provider-side jurisdiction, lock/lifecycle, cost and access audit still require fresh owner verification; never log object keys or private download URLs.
 
 ## Restore verification and data exposure
 

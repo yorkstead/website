@@ -43,6 +43,16 @@ PR #95's preservation runner is a prospective integrity tool only if its fixed h
 
 The temporary mode reused the existing owner-only leads diagnostic route, returned only fixed-SELECT redacted evidence, and was executed by the owner against production. Cleanup PR #90 removed the temporary mode/helper/tests while preserving the legacy no-query route and is merged/deployed. The owner reported both preflight flags disabled and the authenticated retired mode returning 404; see `production-preflight.md`.
 
+## Trusted preservation baseline runner — implementation preparation
+
+Build a local-only, owner-operated CLI and validate it only with synthetic PostgreSQL and storage fixtures. Keep production capture disabled until a separate verified reader role, current target/storage attestations and one-time authorization are present. The runner does not replace the missing historical baseline or claim historical parity. See `preservation-baseline-runner.md` for the fixed query scope, canonical evidence format, role grants (not executed), R2/age workflow and separate authorization requests.
+
+1. Add the fixed-scope read-only capture core, exact migration/role/data/trigger checks, canonical serialization and versioned SHA-256 fingerprints.
+2. Add local age encryption, fixed R2 S3 upload/download/delete adapter, ciphertext checksum comparison, private decryption and cleanup. Never upload plaintext evidence.
+3. Gate the owner CLI on Ubuntu WSL, an owner-only workspace, fresh private attestations, separate capture approval, a fixed read-only role, secure secret injection and interactive confirmation.
+4. Extend only the existing ephemeral recovery CI job to exercise the complete path with a synthetic migration fixture and in-memory object store. CI has no Cloudflare/Neon/Vercel/production secrets.
+5. Document the unexecuted production role plan and separate approval wording; production role creation/capture remain NO-GO in this implementation.
+
 ## PR 1 — preservation foundation
 
 1. Superseded: no historical row-level parity or former-database recovery is required under the 2026-11-03 owner decision. Preserve the current retained database state, without querying Production in this development slice.

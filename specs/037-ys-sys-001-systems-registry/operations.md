@@ -20,6 +20,12 @@ Before any separately authorized Production migration, verify the actual deploye
 
 Use `recovery-runbook.md` as the controlled recovery plan. Current PITR history is six hours; no snapshot schedule or saved snapshots were found. The document covers a one-time snapshot if available and approved, an encrypted logical export, or PITR as a short-window option; non-production restore rehearsal; verification; data-loss exposure; and approvals. No backup, export, restore, schedule, branch, or production setting is changed by this specification.
 
+## Trusted preservation baseline runner
+
+The owner-operated evidence runner is specified in `preservation-baseline-runner.md`. It is a selective seven-entry/eleven-audit capture, not a database backup. It verifies the current owner-attested deployment/Neon binding, a dedicated read-only role, applied migration ledger, audit relationships and protection triggers before producing encrypted private evidence. The CLI refuses to run without current private target/storage attestations and a separately approved one-time authorization. Synthetic CI tests use disposable PostgreSQL and an in-memory artifact store only. No production role, query, export, R2 object, or migration is authorized by the runner implementation.
+
+The owner reports the runtime hostname and database match the expected Neon production target. That identity match is owner-reported and is recorded on issue #86 without connection details. A current row-level baseline has not yet been captured. The earlier historical baseline is still unavailable and must not be recreated or represented as parity evidence.
+
 ## Migration conventions
 
 - Use the next ordered migration after checking all current numbered SQL files, manifest/checksum conventions, fresh/repeat migration tests and production ledger.

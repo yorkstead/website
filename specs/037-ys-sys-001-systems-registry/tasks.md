@@ -126,3 +126,16 @@ The PR 0 / PR 1 sections below are historical completion records. Their former-d
 - [ ] Verify compatibility and current-state preservation against a new prospective baseline; no historic row count assumed.
 - [ ] Rehearse restore/rollback on disposable data and document remaining gates.
 - [ ] Seek separate authorization before any production operation, merge or deployment.
+
+## Trusted preservation baseline runner — implementation preparation
+
+- [x] Add fixed-scope capture queries for the existing entries, audit events, applied migration ledger and relevant protection metadata.
+- [x] Require one repeatable-read/read-only transaction, fixed tenant scope, direct Neon endpoint host attestation, and dedicated least-privileged role checks.
+- [x] Define versioned canonical JSON and SHA-256 fingerprints for entries, per-entry audit histories and the complete evidence body.
+- [x] Add local age encrypt/retrieve/decrypt/integrity pipeline and fixed Cloudflare R2 S3 adapter that transfers ciphertext only.
+- [x] Add local Ubuntu WSL, private workspace, attestation, separate approval and interactive owner gates; no production action is enabled by the synthetic test path.
+- [x] Document owner setup, unexecuted least-privilege role grants, private storage/retention, and separate role/capture authorization requests.
+- [ ] Pass exact isolated recovery-rehearsal PostgreSQL CI for the synthetic 0022 ledger with repository 0023 pending; Docker is unavailable in this workspace.
+- [x] Run deterministic canonicalization and execution-boundary unit tests locally.
+- [x] Complete local typecheck, lint, build, full unit suite, Yorkstead scaffold check and migration-plan check; report database skips and local isolation limits.
+- [ ] Independently review the runner and synthetic PostgreSQL/object-store results. Production role creation, private R2 verification, production capture and migration 0023 remain separately NO-GO.
