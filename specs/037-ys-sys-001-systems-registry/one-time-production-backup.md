@@ -26,7 +26,7 @@ The chosen client must be the same PostgreSQL major as the source server (or new
 
 ## Owner-operated procedure — run only after separate authorization
 
-Run from an owner-controlled, encrypted ThinkPad/WSL filesystem with enough free space for both the plaintext archive and encrypted copy. Verify active Windows/WSL disk encryption before use; do not assume it. Use a dedicated private libpq service entry and password file; never put a URL or password in command arguments, shell history, GitHub, CI, or this repository. The service entry must use the owner-verified direct endpoint, `dbname=neondb`, the specifically approved dump role, `sslmode=verify-full`, and a trusted root certificate (`sslrootcert=system` is supported by PostgreSQL 18 libpq). The password file, service file, age identity, and private approval/evidence files must be regular files owned by the current user and mode 0600. Do not reuse a Preview service profile.
+Run from an owner-controlled, encrypted ThinkPad/WSL filesystem with enough free space for both the plaintext archive and encrypted copy. Verify active Windows/WSL disk encryption before use; do not assume it. Use a dedicated private libpq service entry and password file; never put a URL or password in command arguments, shell history, GitHub, CI, or this repository. The service entry must use the owner-verified direct endpoint, `dbname=neondb`, and the specifically approved dump role. The command also supplies `sslmode=verify-full sslrootcert=system channel_binding=require` directly in its libpq connection string; connection-string options take precedence over service-file and environment values, so a stale service-file option cannot weaken TLS. The private source check verifies the session reports TLS enabled. The password file, service file, age identity, and private approval/evidence files must be regular files owned by the current user and mode 0600. Do not reuse a Preview service profile.
 
 Before starting, privately confirm all of these:
 
@@ -109,27 +109,28 @@ read -rp 'Unused R2 Standard free storage allowance (GB-month, 0..10): ' R2_UNUS
 [[ $(stat -c %u "$PGSERVICEFILE") == $(id -u) && $(stat -c %u "$PGPASSFILE") == $(id -u) && $(stat -c %u "$AGE_IDENTITY_FILE") == $(id -u) ]]
 [[ $(age-keygen -y "$AGE_IDENTITY_FILE") == "$AGE_PUBLIC_RECIPIENT" ]]
 capture_utc="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
-UNIQUE_OBJECT_KEY="ys-sys-001/production/full-db/${capture_utc}-$(openssl rand -hex 8).dump.age"
+UNIQUE_OBJECT_KEY="ys-sys-001/production/full-db/${capture_utc}-$(openssl rand -hex 16).dump.age"
+printf '%s\n' "$UNIQUE_OBJECT_KEY"
 
 # Run privately; capture and inspect output without printing endpoint or credentials.
 # The private output must confirm the approved role, database=neondb, and PostgreSQL major.
 env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" PGPASSFILE="$PGPASSFILE" \
   PGSSLMODE=verify-full PGSSLROOTCERT=system \
-  psql -X -w -qAt "service=ys-sys-001-approved" \
+  psql -X -w -qAt "service=ys-sys-001-approved sslmode=verify-full sslrootcert=system channel_binding=require" \
   -F '|' \
-  -c "SELECT current_user, current_database(), current_setting('server_version_num')" \
+  -c "SELECT current_user, current_database(), current_setting('server_version_num'), COALESCE((SELECT ssl::text FROM pg_catalog.pg_stat_ssl WHERE pid = pg_catalog.pg_backend_pid()), 'false')" \
   > "$stage/source-check.txt" 2> "$stage/connection-error.txt"
 chmod 0600 "$stage/source-check.txt" "$stage/connection-error.txt"
-IFS='|' read -r actual_user actual_database server_version_num < "$stage/source-check.txt"
+IFS='|' read -r actual_user actual_database server_version_num tls_in_use < "$stage/source-check.txt"
 client_major="$(pg_dump --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
 restore_major="$(pg_restore --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
 psql_major="$(psql --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
-[[ $actual_user == "$APPROVED_DUMP_ROLE" && $actual_database == neondb && $server_version_num =~ ^[0-9]+$ ]]
+[[ $actual_user == "$APPROVED_DUMP_ROLE" && $actual_database == neondb && $server_version_num =~ ^[0-9]+$ && $tls_in_use == true ]]
 [[ ${server_version_num:0:2} == 18 && $client_major == 18 && $restore_major == 18 && $psql_major == 18 ]]
 
 env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" PGPASSFILE="$PGPASSFILE" \
   PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require \
-pg_dump --dbname="service=ys-sys-001-approved" --format=custom --create \
+pg_dump --dbname="service=ys-sys-001-approved sslmode=verify-full sslrootcert=system channel_binding=require" --format=custom --create \
   --no-password --lock-wait-timeout=15s --file="$stage/plain.dump" \
   > /dev/null 2> "$stage/pg-dump-stderr.txt"
 chmod 0600 "$stage/pg-dump-stderr.txt"
@@ -193,16 +194,16 @@ printf 'Pre-upload encrypted size: %s bytes; estimated incremental R2 Standard s
 AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
   AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_CONFIG_FILE=/dev/null \
   AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=auto AWS_MAX_ATTEMPTS=1 AWS_PAGER= \
-  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3 cp \
+  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3 cp --no-overwrite \
     "$stage/backup.dump.age" "s3://$R2_BUCKET/$UNIQUE_OBJECT_KEY" --only-show-errors \
-    > /dev/null 2> "$stage/upload-error.txt"
+    > /dev/null 2> "$stage/dump-upload-error.txt"
 chmod 0600 "$stage/upload-error.txt"
 AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
   AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_CONFIG_FILE=/dev/null \
   AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=auto AWS_MAX_ATTEMPTS=1 AWS_PAGER= \
-  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3 cp \
+  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3 cp --no-overwrite \
     "$stage/manifest.age" "s3://$R2_BUCKET/${UNIQUE_OBJECT_KEY%.dump.age}.manifest.age" --only-show-errors \
-    > /dev/null 2> "$stage/upload-error.txt"
+    > /dev/null 2> "$stage/manifest-upload-error.txt"
 
 AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
   AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_CONFIG_FILE=/dev/null \
@@ -233,12 +234,12 @@ cmp --silent "$stage/archive.list" "$stage/retrieved-archive.list"
 
 The block is a command pattern, not execution authorization. The operator must resolve private variables from protected local files/secure input without writing secret values to history or logs. R2 credentials must be injected through the AWS CLI's environment for this one process only; never use an account-wide token or persistent shared credentials file. Ensure the AWS-compatible `put-object` requests are covered by the exact R2 bucket-lock prefix policy; do not change R2 settings from the command. Upload only the encrypted dump and encrypted manifest. Redact error files before any sharing; do not share the generated archive list because it reveals schema names.
 
-The exact AWS CLI endpoint/region/credential behavior must be exercised in an owner-run synthetic R2 transport test before use. Repository CI uses a local in-memory store and does not contact Cloudflare. `aws s3 cp` selects multipart for large objects; Cloudflare R2 supports single uploads through 5 GiB and multipart objects through 5 TiB. Incomplete multipart uploads expire after seven days by default, but verify this bucket's policy. Before the first authorized upload, the owner must verify the bucket lock/lifecycle rules cover the chosen prefix and that multipart requests work with the bucket's retention configuration. Do not use CI credentials or cloud services for this task.
+The exact AWS CLI endpoint/region/credential behavior must be exercised in an owner-run synthetic R2 transport test before use. Both uploads use `--no-overwrite`; the target prefix must also be covered by the existing server-enforced 30-day R2 bucket-lock rule. `--no-overwrite` is a client-side guard, while the matching bucket lock is the server-side protection against a collision or retry race. The generated object key is printed only to the private terminal so a partial upload can be located; do not copy it to public logs or issue comments. If the bucket lock does not cover the tested prefix, stop—do not test by weakening or changing bucket settings. Repository CI uses a local in-memory store and does not contact Cloudflare. `aws s3 cp` selects multipart for large objects; Cloudflare R2 supports single uploads through 5 GiB and multipart objects through 5 TiB. Incomplete multipart uploads expire after seven days by default, but verify this bucket's policy. Before the first authorized upload, the owner must verify the bucket lock/lifecycle rules cover the chosen prefix and that multipart requests work with the bucket's retention configuration. Do not use CI credentials or cloud services for this task.
 
 ### Failure and cleanup
 
 - Any identity, TLS, role, migration/checksum, version, permission, warning, nonempty-file, archive-list, age, upload, download, checksum, or decryption failure means **backup FAIL**. Do not retry automatically or count the artifact as recoverable.
-- If either remote upload fails after the other ciphertext has uploaded, mark the operation failed and do not retry/delete/overwrite the existing locked object. Retain the encrypted object for its approved expiry and require review before a new one-time attempt.
+- If either remote upload fails after the other ciphertext has uploaded, mark the operation failed and do not retry/delete/overwrite the existing locked object. Use the private transfer reference printed before upload to locate the partial object, retain it for its approved expiry, and require review before a new one-time attempt. Separate mode-0600 error files are kept inside the private staging directory and removed by cleanup; never publish their contents.
 - Before remote upload, delete the partial ciphertext and plaintext staging files via the trap. The WSL filesystem must be encrypted; unlinking does not guarantee physical erasure. Do not use broad cleanup commands.
 - If upload succeeds but independent retrieval/decryption fails, keep the remote object as encrypted evidence under the approved retention rule; mark it invalid and request owner review. Do not try to delete a possibly retention-locked object or upload over the same key. A later attempt requires a new one-time approval/key.
 - On success, compare local and retrieved ciphertext byte-for-byte and SHA-256, decrypt only in the private workspace, verify the custom archive list and compare archive lists, then remove the local plaintext, ciphertext, retrieval copy, temporary metadata and error files. Retain only the encrypted remote artifact and the encrypted private evidence manifest.
