@@ -54,6 +54,7 @@ test("runbook uses the established private service profile and strict connection
 
   expect(commandBlock).toBeDefined();
   expect(runbook).toContain('export PGSERVICEFILE="$HOME/.config/ys-sys-001/pg_service.conf"');
+  expect(runbook).toContain('export PGPASSFILE="$HOME/.pgpass"');
   expect(runbook).toContain("service=ys-sys-001-admin");
   expect(runbook).toContain("sslmode=verify-full sslrootcert=system channel_binding=require");
   expect(runbook).toContain("PGCHANNELBINDING=require");
@@ -62,5 +63,6 @@ test("runbook uses the established private service profile and strict connection
   expect(commandBlock).not.toContain("pg_stat_ssl");
   expect(runbook).not.toContain("ys-sys-001-approved");
   expect(runbook).not.toContain("$HOME/.pg_service.conf");
-  expect(runbook).not.toContain('PGPASSFILE="$PGPASSFILE"');
+  expect(runbook).toContain('[[ $(stat -c %a "$PGSERVICEFILE") == 600 ]]');
+  expect(runbook).toContain('[[ $(stat -c %a "$PGPASSFILE") == 600 ]]');
 });
