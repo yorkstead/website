@@ -40,6 +40,16 @@ test("client TLS verification accepts the owner's reported SSL/TLS status format
   expect(result.stderr).toBe("");
 });
 
+test("client TLS verification accepts PostgreSQL 18's separate SSL table rows", () => {
+  const result = checkConninfo(
+    "+----------------+-----------+\n| SSL Connection | true      |\n| SSL Protocol   | TLSv1.3   |\n+----------------+-----------+\n",
+  );
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe("");
+  expect(result.stderr).toBe("");
+});
+
 test("client TLS verification fails closed without a client SSL report and hides captured details", () => {
   const privateMarker = "synthetic-private-hostname.invalid";
   const result = checkConninfo(`pg_stat_ssl=true\nConnected to ${privateMarker} without SSL\n`);
@@ -47,6 +57,16 @@ test("client TLS verification fails closed without a client SSL report and hides
   expect(result.status).not.toBe(0);
   expect(result.stderr).toContain("did not confirm a TLS");
   expect(`${result.stdout}${result.stderr}`).not.toContain(privateMarker);
+});
+
+test("client TLS verification rejects false SSL or a missing protocol table row", () => {
+  for (const report of [
+    "| SSL Connection | false |\n| SSL Protocol | TLSv1.3 |\n",
+    "| SSL Connection | true |\n",
+    "| SSL Protocol | TLSv1.3 |\n",
+  ]) {
+    expect(checkConninfo(report).status).not.toBe(0);
+  }
 });
 
 test("runbook uses the established private service profile and strict connection protections", () => {
