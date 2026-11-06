@@ -118,7 +118,7 @@ printf '%s\n' "$UNIQUE_OBJECT_KEY"
 # The private output must confirm the approved role, database=neondb, and PostgreSQL major.
 env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" PGPASSFILE="$PGPASSFILE" \
   PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require \
-  psql -X -w -qAt "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
+  psql -X -w -v ON_ERROR_STOP=1 -qAt "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
   -F '|' \
   -c "SELECT current_user, current_database(), current_setting('server_version_num')" \
   > "$stage/source-check.txt" 2> "$stage/connection-error.txt"
@@ -134,7 +134,7 @@ psql_major="$(psql --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
 # the helper reads it without printing it and returns only success/failure.
 if ! env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" PGPASSFILE="$PGPASSFILE" \
   PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require LC_ALL=C \
-  psql -X -w -q "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
+  psql -X -w -v ON_ERROR_STOP=1 -q "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
   -c '\conninfo' > "$stage/client-conninfo.txt" 2> "$stage/connection-error.txt"; then
   chmod 0600 "$stage/client-conninfo.txt" "$stage/connection-error.txt"
   printf 'Client connection verification failed; details remain in the private stage.\n' >&2
