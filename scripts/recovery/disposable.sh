@@ -9,7 +9,7 @@ fail() { printf 'Recovery rehearsal failed: %s\n' "$1" >&2; exit 1; }
 for name in $(compgen -e); do
   case "$name" in
     PG*|DATABASE_URL|TEST_DATABASE_URL|POSTGRES_URL|POSTGRESQL_URL|DIRECT_URL|DB_URL|*_DATABASE_URL|*_DB_URL|*_CONNECTION_STRING|RECOVERY_OUTPUT_DIR|RECOVERY_STORAGE_DIR|RECOVERY_ENCRYPTED_FILE|RECOVERY_MANIFEST_FILE|RECOVERY_IDENTITY_FILE|VERCEL_*|NEON_*|AWS_*|AZURE_*|GOOGLE_*|CLOUDSDK_*) fail "forbidden environment variable: $name";;
-    RECOVERY_TEST_HOST|RECOVERY_TEST_PORT|RECOVERY_TEST_USER|RECOVERY_TEST_PASSWORD|RECOVERY_TEST_DB|RECOVERY_WORKSPACE|RECOVERY_CASE_NAME|RECOVERY_SOURCE_DB|RECOVERY_TARGET_DB|RECOVERY_TEST_FAIL_AFTER_COPY|BACKUP_RECIPIENT|BACKUP_KEY_ID|BACKUP_SOURCE_TOKEN|YS_RECOVERY_BOUNDARY|PATH|HOME|HOSTNAME|PWD|SHLVL|_|BUN_INSTALL|BUN_INSTALL_BIN|BUN_INSTALL_CACHE_DIR|TERM|LANG|LC_*) ;;
+    RECOVERY_TEST_HOST|RECOVERY_TEST_PORT|RECOVERY_TEST_USER|RECOVERY_TEST_PASSWORD|RECOVERY_TEST_DB|RECOVERY_WORKSPACE|RECOVERY_CASE_NAME|RECOVERY_SOURCE_DB|RECOVERY_TARGET_DB|RECOVERY_TEST_FAIL_AFTER_COPY|RECOVERY_TEST_FAIL_AFTER_DUMP|RECOVERY_TEST_FAIL_AFTER_FIRST_COMMIT|BACKUP_RECIPIENT|BACKUP_KEY_ID|BACKUP_SOURCE_TOKEN|YS_RECOVERY_BOUNDARY|PATH|HOME|HOSTNAME|PWD|SHLVL|_|BUN_INSTALL|BUN_INSTALL_BIN|BUN_INSTALL_CACHE_DIR|TERM|LANG|LC_*) ;;
     *) fail "unexpected environment variable: $name";;
   esac
 done
@@ -54,7 +54,8 @@ case $mode in
     client_major=$(pg_dump --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')
     [[ $server_number =~ ^[0-9]+$ && $client_major =~ ^[0-9]+$ ]] || fail 'PostgreSQL versions could not be checked'
     (( client_major >= server_number / 10000 )) || fail 'pg_dump is older than the server'
-    pg "$source_db" pg_dump --format=custom --no-password --file "$stage/plain.dump" >/dev/null
+    pg "$source_db" pg_dump --format=custom --create --no-password --file "$stage/plain.dump" >/dev/null
+    [[ ${RECOVERY_TEST_FAIL_AFTER_DUMP:-} != 1 ]] || fail 'injected backup interruption after dump'
     pg_restore --list "$stage/plain.dump" > "$stage/archive.list"
     [[ -s "$stage/archive.list" ]] || fail 'archive listing is empty'
     partial="$output/.backup.dump.age.partial"
@@ -76,37 +77,55 @@ case $mode in
     chmod 600 "$manifest_partial"
     mv -- "$partial" "$output/backup.dump.age"; partial=''
     mv -- "$manifest_partial" "$output/manifest.txt"; manifest_partial=''
-    rm -f -- "$stage/plain.dump" "$stage/archive.list"; rmdir "$stage"; stage=''
+    manifest_partial="$output/.manifest.txt.age.partial"
+    age -r "$BACKUP_RECIPIENT" -o "$manifest_partial" "$output/manifest.txt" >/dev/null
+    mv -- "$manifest_partial" "$output/manifest.txt.age"; manifest_partial=''
+    rm -rf -- "$stage"; stage=''
     ;;
   upload-local)
-    # In-memory tmpfs simulator only. This does not access a provider or network storage.
+    # In-memory tmpfs simulator only; hard-link publication models an atomic
+    # create-if-absent PutObject and never contacts a provider or network storage.
     [[ -d $output && -d $store ]] || fail 'internal rehearsal directories are required'
     [[ $(stat -c %a "$store") == 700 ]] || fail 'private store must have mode 700'
-    [[ -f $output/backup.dump.age && -f $output/manifest.txt ]] || fail 'backup and manifest are required'
-    [[ ! -e $store/backup.dump.age && ! -e $store/manifest.txt ]] || fail 'destination already contains an artifact'
+    [[ -f $output/backup.dump.age && -f $output/manifest.txt && -f $output/manifest.txt.age ]] || fail 'backup and encrypted manifest are required'
+    [[ ! -e $store/backup.dump.age && ! -e $store/manifest.txt && ! -e $store/manifest.txt.age ]] || fail 'destination already contains an artifact'
+    max_put_object_bytes=5368709120
+    for artifact in "$output/backup.dump.age" "$output/manifest.txt.age"; do
+      artifact_bytes=$(stat -c %s "$artifact")
+      (( artifact_bytes <= max_put_object_bytes )) || fail 'artifact exceeds conditional single-PutObject 5 GiB limit; multipart is not enabled'
+    done
     expected=$(sed -n 's/^encrypted_sha256=//p' "$output/manifest.txt")
     [[ $expected =~ ^[0-9a-f]{64}$ ]] || fail 'manifest checksum is invalid'
     partial="$store/.backup.dump.age.partial"
     cp -- "$output/backup.dump.age" "$partial"
+    manifest_partial="$store/.manifest.txt.age.partial"
+    cp -- "$output/manifest.txt.age" "$manifest_partial"
+    [[ $(head -c 21 "$manifest_partial") == 'age-encryption.org/v1' ]] || fail 'plaintext manifest upload rejected'
     [[ ${RECOVERY_TEST_FAIL_AFTER_COPY:-} != 1 ]] || fail 'injected upload interruption'
     [[ $(sha256sum "$partial" | cut -d ' ' -f 1) == "$expected" ]] || fail 'simulated upload bytes differ from manifest'
-    manifest_partial="$store/.manifest.partial"
-    cp -- "$output/manifest.txt" "$manifest_partial"
-    mv -- "$partial" "$store/backup.dump.age"; partial=''
-    mv -- "$manifest_partial" "$store/manifest.txt"; manifest_partial=''
+    ln -- "$partial" "$store/backup.dump.age"
+    rm -- "$partial"; partial=''
+    [[ ${RECOVERY_TEST_FAIL_AFTER_FIRST_COMMIT:-} != 1 ]] || fail 'injected failure after first conditional object commit'
+    ln -- "$manifest_partial" "$store/manifest.txt.age"
+    rm -- "$manifest_partial"; manifest_partial=''
     ;;
   restore)
-    expected=$(sed -n 's/^encrypted_sha256=//p' "$store/manifest.txt")
+    stage=$(mktemp -d "$RECOVERY_WORKSPACE/retrieve.XXXXXXXX")
+    cp -- "$store/backup.dump.age" "$stage/retrieved.dump.age"
+    cp -- "$store/manifest.txt.age" "$stage/retrieved.manifest.txt.age"
+    [[ $(head -c 21 "$stage/retrieved.manifest.txt.age") == 'age-encryption.org/v1' ]] || fail 'unencrypted remote manifest rejected'
+    age -d -i "$key" -o "$stage/retrieved.manifest.txt" "$stage/retrieved.manifest.txt.age" >/dev/null
+    cmp --silent "$output/manifest.txt" "$stage/retrieved.manifest.txt" || fail 'retrieved manifest differs from capture manifest'
+    expected=$(sed -n 's/^encrypted_sha256=//p' "$stage/retrieved.manifest.txt")
     [[ $expected =~ ^[0-9a-f]{64}$ ]] || fail 'manifest checksum is invalid'
-    [[ $(sha256sum "$store/backup.dump.age" | cut -d ' ' -f 1) == "$expected" ]] || fail 'encrypted artifact checksum mismatch'
+    [[ $(sha256sum "$stage/retrieved.dump.age" | cut -d ' ' -f 1) == "$expected" ]] || fail 'independent retrieval checksum mismatch'
     table_count=$(pg "$target_db" psql -w -X -A -t -q -c "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_toast%'" | tr -d '\r\n')
     [[ $table_count == 0 ]] || fail 'restore target must have no user tables'
-    stage=$(mktemp -d "$RECOVERY_WORKSPACE/restore.XXXXXXXX")
-    age -d -i "$key" -o "$stage/plain.dump" "$store/backup.dump.age" >/dev/null
+    age -d -i "$key" -o "$stage/plain.dump" "$stage/retrieved.dump.age" >/dev/null
     pg_restore --list "$stage/plain.dump" > "$stage/archive.list"
     [[ -s "$stage/archive.list" ]] || fail 'decrypted archive listing is empty'
-    pg "$target_db" pg_restore --exit-on-error --no-password --dbname="$target_db" "$stage/plain.dump" >/dev/null
-    rm -f -- "$stage/plain.dump" "$stage/archive.list"; rmdir "$stage"; stage=''
+    pg "$target_db" pg_restore --create --exit-on-error --no-password --dbname="$target_db" "$stage/plain.dump" >/dev/null
+    rm -rf -- "$stage"; stage=''
     ;;
   *) fail 'use backup, upload-local or restore' ;;
 esac

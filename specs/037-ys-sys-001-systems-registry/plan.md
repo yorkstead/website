@@ -22,6 +22,10 @@ The owner has selected the existing Production and Preview databases and reconst
 
 PR #95's preservation runner is a prospective integrity tool only if its fixed historical count assertions are removed in a separately authorized follow-up; it is not part of this feature slice and must not be modified here.
 
+## One-time full database backup preparation — 2026-11-05
+
+This separate operational preparation uses the existing synthetic backup rehearsal in `scripts/recovery/`, not PR #95's selective Directory evidence capture. The owner-reported current source is migration 0022 with 0023/0024 unapplied and an empty Directory; there are no 7/11 production count assumptions. Update the synthetic test to apply the repository migrations through 0022, verify zero entries/audits, preserve synthetic application data and restore-required roles/grants, and exercise encrypted artifact validation/cleanup. Document the future owner-operated direct-service, `pg_dump -Fc`, age, private R2, retrieval, cost and recovery procedure in `one-time-production-backup.md`. Production export and R2 upload remain separately unauthorized.
+
 ## Next implementation slice — staged inventory and ownership
 
 1. Reconcile the typed Registry requirements with migration 0023, current CC-023 behavior, and the owner direction above.
