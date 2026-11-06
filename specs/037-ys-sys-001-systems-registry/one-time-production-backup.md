@@ -189,21 +189,30 @@ printf 'Pre-upload encrypted size: %s bytes; estimated incremental R2 Standard s
 # Supply bucket-scoped R2 credentials only in the private process environment.
 # Use the preapproved fixed bucket, a unique timestamp/random key, and R2 endpoint.
 # Suppress CLI output; keep errors in mode-0600 files and sanitize before review.
-# `aws s3 cp` selects multipart above its threshold (R2 supports objects up to 5 TiB);
-# do not replace it with a single-request PutObject operation.
+# Conditional PutObject is create-if-absent and atomic, but only supports single objects
+# through 5 GiB. Fail closed above that limit; do not use multipart without a
+# separately reviewed conditional strategy and transport test.
+conditional_put_max_bytes=$((5 * 1024 * 1024 * 1024))
+encrypted_dump_bytes=$(stat -c %s "$stage/backup.dump.age")
+encrypted_manifest_bytes=$(stat -c %s "$stage/manifest.age")
+if (( encrypted_dump_bytes > conditional_put_max_bytes || encrypted_manifest_bytes > conditional_put_max_bytes )); then
+  printf 'Encrypted object exceeds the conditional PutObject 5 GiB limit; no upload was attempted. Multipart requires a separate reviewed and tested conditional-write design.\n' >&2
+  exit 1
+fi
 AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
   AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_CONFIG_FILE=/dev/null \
   AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=auto AWS_MAX_ATTEMPTS=1 AWS_PAGER= \
-  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3 cp --no-overwrite \
-    "$stage/backup.dump.age" "s3://$R2_BUCKET/$UNIQUE_OBJECT_KEY" --only-show-errors \
-    > /dev/null 2> "$stage/dump-upload-error.txt"
-chmod 0600 "$stage/upload-error.txt"
+  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3api put-object \
+    --bucket "$R2_BUCKET" --key "$UNIQUE_OBJECT_KEY" --body "$stage/backup.dump.age" \
+    --if-none-match '*' > /dev/null 2> "$stage/dump-upload-error.txt"
+chmod 0600 "$stage/dump-upload-error.txt"
 AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
   AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_CONFIG_FILE=/dev/null \
   AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=auto AWS_MAX_ATTEMPTS=1 AWS_PAGER= \
-  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3 cp --no-overwrite \
-    "$stage/manifest.age" "s3://$R2_BUCKET/${UNIQUE_OBJECT_KEY%.dump.age}.manifest.age" --only-show-errors \
-    > /dev/null 2> "$stage/manifest-upload-error.txt"
+  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3api put-object \
+    --bucket "$R2_BUCKET" --key "${UNIQUE_OBJECT_KEY%.dump.age}.manifest.age" --body "$stage/manifest.age" \
+    --if-none-match '*' > /dev/null 2> "$stage/manifest-upload-error.txt"
+chmod 0600 "$stage/manifest-upload-error.txt"
 
 AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
   AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_CONFIG_FILE=/dev/null \
@@ -234,12 +243,14 @@ cmp --silent "$stage/archive.list" "$stage/retrieved-archive.list"
 
 The block is a command pattern, not execution authorization. The operator must resolve private variables from protected local files/secure input without writing secret values to history or logs. R2 credentials must be injected through the AWS CLI's environment for this one process only; never use an account-wide token or persistent shared credentials file. Ensure the AWS-compatible `put-object` requests are covered by the exact R2 bucket-lock prefix policy; do not change R2 settings from the command. Upload only the encrypted dump and encrypted manifest. Redact error files before any sharing; do not share the generated archive list because it reveals schema names.
 
-The exact AWS CLI endpoint/region/credential behavior must be exercised in an owner-run synthetic R2 transport test before use. Both uploads use `--no-overwrite`; the target prefix must also be covered by the existing server-enforced 30-day R2 bucket-lock rule. `--no-overwrite` is a client-side guard, while the matching bucket lock is the server-side protection against a collision or retry race. The generated object key is printed only to the private terminal so a partial upload can be located; do not copy it to public logs or issue comments. If the bucket lock does not cover the tested prefix, stop—do not test by weakening or changing bucket settings. Repository CI uses a local in-memory store and does not contact Cloudflare. `aws s3 cp` selects multipart for large objects; Cloudflare R2 supports single uploads through 5 GiB and multipart objects through 5 TiB. Incomplete multipart uploads expire after seven days by default, but verify this bucket's policy. Before the first authorized upload, the owner must verify the bucket lock/lifecycle rules cover the chosen prefix and that multipart requests work with the bucket's retention configuration. Do not use CI credentials or cloud services for this task.
+The owner reports a PASS for a synthetic Cloudflare R2 transport test using fictional age-encrypted data and `aws s3api put-object --if-none-match '*'`; no Production data or additional transport operation was performed for this change. Cloudflare documents that `If-None-Match: *` on `PutObject` is checked atomically when the object commits, so a key collision fails rather than replacing the object. Each encrypted dump and encrypted manifest uses its own unique key and conditional PutObject. Never retry the same key after an ambiguous result; keep the encrypted object if only one of the two writes committed, and require review before a new attempt. The object keys and command errors stay private. Repository CI uses a local tmpfs simulator only and does not contact Cloudflare.
+
+Conditional single-object PutObject has a 5 GiB per-object maximum. The script measures the encrypted dump and manifest independently and refuses to upload if either exceeds that limit. R2 supports larger objects through multipart, but this procedure does not silently switch to multipart: the conditional no-overwrite semantics, retention interaction, retry behavior, and cleanup for multipart must be designed, independently reviewed, tested against R2, and separately approved before use. The actual encrypted Production archive size is unknown because no Production export has been authorized; compatibility with that future artifact is therefore unverified until its encrypted size is measured locally before any upload. Before a separately authorized backup, privately reverify the bucket lock and lifecycle coverage for the chosen prefix. Do not weaken or change bucket settings to make a test pass, and do not use CI credentials or cloud services.
 
 ### Failure and cleanup
 
 - Any identity, TLS, role, migration/checksum, version, permission, warning, nonempty-file, archive-list, age, upload, download, checksum, or decryption failure means **backup FAIL**. Do not retry automatically or count the artifact as recoverable.
-- If either remote upload fails after the other ciphertext has uploaded, mark the operation failed and do not retry/delete/overwrite the existing locked object. Use the private transfer reference printed before upload to locate the partial object, retain it for its approved expiry, and require review before a new one-time attempt. Separate mode-0600 error files are kept inside the private staging directory and removed by cleanup; never publish their contents.
+- If either conditional PutObject fails after the other ciphertext has uploaded, mark the operation failed and do not retry, delete, or overwrite the committed object. Record the private transfer reference locally, retain the committed encrypted object under approved retention, and require review plus a new unique key before another one-time attempt. PutObject errors are kept in mode-0600 files inside the private stage and removed by cleanup; never publish their contents.
 - Before remote upload, delete the partial ciphertext and plaintext staging files via the trap. The WSL filesystem must be encrypted; unlinking does not guarantee physical erasure. Do not use broad cleanup commands.
 - If upload succeeds but independent retrieval/decryption fails, keep the remote object as encrypted evidence under the approved retention rule; mark it invalid and request owner review. Do not try to delete a possibly retention-locked object or upload over the same key. A later attempt requires a new one-time approval/key.
 - On success, compare local and retrieved ciphertext byte-for-byte and SHA-256, decrypt only in the private workspace, verify the custom archive list and compare archive lists, then remove the local plaintext, ciphertext, retrieval copy, temporary metadata and error files. Retain only the encrypted remote artifact and the encrypted private evidence manifest.
