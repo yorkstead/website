@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 7700)
-Total output lines: 301
-
 # YS-SYS-001 one-time Production database backup
 
 **Status:** Preparation and synthetic testing only. No Production export, upload, restore, schedule, migration, or Registry activation is authorized by this document.
@@ -29,7 +26,7 @@ The chosen client must be the same PostgreSQL major as the source server (or new
 
 ## Owner-operated procedure — run only after separate authorization
 
-Run from an owner-controlled, encrypted ThinkPad/WSL filesystem with enough free space for both the plaintext archive and encrypted copy. Verify active Windows/WSL disk encryption before use; do not assume it. Use the existing private libpq service entry at `~/.config/ys-sys-001/pg_service.conf`, service alias `ys-sys-001-admin`; do not copy it to another location or change its endpoint or credentials for this procedure. Never put a URL or password in command arguments, shell history, GitHub, CI, or this repository. The service entry must privately resolve to the owner-verified direct endpoint, `dbname=neondb`, and the specifically approved dump role. The command supplies `sslmode=verify-full sslrootcert=system channel_binding=require` directly in its libpq connection string; connection-string options take precedence over service-file and environment values, so service-file options cannot weaken TLS. Verify TLS client-side using `psql \conninfo` (captured privately and checked by the repository helper below), not `pg_stat_ssl`: the owner observed that the server-side catalog can report `ssl=false` while the PostgreSQL client reports its connection as SSL/TLS. `verify-full` performs certificate-chain and hostname validation before a connection succeeds; the client report confirms that the established session is using TLS. The service file and age identity must be regular files owned by the current user and mode 0600. If the default `~/.pgpass` exists, it must also be a regular file owned by the current user and mode 0600; otherwise libpq may prompt for the password interactively. Do not create or change a credential file for this procedure. Do not reuse a Preview service profile.
+Run from an owner-controlled, encrypted ThinkPad/WSL filesystem with enough free space for both the plaintext archive and encrypted copy. Verify active Windows/WSL disk encryption before use; do not assume it. Use the existing private libpq service entry at `~/.config/ys-sys-001/pg_service.conf`, service alias `ys-sys-001-admin`; do not copy it to another location or change its endpoint or credentials for this procedure. Never put a URL or password in command arguments, shell history, GitHub, CI, or this repository. The service entry must privately resolve to the owner-verified direct endpoint, `dbname=neondb`, and the specifically approved dump role. The command supplies `sslmode=verify-full sslrootcert=system channel_binding=require` directly in its libpq connection string; connection-string options take precedence over service-file and environment values, so service-file options cannot weaken TLS. Verify TLS client-side using `psql \\conninfo` (captured privately and checked by the repository helper below), not `pg_stat_ssl`: the owner observed that the server-side catalog can report `ssl=false` while the PostgreSQL client reports its connection as SSL/TLS. `verify-full` performs certificate-chain and hostname validation before a connection succeeds; the client report confirms that the established session is using TLS. The service file and age identity must be regular files owned by the current user and mode 0600. If the default `~/.pgpass` exists, it must also be a regular file owned by the current user and mode 0600; otherwise libpq may prompt for the password interactively. Do not create or change a credential file for this procedure. Do not reuse a Preview service profile.
 
 Run the command from the repository root of the reviewed commit so `scripts/backup/verify-psql-client-tls.sh` is the reviewed helper; verify that checkout and helper revision before use. Before starting, privately confirm all of these:
 
@@ -121,7 +118,117 @@ UNIQUE_OBJECT_KEY="ys-sys-001/production/full-db/${capture_utc}-$(openssl rand -
 printf '%s\n' "$UNIQUE_OBJECT_KEY"
 
 # Run privately; capture and inspect output without printing endpoint or credentials.
-# The private output must confirm the approved r…1700 tokens truncated…UNIQUE_OBJECT_KEY%.dump.age}.manifest.age" --body "$stage/manifest.age" \
+# The private output must confirm the approved role, database=neondb, and PostgreSQL major.
+env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" \
+  PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require \
+  psql -X -qAt "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
+  -F '|' \
+  -c "SELECT current_user, current_database(), current_setting('server_version_num')" \
+  > "$stage/source-check.txt" 2> "$stage/connection-error.txt"
+chmod 0600 "$stage/source-check.txt" "$stage/connection-error.txt"
+IFS='|' read -r actual_user actual_database server_version_num < "$stage/source-check.txt"
+client_major="$(pg_dump --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
+restore_major="$(pg_restore --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
+psql_major="$(psql --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
+[[ $actual_user == "$APPROVED_DUMP_ROLE" && $actual_database == neondb && $server_version_num =~ ^[0-9]+$ ]]
+[[ ${server_version_num:0:2} == 18 && $client_major == 18 && $restore_major == 18 && $psql_major == 18 ]]
+
+# Capture only psql's own connection report. It contains private connection metadata;
+# the helper reads it without printing it and returns only success/failure.
+if ! env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" \
+  PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require LC_ALL=C \
+  psql -X -q "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
+  -c '\conninfo' > "$stage/client-conninfo.txt" 2> "$stage/connection-error.txt"; then
+  chmod 0600 "$stage/client-conninfo.txt" "$stage/connection-error.txt"
+  printf 'Client connection verification failed; details remain in the private stage.\n' >&2
+  exit 1
+fi
+chmod 0600 "$stage/client-conninfo.txt" "$stage/connection-error.txt"
+scripts/backup/verify-psql-client-tls.sh "$stage/client-conninfo.txt"
+
+env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" \
+  PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require \
+pg_dump --dbname="service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" --format=custom --create \
+  --lock-wait-timeout=15s --file="$stage/plain.dump" \
+  > /dev/null 2> "$stage/pg-dump-stderr.txt"
+chmod 0600 "$stage/pg-dump-stderr.txt"
+[[ ! -s "$stage/pg-dump-stderr.txt" ]]
+test -s "$stage/plain.dump"
+pg_restore --list "$stage/plain.dump" > "$stage/archive.list" 2> "$stage/archive-check-error.txt"
+[[ ! -s "$stage/archive-check-error.txt" ]]
+test -s "$stage/archive.list"
+age --encrypt --recipient "$AGE_PUBLIC_RECIPIENT" \
+  --output "$stage/backup.dump.age.partial" "$stage/plain.dump" \
+  > /dev/null 2> "$stage/age-error.txt"
+test -s "$stage/backup.dump.age.partial"
+mv -- "$stage/backup.dump.age.partial" "$stage/backup.dump.age"
+sha256sum "$stage/backup.dump.age" > "$stage/ciphertext.sha256"
+chmod 0600 "$stage/ciphertext.sha256"
+server_version_num="$(cut -d '|' -f 3 "$stage/source-check.txt")"
+backup_bytes=$(stat -c %s "$stage/backup.dump.age")
+estimated_storage_cost="$(awk -v bytes="$((backup_bytes + 1048576))" -v unused="$R2_UNUSED_GB_MONTH" \
+  'BEGIN { gb=bytes/1000000000; billable=gb-unused; if (billable<0) billable=0; printf "%.4f", billable*0.015 }')"
+cat > "$stage/manifest.txt" <<EOF
+format=ys-sys-001-full-database-backup-v1
+captured_at_utc=$capture_utc
+encrypted_dump_object_key=$UNIQUE_OBJECT_KEY
+source_token=website-production-neondb
+database=neondb
+migration_state=0001-0022-checksums-pass;0023-0024-unapplied
+preflight_evidence_ref=$PREFLIGHT_REFERENCE
+directory_entries=$DIRECTORY_ENTRY_COUNT
+directory_audits=$DIRECTORY_AUDIT_COUNT
+server_version_num=$server_version_num
+client_version=$(pg_dump --version)
+archive_format=postgresql-custom-Fc
+encryption=age-x25519
+age_key_id=$AGE_KEY_ID
+retention_days=30
+encrypted_dump_bytes=$(stat -c %s "$stage/backup.dump.age")
+encrypted_dump_sha256=$(cut -d ' ' -f 1 "$stage/ciphertext.sha256")
+estimated_incremental_storage_usd_month=$estimated_storage_cost
+EOF
+chmod 0600 "$stage/manifest.txt"
+age --encrypt --recipient "$AGE_PUBLIC_RECIPIENT" --output "$stage/manifest.age.partial" \
+  "$stage/manifest.txt" > /dev/null 2> "$stage/age-error.txt"
+mv -- "$stage/manifest.age.partial" "$stage/manifest.age"
+sha256sum "$stage/manifest.age" > "$stage/manifest.sha256"
+chmod 0600 "$stage/manifest.sha256"
+artifact_bytes=$(( $(stat -c %s "$stage/backup.dump.age") + $(stat -c %s "$stage/manifest.age") ))
+estimated_cost="$(awk -v bytes="$artifact_bytes" -v unused="$R2_UNUSED_GB_MONTH" \
+  'BEGIN { gb=bytes/1000000000; billable=gb-unused; if (billable<0) billable=0; printf "%.4f", billable*0.015 }')"
+[[ $(awk -v cost="$estimated_cost" 'BEGIN { print (cost <= 5.00) ? 1 : 0 }') == 1 ]] || {
+  printf 'Cost gate exceeded; no upload was attempted.\n' >&2
+  exit 1
+}
+printf 'Pre-upload encrypted size: %s bytes; estimated incremental R2 Standard storage: $%s/month (excluding shared request usage).\n' \
+  "$artifact_bytes" "$estimated_cost"
+
+# Supply bucket-scoped R2 credentials only in the private process environment.
+# Use the preapproved fixed bucket, a unique timestamp/random key, and R2 endpoint.
+# Suppress CLI output; keep errors in mode-0600 files and sanitize before review.
+# Conditional PutObject is create-if-absent and atomic, but only supports single objects
+# through 5 GiB. Fail closed above that limit; do not use multipart without a
+# separately reviewed conditional strategy and transport test.
+conditional_put_max_bytes=$((5 * 1024 * 1024 * 1024))
+encrypted_dump_bytes=$(stat -c %s "$stage/backup.dump.age")
+encrypted_manifest_bytes=$(stat -c %s "$stage/manifest.age")
+if (( encrypted_dump_bytes > conditional_put_max_bytes || encrypted_manifest_bytes > conditional_put_max_bytes )); then
+  printf 'Encrypted object exceeds the conditional PutObject 5 GiB limit; no upload was attempted. Multipart requires a separate reviewed and tested conditional-write design.\n' >&2
+  exit 1
+fi
+AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+  AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_CONFIG_FILE=/dev/null \
+  AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=auto AWS_MAX_ATTEMPTS=1 AWS_PAGER= \
+  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3api put-object \
+    --bucket "$R2_BUCKET" --key "$UNIQUE_OBJECT_KEY" --body "$stage/backup.dump.age" \
+    --if-none-match '*' > /dev/null 2> "$stage/dump-upload-error.txt"
+chmod 0600 "$stage/dump-upload-error.txt"
+AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+  AWS_SHARED_CREDENTIALS_FILE=/dev/null AWS_CONFIG_FILE=/dev/null \
+  AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=auto AWS_MAX_ATTEMPTS=1 AWS_PAGER= \
+  aws --no-cli-pager --endpoint-url "$R2_S3_ENDPOINT" s3api put-object \
+    --bucket "$R2_BUCKET" --key "${UNIQUE_OBJECT_KEY%.dump.age}.manifest.age" --body "$stage/manifest.age" \
     --if-none-match '*' > /dev/null 2> "$stage/manifest-upload-error.txt"
 chmod 0600 "$stage/manifest-upload-error.txt"
 
