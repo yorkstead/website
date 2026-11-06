@@ -1,6 +1,6 @@
 import { afterAll, expect, test } from "bun:test";
 import { randomUUID } from "node:crypto";
-import { chmod, copyFile, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { chmod, copyFile, mkdir, readFile, readdir, rm, truncate, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { Pool } from "pg";
@@ -124,10 +124,26 @@ disposableTest("backs up and restores the current 0022 empty Directory state and
 
     expect(command(["bash", script, "upload-local"], { ...sourceEnv, RECOVERY_TEST_FAIL_AFTER_COPY: "1" }).status).not.toBe(0);
     expect(await readdir(store)).toEqual([]);
+    expect(command(["bash", script, "upload-local"], { ...sourceEnv, RECOVERY_TEST_FAIL_AFTER_FIRST_COMMIT: "1" }).status).not.toBe(0);
+    expect((await readdir(store)).sort()).toEqual(["backup.dump.age"]);
+    expect((await readdir(store)).some((name) => name.endsWith(".partial"))).toBe(false);
+    await rm(store, { recursive: true, force: true });
+    await mkdir(store, { mode: 0o700 });
+    const originalEncryptedDump = await readFile(resolve(output, "backup.dump.age"));
+    await truncate(resolve(output, "backup.dump.age"), 5 * 1024 ** 3 + 1);
+    expect(command(["bash", script, "upload-local"], sourceEnv).status).not.toBe(0);
+    expect(await readdir(store)).toEqual([]);
+    await writeFile(resolve(output, "backup.dump.age"), originalEncryptedDump, { mode: 0o600 });
     expect(command(["bash", script, "upload-local"], sourceEnv).status).toBe(0);
     expect((await readdir(store)).sort()).toEqual(["backup.dump.age", "manifest.txt.age"]);
     expect(await readFile(resolve(store, "backup.dump.age"))).toEqual(await readFile(resolve(output, "backup.dump.age")));
     expect(await readFile(resolve(store, "manifest.txt.age"))).toEqual(await readFile(resolve(output, "manifest.txt.age")));
+    const committedDump = await readFile(resolve(store, "backup.dump.age"));
+    const committedManifest = await readFile(resolve(store, "manifest.txt.age"));
+    expect(command(["bash", script, "upload-local"], sourceEnv).status).not.toBe(0);
+    expect(await readFile(resolve(store, "backup.dump.age"))).toEqual(committedDump);
+    expect(await readFile(resolve(store, "manifest.txt.age"))).toEqual(committedManifest);
+    expect((await readdir(store)).some((name) => name.endsWith(".partial"))).toBe(false);
 
     await admin!.query(`CREATE DATABASE ${targetName}`);
     target = new Pool({ host, port: Number(process.env.RECOVERY_TEST_PORT), user: process.env.RECOVERY_TEST_USER, password: process.env.RECOVERY_TEST_PASSWORD, database: targetName });
