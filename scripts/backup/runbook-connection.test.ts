@@ -104,6 +104,6 @@ test("runbook uses the established private service profile and strict connection
   expect(commandBlock).not.toContain("pg_stat_ssl");
   expect(runbook).not.toContain("ys-sys-001-approved");
   expect(runbook).not.toContain("$HOME/.pg_service.conf");
-  expect(runbook).toContain('[[ $(stat -c %a "$PGSERVICEFILE") == 600 ]]');
-  expect(runbook).toContain('[[ $(stat -c %a "$PGPASSFILE") == 600 ]]');
+  expect(runbook).toContain('$(stat -c %a "$PGSERVICEFILE") == 600');
+  expect(runbook).toContain('$(stat -c %a "$PGPASSFILE") == 600');
 });
