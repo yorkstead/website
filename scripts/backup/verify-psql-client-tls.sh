@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 1 || ! -f "$1" || -L "$1" ]]; then
+if [[ $# -ne 1 ]]; then
+  printf 'TLS verification input is missing or unsafe.\n' >&2
+  exit 2
+fi
+conninfo_file="$1"
+if [[ ! -f "$conninfo_file" || -L "$conninfo_file" ]]; then
+  printf 'TLS verification input is missing or unsafe.\n' >&2
+  exit 2
+fi
+if [[ $(stat -c %a "$conninfo_file") != 600 || $(stat -c %u "$conninfo_file") != $(id -u) ]]; then
   printf 'TLS verification input is missing or unsafe.\n' >&2
   exit 2
 fi
@@ -39,7 +48,7 @@ if LC_ALL=C awk '
       protocol = 1
   }
   END { exit !(same_line || (ssl && protocol)) }
-' "$1"; then
+' "$conninfo_file"; then
   exit 0
 fi
 
