@@ -206,6 +206,13 @@ test("a private preflight directory path is accepted as an evidence reference", 
   expect(result.secretLeak).toBe(false);
 });
 
+test("a short alphanumeric preflight token remains accepted", () => {
+  const result = runValidation({ overrides: { PREFLIGHT_REFERENCE: "synthetic-token-2026" } });
+  expect(result.status).toBe(0);
+  expect(result.stdout).toBe("");
+  expect(result.stderr).toBe("");
+});
+
 test("invalid R2 endpoint format reports its numbered check without echoing the value", () => {
   const result = runValidation({ overrides: { R2_S3_ENDPOINT: "https://endpoint-secret-marker.invalid" } });
   expect(result.status).not.toBe(0);
@@ -306,6 +313,24 @@ test("remaining pre-upload fields report their specific numbered checks", () => 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain(`[YS-SYS-001 check ${String(check).padStart(2, "0")}]`);
     expect(result.stderr).not.toContain(value);
+  }
+});
+
+test("R2 free-storage allowance accepts only 0 through 10 inclusive with at most three decimals", () => {
+  for (const allowance of ["0", "0.5", "9.999", "10", "10.000"]) {
+    const result = runValidation({ overrides: { R2_UNUSED_GB_MONTH: allowance } });
+    expect(result.status, `expected ${allowance} GB-month to pass`).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.secretLeak).toBe(false);
+  }
+
+  for (const allowance of ["10.001", "10.5", "11", "-1", "abc"]) {
+    const result = runValidation({ overrides: { R2_UNUSED_GB_MONTH: allowance } });
+    expect(result.status, `expected ${allowance} GB-month to fail`).not.toBe(0);
+    expect(result.stderr).toContain("[YS-SYS-001 check 04]");
+    expect(result.stderr).toContain("0 through 10 GB-month");
+    expect(result.stderr).not.toContain(allowance);
+    expect(result.secretLeak).toBe(false);
   }
 });
 

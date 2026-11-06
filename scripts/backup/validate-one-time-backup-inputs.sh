@@ -133,7 +133,7 @@ ys_sys_001_validate_backup_inputs() {
     ys_sys_001_fail_check 03 "Directory entry and audit counts must both be non-negative integers from the current approved preflight."
     return 1
   fi
-  if [[ ! "${R2_UNUSED_GB_MONTH:-}" =~ ^([0-9]|10)(\.[0-9]{1,3})?$ ]]; then
+  if [[ ! "${R2_UNUSED_GB_MONTH:-}" =~ ^(10(\.0{1,3})?|[0-9](\.[0-9]{1,3})?)$ ]]; then
     ys_sys_001_fail_check 04 "Unused R2 Standard storage allowance must be a number from 0 through 10 GB-month."
     return 1
   fi

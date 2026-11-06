@@ -28,7 +28,9 @@ The chosen client must be the same PostgreSQL major as the source server (or new
 
 Run from an owner-controlled, encrypted ThinkPad/WSL filesystem with enough free space for both the plaintext archive and encrypted copy. Verify active Windows/WSL disk encryption before use; do not assume it. Use the existing private libpq service entry at `~/.config/ys-sys-001/pg_service.conf`, service alias `ys-sys-001-admin`; do not copy it to another location or change its endpoint or credentials for this procedure. Never put a URL or password in command arguments, shell history, GitHub, CI, or this repository. The service entry must privately resolve to the owner-verified direct endpoint, `dbname=neondb`, and the specifically approved dump role. The command supplies `sslmode=verify-full sslrootcert=system channel_binding=require` directly in its libpq connection string; connection-string options take precedence over service-file and environment values, so service-file options cannot weaken TLS. Verify TLS client-side using `psql \conninfo` (captured privately and checked by the repository helper below), not `pg_stat_ssl`: the owner observed that the server-side catalog can report `ssl=false` while the PostgreSQL client reports its connection as SSL/TLS. `verify-full` performs certificate-chain and hostname validation before a connection succeeds; the client report confirms that the established session is using TLS. The service file and age identity must be regular files owned by the current user and mode 0600. The existing default `~/.pgpass` must already be a regular file owned by the current user and mode 0600. If it is absent or fails validation, stop before connecting; do not create or change a credential file for this procedure. Do not reuse a Preview service profile.
 
-Run the command from the repository root of the reviewed commit so `scripts/backup/verify-psql-client-tls.sh` is the reviewed helper; verify that checkout and helper revision before use. Before starting, privately confirm all of these:
+Run the command only from an isolated checkout of one exact full commit approved for this operation. Never resolve a branch name, tag, or “latest main” at execution time. The pinned checkout must contain this runbook and both reviewed helpers below. Before running the backup command, complete the pinned-source procedure in the next section. If the exact commit cannot be fetched, its identity does not match, a file is missing/modified, a blob hash differs, or Bash syntax validation fails, stop. Do not source a local helper or fall back to another revision.
+
+Before starting, privately confirm all of these:
 
 1. Vercel Production still resolves to the previously verified direct endpoint; compare the private runtime binding with the intended Neon project and `production` branch. The pooled endpoint is not interchangeable for `pg_dump`.
 2. The owner-selected service profile resolves to that same host and `neondb`; TLS is `verify-full`; no inherited `PG*`, URL, Preview, or alternate-service setting can override it.
@@ -39,6 +41,63 @@ Run the command from the repository root of the reviewed commit so `scripts/back
 
 Use the following command pattern only after these private checks and approval. Replace service/profile placeholders locally; do not add live values to this document. Run the shell in a clean session with shell tracing disabled. Ensure the work directory is on encrypted local storage, mode 0700, with enough free space for the uncompressed temporary dump plus retrieved ciphertext. Do not place the workspace in a synced folder.
 
+### Pin and verify the execution source
+
+Obtain the exact 40-character commit SHA from the separate, operation-specific owner approval. The commit must be the reviewed source containing this runbook and the helpers; the hash is not a secret. Use a clean shell and the fixed repository URL below. This fetch requests only that commit SHA, checks out detached HEAD, verifies the runbook against that commit, verifies both helper Git blob IDs, and checks their on-disk Git blob IDs and Bash syntax before any helper is sourced. It extracts and syntax-checks the production command from the pinned runbook. If any command fails, stop; do not substitute `main`, a local copy, another commit, or a different helper.
+
+```bash
+set -euo pipefail
+set +x
+read -r -p 'Exact approved full source commit SHA: ' APPROVED_BACKUP_COMMIT
+[[ "$APPROVED_BACKUP_COMMIT" =~ ^[0-9a-f]{40}$ ]] || { printf 'Pinned-source check 01 failed: enter the exact approved 40-character commit SHA.\n' >&2; exit 1; }
+
+PIN_PARENT="$HOME/.local/state/yorkstead/ys-sys-001/pinned"
+install -d -m 0700 -- "$PIN_PARENT"
+[[ "$(stat -c %a -- "$PIN_PARENT")" == 700 && "$(stat -c %u -- "$PIN_PARENT")" == "$(id -u)" ]] || { printf 'Pinned-source check 02 failed: private pinned-source directory permissions or ownership are unsafe.\n' >&2; exit 1; }
+[[ "$(realpath -e -- "$PIN_PARENT")" == "$PIN_PARENT" ]] || { printf 'Pinned-source check 02 failed: pinned-source directory is not canonical.\n' >&2; exit 1; }
+PINNED_DIR="$PIN_PARENT/$APPROVED_BACKUP_COMMIT"
+[[ ! -e "$PINNED_DIR" && ! -L "$PINNED_DIR" ]] || { printf 'Pinned-source check 03 failed: pinned checkout path already exists; stop for review.\n' >&2; exit 1; }
+install -d -m 0700 -- "$PINNED_DIR"
+git -C "$PINNED_DIR" init --quiet
+git -C "$PINNED_DIR" remote add origin https://github.com/yorkstead/website.git
+git -C "$PINNED_DIR" fetch --quiet --no-tags --depth=1 origin "$APPROVED_BACKUP_COMMIT" || { printf 'Pinned-source check 04 failed: the exact approved commit could not be fetched.\n' >&2; exit 1; }
+FETCHED_COMMIT="$(git -C "$PINNED_DIR" rev-parse --verify FETCH_HEAD^{commit})"
+[[ "$FETCHED_COMMIT" == "$APPROVED_BACKUP_COMMIT" ]] || { printf 'Pinned-source check 04 failed: fetched commit did not match the approved commit.\n' >&2; exit 1; }
+git -C "$PINNED_DIR" checkout --quiet --detach "$APPROVED_BACKUP_COMMIT"
+[[ "$(git -C "$PINNED_DIR" rev-parse HEAD)" == "$APPROVED_BACKUP_COMMIT" ]] || { printf 'Pinned-source check 05 failed: checkout is not at the approved commit.\n' >&2; exit 1; }
+
+RUNBOOK_REL='specs/037-ys-sys-001-systems-registry/one-time-production-backup.md'
+INPUT_HELPER_REL='scripts/backup/validate-one-time-backup-inputs.sh'
+TLS_HELPER_REL='scripts/backup/verify-psql-client-tls.sh'
+EXPECTED_INPUT_HELPER_BLOB='acfe7b447fb7d3daba597ae8bd6aaf2100b36380'
+EXPECTED_TLS_HELPER_BLOB='35a4ef061a95bf59215127751a273d7f93880eb9'
+for relative_path in "$RUNBOOK_REL" "$INPUT_HELPER_REL" "$TLS_HELPER_REL"; do
+  file="$PINNED_DIR/$relative_path"
+  [[ -f "$file" && ! -L "$file" ]] || { printf 'Pinned-source check 06 failed: a required runbook or helper file is missing or unsafe.\n' >&2; exit 1; }
+  [[ "$(git -C "$PINNED_DIR" rev-parse "$APPROVED_BACKUP_COMMIT:$relative_path")" == "$(git -C "$PINNED_DIR" hash-object -- "$file")" ]] || { printf 'Pinned-source check 06 failed: a checked-out file differs from its approved Git blob.\n' >&2; exit 1; }
+done
+[[ "$(git -C "$PINNED_DIR" rev-parse "$APPROVED_BACKUP_COMMIT:$INPUT_HELPER_REL")" == "$EXPECTED_INPUT_HELPER_BLOB" ]] || { printf 'Pinned-source check 07 failed: input-validation helper blob SHA did not match the reviewed pin.\n' >&2; exit 1; }
+[[ "$(git -C "$PINNED_DIR" rev-parse "$APPROVED_BACKUP_COMMIT:$TLS_HELPER_REL")" == "$EXPECTED_TLS_HELPER_BLOB" ]] || { printf 'Pinned-source check 07 failed: TLS helper blob SHA did not match the reviewed pin.\n' >&2; exit 1; }
+git -C "$PINNED_DIR" diff --quiet "$APPROVED_BACKUP_COMMIT" -- "$RUNBOOK_REL" "$INPUT_HELPER_REL" "$TLS_HELPER_REL" || { printf 'Pinned-source check 08 failed: a reviewed source file has local changes.\n' >&2; exit 1; }
+bash -n "$PINNED_DIR/$INPUT_HELPER_REL" || { printf 'Pinned-source check 09 failed: input-validation helper has invalid Bash syntax.\n' >&2; exit 1; }
+bash -n "$PINNED_DIR/$TLS_HELPER_REL" || { printf 'Pinned-source check 09 failed: TLS helper has invalid Bash syntax.\n' >&2; exit 1; }
+printf '%s\n' "$APPROVED_BACKUP_COMMIT" > "$PINNED_DIR/.approved-source-commit"
+chmod 0600 "$PINNED_DIR/.approved-source-commit"
+awk '
+  /^<!-- YS-SYS-001-BACKUP-COMMAND-BEGIN -->$/ { marked=1; next }
+  marked && /^```bash$/ { code=1; next }
+  marked && code && /^```$/ { exit }
+  marked && code { print }
+' "$PINNED_DIR/$RUNBOOK_REL" > "$PINNED_DIR/.backup-command.sh"
+[[ -s "$PINNED_DIR/.backup-command.sh" ]] || { printf 'Pinned-source check 10 failed: production command block could not be extracted from the pinned runbook.\n' >&2; exit 1; }
+chmod 0600 "$PINNED_DIR/.backup-command.sh"
+bash -n "$PINNED_DIR/.backup-command.sh" || { printf 'Pinned-source check 10 failed: extracted production command has invalid Bash syntax.\n' >&2; exit 1; }
+printf 'Pinned runbook and helper integrity checks passed. Review the pinned runbook at the exact commit before continuing.\n'
+```
+
+Do not run the extracted command until all private target, storage, permissions, size, cost, recovery-key, and operation-specific approval gates above are independently satisfied. From the same clean shell, run `cd "$PINNED_DIR" && bash .backup-command.sh`. The command repeats the approved-commit, clean-file, Git blob, runbook-command, and syntax checks immediately before sourcing the input helper. Keep the pinned checkout until the operation is either cancelled or fully complete; remove only that private code-only directory afterwards. If the shell is closed, repeat this exact pin procedure from the same approved SHA.
+
+<!-- YS-SYS-001-BACKUP-COMMAND-BEGIN -->
 ```bash
 (
 set -euo pipefail
@@ -62,6 +121,16 @@ if [[ ! -r scripts/backup/validate-one-time-backup-inputs.sh ]]; then
   printf '[YS-SYS-001 check 00] Reviewed local backup validation helper is missing.\n' >&2
   exit 1
 fi
+[[ -f .approved-source-commit && ! -L .approved-source-commit && "$(stat -c %a -- .approved-source-commit)" == 600 && "$(stat -c %u -- .approved-source-commit)" == "$(id -u)" ]] || { printf '[YS-SYS-001 check 20] The pinned source-commit record is missing or unsafe.\n' >&2; exit 1; }
+APPROVED_BACKUP_COMMIT="$(<.approved-source-commit)"
+[[ "$APPROVED_BACKUP_COMMIT" =~ ^[0-9a-f]{40}$ && "$(git rev-parse HEAD)" == "$APPROVED_BACKUP_COMMIT" ]] || { printf '[YS-SYS-001 check 20] The execution directory is not at the exact approved source commit.\n' >&2; exit 1; }
+EXPECTED_INPUT_HELPER_BLOB='acfe7b447fb7d3daba597ae8bd6aaf2100b36380'
+EXPECTED_TLS_HELPER_BLOB='35a4ef061a95bf59215127751a273d7f93880eb9'
+[[ "$(git rev-parse "$APPROVED_BACKUP_COMMIT:scripts/backup/validate-one-time-backup-inputs.sh")" == "$EXPECTED_INPUT_HELPER_BLOB" && "$(git hash-object scripts/backup/validate-one-time-backup-inputs.sh)" == "$EXPECTED_INPUT_HELPER_BLOB" ]] || { printf '[YS-SYS-001 check 20] The input-validation helper is missing, modified, or does not match the reviewed Git blob.\n' >&2; exit 1; }
+[[ "$(git rev-parse "$APPROVED_BACKUP_COMMIT:scripts/backup/verify-psql-client-tls.sh")" == "$EXPECTED_TLS_HELPER_BLOB" && "$(git hash-object scripts/backup/verify-psql-client-tls.sh)" == "$EXPECTED_TLS_HELPER_BLOB" ]] || { printf '[YS-SYS-001 check 20] The TLS helper is missing, modified, or does not match the reviewed Git blob.\n' >&2; exit 1; }
+[[ -f specs/037-ys-sys-001-systems-registry/one-time-production-backup.md && ! -L specs/037-ys-sys-001-systems-registry/one-time-production-backup.md ]] && git diff --quiet "$APPROVED_BACKUP_COMMIT" -- specs/037-ys-sys-001-systems-registry/one-time-production-backup.md || { printf '[YS-SYS-001 check 20] The runbook is missing or differs from the approved commit.\n' >&2; exit 1; }
+cmp -s "${BASH_SOURCE[0]}" <(awk '/^<!-- YS-SYS-001-BACKUP-COMMAND-BEGIN -->$/ { marked=1; next } marked && /^```bash$/ { code=1; next } marked && code && /^```$/ { exit } marked && code { print }' specs/037-ys-sys-001-systems-registry/one-time-production-backup.md) || { printf '[YS-SYS-001 check 20] The executed command does not match the command in the pinned runbook.\n' >&2; exit 1; }
+bash -n scripts/backup/validate-one-time-backup-inputs.sh && bash -n scripts/backup/verify-psql-client-tls.sh || { printf '[YS-SYS-001 check 20] A pinned helper failed Bash syntax validation.\n' >&2; exit 1; }
 source scripts/backup/validate-one-time-backup-inputs.sh
 ys_sys_001_check_local_utilities || exit 1
 ys_sys_001_check_postgres_clients || exit 1
@@ -256,6 +325,7 @@ pg_restore --list "$stage/plain.dump" > "$stage/retrieved-archive.list" \
 cmp --silent "$stage/archive.list" "$stage/retrieved-archive.list"
 )
 ```
+<!-- YS-SYS-001-BACKUP-COMMAND-END -->
 
 The block is a command pattern, not execution authorization. The operator must resolve private variables from protected local files/secure input without writing secret values to history or logs. R2 credentials must be injected through the AWS CLI's environment for this one process only; never use an account-wide token or persistent shared credentials file. Ensure the AWS-compatible `put-object` requests are covered by the exact R2 bucket-lock prefix policy; do not change R2 settings from the command. Upload only the encrypted dump and encrypted manifest. Redact error files before any sharing; do not share the generated archive list because it reveals schema names.
 
@@ -267,7 +337,9 @@ The sourced offline validator reports the first failed check as `[YS-SYS-001 che
 |---|---|
 | 01 | Fixed local workspace location, directory type, canonical path, owner, and mode 0700; stage creation and mode. |
 | 02 | A prompted value was not supplied. The message names its input class, never its value. |
-| 03–05 | Preflight counts, R2 free-storage allowance, age key label, or evidence-reference format. The evidence reference accepts a short token or slash-prefixed private local path. |
+| 03 | Preflight entry and audit counts are non-negative integers. |
+| 04 | R2 free-storage allowance is a decimal from 0 through 10 GB-month inclusive, with at most three fractional digits; values above 10 and negative/non-numeric values fail. |
+| 05 | Age key label and evidence-reference format. The evidence reference accepts a short token or slash-prefixed private local path. |
 | 06–09 | Age public-recipient format, PostgreSQL role-name format, R2 bucket-name format, or HTTPS US-jurisdiction R2 endpoint format. |
 | 10–13 | Age identity, PostgreSQL service, or password file missing/unsafe, or file paths not absolute and canonical. Enter expanded absolute paths; `~` is not expanded by `read`. |
 | 14–15 | Required private file mode or owner does not meet the current-user/mode-0600 requirement. |
@@ -275,8 +347,10 @@ The sourced offline validator reports the first failed check as `[YS-SYS-001 che
 | 17 | The local age identity cannot be read or does not derive the supplied recipient. No key material or recipient is printed. |
 | 18 | `psql`, `pg_dump`, or `pg_restore` is unavailable, fails to report a version, or is not PostgreSQL major 18. |
 | 19 | After the fixed source query, connected role/database identity or server major does not match the privately approved target. No actual identity is printed. |
+| 20 | Pinned commit, runbook/helper Git blobs, local source integrity, or helper Bash syntax does not match the approved source. |
 
-The previous failed attempt stopped before the script printed its generated object key. In this procedure, key generation/printing is after the local input, workspace, path, permission, ownership, and age-identity checks; the Production source query and any R2 operation occur later. That observation rules out neither an earlier local validation failure nor a shell/setup error, and does not indicate that an upload began. The prior run emitted no check number, and its inputs were not retained, so the exact failed predicate cannot be proven. One concrete likely cause is the former evidence-reference validator: it rejected `/`, even though the prompt asks for a preflight reference and the supplied preflight evidence is represented by a local directory path. If that path was entered, this regex defect would stop execution before key output despite the separately verified endpoint, key match, files, and permissions. The remaining candidates include counts, unused-storage allowance, age key label, role or bucket format, workspace/canonical-path/owner checks, and prompt setup. PostgreSQL client-version checks in the former procedure ran only after key output and therefore cannot explain the reported pre-key stop. The new checks accept a safe slash-prefixed reference and identify any remaining local gate without repeating or authorizing the Production operation.
+For the earlier attempt, the owner confirmed the exact preflight evidence reference was a short token that satisfies the former token pattern, so rejection of slash-prefixed paths cannot explain that attempt. The former validator did have a confirmed limitation: it rejected absolute evidence paths; that is only a hypothetical failure if such a path had been entered. The actual failure remains unconfirmed because no numbered diagnostic or complete input record was captured. The owner later independently confirmed endpoint format, private files and permissions, PostgreSQL 18.6 clients, and age identity/recipient match, but that does not establish every other input or shell prerequisite from the failed run. The old PostgreSQL version check occurred after object-key output and cannot explain the reported stop before the key. Treat any other pre-key failure causes as hypotheses; do not claim this incident is diagnosed. The updated offline validator accepts a safe short token or slash-prefixed local path, and emits the first failing numbered check without repeating input values.
+
 
 The owner reports a PASS for a synthetic Cloudflare R2 transport test using fictional age-encrypted data and `aws s3api put-object --if-none-match '*'`; no Production data or additional transport operation was performed for this change. Cloudflare documents that `If-None-Match: *` on `PutObject` is checked atomically when the object commits, so a key collision fails rather than replacing the object. Each encrypted dump and encrypted manifest uses its own unique key and conditional PutObject. Never retry the same key after an ambiguous result; keep the encrypted object if only one of the two writes committed, and require review before a new attempt. The object keys and command errors stay private. Repository CI uses a local tmpfs simulator only and does not contact Cloudflare.
 
