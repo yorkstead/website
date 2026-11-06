@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -69,6 +69,26 @@ test("client TLS verification rejects false SSL or a missing protocol table row"
   }
 });
 
+test("client TLS verification rejects non-private or symlinked reports", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "ys-sys-001-tls-mode-"));
+  const privateFile = path.join(directory, "conninfo.txt");
+  const link = path.join(directory, "conninfo-link.txt");
+  try {
+    writeFileSync(privateFile, "| SSL Connection | true |\n| SSL Protocol | TLSv1.3 |\n", { mode: 0o600 });
+    chmodSync(privateFile, 0o644);
+    const unsafeMode = spawnSync("bash", [helper, privateFile], { encoding: "utf8" });
+    expect(unsafeMode.status).toBe(2);
+    expect(unsafeMode.stderr).not.toContain("SSL Protocol");
+
+    chmodSync(privateFile, 0o600);
+    Bun.spawnSync(["ln", "-s", privateFile, link]);
+    const symlink = spawnSync("bash", [helper, link], { encoding: "utf8" });
+    expect(symlink.status).toBe(2);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("runbook uses the established private service profile and strict connection protections", () => {
   const commandBlock = runbook.match(/```bash\n([\s\S]*?)\n```/)?.[1];
 
@@ -78,6 +98,7 @@ test("runbook uses the established private service profile and strict connection
   expect(runbook).toContain("service=ys-sys-001-admin");
   expect(runbook).toContain("sslmode=verify-full sslrootcert=system channel_binding=require");
   expect(runbook).toContain("PGCHANNELBINDING=require");
+  expect(runbook).toContain("-v ON_ERROR_STOP=1");
   expect(runbook).toContain("scripts/backup/verify-psql-client-tls.sh");
   expect(commandBlock).toContain("-c '\\conninfo'");
   expect(commandBlock).not.toContain("pg_stat_ssl");
