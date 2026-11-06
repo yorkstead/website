@@ -58,13 +58,20 @@ unset PGHOST PGHOSTADDR PGPORT PGUSER PGPASSWORD PGDATABASE PGSERVICE PGOPTIONS
 unset DATABASE_URL POSTGRES_URL POSTGRESQL_URL DIRECT_URL DB_URL
 for name in $(compgen -e); do [[ $name == AWS_* ]] && unset "$name"; done
 
+if [[ ! -r scripts/backup/validate-one-time-backup-inputs.sh ]]; then
+  printf '[YS-SYS-001 check 00] Reviewed local backup validation helper is missing.\n' >&2
+  exit 1
+fi
+source scripts/backup/validate-one-time-backup-inputs.sh
+ys_sys_001_check_local_utilities || exit 1
+ys_sys_001_check_postgres_clients || exit 1
+
 workspace="$HOME/.local/state/yorkstead/ys-sys-001/backups"
-install -d -m 0700 "$workspace"
-[[ ! -L "$workspace" && -d "$workspace" && $(stat -c %a "$workspace") == 700 ]]
-[[ $(stat -c %u "$workspace") == $(id -u) ]]
-[[ $(realpath -e "$workspace") == "$workspace" ]]
-stage="$(mktemp -d "$workspace/one-time.XXXXXX")"
-chmod 0700 "$stage"
+ys_sys_001_prepare_workspace || exit 1
+stage="$(mktemp -d "$workspace/one-time.XXXXXX")" || {
+  ys_sys_001_fail_check 01 "A private temporary workspace could not be created."
+  exit 1
+}
 cleanup() {
   unset R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
   rm -f -- "$stage/plain.dump" "$stage/retrieved.dump.age" "$stage/backup.dump.age" \
@@ -81,35 +88,26 @@ trap cleanup EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
+if ! chmod 0700 "$stage"; then
+  ys_sys_001_fail_check 01 "The private temporary workspace could not be secured."
+  exit 1
+fi
 
-# Enter these only from the existing protected local configuration/secure prompt.
+# Enter secrets only from the existing protected local configuration/secure prompt.
 # Never echo them or run the session with shell tracing enabled.
-read -rsp 'R2 access key: ' R2_ACCESS_KEY_ID; printf '\n'
-read -rsp 'R2 secret key: ' R2_SECRET_ACCESS_KEY; printf '\n'
-read -rsp 'Approved private R2 bucket name: ' R2_BUCKET; printf '\n'
-read -rsp 'Private US-jurisdiction R2 S3 endpoint: ' R2_S3_ENDPOINT; printf '\n'
-read -rp 'Approved age public recipient: ' AGE_PUBLIC_RECIPIENT
-read -rsp 'Age identity file path: ' AGE_IDENTITY_FILE; printf '\n'
-read -rp 'Approved PostgreSQL dump role name: ' APPROVED_DUMP_ROLE
-read -rp 'Non-secret age key label: ' AGE_KEY_ID
-read -rp 'Current preflight evidence reference: ' PREFLIGHT_REFERENCE
-read -rp 'Current Directory entry count from preflight: ' DIRECTORY_ENTRY_COUNT
-read -rp 'Current Directory audit count from preflight: ' DIRECTORY_AUDIT_COUNT
-read -rp 'Unused R2 Standard free storage allowance (GB-month, 0..10): ' R2_UNUSED_GB_MONTH
-[[ $DIRECTORY_ENTRY_COUNT =~ ^[0-9]+$ && $DIRECTORY_AUDIT_COUNT =~ ^[0-9]+$ ]]
-[[ $R2_UNUSED_GB_MONTH =~ ^([0-9]|10)(\.[0-9]{1,3})?$ ]]
-[[ $AGE_KEY_ID =~ ^[A-Za-z0-9_-]{1,64}$ && $PREFLIGHT_REFERENCE =~ ^[A-Za-z0-9_.:-]{1,120}$ ]]
-[[ $AGE_PUBLIC_RECIPIENT =~ ^age1[a-z0-9]{50,}$ ]]
-[[ $APPROVED_DUMP_ROLE =~ ^[A-Za-z_][A-Za-z0-9_$]{0,62}$ ]]
-[[ $R2_BUCKET =~ ^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$ ]]
-[[ $R2_S3_ENDPOINT =~ ^https://[a-z0-9-]+\.us\.r2\.cloudflarestorage\.com$ ]]
-[[ -f $AGE_IDENTITY_FILE && ! -L $AGE_IDENTITY_FILE ]]
-[[ -f $PGSERVICEFILE && ! -L $PGSERVICEFILE && -f $PGPASSFILE && ! -L $PGPASSFILE ]]
-[[ $(realpath -e "$AGE_IDENTITY_FILE") == "$AGE_IDENTITY_FILE" && $(realpath -e "$PGSERVICEFILE") == "$PGSERVICEFILE" && $(realpath -e "$PGPASSFILE") == "$PGPASSFILE" ]]
-[[ $(stat -c %a "$PGSERVICEFILE") == 600 && $(stat -c %a "$PGPASSFILE") == 600 ]]
-[[ $(stat -c %a "$AGE_IDENTITY_FILE") == 600 ]]
-[[ $(stat -c %u "$PGSERVICEFILE") == $(id -u) && $(stat -c %u "$PGPASSFILE") == $(id -u) && $(stat -c %u "$AGE_IDENTITY_FILE") == $(id -u) ]]
-[[ $(age-keygen -y "$AGE_IDENTITY_FILE") == "$AGE_PUBLIC_RECIPIENT" ]]
+ys_sys_001_read_secret R2_ACCESS_KEY_ID 'R2 access key: ' 'R2 access key' || exit 1
+ys_sys_001_read_secret R2_SECRET_ACCESS_KEY 'R2 secret key: ' 'R2 secret key' || exit 1
+ys_sys_001_read_secret R2_BUCKET 'Approved private R2 bucket name: ' 'R2 bucket name' || exit 1
+ys_sys_001_read_secret R2_S3_ENDPOINT 'Private US-jurisdiction R2 S3 endpoint: ' 'R2 endpoint' || exit 1
+ys_sys_001_read_text AGE_PUBLIC_RECIPIENT 'Approved age public recipient: ' 'Age recipient' || exit 1
+ys_sys_001_read_secret AGE_IDENTITY_FILE 'Age identity file path: ' 'Age identity file path' || exit 1
+ys_sys_001_read_text APPROVED_DUMP_ROLE 'Approved PostgreSQL dump role name: ' 'PostgreSQL dump role' || exit 1
+ys_sys_001_read_text AGE_KEY_ID 'Non-secret age key label: ' 'Age key label' || exit 1
+ys_sys_001_read_text PREFLIGHT_REFERENCE 'Current preflight evidence reference (short token or absolute local path): ' 'Preflight evidence reference' || exit 1
+ys_sys_001_read_text DIRECTORY_ENTRY_COUNT 'Current Directory entry count from preflight: ' 'Directory entry count' || exit 1
+ys_sys_001_read_text DIRECTORY_AUDIT_COUNT 'Current Directory audit count from preflight: ' 'Directory audit count' || exit 1
+ys_sys_001_read_text R2_UNUSED_GB_MONTH 'Unused R2 Standard free storage allowance (GB-month, 0..10): ' 'R2 free storage allowance' || exit 1
+ys_sys_001_validate_backup_inputs || exit 1
 capture_utc="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
 UNIQUE_OBJECT_KEY="ys-sys-001/production/full-db/${capture_utc}-$(openssl rand -hex 16).dump.age"
 printf '%s\n' "$UNIQUE_OBJECT_KEY"
@@ -124,11 +122,14 @@ env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" PGPASSFILE="$PGP
   > "$stage/source-check.txt" 2> "$stage/connection-error.txt"
 chmod 0600 "$stage/source-check.txt" "$stage/connection-error.txt"
 IFS='|' read -r actual_user actual_database server_version_num < "$stage/source-check.txt"
-client_major="$(pg_dump --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
-restore_major="$(pg_restore --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
-psql_major="$(psql --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
-[[ $actual_user == "$APPROVED_DUMP_ROLE" && $actual_database == neondb && $server_version_num =~ ^[0-9]+$ ]]
-[[ ${server_version_num:0:2} == 18 && $client_major == 18 && $restore_major == 18 && $psql_major == 18 ]]
+if [[ "$actual_user" != "$APPROVED_DUMP_ROLE" || "$actual_database" != neondb || ! "$server_version_num" =~ ^[0-9]+$ ]]; then
+  ys_sys_001_fail_check 19 "The connected PostgreSQL identity did not match the privately approved role and database."
+  exit 1
+fi
+if [[ "${server_version_num:0:2}" != 18 ]]; then
+  ys_sys_001_fail_check 19 "The Production PostgreSQL server major version is not compatible with the approved PostgreSQL 18 clients."
+  exit 1
+fi
 
 # Capture only psql's own connection report. It contains private connection metadata;
 # the helper reads it without printing it and returns only success/failure.
@@ -257,6 +258,25 @@ cmp --silent "$stage/archive.list" "$stage/retrieved-archive.list"
 ```
 
 The block is a command pattern, not execution authorization. The operator must resolve private variables from protected local files/secure input without writing secret values to history or logs. R2 credentials must be injected through the AWS CLI's environment for this one process only; never use an account-wide token or persistent shared credentials file. Ensure the AWS-compatible `put-object` requests are covered by the exact R2 bucket-lock prefix policy; do not change R2 settings from the command. Upload only the encrypted dump and encrypted manifest. Redact error files before any sharing; do not share the generated archive list because it reveals schema names.
+
+### Numbered pre-upload diagnostics
+
+The sourced offline validator reports the first failed check as `[YS-SYS-001 check NN]` plus a condition-specific message. It never echoes entered values, file paths, recipients, credentials, identity output, or connection details. Correct the named condition privately, then repeat only after checking that no prior Production or remote operation occurred. Checks are:
+
+| Check | Condition |
+|---|---|
+| 01 | Fixed local workspace location, directory type, canonical path, owner, and mode 0700; stage creation and mode. |
+| 02 | A prompted value was not supplied. The message names its input class, never its value. |
+| 03–05 | Preflight counts, R2 free-storage allowance, age key label, or evidence-reference format. The evidence reference accepts a short token or slash-prefixed private local path. |
+| 06–09 | Age public-recipient format, PostgreSQL role-name format, R2 bucket-name format, or HTTPS US-jurisdiction R2 endpoint format. |
+| 10–13 | Age identity, PostgreSQL service, or password file missing/unsafe, or file paths not absolute and canonical. Enter expanded absolute paths; `~` is not expanded by `read`. |
+| 14–15 | Required private file mode or owner does not meet the current-user/mode-0600 requirement. |
+| 16 | A required local utility is unavailable. The message names only the executable. |
+| 17 | The local age identity cannot be read or does not derive the supplied recipient. No key material or recipient is printed. |
+| 18 | `psql`, `pg_dump`, or `pg_restore` is unavailable, fails to report a version, or is not PostgreSQL major 18. |
+| 19 | After the fixed source query, connected role/database identity or server major does not match the privately approved target. No actual identity is printed. |
+
+The previous failed attempt stopped before the script printed its generated object key. In this procedure, key generation/printing is after the local input, workspace, path, permission, ownership, and age-identity checks; the Production source query and any R2 operation occur later. That observation rules out neither an earlier local validation failure nor a shell/setup error, and does not indicate that an upload began. The prior run emitted no check number, and its inputs were not retained, so the exact failed predicate cannot be proven. One concrete likely cause is the former evidence-reference validator: it rejected `/`, even though the prompt asks for a preflight reference and the supplied preflight evidence is represented by a local directory path. If that path was entered, this regex defect would stop execution before key output despite the separately verified endpoint, key match, files, and permissions. The remaining candidates include counts, unused-storage allowance, age key label, role or bucket format, workspace/canonical-path/owner checks, and prompt setup. PostgreSQL client-version checks in the former procedure ran only after key output and therefore cannot explain the reported pre-key stop. The new checks accept a safe slash-prefixed reference and identify any remaining local gate without repeating or authorizing the Production operation.
 
 The owner reports a PASS for a synthetic Cloudflare R2 transport test using fictional age-encrypted data and `aws s3api put-object --if-none-match '*'`; no Production data or additional transport operation was performed for this change. Cloudflare documents that `If-None-Match: *` on `PutObject` is checked atomically when the object commits, so a key collision fails rather than replacing the object. Each encrypted dump and encrypted manifest uses its own unique key and conditional PutObject. Never retry the same key after an ambiguous result; keep the encrypted object if only one of the two writes committed, and require review before a new attempt. The object keys and command errors stay private. Repository CI uses a local tmpfs simulator only and does not contact Cloudflare.
 
