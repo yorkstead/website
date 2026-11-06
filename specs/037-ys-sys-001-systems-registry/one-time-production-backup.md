@@ -26,7 +26,7 @@ The chosen client must be the same PostgreSQL major as the source server (or new
 
 ## Owner-operated procedure — run only after separate authorization
 
-Run from an owner-controlled, encrypted ThinkPad/WSL filesystem with enough free space for both the plaintext archive and encrypted copy. Verify active Windows/WSL disk encryption before use; do not assume it. Use the existing private libpq service entry at `~/.config/ys-sys-001/pg_service.conf`, service alias `ys-sys-001-admin`; do not copy it to another location or change its endpoint or credentials for this procedure. Never put a URL or password in command arguments, shell history, GitHub, CI, or this repository. The service entry must privately resolve to the owner-verified direct endpoint, `dbname=neondb`, and the specifically approved dump role. The command supplies `sslmode=verify-full sslrootcert=system channel_binding=require` directly in its libpq connection string; connection-string options take precedence over service-file and environment values, so service-file options cannot weaken TLS. Verify TLS client-side using `psql \conninfo` (captured privately and checked by the repository helper below), not `pg_stat_ssl`: the owner observed that the server-side catalog can report `ssl=false` while the PostgreSQL client reports its connection as SSL/TLS. `verify-full` performs certificate-chain and hostname validation before a connection succeeds; the client report confirms that the established session is using TLS. The service file and age identity must be regular files owned by the current user and mode 0600. If the default `~/.pgpass` exists, it must also be a regular file owned by the current user and mode 0600; otherwise libpq may prompt for the password interactively. Do not create or change a credential file for this procedure. Do not reuse a Preview service profile.
+Run from an owner-controlled, encrypted ThinkPad/WSL filesystem with enough free space for both the plaintext archive and encrypted copy. Verify active Windows/WSL disk encryption before use; do not assume it. Use the existing private libpq service entry at `~/.config/ys-sys-001/pg_service.conf`, service alias `ys-sys-001-admin`; do not copy it to another location or change its endpoint or credentials for this procedure. Never put a URL or password in command arguments, shell history, GitHub, CI, or this repository. The service entry must privately resolve to the owner-verified direct endpoint, `dbname=neondb`, and the specifically approved dump role. The command supplies `sslmode=verify-full sslrootcert=system channel_binding=require` directly in its libpq connection string; connection-string options take precedence over service-file and environment values, so service-file options cannot weaken TLS. Verify TLS client-side using `psql \conninfo` (captured privately and checked by the repository helper below), not `pg_stat_ssl`: the owner observed that the server-side catalog can report `ssl=false` while the PostgreSQL client reports its connection as SSL/TLS. `verify-full` performs certificate-chain and hostname validation before a connection succeeds; the client report confirms that the established session is using TLS. The service file and age identity must be regular files owned by the current user and mode 0600. The existing default `~/.pgpass` must already be a regular file owned by the current user and mode 0600. If it is absent or fails validation, stop before connecting; do not create or change a credential file for this procedure. Do not reuse a Preview service profile.
 
 Run the command from the repository root of the reviewed commit so `scripts/backup/verify-psql-client-tls.sh` is the reviewed helper; verify that checkout and helper revision before use. Before starting, privately confirm all of these:
 
@@ -50,6 +50,7 @@ for name in $(compgen -e); do
 done
 
 export PGSERVICEFILE="$HOME/.config/ys-sys-001/pg_service.conf"
+export PGPASSFILE="$HOME/.pgpass"
 export PGSSLMODE=verify-full
 export PGSSLROOTCERT=system
 export PGCHANNELBINDING=require
@@ -103,15 +104,11 @@ read -rp 'Unused R2 Standard free storage allowance (GB-month, 0..10): ' R2_UNUS
 [[ $R2_BUCKET =~ ^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$ ]]
 [[ $R2_S3_ENDPOINT =~ ^https://[a-z0-9-]+\.us\.r2\.cloudflarestorage\.com$ ]]
 [[ -f $AGE_IDENTITY_FILE && ! -L $AGE_IDENTITY_FILE ]]
-[[ -f $PGSERVICEFILE && ! -L $PGSERVICEFILE ]]
-[[ $(realpath -e "$AGE_IDENTITY_FILE") == "$AGE_IDENTITY_FILE" && $(realpath -e "$PGSERVICEFILE") == "$PGSERVICEFILE" ]]
-[[ $(stat -c %a "$PGSERVICEFILE") == 600 ]]
+[[ -f $PGSERVICEFILE && ! -L $PGSERVICEFILE && -f $PGPASSFILE && ! -L $PGPASSFILE ]]
+[[ $(realpath -e "$AGE_IDENTITY_FILE") == "$AGE_IDENTITY_FILE" && $(realpath -e "$PGSERVICEFILE") == "$PGSERVICEFILE" && $(realpath -e "$PGPASSFILE") == "$PGPASSFILE" ]]
+[[ $(stat -c %a "$PGSERVICEFILE") == 600 && $(stat -c %a "$PGPASSFILE") == 600 ]]
 [[ $(stat -c %a "$AGE_IDENTITY_FILE") == 600 ]]
-[[ $(stat -c %u "$PGSERVICEFILE") == $(id -u) && $(stat -c %u "$AGE_IDENTITY_FILE") == $(id -u) ]]
-if [[ -e "$HOME/.pgpass" ]]; then
-  [[ -f "$HOME/.pgpass" && ! -L "$HOME/.pgpass" && $(realpath -e "$HOME/.pgpass") == "$HOME/.pgpass" ]]
-  [[ $(stat -c %a "$HOME/.pgpass") == 600 && $(stat -c %u "$HOME/.pgpass") == $(id -u) ]]
-fi
+[[ $(stat -c %u "$PGSERVICEFILE") == $(id -u) && $(stat -c %u "$PGPASSFILE") == $(id -u) && $(stat -c %u "$AGE_IDENTITY_FILE") == $(id -u) ]]
 [[ $(age-keygen -y "$AGE_IDENTITY_FILE") == "$AGE_PUBLIC_RECIPIENT" ]]
 capture_utc="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
 UNIQUE_OBJECT_KEY="ys-sys-001/production/full-db/${capture_utc}-$(openssl rand -hex 16).dump.age"
@@ -119,9 +116,9 @@ printf '%s\n' "$UNIQUE_OBJECT_KEY"
 
 # Run privately; capture and inspect output without printing endpoint or credentials.
 # The private output must confirm the approved role, database=neondb, and PostgreSQL major.
-env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" \
+env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" PGPASSFILE="$PGPASSFILE" \
   PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require \
-  psql -X -qAt "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
+  psql -X -w -qAt "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
   -F '|' \
   -c "SELECT current_user, current_database(), current_setting('server_version_num')" \
   > "$stage/source-check.txt" 2> "$stage/connection-error.txt"
@@ -135,9 +132,9 @@ psql_major="$(psql --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)?.*/\1/')"
 
 # Capture only psql's own connection report. It contains private connection metadata;
 # the helper reads it without printing it and returns only success/failure.
-if ! env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" \
+if ! env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" PGPASSFILE="$PGPASSFILE" \
   PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require LC_ALL=C \
-  psql -X -q "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
+  psql -X -w -q "service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" \
   -c '\conninfo' > "$stage/client-conninfo.txt" 2> "$stage/connection-error.txt"; then
   chmod 0600 "$stage/client-conninfo.txt" "$stage/connection-error.txt"
   printf 'Client connection verification failed; details remain in the private stage.\n' >&2
@@ -146,10 +143,10 @@ fi
 chmod 0600 "$stage/client-conninfo.txt" "$stage/connection-error.txt"
 scripts/backup/verify-psql-client-tls.sh "$stage/client-conninfo.txt"
 
-env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" \
+env -i PATH="$PATH" HOME="$HOME" PGSERVICEFILE="$PGSERVICEFILE" PGPASSFILE="$PGPASSFILE" \
   PGSSLMODE=verify-full PGSSLROOTCERT=system PGCHANNELBINDING=require \
 pg_dump --dbname="service=ys-sys-001-admin sslmode=verify-full sslrootcert=system channel_binding=require" --format=custom --create \
-  --lock-wait-timeout=15s --file="$stage/plain.dump" \
+  --no-password --lock-wait-timeout=15s --file="$stage/plain.dump" \
   > /dev/null 2> "$stage/pg-dump-stderr.txt"
 chmod 0600 "$stage/pg-dump-stderr.txt"
 [[ ! -s "$stage/pg-dump-stderr.txt" ]]
