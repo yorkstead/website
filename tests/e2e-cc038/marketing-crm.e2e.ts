@@ -139,7 +139,7 @@ test("owner links a prospect to CRM without losing Marketing history or duplicat
   await prospectCard(secondCompany).getByRole("button", { name: "Edit" }).click();
   const duplicateEditor = page.getByRole("dialog", { name: "Prospect details" });
   const duplicatePicker = duplicateEditor.getByLabel("Link existing CRM inquiry");
-  await expect(duplicatePicker.locator(`option[value="${leadId}"]`)).toBeDisabled();
+  await expect(duplicatePicker.locator(`option[value="${leadId}"]`)).toHaveAttribute("disabled", "");
   await duplicateEditor.getByRole("button", { name: "Cancel" }).click();
 
   const duplicateWorkspace = normalizeMarketingWorkspace(savedPayload.workspace)!;
