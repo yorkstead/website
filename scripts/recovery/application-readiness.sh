@@ -36,8 +36,10 @@ proxy_container="ys-app-recovery-proxy-${run_tag}"
 browser_container="ys-app-recovery-browser-${run_tag}"
 app_image="ys-app-recovery:${run_tag}"
 source_db="recovery_$(openssl rand -hex 12)"
-db_user="recovery_$(openssl rand -hex 8)"
-db_password="$(openssl rand -hex 32)"
+admin_user="recovery_admin_$(openssl rand -hex 8)"
+admin_password="$(openssl rand -hex 32)"
+app_user="recovery_app_$(openssl rand -hex 8)"
+app_password="$(openssl rand -hex 32)"
 owner_password="$(openssl rand -hex 24)"
 owner_bootstrap="$(openssl rand -hex 32)"
 auth_secret="$(openssl rand -hex 32)"
@@ -58,7 +60,7 @@ tests_started_utc=''
 tests_finished_epoch=''
 tests_finished_utc=''
 
-for secret in "$db_user" "$db_password" "$owner_password" "$owner_bootstrap" "$auth_secret"; do printf '::add-mask::%s\n' "$secret"; done
+for secret in "$admin_user" "$admin_password" "$app_user" "$app_password" "$owner_password" "$owner_bootstrap" "$auth_secret"; do printf '::add-mask::%s\n' "$secret"; done
 
 cleanup() {
   status=$?
@@ -83,14 +85,14 @@ docker network create --internal "$runtime_network" >/dev/null
   || fail "Docker did not create both internal-only networks"
 
 docker run -d --rm --name "$source_container" --network "$source_network" --network-alias ys-app-recovery-source \
-  --health-cmd="pg_isready -U $db_user -d $source_db" \
+  --health-cmd="pg_isready -U $admin_user -d $source_db" \
   --health-interval=2s --health-timeout=2s --health-retries=30 \
-  -e POSTGRES_USER="$db_user" -e POSTGRES_PASSWORD="$db_password" -e POSTGRES_DB="$source_db" \
+  -e POSTGRES_USER="$admin_user" -e POSTGRES_PASSWORD="$admin_password" -e POSTGRES_DB="$source_db" \
   --log-driver=none postgres:18-alpine >/dev/null
 docker run -d --rm --name "$target_container" --network "$runtime_network" --network-alias ys-app-recovery-target \
-  --health-cmd="pg_isready -U $db_user -d postgres" \
+  --health-cmd="pg_isready -U $admin_user -d postgres" \
   --health-interval=2s --health-timeout=2s --health-retries=30 \
-  -e POSTGRES_USER="$db_user" -e POSTGRES_PASSWORD="$db_password" -e POSTGRES_DB=postgres \
+  -e POSTGRES_USER="$admin_user" -e POSTGRES_PASSWORD="$admin_password" -e POSTGRES_DB=postgres \
   --log-driver=none postgres:18-alpine >/dev/null
 
 source_attached="$(docker network inspect -f '{{range $id, $container := .Containers}}{{println $container.Name}}{{end}}' "$source_network")"
@@ -106,8 +108,8 @@ python3 -c 'import ipaddress,sys; net=ipaddress.ip_network(sys.argv[2], strict=F
   || fail "restored target is outside its internal subnet"
 
 for attempt in $(seq 1 60); do
-  if docker exec "$source_container" pg_isready -U "$db_user" -d "$source_db" >/dev/null 2>&1 \
-    && docker exec "$target_container" pg_isready -U "$db_user" -d postgres >/dev/null 2>&1; then break; fi
+  if docker exec "$source_container" pg_isready -U "$admin_user" -d "$source_db" >/dev/null 2>&1 \
+    && docker exec "$target_container" pg_isready -U "$admin_user" -d postgres >/dev/null 2>&1; then break; fi
   [[ $attempt -lt 60 ]] || fail "disposable PostgreSQL 18 did not become ready"
   sleep 1
 done
@@ -117,11 +119,11 @@ target_port=5432
 schema_started_epoch="$(date -u +%s)"
 env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 \
   YS_APP_RECOVERY_DB_HOST="$source_ip" YS_APP_RECOVERY_DB_PORT="$source_port" \
-  YS_APP_RECOVERY_DB_USER="$db_user" YS_APP_RECOVERY_DB_PASSWORD="$db_password" \
+  YS_APP_RECOVERY_DB_USER="$admin_user" YS_APP_RECOVERY_DB_PASSWORD="$admin_password" \
   YS_APP_RECOVERY_DB_NAME="$source_db" bun scripts/recovery/prepare-application-db.ts >/dev/null \
   || fail "synthetic source schema preparation failed"
 
-source_url="postgresql://${db_user}:${db_password}@${source_ip}:${source_port}/${source_db}"
+source_url="postgresql://${admin_user}:${admin_password}@${source_ip}:${source_port}/${source_db}"
 env -i PATH="$PATH" HOME="$HOME" NODE_ENV=development DATABASE_URL="$source_url" bun run auth:migrate \
   >"$workspace/auth-migrate.log" 2>&1 || fail "synthetic Better Auth schema preparation failed"
 unset source_url
@@ -129,24 +131,42 @@ schema_finished_epoch="$(date -u +%s)"
 
 archive="$workspace/synthetic-source.dump"
 restore_started_epoch="$(date -u +%s)"
-docker exec -e PGPASSWORD="$db_password" "$source_container" pg_dump -w -U "$db_user" -d "$source_db" -Fc \
+docker exec -e PGPASSWORD="$admin_password" "$source_container" pg_dump -w -U "$admin_user" -d "$source_db" -Fc \
   >"$archive" 2>"$workspace/pg-dump.log" || fail "synthetic custom-format archive creation failed"
 [[ -s "$archive" ]] || fail "synthetic archive is empty"
 chmod 0600 "$archive"
-docker exec -i -e PGPASSWORD="$db_password" "$target_container" pg_restore --create --exit-on-error -w -U "$db_user" -d postgres \
+docker exec -i -e PGPASSWORD="$admin_password" "$target_container" pg_restore --create --exit-on-error -w -U "$admin_user" -d postgres \
   <"$archive" >"$workspace/pg-restore.log" 2>&1 || fail "synthetic restore to fresh PostgreSQL 18 failed"
 rm -f -- "$archive" "$workspace/pg-dump.log" "$workspace/pg-restore.log" "$workspace/auth-migrate.log"
 restore_finished_epoch="$(date -u +%s)"
 
-target_url="postgresql://${db_user}:${db_password}@${target_ip}:${target_port}/${source_db}"
 if ! env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 YS_APP_RECOVERY_PHASE=before \
   YS_APP_RECOVERY_DB_HOST="$target_ip" YS_APP_RECOVERY_DB_PORT="$target_port" \
-  YS_APP_RECOVERY_DB_USER="$db_user" YS_APP_RECOVERY_DB_PASSWORD="$db_password" \
+  YS_APP_RECOVERY_DB_USER="$admin_user" YS_APP_RECOVERY_DB_PASSWORD="$admin_password" \
   YS_APP_RECOVERY_DB_NAME="$source_db" bun scripts/recovery/verify-application-db.ts >"$workspace/before.json"; then
   failed_checks="$(jq -r 'to_entries | map(select(.value == "FAIL") | .key) | join(", ")' "$workspace/before.json" 2>/dev/null || true)"
   [[ -z "$failed_checks" ]] || fail "restored database preflight checks failed: $failed_checks"
   fail "restored database preflight could not complete; see the sanitized connection/query category above"
 fi
+
+# The synthetic administrator owns schema preparation and restore only. The
+# application receives a separate NOLOGIN-free, non-superuser DML role with no
+# database or schema creation rights. No role is granted to another role.
+docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
+  -U "$admin_user" -d "$source_db" -c "REVOKE TEMPORARY ON DATABASE ${source_db} FROM PUBLIC; CREATE ROLE ${app_user} LOGIN PASSWORD '${app_password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS; GRANT CONNECT ON DATABASE ${source_db} TO ${app_user}; GRANT USAGE ON SCHEMA public, customer_auth TO ${app_user}; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public, customer_auth TO ${app_user}; GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public, customer_auth TO ${app_user};" \
+  >/dev/null 2>&1 || fail "least-privilege synthetic application role setup failed"
+runtime_role_ok="$(docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -At -v ON_ERROR_STOP=1 \
+  -U "$admin_user" -d "$source_db" -c "SELECT r.rolcanlogin AND NOT r.rolsuper AND NOT r.rolcreatedb AND NOT r.rolcreaterole AND NOT r.rolreplication AND NOT r.rolbypassrls AND NOT has_database_privilege(r.rolname, current_database(), 'CREATE') AND NOT has_database_privilege(r.rolname, current_database(), 'TEMPORARY') AND has_database_privilege(r.rolname, current_database(), 'CONNECT') AND has_schema_privilege(r.rolname, 'public', 'USAGE') AND NOT has_schema_privilege(r.rolname, 'public', 'CREATE') AND has_table_privilege(r.rolname, 'public.application_migrations', 'SELECT') AND has_table_privilege(r.rolname, 'public.workspaces', 'INSERT') AND has_table_privilege(r.rolname, 'public.workspaces', 'UPDATE') AND has_table_privilege(r.rolname, 'public.workspaces', 'DELETE') AND NOT has_table_privilege(r.rolname, 'public.workspaces', 'TRUNCATE') AND NOT pg_has_role(r.rolname, '${admin_user}', 'MEMBER') FROM pg_roles r WHERE r.rolname = '${app_user}'")"
+[[ "$runtime_role_ok" == t ]] || fail "least-privilege synthetic application role verification failed"
+runtime_identity="$(docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -At -v ON_ERROR_STOP=1 \
+  -U "$app_user" -d "$source_db" -c "SELECT current_user = '${app_user}' AND NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole FROM pg_roles WHERE rolname = current_user")"
+[[ "$runtime_identity" == t ]] || fail "synthetic application login is not a non-superuser runtime role"
+if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
+  -U "$app_user" -d "$source_db" -c 'CREATE TABLE public.ys_sys_001_runtime_privilege_probe(id integer)' >/dev/null 2>&1; then
+  fail "synthetic application role unexpectedly has schema creation privilege"
+fi
+app_url="postgresql://${app_user}:${app_password}@ys-app-recovery-target:5432/${source_db}"
+target_url="postgresql://${app_user}:${app_password}@${target_ip}:${target_port}/${source_db}"
 
 docker build --quiet --file scripts/recovery/application.Dockerfile --tag "$app_image" . >"$workspace/build.log" 2>&1 \
   || fail "production application image build failed"
@@ -174,7 +194,7 @@ docker run -d --rm --name "$app_container" --network "$runtime_network" --networ
   --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777 \
   --tmpfs /app/.next/cache:rw,noexec,nosuid,nodev,size=128m,mode=700,uid=10001,gid=10001 \
   --log-driver=none \
-  -e NODE_ENV=production -e DATABASE_URL="postgresql://${db_user}:${db_password}@ys-app-recovery-target:5432/${source_db}" \
+  -e NODE_ENV=production -e DATABASE_URL="$app_url" \
   -e BETTER_AUTH_URL=https://recovery.test -e OWNER_EMAIL=owner@recovery.test -e PASSKEY_RP_ID=recovery.test \
   -e BETTER_AUTH_SECRET="$auth_secret" -e OWNER_BOOTSTRAP_TOKEN="$owner_bootstrap" \
   -e NEXT_PUBLIC_FIRST_PARTY_ANALYTICS=disabled -e YS_SYS_001_ENABLED=false -e NEXT_TELEMETRY_DISABLED=1 \
@@ -331,7 +351,7 @@ tests_finished_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 YS_APP_RECOVERY_PHASE=after \
   YS_APP_RECOVERY_DB_HOST="$target_ip" YS_APP_RECOVERY_DB_PORT="$target_port" \
-  YS_APP_RECOVERY_DB_USER="$db_user" YS_APP_RECOVERY_DB_PASSWORD="$db_password" \
+  YS_APP_RECOVERY_DB_USER="$admin_user" YS_APP_RECOVERY_DB_PASSWORD="$admin_password" \
   YS_APP_RECOVERY_DB_NAME="$source_db" bun scripts/recovery/verify-application-db.ts >"$workspace/after.json" \
   || fail "restored database postflight failed"
 
@@ -354,10 +374,10 @@ jq -n \
   --argjson schemaSeconds "$schema_seconds" --argjson restoreSeconds "$restore_seconds" \
   --argjson startupSeconds "$startup_seconds" --argjson testSeconds "$test_seconds" --argjson totalSeconds "$total_seconds" \
   --argjson before "$(cat "$workspace/before.json")" --argjson after "$(cat "$workspace/after.json")" \
-  '{format:"ys-sys-001-application-recovery-v1",dataClass:"synthetic-only",startedAt:$startedAt,appStartedAt:$appStartedAt,readyAt:$readyAt,testsStartedAt:$testsStartedAt,testsFinishedAt:$testsFinishedAt,endedAt:$endedAt,postgres18Restore:"PASS",internalDockerNetworks:{syntheticSource:"internal",restoredRuntime:"internal",runtimeMembership:"PASS",externalTcpProbe:"BLOCKED"},productionAppStartup:"PASS",syntheticOwnerAuth:"PASS",ownerAuthorization:"PASS",dashboardRead:"PASS",legacyDirectoryRead:"PASS",anonymousDirectoryDenied:"PASS",tenantIsolation:"PASS",registryFeatureFlag:"OFF",externalSideEffects:"disabled-or-unreachable",migrations0023And0024:"NOT APPLIED",databaseIntegrityBefore:$before,databaseIntegrityAfter:$after,durationsSeconds:{schemaPreparation:$schemaSeconds,archiveAndRestore:$restoreSeconds,appStartupToReady:$startupSeconds,readinessChecks:$testSeconds,totalSyntheticRehearsal:$totalSeconds},fullProductionRto:"NOT DEMONSTRATED"}' \
+  '{format:"ys-sys-001-application-recovery-v1",dataClass:"synthetic-only",startedAt:$startedAt,appStartedAt:$appStartedAt,readyAt:$readyAt,testsStartedAt:$testsStartedAt,testsFinishedAt:$testsFinishedAt,endedAt:$endedAt,postgres18Restore:"PASS",internalDockerNetworks:{syntheticSource:"internal",restoredRuntime:"internal",runtimeMembership:"PASS",externalTcpProbe:"BLOCKED"},databaseRoles:{administration:"synthetic-only",runtimeNonSuperuser:"PASS",runtimeNoDatabaseOrSchemaCreation:"PASS"},productionAppStartup:"PASS",syntheticOwnerAuth:"PASS",ownerAuthorization:"PASS",dashboardRead:"PASS",legacyDirectoryRead:"PASS",anonymousDirectoryDenied:"PASS",tenantIsolation:"PASS",registryFeatureFlag:"OFF",externalSideEffects:"disabled-or-unreachable",migrations0023And0024:"NOT APPLIED",databaseIntegrityBefore:$before,databaseIntegrityAfter:$after,durationsSeconds:{schemaPreparation:$schemaSeconds,archiveAndRestore:$restoreSeconds,appStartupToReady:$startupSeconds,readinessChecks:$testSeconds,totalSyntheticRehearsal:$totalSeconds},fullProductionRto:"NOT DEMONSTRATED"}' \
   >"$report_path"
 chmod 0600 "$report_path"
 
-printf 'Synthetic app recovery: PASS; PostgreSQL 18 restore, owner workflows, tenant denial, and egress isolation verified.\n'
+printf 'Synthetic app recovery: PASS; PostgreSQL 18 restore, non-superuser application role, owner dashboard, tenant denial, and egress isolation verified.\n'
 printf 'Readiness report: artifacts/ys-sys-001-application-recovery.json (aggregate data only).\n'
 printf 'Elapsed synthetic rehearsal seconds: %s. Full Production-derived 60-minute RTO: NOT DEMONSTRATED.\n' "$total_seconds"

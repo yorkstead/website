@@ -3,6 +3,7 @@ import { isIPv4 } from "node:net";
 import { resolve } from "node:path";
 import { Pool } from "pg";
 import { parseMigration } from "@/scripts/migration-plan";
+import { formatPreparationFailure } from "@/scripts/recovery/application-db-diagnostics";
 
 const expectedMode = "synthetic-internal-docker-v1";
 const versionLimit = "0022";
@@ -95,12 +96,7 @@ try {
   }
   process.stdout.write("Synthetic database schema prepared and checksummed through 0022.\n");
 } catch (error) {
-  const candidate = error as { code?: unknown };
-  const safeCode = typeof candidate?.code === "string" && /^[0-9A-Z]{5}$/.test(candidate.code)
-    ? `; SQLSTATE ${candidate.code}`
-    : "";
-  const safeMigration = migrationVersion ? `; migration ${migrationVersion}` : "";
-  process.stderr.write(`Synthetic application database preparation failed during ${phase}${safeMigration}${safeCode}; private details suppressed.\n`);
+  process.stderr.write(`${formatPreparationFailure(phase, migrationVersion, error)}\n`);
   process.exitCode = 1;
 } finally {
   await pool.end();

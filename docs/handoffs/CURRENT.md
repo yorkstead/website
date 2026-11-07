@@ -9,6 +9,15 @@ Total output lines: 289
 - The sanitized artifact reports 147 seconds for the synthetic rehearsal only. Local suite: 495 passed, 121 PostgreSQL-backed tests skipped, no failures; those skipped tests are covered by dedicated CI. Production, R2, and the owner's recovery containers were not accessed. Migrations 0023/0024 and Registry activation remain unauthorized. The full Production-derived 60-minute RTO remains **NOT DEMONSTRATED**.
 - Specification and task state: [`application-recovery/`](../../specs/037-ys-sys-001-systems-registry/application-recovery/). Keep the original dirty CC-022B worktree untouched.
 
+# Current status — YS-SYS-001 PR #111 review corrections — 2026-11-07
+
+- Authorized scope: continue the existing synthetic application recovery implementation on PR #111, correct only schema-preparation diagnostics, application database role separation/least privilege, and dashboard rendered-content verification; run local verification and exact-head CI. No merge or manual deployment.
+- Verified at 2026-11-07T21:16Z: repository `yorkstead/website`; PR #111 is OPEN at head `d178dc7789f87647b971714cca3d9ef899544b02` on `feat/ys-sys-001-application-recovery`. Before edits, exact-head CI run [42355040043](https://github.com/yorkstead/website/actions/runs/42355040043) passed application verification, isolated synthetic recovery, restored-app readiness, and read-only role verification; Vercel Preview passed. This is pre-correction evidence only.
+- Corrections in progress on the existing PR branch: bounded sanitized migration diagnostics now add a fixed category; the restored application and its database-backed access suite use a separate non-superuser, no-DDL runtime role; authenticated browser coverage asserts visible dashboard content. No additional recovery rehearsal was started.
+- Local evidence so far: locked offline dependency install, scaffold, migration plan, typecheck, lint, focused diagnostic tests, full Bun suite, Playwright test discovery, shell syntax, and diff whitespace pass. Docker execution is unavailable under host Snap confinement; local production build is blocked by network access to Google Fonts. Exact-head corrected CI is pending.
+- Preserve isolation: source and runtime PostgreSQL are synthetic; CI networks remain Docker `--internal`, app egress must fail, no Production/R2 access or provider credentials, and migrations 0023/0024 stay unapplied. Production, merge, and deployment remain outside scope.
+- Next: finish review of the diff, commit and push only to PR #111's existing branch, then verify the new head's full CI and Vercel Preview before updating this handoff and recommendation.
+
 # Current status — YS-SYS-001 recovery rehearsal — 2026-11-07
 
 - Owner-reported PASS: encrypted Production backup retrieval/decryption/archive validation and database restore in isolated PostgreSQL 18.6 after a first attempt stopped on a missing Neon-managed role. See [`recovery-rehearsal-evidence.md`](../../specs/037-ys-sys-001-systems-registry/recovery-rehearsal-evidence.md); source artifacts and row-level data remain private.

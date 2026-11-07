@@ -37,3 +37,12 @@ The source schema-preparation failure occurred once before safe phase diagnostic
 ## Interpretation
 
 The 147-second measurement covers the synthetic CI rehearsal only. It is not a Production-derived RTO result and does not establish readiness of the owner-reported restored Production-derived database. No Production or R2 access, Production migration, or Registry activation occurred.
+
+## Review corrections — 2026-11-07
+
+- Existing PR head `d178dc7789f87647b971714cca3d9ef899544b02` was verified open with all four CI jobs and Vercel Preview successful before corrections. That head still lacked a failure category, used one generated PostgreSQL superuser for both schema administration and application runtime, and checked only the dashboard HTTP status.
+- Added diagnostics regression tests for fixed categories/phases, four-digit migration versions, validated SQLSTATEs, bounded output, and suppression of SQL/data/credential text.
+- Separated generated synthetic administration and runtime credentials. The application and restored-target cross-tenant test suite now connect as a verified non-superuser with no database/schema/table creation, role administration, superuser, RLS bypass, temporary-table, truncate, or administration-role membership privileges; its grants cover application table DML and generated sequences.
+- The authenticated browser workflow now checks the visible dashboard heading and supporting copy. This is a rendered-content assertion after successful synthetic owner authorization.
+- Local: offline frozen dependency install passed without lockfile changes; scaffold, all-24 migration plan check, lint, typecheck, focused diagnostics (2/2), full Bun tests (497 pass / 121 database skips / 0 fail), Playwright discovery, shell syntax and `git diff --check` passed. Docker-backed readiness could not run locally because Snap confinement refused the Docker client; the local production build could not fetch Google Fonts. Exact-head CI for these corrections is pending.
+- Restrictions remain: no Production or R2 access; no migration 0023/0024 application; synthetic networks remain Docker `--internal` with a failed app-originated egress probe; no merge or manual deployment. CI exact-head outcome and updated synthetic-only report remain pending.

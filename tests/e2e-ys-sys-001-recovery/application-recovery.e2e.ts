@@ -57,6 +57,8 @@ test("restored schema supports synthetic owner authentication and legacy read wo
   await test.step("owner dashboard read", async () => {
     const dashboard = await page.goto("/dashboard");
     expect(dashboard?.status()).toBe(200);
+    await expect(page.getByRole("heading", { name: "What needs attention today?" })).toBeVisible();
+    await expect(page.getByText("Your follow-ups, delivery work, and next actions in one place.")).toBeVisible();
   });
 
   await test.step("legacy Directory read", async () => {
