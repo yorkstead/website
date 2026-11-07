@@ -9,6 +9,13 @@ export const archivedInquiryPurgeQuery = `WITH eligible AS (
     SELECT i.id FROM contact_inquiries i
     WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)
       AND NOT EXISTS (SELECT 1 FROM research_opportunities o WHERE o.crm_lead_id=i.id)
+      AND NOT EXISTS (
+        SELECT 1 FROM marketing_workspaces m
+        CROSS JOIN LATERAL jsonb_array_elements(
+          CASE WHEN jsonb_typeof(m.data->'prospects') = 'array' THEN m.data->'prospects' ELSE '[]'::jsonb END
+        ) p
+        WHERE p->>'crmLeadId' = i.id::text
+      )
       AND i.status='archived' AND i.archived_at < $1::timestamptz
     FOR UPDATE OF i SKIP LOCKED
   )

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   archivedInquiryPurgeBefore,
   archivedInquiryDeleteAfter,
+  archivedInquiryPurgeQuery,
   archivedInquiryRetentionDays,
   morningBriefingPurgeBefore,
   morningBriefingRetentionDays,
@@ -21,6 +22,12 @@ describe("data retention policy", () => {
     expect(archivedInquiryRetentionDays).toBe(365);
     expect(archivedInquiryPurgeBefore(now).toISOString()).toBe("2027-03-02T12:00:00.000Z");
     expect(archivedInquiryDeleteAfter("2027-03-02T12:00:00.000Z").toISOString()).toBe(now.toISOString());
+  });
+
+  test("keeps CRM inquiries linked from retained Marketing prospect JSON", () => {
+    expect(archivedInquiryPurgeQuery).toContain("marketing_workspaces");
+    expect(archivedInquiryPurgeQuery).toContain("p->>'crmLeadId' = i.id::text");
+    expect(archivedInquiryPurgeQuery).toContain("jsonb_typeof(m.data->'prospects') = 'array'");
   });
 
   test("keeps only a short fallback window of private morning briefings", () => {
