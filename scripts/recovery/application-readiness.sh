@@ -137,11 +137,14 @@ rm -f -- "$archive" "$workspace/pg-dump.log" "$workspace/pg-restore.log" "$works
 restore_finished_epoch="$(date -u +%s)"
 
 target_url="postgresql://${db_user}:${db_password}@${target_ip}:${target_port}/${source_db}"
-env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 YS_APP_RECOVERY_PHASE=before \
+if ! env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 YS_APP_RECOVERY_PHASE=before \
   YS_APP_RECOVERY_DB_HOST="$target_ip" YS_APP_RECOVERY_DB_PORT="$target_port" \
   YS_APP_RECOVERY_DB_USER="$db_user" YS_APP_RECOVERY_DB_PASSWORD="$db_password" \
-  YS_APP_RECOVERY_DB_NAME="$source_db" bun scripts/recovery/verify-application-db.ts >"$workspace/before.json" \
-  || fail "restored database preflight failed"
+  YS_APP_RECOVERY_DB_NAME="$source_db" bun scripts/recovery/verify-application-db.ts >"$workspace/before.json"; then
+  failed_checks="$(jq -r 'to_entries | map(select(.value == "FAIL") | .key) | join(", ")' "$workspace/before.json" 2>/dev/null || true)"
+  [[ -z "$failed_checks" ]] || fail "restored database preflight checks failed: $failed_checks"
+  fail "restored database preflight could not complete; see the sanitized connection/query category above"
+fi
 
 docker build --quiet --file scripts/recovery/application.Dockerfile --tag "$app_image" . >"$workspace/build.log" 2>&1 \
   || fail "production application image build failed"

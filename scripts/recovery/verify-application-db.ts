@@ -70,8 +70,14 @@ try {
   };
   process.stdout.write(`${JSON.stringify(report)}\n`);
   if (!valid) process.exitCode = 1;
-} catch {
-  process.stderr.write("Synthetic database integrity verification failed; private details suppressed.\n");
+} catch (error) {
+  const rawCode = typeof error === "object" && error !== null && "code" in error
+    ? (error as { code?: unknown }).code
+    : undefined;
+  const code = typeof rawCode === "string" && /^[0-9A-Z]{5}$/.test(rawCode) ? `SQLSTATE ${rawCode}`
+    : typeof rawCode === "string" && ["ECONNREFUSED", "ETIMEDOUT", "EHOSTUNREACH", "ENETUNREACH"].includes(rawCode) ? "connection unavailable"
+    : "fixed query failed";
+  process.stderr.write(`Synthetic database integrity verification failed (${code}); private details suppressed.\n`);
   process.exitCode = 1;
 } finally {
   await pool.end();
