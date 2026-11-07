@@ -221,14 +221,16 @@ sequence_audit="$(docker exec -e PGPASSWORD="$admin_password" "$target_container
 probe_sequence="ys_sys_001_runtime_denied_${run_tag}"
 docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$admin_user" -d "$source_db" \
   -c "CREATE SEQUENCE public.${probe_sequence}" >/dev/null 2>&1 || fail "synthetic sequence denial probe setup failed"
-for operation in \
-  "BEGIN; CREATE SCHEMA ys_sys_001_runtime_schema_probe; ROLLBACK" \
-  "BEGIN; ALTER SCHEMA public RENAME TO ys_sys_001_runtime_schema_probe; ROLLBACK" \
-  "BEGIN; CREATE ROLE ys_sys_001_runtime_role_probe; ROLLBACK" \
-  "BEGIN; GRANT SELECT ON public.application_migrations TO ${app_user}; ROLLBACK" \
-  "BEGIN; SET ROLE ${admin_user}; ROLLBACK"; do
+for control in create_schema alter_schema create_role self_grant set_admin_role; do
+  case "$control" in
+    create_schema) operation="BEGIN; CREATE SCHEMA ys_sys_001_runtime_schema_probe; ROLLBACK" ;;
+    alter_schema) operation="BEGIN; ALTER SCHEMA public RENAME TO ys_sys_001_runtime_schema_probe; ROLLBACK" ;;
+    create_role) operation="BEGIN; CREATE ROLE ys_sys_001_runtime_role_probe; ROLLBACK" ;;
+    self_grant) operation="BEGIN; GRANT SELECT ON public.application_migrations TO ${app_user}; ROLLBACK" ;;
+    set_admin_role) operation="BEGIN; SET ROLE ${admin_user}; ROLLBACK" ;;
+  esac
   if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$app_user" -d "$source_db" -c "$operation" >/dev/null 2>&1; then
-    fail "synthetic application role unexpectedly managed schemas, roles, or grants"
+    fail "synthetic application role passed the denied ${control} privilege check"
   fi
 done
 for operation in \
