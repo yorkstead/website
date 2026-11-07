@@ -3,7 +3,7 @@ import type { MarketingContentItem, MarketingProspect, MarketingWorkspace } from
 
 export function newProspect(): MarketingProspect {
   const now = new Date().toISOString();
-  return { id: crypto.randomUUID(), company: "", website: "", contactName: "", contactTitle: "", email: "", phone: "", location: "", segment: "cnc-sign-fabrication", stage: "target", source: "direct-outreach", operationalSignals: "", fitScore: 3, nextAction: "", nextActionAt: "", notes: "", createdAt: now, updatedAt: now };
+  return { id: crypto.randomUUID(), crmLeadId: null, company: "", website: "", contactName: "", contactTitle: "", email: "", phone: "", location: "", segment: "cnc-sign-fabrication", stage: "target", source: "direct-outreach", operationalSignals: "", fitScore: 3, nextAction: "", nextActionAt: "", notes: "", createdAt: now, updatedAt: now };
 }
 
 export function newContentItem(week: number): MarketingContentItem {

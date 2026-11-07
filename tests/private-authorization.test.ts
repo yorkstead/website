@@ -6,6 +6,8 @@ let authorizationChecks = 0;
 let ownerAuthorized = false;
 const sqlCalls: unknown[][] = [];
 let marketingExpectedVersion: string | null | undefined;
+let marketingCrmLinksValid = true;
+let marketingCrmValidationCalls = 0;
 const previousDatabaseURL = process.env.DATABASE_URL;
 
 mock.module("@/lib/owner-session", () => ({
@@ -26,6 +28,7 @@ mock.module("@neondatabase/serverless", () => ({
 }));
 mock.module("@/lib/marketing-storage", () => ({
   getMarketingWorkspace: async () => ({ workspace: emptyMarketingWorkspace, updatedAt: "cloud-version" }),
+  validateMarketingCrmLinks: async () => { marketingCrmValidationCalls += 1; return marketingCrmLinksValid; },
   saveMarketingWorkspace: async (_workspace: unknown, expectedVersion: string | null | undefined) => {
     marketingExpectedVersion = expectedVersion;
     return null;
@@ -145,6 +148,7 @@ describe("optimistic concurrency routes", () => {
 
   test("marketing write passes the expected version to storage and returns 409 on conflict", async () => {
     ownerAuthorized = true;
+    marketingCrmLinksValid = true;
     const expectedVersion = "2026-08-15T18:45:00.000Z";
     const response = await marketingPut(new Request("https://example.test/api/marketing-workspace", {
       method: "PUT",
@@ -154,5 +158,32 @@ describe("optimistic concurrency routes", () => {
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({ error: "Marketing workspace changed in another session" });
     expect(marketingExpectedVersion).toBe(expectedVersion);
+  });
+
+  test("marketing write rejects a CRM inquiry that is missing or no longer linkable", async () => {
+    ownerAuthorized = true;
+    marketingCrmLinksValid = false;
+    const response = await marketingPut(new Request("https://example.test/api/marketing-workspace", {
+      method: "PUT", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ campaignStart: "", prospects: [{ id: "p1", company: "Example", crmLeadId: 42 }], activities: [], content: [] }),
+    }));
+    expect(response.status).toBe(422);
+    expect(marketingCrmValidationCalls).toBeGreaterThan(0);
+  });
+
+  test("marketing write rejects invalid and duplicate CRM relationships before storage validation", async () => {
+    ownerAuthorized = true;
+    const before = marketingCrmValidationCalls;
+    const invalid = await marketingPut(new Request("https://example.test/api/marketing-workspace", {
+      method: "PUT", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ campaignStart: "", prospects: [{ id: "p1", company: "Example", crmLeadId: "42" }], activities: [], content: [] }),
+    }));
+    expect(invalid.status).toBe(400);
+    const duplicate = await marketingPut(new Request("https://example.test/api/marketing-workspace", {
+      method: "PUT", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ campaignStart: "", prospects: [{ id: "p1", company: "One", crmLeadId: 42 }, { id: "p2", company: "Two", crmLeadId: 42 }], activities: [], content: [] }),
+    }));
+    expect(duplicate.status).toBe(409);
+    expect(marketingCrmValidationCalls).toBe(before);
   });
 });
