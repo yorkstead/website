@@ -164,14 +164,7 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 1 -keyout "$workspace/key.pem" -
   -subj '/CN=recovery.test' -addext 'subjectAltName=DNS:recovery.test' >/dev/null 2>&1
 chmod 0600 "$workspace/key.pem" "$workspace/cert.pem"
 cp scripts/recovery/application-proxy.conf.template "$workspace/default.conf"
-
-docker run --rm --network "$runtime_network" --read-only --cap-drop=ALL --security-opt=no-new-privileges \
-  --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m \
-  --tmpfs /var/run:rw,noexec,nosuid,nodev,size=2m \
-  --volume "$workspace/default.conf:/etc/nginx/conf.d/default.conf:ro" \
-  --volume "$workspace/cert.pem:/etc/nginx/cert.pem:ro" --volume "$workspace/key.pem:/etc/nginx/key.pem:ro" \
-  --log-driver=none nginx:1.27-alpine nginx -t >/dev/null 2>&1 \
-  || fail "synthetic HTTPS proxy configuration or certificate validation failed"
+chmod 0644 "$workspace/default.conf"
 
 app_started_epoch="$(date -u +%s)"
 app_started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -185,6 +178,26 @@ docker run -d --rm --name "$app_container" --network "$runtime_network" --networ
   -e BETTER_AUTH_SECRET="$auth_secret" -e OWNER_BOOTSTRAP_TOKEN="$owner_bootstrap" \
   -e NEXT_PUBLIC_FIRST_PARTY_ANALYTICS=disabled -e YS_SYS_001_ENABLED=false -e NEXT_TELEMETRY_DISABLED=1 \
   -e HOSTNAME=0.0.0.0 -e PORT=3000 "$app_image" >/dev/null
+
+if ! docker run --rm --network "$runtime_network" --read-only --cap-drop=ALL --security-opt=no-new-privileges \
+  --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m \
+  --tmpfs /var/run:rw,noexec,nosuid,nodev,size=2m \
+  --volume "$workspace/default.conf:/etc/nginx/conf.d/default.conf:ro" \
+  --volume "$workspace/cert.pem:/etc/nginx/cert.pem:ro" --volume "$workspace/key.pem:/etc/nginx/key.pem:ro" \
+  --log-driver=none nginx:1.27-alpine nginx -t >"$workspace/nginx-config-test.log" 2>&1; then
+  if grep -q 'cannot load certificate\|SSL_CTX_use_PrivateKey' "$workspace/nginx-config-test.log"; then
+    proxy_config_failure="certificate or key"
+  elif grep -q 'host not found in upstream\|could not be resolved' "$workspace/nginx-config-test.log"; then
+    proxy_config_failure="internal app DNS"
+  elif grep -q 'Permission denied\|mkdir()' "$workspace/nginx-config-test.log"; then
+    proxy_config_failure="container filesystem permissions"
+  elif grep -q 'unknown directive\|directive is not allowed here\|unexpected' "$workspace/nginx-config-test.log"; then
+    proxy_config_failure="proxy configuration syntax"
+  else
+    proxy_config_failure="unclassified proxy configuration"
+  fi
+  fail "synthetic HTTPS proxy validation failed ($proxy_config_failure)"
+fi
 
 docker run -d --name "$proxy_container" --network "$runtime_network" --network-alias recovery.test \
   --read-only --cap-drop=ALL --security-opt=no-new-privileges \
