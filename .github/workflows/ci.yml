@@ -216,6 +216,45 @@ jobs:
           docker rm -f ys-recovery-postgres 2>/dev/null || true
           docker network rm "ys-recovery-${GITHUB_RUN_ID}" 2>/dev/null || true
 
+  ys-sys-001-application-recovery:
+    name: YS-SYS-001 synthetic restored-app readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Check recovery scripts
+        run: |
+          bash -n scripts/recovery/application-readiness.sh
+          git diff --check
+      - name: Verify rehearsal refuses execution outside the isolated job context
+        run: |
+          if env -i PATH="$PATH" HOME="$HOME" CI=true bash scripts/recovery/application-readiness.sh >/dev/null 2>&1; then
+            echo "Rehearsal unexpectedly accepted an untrusted execution context"
+            exit 1
+          fi
+      - name: Restore synthetic PostgreSQL 18 state and test the app
+        run: >-
+          env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true
+          GITHUB_WORKSPACE="$GITHUB_WORKSPACE" RUNNER_TEMP="$RUNNER_TEMP"
+          bash scripts/recovery/application-readiness.sh
+      - name: Upload sanitized aggregate evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ys-sys-001-application-recovery-report
+          path: artifacts/ys-sys-001-application-recovery.json
+          if-no-files-found: error
+          retention-days: 7
+
   ys-sys-001-readonly-role:
     name: YS-SYS-001 synthetic read-only role verification
     runs-on: ubuntu-latest

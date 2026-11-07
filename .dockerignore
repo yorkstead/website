@@ -1,0 +1,14 @@
+.git
+.next
+node_modules
+test-results
+playwright-report
+coverage
+.env
+.env.*
+*.dump
+*.dump.age
+*.age
+private-evidence
+tmp
+tmpdir
