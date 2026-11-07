@@ -208,7 +208,21 @@ if ! docker run --rm --network "$runtime_network" --read-only --cap-drop=ALL --s
   else
     proxy_config_failure="unclassified proxy configuration"
   fi
-  fail "synthetic HTTPS proxy validation failed ($proxy_config_failure)"
+  proxy_diagnostic="$(python3 - "$workspace/nginx-config-test.log" <<'PY'
+import re
+import sys
+
+lines = open(sys.argv[1], encoding="utf-8", errors="replace").read().splitlines()
+line = next((item for item in lines if "[emerg]" in item or "[alert]" in item), "Nginx rejected its proxy configuration")
+line = re.sub(r'"[^"\n]*"', '"<path>"', line)
+line = re.sub(r'(?<![A-Za-z0-9])/(?:[^\s:(),]+)', "<path>", line)
+line = re.sub(r"\b(?:\d{1,3}\.){3}\d{1,3}\b", "<ip>", line)
+line = re.sub(r"recovery\.test|ys-app-recovery-[A-Za-z0-9-]+", "<synthetic-name>", line)
+line = re.sub(r"\b\d+#\d+\b", "<worker>", line)
+print(line[:180])
+PY
+)"
+  fail "synthetic HTTPS proxy validation failed ($proxy_config_failure; $proxy_diagnostic)"
 fi
 
 docker run -d --name "$proxy_container" --network "$runtime_network" --network-alias recovery.test \
