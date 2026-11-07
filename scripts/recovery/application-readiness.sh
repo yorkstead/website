@@ -261,7 +261,7 @@ done
 expected_attached="$(printf '%s\n' "$app_container" "$browser_container" "$proxy_container" "$target_container" | sort)"
 attached=''
 for attempt in $(seq 1 10); do
-  attached="$(docker network inspect -f '{{range $id, $container := .Containers}}{{println $container.Name}}{{end}}' "$runtime_network" | sort)"
+  attached="$(docker network inspect -f '{{range $id, $container := .Containers}}{{println $container.Name}}{{end}}' "$runtime_network" | sed '/^$/d' | sort)"
   [[ "$attached" == "$expected_attached" ]] && break
   sleep 1
 done
