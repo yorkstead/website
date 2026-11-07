@@ -286,6 +286,7 @@ docker exec -e CI=true -e YS_APP_RECOVERY_BASE_URL=https://recovery.test:8443 \
   --reporter=json --output=/tmp/ys-app-recovery-playwright >"$workspace/playwright.json" 2>"$workspace/playwright.stderr" || {
     browser_stage="$(python3 - "$workspace/playwright.json" <<'PY'
 import json
+import re
 import sys
 
 try:
@@ -303,7 +304,7 @@ def failed_steps(steps):
                 "application health", "health endpoint", "synthetic owner registration",
                 "synthetic owner sign-in", "owner authorization", "owner dashboard read",
                 "legacy Directory read", "tenant selector denial", "anonymous Directory denial",
-            }:
+            } or re.fullmatch(r"synthetic owner (?:registration|sign-in) HTTP [1-5][0-9]{2}", title):
                 yield title
         yield from failed_steps(step.get("steps"))
 

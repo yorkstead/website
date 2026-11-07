@@ -32,7 +32,9 @@ test("restored schema supports synthetic owner authentication and legacy read wo
       headers: { "content-type": "application/json", "x-owner-bootstrap-token": bootstrapToken },
       body: JSON.stringify({ name: "Synthetic Recovery Owner", email: ownerEmail, password: ownerPassword }),
     });
-    expect(registration.status).toBe(200);
+    await test.step(`synthetic owner registration HTTP ${registration.status}`, async () => {
+      expect(registration.status).toBe(200);
+    });
   });
 
   await test.step("synthetic owner sign-in", async () => {
@@ -41,7 +43,9 @@ test("restored schema supports synthetic owner authentication and legacy read wo
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ email: ownerEmail, password: ownerPassword }),
     });
-    expect(signIn.status).toBe(200);
+    await test.step(`synthetic owner sign-in HTTP ${signIn.status}`, async () => {
+      expect(signIn.status).toBe(200);
+    });
   });
 
   await test.step("owner authorization", async () => {
