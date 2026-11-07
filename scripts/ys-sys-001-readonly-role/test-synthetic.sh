@@ -94,6 +94,40 @@ expect_rerun_rejected() {
 prepare_schema ys_sys_001_full true
 prepare_schema ys_sys_001_legacy false
 
+# Reproduce the owner-reported PUBLIC ACL shape in disposable PostgreSQL 18:
+# two other connectable databases permit CONNECT, one also permits TEMP, and
+# none permits CREATE. The fixed setup must fail closed without changing ACLs.
+admin_psql -c 'GRANT CONNECT ON DATABASE postgres TO PUBLIC; GRANT CONNECT ON DATABASE ys_sys_001_legacy TO PUBLIC; GRANT TEMPORARY ON DATABASE ys_sys_001_legacy TO PUBLIC'
+observed_public_counts="$(admin_psql -At -F '|' -c "
+  WITH other_db_acl AS (
+    SELECT d.datname,
+           COALESCE(bool_or(a.privilege_type = 'CONNECT'), false) AS has_connect,
+           COALESCE(bool_or(a.privilege_type = 'CREATE'), false) AS has_create,
+           COALESCE(bool_or(a.privilege_type = 'TEMPORARY'), false) AS has_temp
+      FROM pg_catalog.pg_database d
+      LEFT JOIN LATERAL pg_catalog.aclexplode(
+        COALESCE(d.datacl, pg_catalog.acldefault('d', d.datdba))
+      ) a ON a.grantee = 0
+     WHERE d.datallowconn AND d.datname <> 'ys_sys_001_full'
+     GROUP BY d.datname
+  )
+  SELECT count(*) FILTER (WHERE has_connect)::text || '|' ||
+         count(*) FILTER (WHERE has_create)::text || '|' ||
+         count(*) FILTER (WHERE has_temp)::text
+    FROM other_db_acl
+")"
+[[ "$observed_public_counts" == "2|0|1" ]] || fail "synthetic PUBLIC ACL did not match the reported aggregate shape"
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f \
+  "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql" >"$work_dir/cross-db-setup.out" 2>&1; then
+  fail 'setup accepted inherited PUBLIC access to another database'
+fi
+grep -Fq 'Preflight role has access to another database' "$work_dir/cross-db-setup.out" || fail 'setup rejected the observed ACL for a different reason'
+if admin_psql -Atc "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '$role_name')" | grep -qx t; then
+  fail 'cross-database setup failure left a role behind'
+fi
+admin_psql -c 'REVOKE CONNECT ON DATABASE postgres FROM PUBLIC; REVOKE CONNECT ON DATABASE ys_sys_001_legacy FROM PUBLIC; REVOKE TEMPORARY ON DATABASE ys_sys_001_legacy FROM PUBLIC'
+
+
 # Any role able to create public routines must have its implicit PUBLIC
 # EXECUTE default revoked before this reader can be configured.
 admin_psql -d ys_sys_001_full -c 'CREATE ROLE ys_synthetic_creator NOLOGIN; GRANT CREATE ON SCHEMA public TO ys_synthetic_creator; SET ROLE ys_synthetic_creator; CREATE TABLE public.ys_synthetic_creator_owned(id integer); RESET ROLE'
@@ -175,6 +209,17 @@ expect_rerun_rejected ys_sys_001_full 'column SELECT grant option'
 admin_psql -d ys_sys_001_full -c "REVOKE SELECT (id) ON public.system_directory_entries FROM $role_name"
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/create-reader.sql"
 admin_psql -d ys_sys_001_full -c "ALTER ROLE $role_name PASSWORD '$reader_password'; ALTER ROLE $role_name LOGIN"
+admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
+
+# The independent verifier also rejects the observed inherited PUBLIC grants
+# when they appear on other databases. This does not change the reader's ACL.
+admin_psql -c 'GRANT CONNECT ON DATABASE postgres TO PUBLIC; GRANT CONNECT ON DATABASE ys_sys_001_legacy TO PUBLIC; GRANT TEMPORARY ON DATABASE ys_sys_001_legacy TO PUBLIC'
+if admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f \
+  "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql" >"$work_dir/cross-db-verifier.out" 2>&1; then
+  fail 'effective verifier accepted inherited PUBLIC access to another database'
+fi
+grep -Fq 'role has access to another database' "$work_dir/cross-db-verifier.out" || fail 'verifier rejected the observed ACL for a different reason'
+admin_psql -c 'REVOKE CONNECT ON DATABASE postgres FROM PUBLIC; REVOKE CONNECT ON DATABASE ys_sys_001_legacy FROM PUBLIC; REVOKE TEMPORARY ON DATABASE ys_sys_001_legacy FROM PUBLIC'
 admin_psql -d ys_sys_001_full -v expected_database=ys_sys_001_full -f "$repo_root/scripts/ys-sys-001-readonly-role/verify-reader.sql"
 
 # TEMP is inherited from PUBLIC. The role may override its session default
@@ -460,4 +505,6 @@ admin_psql -d ys_sys_001_legacy -f "$repo_root/scripts/ys-sys-001-readonly-role/
 if reader_psql ys_sys_001_legacy -c 'SELECT 1' >/dev/null 2>&1; then fail 'revoked legacy reader still logged in'; fi
 admin_psql -d ys_sys_001_legacy -c "DROP ROLE $role_name"
 
-printf 'PASS: actual migrations 0020/0023/0024, PostgreSQL 18 non-superuser CREATEROLE lifecycle, inherited PUBLIC TEMP compatibility without direct reader TEMP or application writes, temp-table shadowing against schema-qualified fixed preflight, unexpected INHERIT/SET/additional/reader memberships rejected, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, other PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'
+bash scripts/ys-sys-001-readonly-role/test-owner-preflight.sh
+
+printf 'PASS: actual migrations 0020/0023/0024, PostgreSQL 18 non-superuser CREATEROLE lifecycle, cross-database PUBLIC CONNECT/TEMP denial matching the reported 2/0/1 ACL, inherited PUBLIC TEMP compatibility without direct reader TEMP or application writes, temp-table shadowing against schema-qualified fixed preflight, unexpected INHERIT/SET/additional/reader memberships rejected, legacy-only schema, aggregate/metadata reads, sensitive-column and DML/DDL denial, other PUBLIC/inherited/default/sequence/routine/grant-option fail-closed checks, idempotence, output redaction, and scoped revocation.\n'
