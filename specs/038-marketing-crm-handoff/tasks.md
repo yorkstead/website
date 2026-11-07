@@ -10,5 +10,5 @@
 - [x] T008 — Update the active handoff and open one focused PR; do not merge or deploy.
 - [ ] T009 — Add authenticated Marketing-to-CRM browser coverage and run it in exact-head CI.
 - [x] T010 — Hide Marketing-owned sales status and follow-up controls while linked; specify archived and unavailable record behavior.
-- [ ] T011 — Add disposable PostgreSQL coverage for exact linked retention scope and unlink lifecycle.
+- [x] T011 — Add disposable PostgreSQL coverage for exact linked retention scope and unlink lifecycle.
 - [x] T012 — Reproduce and classify the previous broad E2E failures independently of CRM behavior.

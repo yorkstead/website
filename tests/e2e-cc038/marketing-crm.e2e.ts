@@ -86,13 +86,14 @@ test.beforeAll(seedOwnerAndData);
 test.afterAll(restoreFixture);
 
 test("owner links a prospect to CRM without losing Marketing history or duplicating sales fields", async ({ page, context, baseURL }) => {
+  const openPipeline = () => page.getByRole("navigation", { name: "Marketing views" }).getByRole("button", { name: "Pipeline", exact: true });
   await page.goto("/dashboard/marketing");
   await expect(page).toHaveURL(/\/login\?next=\/dashboard\/marketing/);
   const signIn = await context.request.post("/api/auth/sign-in/email", { headers: { origin: baseURL! }, data: owner });
   expect(signIn.status()).toBe(200);
   await page.goto("/dashboard/marketing");
   await expect(page.getByRole("heading", { name: "Marketing Operations" })).toBeVisible();
-  await page.getByRole("button", { name: "Pipeline", exact: true }).click();
+  await openPipeline().click();
 
   const prospectCard = (name: string) => page.getByRole("heading", { name, exact: true }).locator("xpath=../../../..");
   await expect(prospectCard(company).getByRole("button", { name: "Edit" })).toBeVisible();
@@ -120,7 +121,7 @@ test("owner links a prospect to CRM without losing Marketing history or duplicat
   await expect(page).toHaveURL(new RegExp(`/dashboard/leads\\?lead=${leadId}`));
   await expect(page.locator(`#lead-${leadId}`)).toContainText("qualified");
   await page.goto("/dashboard/marketing");
-  await page.getByRole("button", { name: "Pipeline", exact: true }).click();
+  await openPipeline().click();
 
   const savedResponse = await context.request.get("/api/marketing-workspace");
   expect(savedResponse.status()).toBe(200);
@@ -149,7 +150,7 @@ test("owner links a prospect to CRM without losing Marketing history or duplicat
 
   await pool!.query("UPDATE contact_inquiries SET status='archived',archived_at=NOW() WHERE id=$1", [leadId]);
   await page.goto("/dashboard/marketing");
-  await page.getByRole("button", { name: "Pipeline", exact: true }).click();
+  await openPipeline().click();
   await expect(prospectCard(company).getByText("CRM · archived", { exact: true })).toBeVisible();
   await prospectCard(company).getByRole("button", { name: "Edit" }).click();
   await expect(page.getByRole("dialog", { name: "Prospect details" }).getByText(/This inquiry is archived in CRM/)).toBeVisible();
