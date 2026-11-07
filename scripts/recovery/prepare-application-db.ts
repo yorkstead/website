@@ -1,4 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
+import { isIPv4 } from "node:net";
 import { resolve } from "node:path";
 import { Pool } from "pg";
 import { parseMigration } from "@/scripts/migration-plan";
@@ -10,12 +11,18 @@ const port = process.env.YS_APP_RECOVERY_DB_PORT ?? "";
 const user = process.env.YS_APP_RECOVERY_DB_USER ?? "";
 const password = process.env.YS_APP_RECOVERY_DB_PASSWORD ?? "";
 const database = process.env.YS_APP_RECOVERY_DB_NAME ?? "";
+function isPrivateIPv4(value: string) {
+  if (!isIPv4(value)) return false;
+  const [a, b] = value.split(".").map(Number);
+  return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+}
 
 function requireDisposableInputs() {
+  if (process.env.CI !== "true" || process.env.GITHUB_ACTIONS !== "true") throw new Error("dedicated CI rehearsal context required");
   if (process.env.YS_APP_RECOVERY_MODE !== expectedMode) throw new Error("synthetic recovery mode required");
-  const validHost = host === "ys-app-recovery-source" || host === "127.0.0.1";
+  const validHost = isPrivateIPv4(host);
   const validPort = /^\d{1,5}$/.test(port) && Number(port) >= 1 && Number(port) <= 65535;
-  if (!validHost || !validPort) throw new Error("synthetic source service required");
+  if (!validHost || !validPort) throw new Error("private synthetic source service required");
   if (!/^recovery_[a-f0-9]{24}$/.test(database)) throw new Error("generated synthetic database required");
   if (!/^recovery_[a-f0-9]{16}$/.test(user) || !/^[a-f0-9]{64}$/.test(password)) throw new Error("generated synthetic database credentials required");
 }

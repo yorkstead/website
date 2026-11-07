@@ -1,4 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
+import { isIPv4 } from "node:net";
 import { resolve } from "node:path";
 import { Pool } from "pg";
 import { parseMigration } from "@/scripts/migration-plan";
@@ -10,8 +11,13 @@ const user = process.env.YS_APP_RECOVERY_DB_USER ?? "";
 const password = process.env.YS_APP_RECOVERY_DB_PASSWORD ?? "";
 const database = process.env.YS_APP_RECOVERY_DB_NAME ?? "";
 const phase = process.env.YS_APP_RECOVERY_PHASE;
-if (mode !== "synthetic-internal-docker-v1" || !["before", "after"].includes(phase ?? "")
-  || !(/^(ys-app-recovery-(source|target)|127\.0\.0\.1)$/.test(host)) || !/^\d{1,5}$/.test(port) || Number(port) < 1 || Number(port) > 65535
+function isPrivateIPv4(value: string) {
+  if (!isIPv4(value)) return false;
+  const [a, b] = value.split(".").map(Number);
+  return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+}
+if (process.env.CI !== "true" || process.env.GITHUB_ACTIONS !== "true" || mode !== "synthetic-internal-docker-v1" || !["before", "after"].includes(phase ?? "")
+  || !isPrivateIPv4(host) || !/^\d{1,5}$/.test(port) || Number(port) < 1 || Number(port) > 65535
   || !/^recovery_[a-f0-9]{24}$/.test(database) || !/^recovery_[a-f0-9]{16}$/.test(user) || !/^[a-f0-9]{64}$/.test(password)) {
   throw new Error("Synthetic application recovery verification requires generated internal-container inputs");
 }

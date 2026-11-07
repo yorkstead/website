@@ -18,7 +18,7 @@ for name in $(compgen -e); do
   esac
 done
 
-for utility in docker bun curl openssl jq; do command -v "$utility" >/dev/null || fail "required utility is unavailable"; done
+for utility in docker bun curl openssl jq python3; do command -v "$utility" >/dev/null || fail "required utility is unavailable"; done
 for env_file in .env .env.local .env.development .env.production .env.test; do
   [[ ! -e "$env_file" ]] || fail "workspace contains an environment file"
 done
@@ -81,12 +81,12 @@ docker network create --internal "$runtime_network" >/dev/null
   || fail "Docker did not create both internal-only networks"
 
 docker run -d --rm --name "$source_container" --network "$source_network" --network-alias ys-app-recovery-source \
-  --publish 127.0.0.1::5432 --health-cmd="pg_isready -U $db_user -d $source_db" \
+  --health-cmd="pg_isready -U $db_user -d $source_db" \
   --health-interval=2s --health-timeout=2s --health-retries=30 \
   -e POSTGRES_USER="$db_user" -e POSTGRES_PASSWORD="$db_password" -e POSTGRES_DB="$source_db" \
   --log-driver=none postgres:18-alpine >/dev/null
 docker run -d --rm --name "$target_container" --network "$runtime_network" --network-alias ys-app-recovery-target \
-  --publish 127.0.0.1::5432 --health-cmd="pg_isready -U $db_user -d postgres" \
+  --health-cmd="pg_isready -U $db_user -d postgres" \
   --health-interval=2s --health-timeout=2s --health-retries=30 \
   -e POSTGRES_USER="$db_user" -e POSTGRES_PASSWORD="$db_password" -e POSTGRES_DB=postgres \
   --log-driver=none postgres:18-alpine >/dev/null
@@ -94,24 +94,32 @@ docker run -d --rm --name "$target_container" --network "$runtime_network" --net
 source_attached="$(docker network inspect -f '{{range $id, $container := .Containers}}{{println $container.Name}}{{end}}' "$source_network")"
 [[ "$source_attached" == "$source_container" ]] || fail "synthetic source network contains an unexpected container"
 
+source_ip="$(docker inspect -f "{{(index .NetworkSettings.Networks \"$source_network\").IPAddress}}" "$source_container")"
+target_ip="$(docker inspect -f "{{(index .NetworkSettings.Networks \"$runtime_network\").IPAddress}}" "$target_container")"
+source_subnet="$(docker network inspect -f '{{(index .IPAM.Config 0).Subnet}}' "$source_network")"
+target_subnet="$(docker network inspect -f '{{(index .IPAM.Config 0).Subnet}}' "$runtime_network")"
+python3 -c 'import ipaddress,sys; net=ipaddress.ip_network(sys.argv[2], strict=False); assert net.is_private and ipaddress.ip_address(sys.argv[1]) in net' "$source_ip" "$source_subnet" \
+  || fail "synthetic source container is outside its internal subnet"
+python3 -c 'import ipaddress,sys; net=ipaddress.ip_network(sys.argv[2], strict=False); assert net.is_private and ipaddress.ip_address(sys.argv[1]) in net' "$target_ip" "$target_subnet" \
+  || fail "restored target is outside its internal subnet"
+
 for attempt in $(seq 1 60); do
   if docker exec "$source_container" pg_isready -U "$db_user" -d "$source_db" >/dev/null 2>&1 \
     && docker exec "$target_container" pg_isready -U "$db_user" -d postgres >/dev/null 2>&1; then break; fi
   [[ $attempt -lt 60 ]] || fail "disposable PostgreSQL 18 did not become ready"
   sleep 1
 done
-source_port="$(docker port "$source_container" 5432/tcp | awk -F: 'END {print $NF}')"
-target_port="$(docker port "$target_container" 5432/tcp | awk -F: 'END {print $NF}')"
-[[ "$source_port" =~ ^[0-9]+$ && "$target_port" =~ ^[0-9]+$ ]] || fail "loopback-only database access could not be established"
+source_port=5432
+target_port=5432
 
 schema_started_epoch="$(date -u +%s)"
-env -i PATH="$PATH" HOME="$HOME" YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 \
-  YS_APP_RECOVERY_DB_HOST=127.0.0.1 YS_APP_RECOVERY_DB_PORT="$source_port" \
+env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 \
+  YS_APP_RECOVERY_DB_HOST="$source_ip" YS_APP_RECOVERY_DB_PORT="$source_port" \
   YS_APP_RECOVERY_DB_USER="$db_user" YS_APP_RECOVERY_DB_PASSWORD="$db_password" \
   YS_APP_RECOVERY_DB_NAME="$source_db" bun scripts/recovery/prepare-application-db.ts >/dev/null \
   || fail "synthetic source schema preparation failed"
 
-source_url="postgresql://${db_user}:${db_password}@127.0.0.1:${source_port}/${source_db}"
+source_url="postgresql://${db_user}:${db_password}@${source_ip}:${source_port}/${source_db}"
 env -i PATH="$PATH" HOME="$HOME" NODE_ENV=development DATABASE_URL="$source_url" bun run auth:migrate \
   >"$workspace/auth-migrate.log" 2>&1 || fail "synthetic Better Auth schema preparation failed"
 unset source_url
@@ -128,10 +136,9 @@ docker exec -i -e PGPASSWORD="$db_password" "$target_container" pg_restore --cre
 rm -f -- "$archive" "$workspace/pg-dump.log" "$workspace/pg-restore.log" "$workspace/auth-migrate.log"
 restore_finished_epoch="$(date -u +%s)"
 
-target_port="$(docker port "$target_container" 5432/tcp | awk -F: 'END {print $NF}')"
-target_url="postgresql://${db_user}:${db_password}@127.0.0.1:${target_port}/${source_db}"
-env -i PATH="$PATH" HOME="$HOME" YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 YS_APP_RECOVERY_PHASE=before \
-  YS_APP_RECOVERY_DB_HOST=127.0.0.1 YS_APP_RECOVERY_DB_PORT="$target_port" \
+target_url="postgresql://${db_user}:${db_password}@${target_ip}:${target_port}/${source_db}"
+env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 YS_APP_RECOVERY_PHASE=before \
+  YS_APP_RECOVERY_DB_HOST="$target_ip" YS_APP_RECOVERY_DB_PORT="$target_port" \
   YS_APP_RECOVERY_DB_USER="$db_user" YS_APP_RECOVERY_DB_PASSWORD="$db_password" \
   YS_APP_RECOVERY_DB_NAME="$source_db" bun scripts/recovery/verify-application-db.ts >"$workspace/before.json" \
   || fail "restored database preflight failed"
@@ -200,8 +207,8 @@ env -i PATH="$PATH" HOME="$HOME" NODE_ENV=test TEST_DATABASE_URL="$target_url" \
 tests_finished_epoch="$(date -u +%s)"
 tests_finished_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-env -i PATH="$PATH" HOME="$HOME" YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 YS_APP_RECOVERY_PHASE=after \
-  YS_APP_RECOVERY_DB_HOST=127.0.0.1 YS_APP_RECOVERY_DB_PORT="$target_port" \
+env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVERY_MODE=synthetic-internal-docker-v1 YS_APP_RECOVERY_PHASE=after \
+  YS_APP_RECOVERY_DB_HOST="$target_ip" YS_APP_RECOVERY_DB_PORT="$target_port" \
   YS_APP_RECOVERY_DB_USER="$db_user" YS_APP_RECOVERY_DB_PASSWORD="$db_password" \
   YS_APP_RECOVERY_DB_NAME="$source_db" bun scripts/recovery/verify-application-db.ts >"$workspace/after.json" \
   || fail "restored database postflight failed"
