@@ -108,6 +108,7 @@ test("owner links a prospect to CRM without losing Marketing history or duplicat
   await expect(editor.getByLabel("Next-action date", { exact: true })).toHaveCount(0);
   await expect(editor.getByLabel("Next action", { exact: true })).toHaveCount(0);
   await editor.getByRole("button", { name: "Save prospect" }).click();
+  await expect(page.getByText("Cloud saved", { exact: true })).toBeVisible();
 
   const linkedCard = prospectCard(company);
   await expect(linkedCard.getByText("CRM · qualified", { exact: true })).toBeVisible();
