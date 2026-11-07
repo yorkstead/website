@@ -13,6 +13,12 @@
 - `bun run test:e2e` — 25 passed, 10 failed. The unauthenticated owner-route scenarios failed because the local PostgreSQL/Better Auth connection is unavailable (`ECONNREFUSED 127.0.0.1:5432`); portfolio JSON parse and public navigation cases also failed in this broad run. No Marketing owner browser scenario is exercised by the default suite.
 - `bun run build` — passed; production compilation, TypeScript, and static page generation completed.
 
+## Pull request state
+
+- PR [#113](https://github.com/yorkstead/website/pull/113) is open and unmerged against `main`; GitHub verified base `d92ecf1459ff09a620bebc4144262daf15f4a3e6` and exact head `f1d1e4358504d2092111f70bf077ef785bc23e36`.
+- GitHub reported the PR mergeable. Automated Codex review was running when inspected; no final exact-head review result was available yet.
+- Vercel automatically created a Ready PR preview. No production deployment was requested or performed.
+
 ## Acceptance evidence
 
 - A1/A5: `marketingCrmLinkShapeError` and `validateMarketingCrmLinks`; owner-only `PUT /api/marketing-workspace`; route tests reject missing, invalid, and duplicate relationships.

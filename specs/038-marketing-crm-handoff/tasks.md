@@ -7,4 +7,4 @@
 - [x] T005 — Keep linked inquiries out of the existing retention purge and cover the rule.
 - [x] T006 — Add missing-record, unauthorized, invalid-relationship, duplicate-link, and history-preservation tests.
 - [x] T007 — Run focused and repository verification, security review, and spec convergence; record limitations.
-- [ ] T008 — Update the active handoff and open one focused PR; do not merge or deploy.
+- [x] T008 — Update the active handoff and open one focused PR; do not merge or deploy.
