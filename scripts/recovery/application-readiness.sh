@@ -18,7 +18,7 @@ for name in $(compgen -e); do
   esac
 done
 
-for utility in docker bun curl openssl jq python3; do command -v "$utility" >/dev/null || fail "required utility is unavailable"; done
+for utility in docker bun curl openssl jq python3 sha256sum cut; do command -v "$utility" >/dev/null || fail "required utility is unavailable"; done
 for env_file in .env .env.local .env.development .env.production .env.test; do
   [[ ! -e "$env_file" ]] || fail "workspace contains an environment file"
 done
@@ -168,6 +168,13 @@ chmod 0644 "$workspace/default.conf"
 # This disposable, self-signed key stays inside the mode-0700 workspace and is
 # mounted only into the no-egress proxy; readable mode is needed with all caps dropped.
 chmod 0644 "$workspace/key.pem" "$workspace/cert.pem"
+openssl x509 -in "$workspace/cert.pem" -noout -checkhost recovery.test >/dev/null 2>&1 \
+  || fail "synthetic TLS certificate hostname validation failed"
+openssl pkey -in "$workspace/key.pem" -noout -check >/dev/null 2>&1 \
+  || fail "synthetic TLS private key validation failed"
+cert_public_key="$(openssl x509 -in "$workspace/cert.pem" -pubkey -noout | openssl pkey -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1)"
+key_public_key="$(openssl pkey -in "$workspace/key.pem" -pubout -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1)"
+[[ "$cert_public_key" == "$key_public_key" ]] || fail "synthetic TLS certificate and key do not match"
 
 app_started_epoch="$(date -u +%s)"
 app_started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -188,8 +195,10 @@ if ! docker run --rm --network "$runtime_network" --read-only --cap-drop=ALL --s
   --volume "$workspace/default.conf:/etc/nginx/conf.d/default.conf:ro" \
   --volume "$workspace/cert.pem:/etc/nginx/cert.pem:ro" --volume "$workspace/key.pem:/etc/nginx/key.pem:ro" \
   --log-driver=none nginx:1.27-alpine nginx -t >"$workspace/nginx-config-test.log" 2>&1; then
-  if grep -q 'cannot load certificate\|SSL_CTX_use_PrivateKey' "$workspace/nginx-config-test.log"; then
-    proxy_config_failure="certificate or key"
+  if grep -q 'cannot load certificate\|BIO_new_file' "$workspace/nginx-config-test.log"; then
+    proxy_config_failure="certificate file access"
+  elif grep -q 'SSL_CTX_use_PrivateKey' "$workspace/nginx-config-test.log"; then
+    proxy_config_failure="certificate/key pairing"
   elif grep -q 'host not found in upstream\|could not be resolved' "$workspace/nginx-config-test.log"; then
     proxy_config_failure="internal app DNS"
   elif grep -q 'Permission denied\|mkdir()' "$workspace/nginx-config-test.log"; then
