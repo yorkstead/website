@@ -184,10 +184,15 @@ docker run -d --rm --name "$proxy_container" --network "$runtime_network" --netw
   --volume "$workspace/cert.pem:/etc/nginx/cert.pem:ro" --volume "$workspace/key.pem:/etc/nginx/key.pem:ro" \
   --log-driver=none nginx:1.27-alpine >/dev/null
 
+code=000
 for attempt in $(seq 1 90); do
   code="$(curl --resolve recovery.test:443:127.0.0.1 -kfsS --connect-timeout 1 --max-time 2 -o /dev/null -w '%{http_code}' https://recovery.test/api/health 2>/dev/null || true)"
   if [[ "$code" == 200 ]]; then ready_epoch="$(date -u +%s)"; ready_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; break; fi
-  [[ $attempt -lt 90 ]] || fail "production app did not become ready through the internal proxy"
+  if [[ $attempt -eq 90 ]]; then
+    app_health="$(docker exec "$app_container" bun -e 'fetch("http://127.0.0.1:3000/api/health").then(r=>{process.stdout.write(String(r.status));process.exit(r.status===200?0:1)}).catch(()=>{process.stdout.write("unavailable");process.exit(1)})' 2>/dev/null || true)"
+    app_health="${app_health:-unavailable}"
+    fail "application readiness failed (direct HTTP ${app_health}; loopback HTTPS proxy HTTP ${code})"
+  fi
   sleep 1
 done
 
