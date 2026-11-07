@@ -1,5 +1,18 @@
 # YS-SYS-001 tasks
 
+## Production-derived database restore and application readiness — 2026-11-07
+
+- [x] Record owner-reported encrypted artifact retrieval, decryption, ciphertext checksum, archive validation, and successful isolated PostgreSQL 18.6 database restore in [`recovery-rehearsal-evidence.md`](recovery-rehearsal-evidence.md); preserve the first failed restore and missing Neon-managed role as a prerequisite finding.
+- [x] Record aggregate migration, table/row inventory, Directory constraint/audit tests, and the reported restore-operation time without exposing row-level evidence.
+- [x] Document provider-compatible restore role prerequisites and prohibit recreating Neon-managed roles with elevated privileges.
+- [x] Prepare the isolated application-readiness plan with outbound egress blocked and jobs, webhooks, email, payments, and integrations disabled or stubbed.
+- [ ] Run application readiness against a fresh disposable copy; test synthetic authentication and owner authorization, essential read-only dashboard/legacy Directory workflows, tenant isolation, no persistent writes, and no external side effects.
+- [ ] Complete a continuously measured incident-to-verified-service recovery exercise, including artifact retrieval/decryption, provider-role preparation, restore, app configuration, smoke tests, and owner verification; meet the full 60-minute RTO.
+- [ ] Review private evidence of the exact role/ownership/ACL mapping used in the successful restore and record only a sanitized result.
+- [ ] Obtain separate authorization for any future Production migration 0023/0024 and Registry activation; no authorization is implied by this restore.
+
+The 2026-11-07 owner-reported database restore supersedes earlier checklist text below that says no Production-derived artifact or restore exists. The old seven-entry/eleven-audit assumptions remain obsolete; the current observed Directory state is empty. This database restore does not complete application readiness or the recovery exercise.
+
 ## Temporary Production identity diagnostic — 2026-11-03
 
 Design and implementation specification: [`production-identity-diagnostic.md`](production-identity-diagnostic.md).
@@ -62,17 +75,20 @@ The PR 0 / PR 1 sections below are historical completion records. Their former-d
 
 - [x] Match the owner-reported production diagnostic endpoint to Neon project `website`, production branch, and `neondb` using exact endpoint metadata.
 - [x] Confirm owner-reported aggregate production baseline and 22/22 matching migration checksums; see `production-preflight.md`.
-- [ ] **Blocked for production migration:** independently review private IDs/revisions/archive state, all seven entry values, per-entry audit counts/fingerprints and exact capture provenance.
-- [ ] Verify a specific pre-migration recovery point; agree RPO/RTO and acceptable data exposure; rehearse restore on disposable PostgreSQL/Neon only.
+- [x] Historical seven-entry/eleven-audit parity and private row-level review: superseded by the owner decision to retain the current database; the observed empty Directory state is accepted as the current state, not compared with unavailable historical rows.
+- [x] Verify an encrypted Production artifact and database-level isolated restore: owner-reported PASS on 2026-11-07; see `recovery-rehearsal-evidence.md`. The reported restore-only interval does not satisfy the full RTO.
 - [x] Prepare migration 0023 design, six-class and legacy DTO compatibility contract, default-off authorization boundaries, parity procedure and disposable verification plan in `plan.md`.
 - [x] Implement additive migration 0023 with six checked classes, provenance/verification metadata, normalized FK-backed relationships, revision/audit protection, and indexes; no existing rows are updated or seeded.
 - [x] Preserve the legacy service DTO and filter it to provider/service records; add a default-off exact-value feature gate that also requires server-derived owner authorization.
 - [x] Author a synthetic seven-entry/eleven-audit populated-upgrade parity test, relationship integrity/audit tests, class constraints, and legacy DTO compatibility test.
 - [x] Execute database-backed migration and preservation tests on disposable PostgreSQL; [PR #92 CI run 41499404998](https://github.com/yorkstead/website/actions/runs/41499404998) passed the then-current head. Recheck the consolidated head before review completion.
-- [ ] Rehearse restore from an authorized recovery artifact; none is available in this workspace.
+- [x] Rehearse database restoration from the owner-authorized recovery artifact in isolated PostgreSQL 18.6; owner-reported PASS after a first attempt failed on a missing Neon-managed role prerequisite. No row-level artifact is stored here.
+- [ ] Resolve and document a provider-supported, least-privilege role/ownership mapping for future restore targets; never recreate an elevated Neon-managed role.
+- [ ] Run disposable application-readiness checks with outbound network blocked and scheduled jobs, webhooks, email, payment, and other external effects disabled or mocked.
+- [ ] Measure complete incident-to-verified-application recovery and demonstrate the 60-minute RTO.
 - [x] Run complete repository verification on the reconciled proposed merge; record the initial exact-head evidence in `verification.md` and rerun on the final documentation head.
 
-## Recovery preparation — owner planning decision, no production execution
+## Recovery preparation — historical planning record; see 2026-11-07 exercise status above
 
 - [x] Prepare a specific production recovery approval package with encrypted custom-format dumps, owner-approved daily cadence/24-hour RPO, 30-day retention, 60-minute RTO target, cost verification procedure, one-time first-backup authorization request, single-operator exception, and isolated restore rehearsal plan. Exact storage/key/cost approvals and production execution remain open.
 - [x] Add a step-by-step private R2 setup checklist, verified provider links, region/jurisdiction irreversibility warning, bucket-scoped credentials, key custody, retention, logging, and cost verification steps; do not provision R2 resources.
@@ -82,9 +98,11 @@ The PR 0 / PR 1 sections below are historical completion records. Their former-d
 - [x] Prepare synthetic-only backup/encryption/local-upload/restore scripts, automated failure and integrity tests, private evidence template and narrow owner-decision checklist.
 - [x] Verify the synthetic restore rehearsal on disposable PostgreSQL with age; PR #93's exact-head [Actions run 41552395705](https://github.com/yorkstead/website/actions/runs/41552395705) passed its isolated recovery job. A synthetic pass is not a production-derived restore.
 - [x] Owner selects daily backups and 24-hour RPO; owner is primary recovery operator and approver. Secondary operator and independent human reviewer are unassigned; record explicit owner acknowledgment of the single-operator exception before production operation.
-- [ ] Approve exact storage and cost, key custody/recovery, private parity evidence, and source-specific one-time first-backup procedure.
-- [ ] Independently review private production seven-entry/eleven-audit parity and capture provenance.
-- [ ] Separately authorize a specific production export, verify remote storage/retention/retrieval, and complete an isolated restore rehearsal before any production migration request.
+- [x] One-time encrypted Production artifact retrieval and database restore recorded as owner-reported evidence above. This does not verify current retention enforcement, cost, recurring backup cadence, application readiness, or the full RTO; do not infer authorization for another export or recurring schedule.
+- [ ] Privately verify applicable 30-day artifact retention/expiration and storage cost before relying on this artifact for a future Production migration.
+- [x] Historical seven-entry/eleven-audit parity review: superseded; no fixed historical row count is required.
+- [ ] Complete application readiness and full RTO acceptance before requesting any Production migration decision.
+- [ ] Obtain separate explicit authorization for any Production migration 0023/0024 and Registry activation; this rehearsal grants neither.
 
 ## PR 0 follow-up — production identity diagnostic and retirement
 

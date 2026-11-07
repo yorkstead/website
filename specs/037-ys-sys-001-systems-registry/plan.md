@@ -1,5 +1,13 @@
 # YS-SYS-001 implementation plan
 
+## Recovery database restore complete; application readiness pending — 2026-11-07
+
+The owner reports that the encrypted Production artifact was retrieved, decrypted, checksum-verified, and successfully restored into a fresh network-isolated PostgreSQL 18.6 Docker container after an initial attempt failed on a missing Neon-managed role. The sanitized result is in [`recovery-rehearsal-evidence.md`](recovery-rehearsal-evidence.md). Treat database-level restore as PASS by owner report. Do not treat that as application readiness, a complete recovery exercise, or proof of the 60-minute RTO. The reported restore operation interval covers only the restore step.
+
+Next planning slice: execute a separately approved application-readiness rehearsal against a fresh disposable copy of that restored state. Block outbound network traffic; disable or stub all jobs, queue consumers, webhooks, email, payments, analytics, and external integrations. Use synthetic principals/fixtures. Do not apply migrations 0023/0024; verify the restored 0022-compatible application state, Better Auth session/authz path, essential read-only owner dashboard and legacy Directory, tenant isolation, and absence of writes/external effects. A separate disposable 0023/0024 migration rehearsal remains a distinct gate. Record the complete incident-to-ready elapsed time, including artifact retrieval, decryption, role/extension preparation, restore, app configuration, tests, and owner verification. Pass the 60-minute RTO only if that entire interval is measured at or below 60 minutes.
+
+Restore prerequisites must be derived from the archive and target provider, including global role references, ownership/ACLs, memberships, extensions, and database settings. Never create a lookalike Neon-managed role or grant elevated privileges to satisfy an archive dependency. Use provider-supported roles or a reviewed least-privilege role mapping, and stop if ownership/security behavior cannot be preserved.
+
 ## Current continuation — dependency impact and activation readiness
 
 PR #97/#99 provide the six canonical classes, evidence, billing, monitoring and explicitly sourced relationships on the CC-023 record model. This continuation adds read-only analysis and owner views; it introduces no schema migration. Before implementation, the class relationship semantics and readiness severity rules are recorded in [`dependency-impact-readiness/spec.md`](dependency-impact-readiness/spec.md), with file-level slices and test evidence in its plan and task list.

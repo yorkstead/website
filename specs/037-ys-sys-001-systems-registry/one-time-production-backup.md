@@ -1,6 +1,12 @@
 # YS-SYS-001 one-time Production database backup
 
-**Status:** Preparation and synthetic testing only. No Production export, upload, restore, schedule, migration, or Registry activation is authorized by this document.
+**Status:** This procedure documents the one-time Production backup already reported as retrieved and restored in isolation. It is not authorization to repeat/export again, schedule backups, restore elsewhere, run migrations, or activate the Registry.
+
+## Latest owner-reported execution — 2026-11-07
+
+An encrypted PostgreSQL 18.6 Production backup was retrieved from private R2 and its identity, age decryption, ciphertext SHA-256, and custom-format archive were validated. The first isolated restore stopped because the generic PostgreSQL target lacked a Neon-managed role referenced by the archive. A second restore succeeded in a fresh network-isolated PostgreSQL 18.6 Docker container. See the sanitized [recovery rehearsal evidence](recovery-rehearsal-evidence.md) for the aggregate inventory, migration state, integrity checks, exact restore-operation interval, and limitations. The archive, raw output, role mapping details, credentials, R2 object identifiers, and database rows remain private.
+
+This is database-level restoration only. Application startup, authentication, tenant isolation, essential read-only workflows, external-side-effect isolation, and complete incident-to-ready RTO remain NOT RUN / NOT DEMONSTRATED. The restore operation's reported interval does not establish the 60-minute RTO. The successful restore's exact role/ownership/ACL mapping must be documented and reviewed before relying on the procedure again. Never recreate a Neon-managed role with elevated privileges.
 
 ## Scope and evidence
 
@@ -367,7 +373,9 @@ Conditional single-object PutObject has a 5 GiB per-object maximum. The script m
 
 ### Recovery validation after the backup
 
-The first Production dump does not prove restoration. A separately authorized rehearsal must download and decrypt a copy into an isolated disposable PostgreSQL 18 target with no Production traffic, jobs, mail, webhooks, or customer side effects. Pre-create only the documented global roles and install required extensions/owners before restore. Require the database name embedded in the archive to be absent, then use `pg_restore --create --exit-on-error --dbname=<fresh disposable admin database> <decrypted archive>` without `--clean`; this restores the database owner, settings and ACLs while creating the archived database. Never restore over Production or a shared database. Verify migration ledger/checksums, schema objects, role/ownership/grants, RLS, Directory protections and counts (the current baseline is empty, but the full database may contain other business data). Measure from rehearsal start through verified application readiness against the 60-minute RTO. Keep the source artifact unchanged. This restore requires a separate authorization and does not authorize migration 0023/0024.
+The owner reports that artifact retrieval/decryption/archive validation and an isolated database restore have passed; the initial restore failure identified a missing Neon-managed role dependency. This evidence supersedes the earlier planned-only wording in this section. Do not repeat the restore operation under this document. Before relying on it again, review the private role/ownership/ACL mapping used on the successful isolated target. Never create an elevated lookalike of a provider-managed role or weaken archive ownership/ACLs silently.
+
+Application readiness is a separate pending phase. Any additional rehearsal requires a fresh disposable target, external network egress blocked, and jobs, mail, webhooks, payment processors, and customer effects disabled. Preserve the source artifact. Validate migration checksums, schema, role/ownership/grants, RLS, Directory protections, aggregate counts, synthetic authentication/authorization, essential read-only workflows, tenant isolation, and absence of external effects. Do not run migrations 0023/0024 during the application-readiness phase. Measure continuously from incident declaration through verified application readiness against the 60-minute RTO; the reported restore-only interval is not an RTO result. Any further restore operation requires separate authorization and does not authorize migration 0023/0024.
 
 ## Cost model and threshold
 
@@ -381,12 +389,12 @@ The archive size and remaining account-wide free-tier usage are unknown until an
 
 ## Gates and decision
 
-**Current recommendation: NO-GO for Production backup execution.** Preparation and synthetic testing may proceed. The owner-reported baseline is complete for this point in time, but no complete `pg_dump` artifact, live R2 retention verification, Production restore, or timed RTO test exists.
+**Current status:** The encrypted backup retrieval and isolated database restore are owner-reported PASS; do not repeat or schedule exports under this document. Application readiness is NOT RUN, full RTO is NOT DEMONSTRATED, and actual artifact retention enforcement/cost were not independently verified in this update. Production migrations 0023/0024 and Registry activation remain **NO-GO**.
 
 A single pre-migration artifact is only a recovery point at its capture time. It does not satisfy the ongoing 24-hour RPO unless the separately approved daily backup process is later operated and monitored. This task prepares a one-time checkpoint only; it does not authorize or configure recurrence.
 
-Before a one-time backup can be authorized: merge/review this procedure through normal PR review; pass the dedicated synthetic PostgreSQL backup/restore tests; privately reverify Production identity, preflight/checksums, role coverage and server/client versions; verify the current R2 target, lock/lifecycle prefix and cost; verify age recipient and recovery copy; confirm the operator's single-person risk acknowledgment; and review the exact one-time execution command. This does not authorize recurrence or restore.
+The following was the pre-export approval checklist and remains useful only for a future separately authorized export. Reverify Production identity, preflight/checksums, role coverage and server/client versions; verify the R2 target, lock/lifecycle prefix and cost; verify the age recipient and recovery copy; confirm the operator's single-person risk acknowledgment; and review the exact command. Do not infer that this historical checklist authorizes another export, recurrence, or restore.
 
-### Separate owner authorization request — one-time export only
+### Future separately authorized export
 
-After these preparation gates pass, request explicit approval limited to one `pg_dump -Fc` of the privately confirmed Production `neondb` direct endpoint during a named UTC window, using the named approved role and PostgreSQL client version; local age encryption with the previously approved recipient; one encrypted upload to the existing private US R2 bucket with the verified 30-day lock/lifecycle policy; independent retrieval, ciphertext comparison, decryption, archive validation, local cleanup, and private evidence retention. Include the redacted expected cost and stop conditions. This approval must explicitly exclude recurring scheduling, R2 policy changes, credentials/ACL changes, database restores, migrations 0023/0024, Registry activation, Production deployment, and endpoint/connection changes. A later isolated restore rehearsal needs its own authorization.
+The one-time export described in this document is reported complete. Do not use this old request text as approval for another export. Any future export requires fresh explicit approval limited to its exact source, time window, role, client version, encryption recipient, existing R2 destination, retention/cost evidence, cleanup, and stop conditions. Such approval must explicitly exclude recurring scheduling, R2 policy changes, credentials/ACL changes, restores, migrations 0023/0024, Registry activation, Production deployment, and endpoint/connection changes unless each is separately authorized. A future restore operation also needs its own scope and authorization.

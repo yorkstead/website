@@ -1,5 +1,15 @@
 # YS-SYS-001 verification record — PR 0
 
+## Production-derived database recovery rehearsal — 2026-11-07
+
+- Evidence source: owner-provided sanitized result. The private archive, raw logs, local paths, row-level values, and storage identifiers were not accessed or copied into the repository.
+- Owner reports PASS for encrypted backup retrieval, age decryption, ciphertext SHA-256, custom archive validation, and a second restore in a fresh network-isolated PostgreSQL 18.6 Docker container. The first restore stopped because the target did not contain the Neon-managed `neon_superuser` role dependency. No elevated lookalike role should be created.
+- Reported restored inventory: 55 application tables and 532 rows. All 22 applied migration checksums match pinned revision `ecfb120230013b21689aab866e1d7dbf8d675053`; 0023/0024 are unapplied. Owner reports revision, audit-creation, audit-immutability, and owner-tenant constraint tests passed; synthetic transactions rolled back and Directory entries/audits remain empty.
+- Restore-operation interval reported as 2026-11-07 00:54:49–00:54:50 UTC. This does not measure the full RTO from incident declaration to verified application readiness.
+- Application startup, authentication/owner authorization, essential read-only workflows, tenant isolation, and external-side-effect isolation against the restored database: NOT RUN. Complete recovery exercise and 60-minute RTO: NOT COMPLETE.
+- No Production mutation or R2 object modification was reported. This documentation update did not access Production, R2, or recovery containers.
+- Next step is the disposable application-readiness rehearsal defined in `recovery-runbook.md`; keep outbound access blocked and all jobs, webhooks, email, payment, and external integrations disabled or mocked. Do not run migrations 0023/0024 during that phase. No Production migration or activation authorization is granted.
+
 ## PR #97 review corrections — 2026-11-03
 
 - Added focused corrections for PostgreSQL `DATE` serialization (`renewal_date::text`), preserving legacy provenance when editing existing directory entries, and an immutable `legacy_directory_entry` marker that controls compatibility independently of provenance.

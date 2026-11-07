@@ -1,3 +1,10 @@
+# YS-SYS-001 recovery rehearsal update — 2026-11-07
+
+- Owner-reported database-level recovery: encrypted Production artifact retrieval, decryption, checksum/archive validation, and isolated PostgreSQL 18.6 restore passed after an initial missing Neon-managed role failure. Sanitized evidence: [`recovery-rehearsal-evidence.md`](../../specs/037-ys-sys-001-systems-registry/recovery-rehearsal-evidence.md).
+- The successful database restore is separate from application readiness. Application startup, authentication, essential read-only workflows, tenant isolation, side-effect isolation, and the complete 60-minute RTO remain untested. The reported time covers the restore operation only.
+- Never synthesize an elevated Neon-managed role. Verify provider-supported restore roles and ownership/ACL mapping in the next approved isolated rehearsal.
+- Current next step is a disposable, network-isolated application-readiness plan with all scheduled jobs and external effects disabled. Migrations 0023/0024 and Registry activation remain separately gated; no Production action is authorized here.
+
 # YS-SYS-001 release status — 2026-11-02
 
 This is a redacted status supplement for issue [#86](https://github.com/yorkstead/website/issues/86). Historical `docs/handoffs/CURRENT.md` remains unchanged while its approved update method is resolved. Verify live GitHub and Vercel state before acting; the SHA and check results below are a dated snapshot.
