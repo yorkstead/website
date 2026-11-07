@@ -15,9 +15,9 @@
 
 ## Pull request state
 
-- PR [#113](https://github.com/yorkstead/website/pull/113) is open and unmerged against `main`; GitHub verified base `d92ecf1459ff09a620bebc4144262daf15f4a3e6` and exact head `f1d1e4358504d2092111f70bf077ef785bc23e36`.
-- GitHub reported the PR mergeable. Automated Codex review was running when inspected; no final exact-head review result was available yet.
-- Vercel automatically created a Ready PR preview. No production deployment was requested or performed.
+- PR [#113](https://github.com/yorkstead/website/pull/113) is open and unmerged against `main`; GitHub verified base `d92ecf1459ff09a620bebc4144262daf15f4a3e6`. The PR contains the implementation head `f1d1e4358504d2092111f70bf077ef785bc23e36` and a documentation-only closeout update.
+- GitHub reports the PR mergeable. Vercel status for the closeout update was pending when checked; a prior implementation head received an automatic Ready PR preview. Automated Codex review was running when last inspected; no final exact-head review result was available yet.
+- No production deployment was requested or performed.
 
 ## Acceptance evidence
 
