@@ -189,9 +189,9 @@ docker run -d --rm --name "$app_container" --network "$runtime_network" --networ
   -e NEXT_PUBLIC_FIRST_PARTY_ANALYTICS=disabled -e YS_SYS_001_ENABLED=false -e NEXT_TELEMETRY_DISABLED=1 \
   -e HOSTNAME=0.0.0.0 -e PORT=3000 "$app_image" >/dev/null
 
-if ! docker run --rm --network "$runtime_network" --read-only --cap-drop=ALL --security-opt=no-new-privileges \
-  --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m \
-  --tmpfs /var/run:rw,noexec,nosuid,nodev,size=2m \
+if ! docker run --rm --network "$runtime_network" --read-only --user 101:101 --cap-drop=ALL --security-opt=no-new-privileges \
+  --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m,uid=101,gid=101,mode=755 \
+  --tmpfs /var/run:rw,noexec,nosuid,nodev,size=2m,uid=101,gid=101,mode=755 \
   --volume "$workspace/default.conf:/etc/nginx/conf.d/default.conf:ro" \
   --volume "$workspace/cert.pem:/etc/nginx/cert.pem:ro" --volume "$workspace/key.pem:/etc/nginx/key.pem:ro" \
   --log-driver=none nginx:1.27-alpine nginx -t >"$workspace/nginx-config-test.log" 2>&1; then
@@ -226,9 +226,9 @@ PY
 fi
 
 docker run -d --name "$proxy_container" --network "$runtime_network" --network-alias recovery.test \
-  --read-only --cap-drop=ALL --security-opt=no-new-privileges \
-  --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m \
-  --tmpfs /var/run:rw,noexec,nosuid,nodev,size=2m \
+  --read-only --user 101:101 --cap-drop=ALL --security-opt=no-new-privileges \
+  --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m,uid=101,gid=101,mode=755 \
+  --tmpfs /var/run:rw,noexec,nosuid,nodev,size=2m,uid=101,gid=101,mode=755 \
   --volume "$workspace/default.conf:/etc/nginx/conf.d/default.conf:ro" \
   --volume "$workspace/cert.pem:/etc/nginx/cert.pem:ro" --volume "$workspace/key.pem:/etc/nginx/key.pem:ro" \
   --log-driver=none nginx:1.27-alpine >/dev/null
