@@ -195,13 +195,15 @@ docker run -d --rm --name "$browser_container" --network "$runtime_network" \
 
 code=000
 for attempt in $(seq 1 90); do
-  code="$(docker exec "$browser_container" node -e 'const https=require("node:https");let done=false;const out=(s)=>{if(!done){done=true;process.stdout.write(s)}};const req=https.get({hostname:"recovery.test",port:8443,path:"/api/health",rejectUnauthorized:false,timeout:1500},res=>{out(String(res.statusCode));res.resume()});req.on("timeout",()=>{req.destroy();out("000")});req.on("error",()=>out("000"))' 2>/dev/null || true)"
+  code="$(docker exec "$browser_container" node -e 'const https=require("node:https");let done=false;const out=(s)=>{if(!done){done=true;process.stdout.write(s)}};const req=https.get({hostname:"recovery.test",port:8443,path:"/api/health",rejectUnauthorized:false,timeout:1500},res=>{out(String(res.statusCode));res.resume()});req.on("timeout",()=>{req.destroy();out("TIMEOUT")});req.on("error",e=>out(["ENOTFOUND","EAI_AGAIN"].includes(e.code)?"DNS_UNAVAILABLE":["ECONNREFUSED","EHOSTUNREACH","ENETUNREACH"].includes(e.code)?"TCP_UNAVAILABLE":String(e.code||"").startsWith("CERT_")?"TLS_ERROR":"PROBE_ERROR")' 2>/dev/null || true)"
   code="${code:-000}"
   if [[ "$code" == 200 ]]; then ready_epoch="$(date -u +%s)"; ready_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; break; fi
   if [[ $attempt -eq 90 ]]; then
     app_health="$(docker exec "$app_container" bun -e 'fetch("http://127.0.0.1:3000/api/health").then(r=>{process.stdout.write(String(r.status));process.exit(r.status===200?0:1)}).catch(()=>{process.stdout.write("unavailable");process.exit(1)})' 2>/dev/null || true)"
     app_health="${app_health:-unavailable}"
-    fail "application readiness failed (direct HTTP ${app_health}; internal HTTPS proxy HTTP ${code})"
+    proxy_state="$(docker inspect -f '{{.State.Status}}/{{.State.ExitCode}}' "$proxy_container" 2>/dev/null || printf missing)"
+    browser_state="$(docker inspect -f '{{.State.Status}}/{{.State.ExitCode}}' "$browser_container" 2>/dev/null || printf missing)"
+    fail "application readiness failed (direct HTTP ${app_health}; internal proxy ${code}; proxy container ${proxy_state}; browser container ${browser_state})"
   fi
   sleep 1
 done
