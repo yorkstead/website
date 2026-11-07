@@ -39,7 +39,10 @@ const pool = new Pool({
   application_name: "ys_sys_001_synthetic_recovery_schema_prep",
 });
 
+let phase = "initial connection";
+let migrationVersion: string | undefined;
 try {
+  phase = "empty source verification";
   const existing = await pool.query<{ count: string }>(`SELECT count(*)::text AS count
     FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
     WHERE c.relkind IN ('r','p','v','m','S')
@@ -54,10 +57,12 @@ try {
     if (filename.slice(0, 4) > versionLimit) continue;
     migrations.push(parseMigration(filename, await readFile(resolve(migrationDirectory, filename), "utf8")));
   }
+  phase = "repository migration range verification";
   if (migrations.length !== 22 || migrations[0]?.version !== "0001" || migrations.at(-1)?.version !== versionLimit) {
     throw new Error("repository migration range through 0022 is not complete");
   }
 
+  phase = "synthetic ledger creation";
   await pool.query(`CREATE TABLE application_migrations (
     version TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -66,6 +71,8 @@ try {
   )`);
 
   for (const migration of migrations) {
+    migrationVersion = migration.version;
+    phase = "synthetic migration application";
     await pool.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
     try {
       for (const statement of migration.statements) await pool.query(statement);
@@ -77,6 +84,8 @@ try {
     }
   }
 
+  phase = "canonical migration ledger verification";
+  migrationVersion = undefined;
   const ledger = await pool.query<{ version: string; checksum: string }>("SELECT version,checksum FROM application_migrations ORDER BY version");
   if (ledger.rows.length !== 22 || ledger.rows.at(-1)?.version !== versionLimit) throw new Error("migration ledger verification failed");
   for (let index = 0; index < migrations.length; index += 1) {
@@ -85,8 +94,13 @@ try {
     if (!actual || !expected || actual.version !== expected.version || actual.checksum !== expected.checksum) throw new Error("canonical migration checksum verification failed");
   }
   process.stdout.write("Synthetic database schema prepared and checksummed through 0022.\n");
-} catch {
-  process.stderr.write("Synthetic application database preparation failed; private details suppressed.\n");
+} catch (error) {
+  const candidate = error as { code?: unknown };
+  const safeCode = typeof candidate?.code === "string" && /^[0-9A-Z]{5}$/.test(candidate.code)
+    ? `; SQLSTATE ${candidate.code}`
+    : "";
+  const safeMigration = migrationVersion ? `; migration ${migrationVersion}` : "";
+  process.stderr.write(`Synthetic application database preparation failed during ${phase}${safeMigration}${safeCode}; private details suppressed.\n`);
   process.exitCode = 1;
 } finally {
   await pool.end();
