@@ -30,6 +30,12 @@ describe("data retention policy", () => {
     expect(archivedInquiryPurgeQuery).toContain("jsonb_typeof(m.data->'prospects') = 'array'");
   });
 
+  test("scopes Marketing retention to an exact linked inquiry and keeps normal archived eligibility", () => {
+    expect(archivedInquiryPurgeQuery).toContain("p->>'crmLeadId' = i.id::text");
+    expect(archivedInquiryPurgeQuery).toContain("i.status='archived' AND i.archived_at < $1::timestamptz");
+    expect(archivedInquiryPurgeQuery).toContain("FOR UPDATE OF i SKIP LOCKED");
+  });
+
   test("keeps only a short fallback window of private morning briefings", () => {
     const now = new Date("2028-03-01T12:00:00.000Z");
     expect(morningBriefingRetentionDays).toBe(35);

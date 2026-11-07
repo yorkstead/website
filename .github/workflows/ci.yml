@@ -136,6 +136,11 @@ jobs:
           NODE_ENV: development
         run: bunx playwright test -c playwright.cc026.config.ts
 
+      - name: Verify authenticated Marketing to CRM handoff
+        env:
+          NODE_ENV: development
+        run: bunx playwright test -c playwright.cc038.config.ts
+
       - name: Upload Opportunity Discovery responsive screenshots
         if: always()
         uses: actions/upload-artifact@v4

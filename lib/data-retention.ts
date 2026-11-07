@@ -3,8 +3,9 @@ export const workspaceSnapshotHistoryCount = 10;
 export const archivedInquiryRetentionDays = 365;
 export const morningBriefingRetentionDays = 35;
 
-// Keep linked CRM records while their research provenance is retained. The
-// research owner can erase an archived opportunity to release the link.
+// Keep canonical CRM records while Opportunity Discovery or Marketing still
+// references them. Erasing archived research or removing the Marketing link
+// releases the inquiry to its existing retention lifecycle.
 export const archivedInquiryPurgeQuery = `WITH eligible AS (
     SELECT i.id FROM contact_inquiries i
     WHERE NOT EXISTS (SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)
