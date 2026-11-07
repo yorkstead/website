@@ -51,9 +51,9 @@ try {
   const triggers = await pool.query<{ trigger_name: string; enabled: string }>(`SELECT t.tgname AS trigger_name,t.tgenabled AS enabled
     FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
     WHERE n.nspname='public' AND c.relname IN ('system_directory_entries','system_directory_audit') AND NOT t.tgisinternal`);
-  const expectedTriggers = new Set(["system_directory_write_audit", "system_directory_audit_immutable", "system_directory_revision"]);
+  const expectedTriggers = new Set(["system_directory_audit_entry", "system_directory_audit_immutable", "system_directory_revision"]);
   const enabledTriggers = triggers.rows.length === expectedTriggers.size && triggers.rows.every((t) => expectedTriggers.has(t.trigger_name) && t.enabled === "O");
-  const dbVersion = await pool.query<{ version: string }>("SHOW server_version");
+  const dbVersion = await pool.query<{ version: string }>("SELECT current_setting('server_version') AS version");
   const version18 = /^18\./.test(dbVersion.rows[0]?.version ?? "");
   const state = directory.rows[0];
   const valid = checksumsMatch && futureRows.rows[0]?.count === 0 && futureObjects.rows[0]?.count === 0
