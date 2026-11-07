@@ -258,9 +258,22 @@ for attempt in $(seq 1 90); do
   sleep 1
 done
 
-attached="$(docker network inspect -f '{{range $id, $container := .Containers}}{{println $container.Name}}{{end}}' "$runtime_network" | sort)"
 expected_attached="$(printf '%s\n' "$app_container" "$browser_container" "$proxy_container" "$target_container" | sort)"
-[[ "$attached" == "$expected_attached" ]] || fail "runtime network membership differs from the four approved containers"
+attached=''
+for attempt in $(seq 1 10); do
+  attached="$(docker network inspect -f '{{range $id, $container := .Containers}}{{println $container.Name}}{{end}}' "$runtime_network" | sort)"
+  [[ "$attached" == "$expected_attached" ]] && break
+  sleep 1
+done
+if [[ "$attached" != "$expected_attached" ]]; then
+  actual_count="$(printf '%s\n' "$attached" | sed '/^$/d' | wc -l | tr -d ' ' )"
+  has_app=false; has_browser=false; has_proxy=false; has_target=false
+  grep -Fxq "$app_container" <<<"$attached" && has_app=true
+  grep -Fxq "$browser_container" <<<"$attached" && has_browser=true
+  grep -Fxq "$proxy_container" <<<"$attached" && has_proxy=true
+  grep -Fxq "$target_container" <<<"$attached" && has_target=true
+  fail "runtime network membership mismatch (4 required; ${actual_count} attached; app=${has_app}, browser=${has_browser}, proxy=${has_proxy}, target=${has_target})"
+fi
 [[ "$(docker network inspect -f '{{.Internal}}' "$runtime_network")" == true \
   && "$(docker network inspect -f '{{.Internal}}' "$source_network")" == true ]] || fail "a rehearsal network is not internal"
 
