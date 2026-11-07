@@ -1,6 +1,14 @@
 Warning: truncated output (original token count: 19431)
 Total output lines: 289
 
+# Current status — YS-SYS-001 PR #111 runtime privilege correction — 2026-11-07
+
+- Verified through GitHub integration at 2026-11-07T21:38Z: PR #111 remains OPEN, not merged, at `16923d1fdd4ab2753f5c6535e664250fe0c2182a`. The checkout is on the existing PR branch at the same SHA; no new branch or recovery rehearsal was started. Exact-head Actions run `42416791205` completed successfully before this correction.
+- Authorized work is limited to narrowing the existing synthetic app runtime role, adding executable synthetic privilege denial checks, and updating directly related verification/handoff docs. The currently inspected script still grants blanket DML and broad sequence privileges; correction and local verification are in progress.
+- Preserve separate synthetic administration for schema preparation/migrations/restore; the runtime role must not write migration history, own/alter schemas or relations, administer roles, or bypass RLS. Preserve synthetic-only inputs, internal-only Docker networks and blocked application egress. No Production, R2, credential changes, migrations 0023/0024, merge or manual deployment.
+- Production-derived recovery, measured RPO, retention expiry/deletion proof and complete 60-minute RTO remain separate outstanding gates. Issue #112 coordination is required only if implementation reveals an architectural conflict.
+- Next: finish the per-table/per-sequence grant audit and denial probes, run local verification, update the review evidence, commit/push only to PR #111's existing branch, then inspect exact-head Actions and Preview.
+
 # Current status — YS-SYS-001 application-recovery rehearsal — 2026-11-07
 
 - PR #110 merged as `d92ecf1459ff09a620bebc4144262daf15f4a3e6`; this is the verified starting main revision for the next synthetic-only recovery milestone.

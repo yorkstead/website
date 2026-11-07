@@ -149,18 +149,112 @@ if ! env -i PATH="$PATH" HOME="$HOME" CI=true GITHUB_ACTIONS=true YS_APP_RECOVER
   fail "restored database preflight could not complete; see the sanitized connection/query category above"
 fi
 
-# The synthetic administrator owns schema preparation and restore only. The
-# application receives a separate NOLOGIN-free, non-superuser DML role with no
-# database or schema creation rights. No role is granted to another role.
+# The synthetic administrator owns schema preparation, migration execution,
+# and restore. The app role gets reads for current application query paths,
+# but writes only to tables actually mutated by application SQL. Audit tables
+# receive INSERT only where application triggers write append-only history;
+# migration ledgers stay outside every write allowlist. The listed sequences
+# are consumed by application INSERTs and those same audit triggers.
 docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
-  -U "$admin_user" -d "$source_db" -c "REVOKE TEMPORARY ON DATABASE ${source_db} FROM PUBLIC; CREATE ROLE ${app_user} LOGIN PASSWORD '${app_password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS; GRANT CONNECT ON DATABASE ${source_db} TO ${app_user}; GRANT USAGE ON SCHEMA public, customer_auth TO ${app_user}; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public, customer_auth TO ${app_user}; GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public, customer_auth TO ${app_user};" \
+  -U "$admin_user" -d "$source_db" -c "REVOKE TEMPORARY ON DATABASE ${source_db} FROM PUBLIC; CREATE ROLE ${app_user} LOGIN PASSWORD '${app_password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS; GRANT CONNECT ON DATABASE ${source_db} TO ${app_user}; GRANT USAGE ON SCHEMA public, customer_auth TO ${app_user}; GRANT SELECT ON ALL TABLES IN SCHEMA public, customer_auth TO ${app_user};" \
   >/dev/null 2>&1 || fail "least-privilege synthetic application role setup failed"
+
+for table in \
+  client_invitation_preparations client_project_publications consultations contact_inquiries conversion_events crm_proposals \
+  customer_enrollment_challenges customer_enrollment_limits customer_identities customer_invitation_projects customer_invitations \
+  customer_mail_custody customer_mail_events customer_mail_jobs customer_mail_suppressions customer_project_grants \
+  customer_recovery_challenges customer_tenant_memberships customer_tenant_projects customer_tenants \
+  customer_provisioning_audit customer_mail_audit client_access_admin_audit client_project_publication_audit \
+  document_approval_requests document_audit_events document_registry document_versions marketing_workspaces morning_briefings opportunity_evidence \
+  opportunity_history opportunity_interviews portal_release_audit portal_release_evidence portal_release_reviews push_subscriptions research_opportunities \
+  system_directory_billing_allocations system_directory_billing_evidence system_directory_entries system_directory_relationships \
+  system_directory_audit workspace_snapshots workspaces; do
+  docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
+    -U "$admin_user" -d "$source_db" -c "GRANT INSERT ON TABLE public.${table} TO ${app_user}" \
+    >/dev/null 2>&1 || fail "least-privilege synthetic application INSERT grant failed"
+done
+for table in \
+  client_project_publications consultations contact_inquiries crm_proposals customer_enrollment_challenges customer_invitations \
+  customer_enrollment_limits customer_mail_jobs customer_project_grants customer_recovery_challenges customer_tenant_memberships customer_tenant_projects \
+  customer_tenants document_approval_requests document_registry marketing_workspaces morning_briefings opportunity_interviews \
+  portal_release_reviews research_opportunities system_directory_billing_allocations system_directory_billing_evidence \
+  system_directory_entries system_directory_relationships workspaces; do
+  docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
+    -U "$admin_user" -d "$source_db" -c "GRANT UPDATE ON TABLE public.${table} TO ${app_user}" \
+    >/dev/null 2>&1 || fail "least-privilege synthetic application UPDATE grant failed"
+done
+for table in consultations contact_inquiries conversion_events customer_mail_custody morning_briefings push_subscriptions research_opportunities workspace_snapshots; do
+  docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
+    -U "$admin_user" -d "$source_db" -c "GRANT DELETE ON TABLE public.${table} TO ${app_user}" \
+    >/dev/null 2>&1 || fail "least-privilege synthetic application DELETE grant failed"
+done
+for table in '"user"' '"account"' '"session"' '"verification"'; do
+  docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
+    -U "$admin_user" -d "$source_db" -c "GRANT INSERT, UPDATE, DELETE ON TABLE customer_auth.${table} TO ${app_user}" \
+    >/dev/null 2>&1 || fail "least-privilege synthetic authentication grant failed"
+done
+for sequence in workspace_snapshots_id_seq contact_inquiries_id_seq conversion_events_id_seq opportunity_history_id_seq portal_release_evidence_id_seq \
+  client_project_publication_audit_id_seq client_access_admin_audit_id_seq document_audit_events_id_seq portal_release_audit_id_seq \
+  system_directory_audit_id_seq customer_mail_audit_id_seq; do
+  docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
+    -U "$admin_user" -d "$source_db" -c "GRANT USAGE ON SEQUENCE public.${sequence} TO ${app_user}" \
+    >/dev/null 2>&1 || fail "least-privilege synthetic sequence grant failed"
+done
+
 runtime_role_ok="$(docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -At -v ON_ERROR_STOP=1 \
-  -U "$admin_user" -d "$source_db" -c "SELECT r.rolcanlogin AND NOT r.rolsuper AND NOT r.rolcreatedb AND NOT r.rolcreaterole AND NOT r.rolreplication AND NOT r.rolbypassrls AND NOT has_database_privilege(r.rolname, current_database(), 'CREATE') AND NOT has_database_privilege(r.rolname, current_database(), 'TEMPORARY') AND has_database_privilege(r.rolname, current_database(), 'CONNECT') AND has_schema_privilege(r.rolname, 'public', 'USAGE') AND NOT has_schema_privilege(r.rolname, 'public', 'CREATE') AND has_table_privilege(r.rolname, 'public.application_migrations', 'SELECT') AND has_table_privilege(r.rolname, 'public.workspaces', 'INSERT') AND has_table_privilege(r.rolname, 'public.workspaces', 'UPDATE') AND has_table_privilege(r.rolname, 'public.workspaces', 'DELETE') AND NOT has_table_privilege(r.rolname, 'public.workspaces', 'TRUNCATE') AND NOT pg_has_role(r.rolname, '${admin_user}', 'MEMBER') FROM pg_roles r WHERE r.rolname = '${app_user}'")"
+  -U "$admin_user" -d "$source_db" -c "SELECT r.rolcanlogin AND NOT r.rolsuper AND NOT r.rolcreatedb AND NOT r.rolcreaterole AND NOT r.rolreplication AND NOT r.rolbypassrls AND NOT has_database_privilege(r.rolname, current_database(), 'CREATE') AND NOT has_database_privilege(r.rolname, current_database(), 'TEMPORARY') AND has_database_privilege(r.rolname, current_database(), 'CONNECT') AND (SELECT d.datdba <> r.oid FROM pg_database d WHERE d.datname=current_database()) AND has_schema_privilege(r.rolname, 'public', 'USAGE') AND NOT has_schema_privilege(r.rolname, 'public', 'CREATE') AND has_schema_privilege(r.rolname, 'customer_auth', 'USAGE') AND NOT has_schema_privilege(r.rolname, 'customer_auth', 'CREATE') AND NOT EXISTS (SELECT 1 FROM pg_namespace n WHERE n.nspname IN ('public','customer_auth') AND n.nspowner=r.oid) AND has_table_privilege(r.rolname, 'public.application_migrations', 'SELECT') AND NOT has_table_privilege(r.rolname, 'public.application_migrations', 'INSERT') AND NOT has_table_privilege(r.rolname, 'public.application_migrations', 'UPDATE') AND NOT has_table_privilege(r.rolname, 'public.application_migrations', 'DELETE') AND NOT has_table_privilege(r.rolname, 'public.application_migrations', 'TRUNCATE') AND NOT has_table_privilege(r.rolname, 'public.application_migrations', 'REFERENCES') AND NOT has_table_privilege(r.rolname, 'public.application_migrations', 'TRIGGER') AND (SELECT c.relowner <> r.oid FROM pg_class c WHERE c.oid='public.application_migrations'::regclass) AND NOT EXISTS (SELECT 1 FROM pg_class c WHERE c.relkind IN ('r','p','v','m','S') AND c.relnamespace NOT IN ('pg_catalog'::regnamespace, 'information_schema'::regnamespace) AND c.relowner=r.oid) AND NOT EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.member=r.oid) AND NOT pg_has_role(r.rolname, '${admin_user}', 'MEMBER') AND NOT has_table_privilege(r.rolname, 'public.application_migrations', 'SELECT WITH GRANT OPTION') AND NOT has_sequence_privilege(r.rolname, 'public.workspace_snapshots_id_seq', 'USAGE WITH GRANT OPTION') FROM pg_roles r WHERE r.rolname = '${app_user}'")"
 [[ "$runtime_role_ok" == t ]] || fail "least-privilege synthetic application role verification failed"
+
 runtime_identity="$(docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -At -v ON_ERROR_STOP=1 \
-  -U "$app_user" -d "$source_db" -c "SELECT current_user = '${app_user}' AND NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole FROM pg_roles WHERE rolname = current_user")"
+  -U "$app_user" -d "$source_db" -c "SELECT current_user = '${app_user}' AND NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolreplication AND NOT rolbypassrls FROM pg_roles WHERE rolname = current_user")"
 [[ "$runtime_identity" == t ]] || fail "synthetic application login is not a non-superuser runtime role"
+
+# Assert that no non-allowlisted relation receives DML and no sequence receives
+# UPDATE. A fresh administrator-owned probe sequence provides a real denied
+# nextval check without touching application data.
+dml_allowlist="'client_access_admin_audit','client_invitation_preparations','client_project_publication_audit','client_project_publications','consultations','contact_inquiries','conversion_events','crm_proposals','customer_enrollment_challenges','customer_enrollment_limits','customer_identities','customer_invitation_projects','customer_invitations','customer_mail_audit','customer_mail_custody','customer_mail_events','customer_mail_jobs','customer_mail_suppressions','customer_project_grants','customer_provisioning_audit','customer_recovery_challenges','customer_tenant_memberships','customer_tenant_projects','customer_tenants','document_approval_requests','document_audit_events','document_registry','document_versions','marketing_workspaces','morning_briefings','opportunity_evidence','opportunity_history','opportunity_interviews','portal_release_audit','portal_release_evidence','portal_release_reviews','push_subscriptions','research_opportunities','system_directory_audit','system_directory_billing_allocations','system_directory_billing_evidence','system_directory_entries','system_directory_relationships','workspace_snapshots','workspaces','account','session','user','verification'"
+grant_audit="$(docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -At -v ON_ERROR_STOP=1 \
+  -U "$admin_user" -d "$source_db" -c "SELECT NOT EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN LATERAL unnest(ARRAY['INSERT','UPDATE','DELETE','TRUNCATE']::text[]) p(priv) WHERE c.relkind IN ('r','p','v','m') AND n.nspname IN ('public','customer_auth') AND has_table_privilege('${app_user}', c.oid, p.priv) AND NOT (n.nspname='public' AND c.relname IN (${dml_allowlist}) AND ((p.priv='INSERT') OR (p.priv='UPDATE' AND c.relname IN ('client_project_publications','consultations','contact_inquiries','crm_proposals','customer_enrollment_challenges','customer_enrollment_limits','customer_invitations','customer_mail_jobs','customer_project_grants','customer_recovery_challenges','customer_tenant_memberships','customer_tenant_projects','customer_tenants','document_approval_requests','document_registry','marketing_workspaces','morning_briefings','opportunity_interviews','portal_release_reviews','research_opportunities','system_directory_billing_allocations','system_directory_billing_evidence','system_directory_entries','system_directory_relationships','workspaces')) OR (p.priv='DELETE' AND c.relname IN ('consultations','contact_inquiries','conversion_events','customer_mail_custody','morning_briefings','push_subscriptions','research_opportunities','workspace_snapshots')))) AND NOT (n.nspname='customer_auth' AND c.relname IN ('account','session','user','verification') AND p.priv IN ('INSERT','UPDATE','DELETE'))) AND NOT EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='S' AND n.nspname IN ('public','customer_auth') AND has_sequence_privilege('${app_user}', c.oid, 'UPDATE'))")"
+[[ "$grant_audit" == t ]] || fail "synthetic application role has an unapproved table or sequence privilege"
+sequence_audit="$(docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -At -v ON_ERROR_STOP=1 \
+  -U "$admin_user" -d "$source_db" -c "SELECT NOT EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='S' AND n.nspname IN ('public','customer_auth') AND (has_sequence_privilege('${app_user}',c.oid,'SELECT') OR (has_sequence_privilege('${app_user}',c.oid,'USAGE') AND NOT (n.nspname='public' AND c.relname IN ('workspace_snapshots_id_seq','contact_inquiries_id_seq','conversion_events_id_seq','opportunity_history_id_seq','portal_release_evidence_id_seq','client_project_publication_audit_id_seq','client_access_admin_audit_id_seq','document_audit_events_id_seq','portal_release_audit_id_seq','system_directory_audit_id_seq','customer_mail_audit_id_seq'))))) AND NOT EXISTS (SELECT 1 FROM unnest(ARRAY['workspace_snapshots_id_seq','contact_inquiries_id_seq','conversion_events_id_seq','opportunity_history_id_seq','portal_release_evidence_id_seq','client_project_publication_audit_id_seq','client_access_admin_audit_id_seq','document_audit_events_id_seq','portal_release_audit_id_seq','system_directory_audit_id_seq','customer_mail_audit_id_seq']) s(name) WHERE NOT has_sequence_privilege('${app_user}',format('public.%I',s.name),'USAGE'))")"
+[[ "$sequence_audit" == t ]] || fail "synthetic application sequence privileges differ from the application INSERT allowlist"
+
+probe_sequence="ys_sys_001_runtime_denied_${run_tag}"
+docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$admin_user" -d "$source_db" \
+  -c "CREATE SEQUENCE public.${probe_sequence}" >/dev/null 2>&1 || fail "synthetic sequence denial probe setup failed"
+for operation in \
+  "BEGIN; CREATE SCHEMA ys_sys_001_runtime_schema_probe; ROLLBACK" \
+  "BEGIN; ALTER SCHEMA public RENAME TO ys_sys_001_runtime_schema_probe; ROLLBACK" \
+  "BEGIN; CREATE ROLE ys_sys_001_runtime_role_probe; ROLLBACK" \
+  "BEGIN; GRANT SELECT ON public.application_migrations TO ${app_user}; ROLLBACK" \
+  "BEGIN; SET ROLE ${admin_user}; ROLLBACK"; do
+  if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$app_user" -d "$source_db" -c "$operation" >/dev/null 2>&1; then
+    fail "synthetic application role unexpectedly managed schemas, roles, or grants"
+  fi
+done
+for operation in \
+  "INSERT INTO public.application_migrations(version,name,checksum) VALUES('9999','privilege_probe',repeat('0',64))" \
+  "UPDATE public.application_migrations SET name=name WHERE false" \
+  "DELETE FROM public.application_migrations WHERE false" \
+  "TRUNCATE public.application_migrations"; do
+  if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$app_user" -d "$source_db" -c "$operation" >/dev/null 2>&1; then
+    fail "synthetic application role unexpectedly modified migration history"
+  fi
+done
+if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$app_user" -d "$source_db" \
+  -c "SELECT nextval('public.${probe_sequence}'::regclass)" >/dev/null 2>&1; then
+  fail "synthetic application role unexpectedly used an unauthorized sequence"
+fi
+if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$app_user" -d "$source_db" \
+  -c "SELECT setval('public.workspace_snapshots_id_seq', 1)" >/dev/null 2>&1; then
+  fail "synthetic application role unexpectedly updated an application sequence"
+fi
+docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$app_user" -d "$source_db" \
+  -c "SELECT nextval('public.workspace_snapshots_id_seq')" >/dev/null 2>&1 \
+  || fail "synthetic application role cannot use a sequence required by an application INSERT"
+docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$admin_user" -d "$source_db" \
+  -c "DROP SEQUENCE public.${probe_sequence}" >/dev/null 2>&1 || fail "synthetic sequence denial probe cleanup failed"
 if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 \
   -U "$app_user" -d "$source_db" -c 'CREATE TABLE public.ys_sys_001_runtime_privilege_probe(id integer)' >/dev/null 2>&1; then
   fail "synthetic application role unexpectedly has schema creation privilege"
