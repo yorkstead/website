@@ -50,14 +50,14 @@ The owner retains the currently configured Production and Preview databases and 
 
 | Item | Planning decision | Execution state |
 | --- | --- | --- |
-| Recovery artifact | PostgreSQL custom-format `pg_dump`, encrypted client-side with an approved age recipient | Production export **not authorized** |
-| Retention | 30 days from the UTC timestamp of a successfully verified encrypted artifact | Storage expiration and deletion proof still need design/approval; legal hold pauses deletion only with documented owner approval |
+| Recovery artifact | PostgreSQL custom-format `pg_dump`, encrypted client-side with an approved age recipient | One encrypted Production artifact was retrieved and restored in isolation; see the owner-reported evidence above. Any future export requires separate authorization. |
+| Retention | 30 days from the UTC timestamp of a successfully verified encrypted artifact | Policy accepted; current artifact expiry/enforcement and deletion proof were not independently verified in this rehearsal. Legal hold pauses deletion only with documented owner approval |
 | RTO | 60 minutes from incident declaration to verified service recovery | Target accepted for planning; not demonstrated |
-| RPO and backup cadence | 24-hour RPO; daily encrypted custom-format backups | First production backup and any recurring schedule require separate authorization; objective is unproven until completion monitoring and recovery rehearsal pass |
+| RPO and backup cadence | 24-hour RPO; daily encrypted custom-format backups | 24-hour objective is approved; one reported artifact does not verify recurring cadence, monitoring, or achieved RPO. Any future or recurring export requires separate authorization |
 | Retention and RTO | 30 days; 60-minute RTO target | Retention implementation and deletion verification pending exact bucket approval; RTO awaits timed restore verification |
 | Operator | Yorkstead owner is primary recovery operator and approver | Single-person operation; each production action requires scoped owner approval |
 | Secondary operator / independent human reviewer | Unassigned because no additional personnel are available | Not represented by automated checks; explicit owner acknowledgment of exception and residual risk required before export or migration approval |
-| Storage, key custody and cost | Private Cloudflare R2 proposed; separately protected recovery-key copy required | Exact account, bucket, region, permissions, spend cap and key custody remain pending approval; no activation authorized |
+| Storage, key custody and cost | Private Cloudflare R2; client-side age encryption; separately protected recovery-key copy | Owner previously approved a private US R2 destination and reported synthetic transport/key recovery tests passing. This artifact's expiry enforcement and actual cost remain unverified here; no storage change or purchase is authorized |
 
 ### Single-operator exception and compensating controls
 
@@ -128,7 +128,7 @@ The synthetic script uses restrictive staging permissions and removes plaintext 
 
 For any future restore, restore into a new isolated disposable target with no production traffic. Check database identity, expected recovery timestamp, schema and migration ledger, every entry/revision/archive state and every audit record in the selected current baseline, per-record counts, orphan checks, immutable audit protections, and a privacy-safe field comparison. Preserve the source and restored candidate until separately approved.
 
-Estimate potential data exposure as the interval from the selected recovery point to the incident/migration. With the current six-hour PITR window, choosing the oldest available point could lose up to the full retained window of legitimate writes; a pre-migration point selected immediately before execution narrows this interval but does not make it zero. A restore may also remove later audit events and unrelated writes. Snapshot or export restore exposure is the interval between capture and failure. Record affected business writes and audit events for reconciliation before any cutover. RPO remains open and the accepted 60-minute RTO target is unmeasured.
+Estimate potential data exposure as the interval from the selected recovery point to the incident/migration. With the current six-hour PITR window, choosing the oldest available point could lose up to the full retained window of legitimate writes; a pre-migration point selected immediately before execution narrows this interval but does not make it zero. A restore may also remove later audit events and unrelated writes. Snapshot or export restore exposure is the interval between capture and failure. Record affected business writes and audit events for reconciliation before any cutover. The approved RPO is 24 hours; one artifact does not prove that objective is met over time. The accepted 60-minute RTO remains unmeasured end-to-end.
 
 ## Recovery objectives and operating model
 
@@ -141,7 +141,7 @@ Estimate potential data exposure as the interval from the selected recovery poin
 
 ## Required owner approvals
 
-Before the first production backup, obtain explicit owner approval for the exact source, window, method, target bucket, region, access list, key custody, 30-day retention/deletion, measured cost cap, private parity result and the one-time scope. The owner must acknowledge the single-operator exception and residual risk. That authorization does not create a recurring schedule; daily automation and later backup runs require separate authorization. Before any restore, obtain separate approval for exact source/target, point in time, expected data loss, reconciliation owner, and whether endpoint reassignment/cutover is allowed. Production migration, branch restore, traffic switch, and deployment each require their own scoped approval. This runbook authorizes none of those operations. The 60-minute RTO includes artifact acquisition/decryption, isolated restore, configuration, smoke checks and readiness; it remains unmeasured.
+The first artifact is reported complete and must not be repeated based on this document. Its original approval package is not reconstructed here. Any future export requires a new approval specifying source, window, role, target, key custody, retention, cost and scope. Recurring backup schedules and later backup runs require separate authorization. Before any future restore, obtain separate approval for the exact source/target, point in time, expected data loss, reconciliation owner, and whether endpoint reassignment/cutover is allowed. Production migration, branch restore, traffic switch, and deployment each require their own scoped approval. This runbook authorizes none of those operations. The 60-minute RTO includes artifact acquisition/decryption, isolated restore, configuration, smoke checks and readiness; it remains unmeasured.
 
 ## Migration gate
 
