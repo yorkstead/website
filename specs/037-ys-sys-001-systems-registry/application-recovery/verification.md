@@ -1,30 +1,39 @@
 # Application-recovery rehearsal verification
 
-## Local checks before exact-head CI
+## Local checks
 
 - `bun run yorkstead:check`: PASS (39 active specifications).
-- `bun run db:migrate:check`: PASS (ordered repository plan contains migrations 0001–0024; this command validates only and applies none).
+- `bun run db:migrate:check`: PASS (validates all 24 ordered repository migrations; applies none).
 - `bun run typecheck`: PASS.
-- `bun run lint`: PASS with one existing warning in `components/login-panel.tsx:62`.
-- `bun test`: PASS, 495 passed / 121 skipped / 0 failed. PostgreSQL integration cases were skipped locally because no disposable PostgreSQL service was started in this worktree; the exact-head CI job is responsible for running the restored-database checks.
-- Focused Playwright discovery: PASS (one recovery browser test found). `bash -n` and workflow YAML syntax: PASS.
-- Local production build: BLOCKED because this environment cannot reach Google Fonts required by existing `next/font` imports. The dedicated CI job builds the production app image in its isolated job; the normal CI build also runs. This is an environment limitation, not a passing build result.
-- Exact-head Docker-backed recovery job and Vercel Preview: PENDING.
+- `bun run lint`: PASS with one pre-existing warning in `components/login-panel.tsx:62`.
+- `bun test`: PASS, 495 passed / 121 PostgreSQL-backed tests skipped / 0 failed. Skipped local PostgreSQL checks are not treated as passing; the dedicated CI jobs below execute disposable database coverage.
+- Recovery Playwright discovery: PASS (one test). Shell syntax and `git diff --check`: PASS.
+- Local production build: BLOCKED because the environment cannot reach existing Google Fonts. The exact-head CI production application build passed.
+
+## Exact-head CI evidence
+
+- PR #111 implementation head: `290e058a818456d02156aa113ed8c358066e39a5`.
+- GitHub Actions [run #42353868907](https://github.com/yorkstead/website/actions/runs/42353868907) (run 673): all four jobs PASS, including the isolated PostgreSQL 18 restore/recovery, application verification, read-only role verification, and restored-app readiness.
+- Vercel Preview for that head: Ready.
+- Sanitized artifact: aggregate readiness report only; no records, credentials, hostnames, or logs. Its reported total synthetic rehearsal duration was 147 seconds.
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| Disposable PostgreSQL 18 source and restored target | Exact-head `application-recovery` Actions job | PENDING |
-| Only migration ledger 0001–0022; canonical checksums | Pre/post sanitized DB verifier | PENDING |
-| Migration 0023/0024 unapplied | Ledger and schema-column/table checks | PENDING |
-| Directory integrity and triggers before/after | Pre/post sanitized DB verifier | PENDING |
-| App runs against restored target | Production image startup through internal HTTPS proxy | PENDING |
-| Synthetic Better Auth sign-up/sign-in and owner authorization | Recovery Playwright workflow | PENDING |
-| Dashboard and empty legacy Directory read workflows | Recovery Playwright workflow | PENDING |
-| Anonymous denial and tenant query injection denial | Recovery Playwright workflow | PENDING |
-| Cross-tenant denial using actual synthetic sessions | Existing `tests/client-project-data-database.test.ts` against restored DB | PENDING |
-| Runtime egress blocked independently | Docker `Internal=true`, exact container membership, and failed outbound TCP probe | PENDING |
-| Email/payment/webhook/queue/analytics/provider effects disabled | Allowlisted app runtime environment plus isolated network | PENDING |
-| Sanitized output only | JSON schema/field allowlist and Actions artifact inspection | PENDING |
-| Complete Production-derived 60-minute RTO | Requires separately authorized end-to-end Production-derived recovery | NOT RUN; NOT CLAIMED |
+| Disposable PostgreSQL 18 source and restored target | Dedicated exact-head CI job | PASS |
+| Migration ledger through 0022 with canonical checksums | Read-only before/after verifier | PASS |
+| Migrations 0023/0024 absent | Ledger and schema-object checks | PASS |
+| Directory integrity and protection triggers | Before/after summaries match | PASS |
+| Production application starts against restored target | Isolated runtime HTTPS proxy, standard port 443 | PASS |
+| Synthetic Better Auth sign-up/sign-in and owner authorization | Recovery Playwright test | PASS |
+| Dashboard and empty legacy Directory reads | Recovery Playwright test | PASS |
+| Anonymous denial and tenant selector rejection | Recovery Playwright test | PASS |
+| Actual-session cross-tenant denial | Existing database integration suite against restored target | PASS |
+| Runtime egress block | Docker internal network, exact membership, app-container TCP probe | PASS |
+| External side effects disabled | No integration credentials or workers; isolated network | PASS |
+| Full Production-derived 60-minute RTO | Requires separate authorized end-to-end recovery exercise | NOT RUN / NOT DEMONSTRATED |
 
-Record current exact branch/commit and all job URLs. The Actions report must include UTC phase timestamps and synthetic elapsed seconds only, with no environment values or row-level content. A failed Docker probe or test is a failure; do not mark skipped tests as passed.
+The source schema-preparation failure occurred once before safe phase diagnostics existed. It did not recur on later runs; its original cause remains unconfirmed. Other CI corrections normalized Docker's extra blank line in membership output while preserving exact membership, and changed the synthetic HTTPS proxy to standard port 443 because the production authentication configuration correctly rejects custom ports. The proxy has only the `NET_BIND_SERVICE` capability; production auth behavior was not relaxed.
+
+## Interpretation
+
+The 147-second measurement covers the synthetic CI rehearsal only. It is not a Production-derived RTO result and does not establish readiness of the owner-reported restored Production-derived database. No Production or R2 access, Production migration, or Registry activation occurred.

@@ -10,7 +10,7 @@ Provide a repeatable CI rehearsal that creates a synthetic database at the migra
 
 - Use generated synthetic database credentials, synthetic owner and customer accounts, and fictional records only.
 - Build and run the website in a disposable container. Keep the migration source on a separate Docker `--internal` network; place only the restored target, app, test proxy, and optional egress probe on a second `--internal` runtime network.
-- Verify the network boundary independently through Docker network metadata and a failed outbound TCP probe from the network.
+- Verify the network boundary independently through Docker network metadata and a failed outbound TCP probe from the application container on that network.
 - Run migrations 0001–0022 only on the synthetic source database. Preserve the archive/restore database state at 0022; require 0023/0024 to be absent before and after application tests.
 - Authenticate a synthetic owner through the existing Better Auth bootstrap/sign-in flow; check the owner session, dashboard, empty legacy Systems Directory API, and unauthenticated denial.
 - Run the existing database-backed customer publication integration suite against the restored target; it creates two fictional tenants and verifies that sessions cannot read the other tenant's project.
