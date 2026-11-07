@@ -283,8 +283,45 @@ docker exec -e CI=true -e YS_APP_RECOVERY_BASE_URL=https://recovery.test:8443 \
   -e YS_APP_RECOVERY_OWNER_EMAIL=owner@recovery.test -e YS_APP_RECOVERY_OWNER_PASSWORD="$owner_password" \
   -e YS_APP_RECOVERY_BOOTSTRAP_TOKEN="$owner_bootstrap" "$browser_container" \
   node /workspace/node_modules/@playwright/test/cli.js test -c playwright.ys-sys-001-recovery.config.ts \
-  --output=/tmp/ys-app-recovery-playwright >"$workspace/playwright.log" 2>&1 \
-  || fail "synthetic owner/browser readiness checks failed"
+  --reporter=json --output=/tmp/ys-app-recovery-playwright >"$workspace/playwright.json" 2>"$workspace/playwright.stderr" || {
+    browser_stage="$(python3 - "$workspace/playwright.json" <<'PY'
+import json
+import sys
+
+try:
+    report = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    print("report unavailable")
+    raise SystemExit
+
+def failed_steps(steps):
+    for step in steps or []:
+        if step.get("error") or step.get("status") in ("failed", "timedOut"):
+            title = step.get("title", "")
+            if title in {
+                "restored schema supports synthetic owner authentication and legacy read workflows",
+                "application health", "health endpoint", "synthetic owner registration",
+                "synthetic owner sign-in", "owner authorization", "owner dashboard read",
+                "legacy Directory read", "tenant selector denial", "anonymous Directory denial",
+            }:
+                yield title
+        yield from failed_steps(step.get("steps"))
+
+def walk(node):
+    if isinstance(node, dict):
+        yield from failed_steps(node.get("steps"))
+        for key in ("suites", "specs", "tests", "results"):
+            yield from walk(node.get(key))
+    elif isinstance(node, list):
+        for item in node:
+            yield from walk(item)
+
+found = list(walk(report.get("suites", [])))
+print(", ".join(dict.fromkeys(found)) if found else "readiness assertion")
+PY
+    )"
+    fail "synthetic owner/browser readiness failed at ${browser_stage}; private details suppressed"
+  }
 env -i PATH="$PATH" HOME="$HOME" NODE_ENV=test TEST_DATABASE_URL="$target_url" \
   bun test tests/client-project-data-database.test.ts >"$workspace/tenant-tests.log" 2>&1 \
   || fail "synthetic cross-tenant integration tests failed"

@@ -19,44 +19,44 @@ async function request(page: Page, path: string, init?: RequestInit) {
 }
 
 test("restored schema supports synthetic owner authentication and legacy read workflows", async ({ page, browser }) => {
-  await page.goto("/");
-  const health = await request(page, "/api/health");
+  await test.step("application health", async () => { await page.goto("/"); });
+  const health = await test.step("health endpoint", () => request(page, "/api/health"));
   expect(health.status).toBe(200);
   expect(health.body).toMatchObject({ status: "ok" });
 
-  const registration = await request(page, "/api/auth/sign-up/email", {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-owner-bootstrap-token": bootstrapToken },
-    body: JSON.stringify({ name: "Synthetic Recovery Owner", email: ownerEmail, password: ownerPassword }),
-  });
+  const registration = await test.step("synthetic owner registration", () => request(page, "/api/auth/sign-up/email", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-owner-bootstrap-token": bootstrapToken },
+      body: JSON.stringify({ name: "Synthetic Recovery Owner", email: ownerEmail, password: ownerPassword }),
+    }));
   expect(registration.status).toBe(200);
 
-  const signIn = await request(page, "/api/auth/sign-in/email", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ email: ownerEmail, password: ownerPassword }),
-  });
+  const signIn = await test.step("synthetic owner sign-in", () => request(page, "/api/auth/sign-in/email", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: ownerEmail, password: ownerPassword }),
+    }));
   expect(signIn.status).toBe(200);
 
-  const ownerStatus = await request(page, "/api/auth/owner-session-status");
+  const ownerStatus = await test.step("owner authorization", () => request(page, "/api/auth/owner-session-status"));
   expect(ownerStatus.status).toBe(200);
   expect(ownerStatus.body).toEqual({ authenticated: true, authorized: true });
 
-  const dashboard = await page.goto("/dashboard");
+  const dashboard = await test.step("owner dashboard read", () => page.goto("/dashboard"));
   expect(dashboard?.status()).toBe(200);
 
-  const directory = await request(page, "/api/systems-directory");
+  const directory = await test.step("legacy Directory read", () => request(page, "/api/systems-directory"));
   expect(directory.status).toBe(200);
   expect(directory.body).toEqual({ entries: [] });
 
-  const invalidTenantSelection = await request(page, "/api/systems-directory?tenant=synthetic-other-tenant");
+  const invalidTenantSelection = await test.step("tenant selector denial", () => request(page, "/api/systems-directory?tenant=synthetic-other-tenant"));
   expect(invalidTenantSelection.status).toBe(400);
 
   const anonymous = await browser.newContext({ ignoreHTTPSErrors: true });
   try {
     const anonymousPage = await anonymous.newPage();
     await anonymousPage.goto("/");
-    const response = await request(anonymousPage, "/api/systems-directory");
+    const response = await test.step("anonymous Directory denial", () => request(anonymousPage, "/api/systems-directory"));
     expect(response.status).toBe(401);
   } finally {
     await anonymous.close();
