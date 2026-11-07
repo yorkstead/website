@@ -151,15 +151,6 @@ fi
 docker build --quiet --file scripts/recovery/application.Dockerfile --tag "$app_image" . >"$workspace/build.log" 2>&1 \
   || fail "production application image build failed"
 
-egress_result="$(docker run --rm --network "$runtime_network" --entrypoint bun "$app_image" -e '
-  const net = require("node:net");
-  const socket = net.createConnection({ host: "1.1.1.1", port: 443 });
-  const timer = setTimeout(() => { socket.destroy(); process.stdout.write("BLOCKED\n"); process.exit(0); }, 2500);
-  socket.once("connect", () => { clearTimeout(timer); socket.destroy(); process.stderr.write("Unexpected external egress\n"); process.exit(1); });
-  socket.once("error", () => { clearTimeout(timer); process.stdout.write("BLOCKED\n"); process.exit(0); });
-')" || fail "egress boundary probe errored"
-[[ "$egress_result" == BLOCKED ]] || fail "an internal-network container reached an external address"
-
 openssl req -x509 -newkey rsa:2048 -nodes -days 1 -keyout "$workspace/key.pem" -out "$workspace/cert.pem" \
   -subj '/CN=recovery.test' -addext 'subjectAltName=DNS:recovery.test' >/dev/null 2>&1
 chmod 0600 "$workspace/key.pem" "$workspace/cert.pem"
@@ -188,6 +179,18 @@ docker run -d --rm --name "$app_container" --network "$runtime_network" --networ
   -e BETTER_AUTH_SECRET="$auth_secret" -e OWNER_BOOTSTRAP_TOKEN="$owner_bootstrap" \
   -e NEXT_PUBLIC_FIRST_PARTY_ANALYTICS=disabled -e YS_SYS_001_ENABLED=false -e NEXT_TELEMETRY_DISABLED=1 \
   -e HOSTNAME=0.0.0.0 -e PORT=3000 "$app_image" >/dev/null
+
+# Probe egress from the actual application container on its independently
+# inspected Docker-internal network. Using a one-off probe container here can
+# leave a transient fifth endpoint attached during the exact-membership check.
+egress_result="$(docker exec "$app_container" bun -e '
+  const net = require("node:net");
+  const socket = net.createConnection({ host: "1.1.1.1", port: 443 });
+  const timer = setTimeout(() => { socket.destroy(); process.stdout.write("BLOCKED\n"); process.exit(0); }, 2500);
+  socket.once("connect", () => { clearTimeout(timer); socket.destroy(); process.stderr.write("Unexpected external egress\n"); process.exit(1); });
+  socket.once("error", () => { clearTimeout(timer); process.stdout.write("BLOCKED\n"); process.exit(0); });
+' 2>/dev/null)" || fail "egress boundary probe errored"
+[[ "$egress_result" == BLOCKED ]] || fail "the application container reached an external address"
 
 if ! docker run --rm --network "$runtime_network" --read-only --user 101:101 --cap-drop=ALL --security-opt=no-new-privileges \
   --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m,uid=101,gid=101,mode=755 \
