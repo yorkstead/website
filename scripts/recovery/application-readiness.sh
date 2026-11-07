@@ -175,7 +175,7 @@ docker run -d --rm --name "$app_container" --network "$runtime_network" --networ
   --tmpfs /app/.next/cache:rw,noexec,nosuid,nodev,size=128m,mode=700,uid=10001,gid=10001 \
   --log-driver=none \
   -e NODE_ENV=production -e DATABASE_URL="postgresql://${db_user}:${db_password}@ys-app-recovery-target:5432/${source_db}" \
-  -e BETTER_AUTH_URL=https://recovery.test:8443 -e OWNER_EMAIL=owner@recovery.test -e PASSKEY_RP_ID=recovery.test \
+  -e BETTER_AUTH_URL=https://recovery.test -e OWNER_EMAIL=owner@recovery.test -e PASSKEY_RP_ID=recovery.test \
   -e BETTER_AUTH_SECRET="$auth_secret" -e OWNER_BOOTSTRAP_TOKEN="$owner_bootstrap" \
   -e NEXT_PUBLIC_FIRST_PARTY_ANALYTICS=disabled -e YS_SYS_001_ENABLED=false -e NEXT_TELEMETRY_DISABLED=1 \
   -e HOSTNAME=0.0.0.0 -e PORT=3000 "$app_image" >/dev/null
@@ -229,7 +229,7 @@ PY
 fi
 
 docker run -d --name "$proxy_container" --network "$runtime_network" --network-alias recovery.test \
-  --read-only --user 101:101 --cap-drop=ALL --security-opt=no-new-privileges \
+  --read-only --user 101:101 --cap-drop=ALL --cap-add=NET_BIND_SERVICE --security-opt=no-new-privileges \
   --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m,uid=101,gid=101,mode=755 \
   --tmpfs /var/run:rw,noexec,nosuid,nodev,size=2m,uid=101,gid=101,mode=755 \
   --volume "$workspace/default.conf:/etc/nginx/conf.d/default.conf:ro" \
@@ -245,7 +245,7 @@ docker run -d --rm --name "$browser_container" --network "$runtime_network" \
 
 code=000
 for attempt in $(seq 1 90); do
-  code="$(docker exec "$browser_container" node -e 'const https=require("node:https");let done=false;const out=(s)=>{if(!done){done=true;process.stdout.write(s)}};const req=https.get({hostname:"recovery.test",port:8443,path:"/api/health",rejectUnauthorized:false,timeout:1500},res=>{out(String(res.statusCode));res.resume()});req.on("timeout",()=>{req.destroy();out("TIMEOUT")});req.on("error",e=>out(["ENOTFOUND","EAI_AGAIN"].includes(e.code)?"DNS_UNAVAILABLE":["ECONNREFUSED","EHOSTUNREACH","ENETUNREACH"].includes(e.code)?"TCP_UNAVAILABLE":String(e.code||"").startsWith("CERT_")?"TLS_ERROR":"PROBE_ERROR"))' 2>/dev/null || true)"
+  code="$(docker exec "$browser_container" node -e 'const https=require("node:https");let done=false;const out=(s)=>{if(!done){done=true;process.stdout.write(s)}};const req=https.get({hostname:"recovery.test",path:"/api/health",rejectUnauthorized:false,timeout:1500},res=>{out(String(res.statusCode));res.resume()});req.on("timeout",()=>{req.destroy();out("TIMEOUT")});req.on("error",e=>out(["ENOTFOUND","EAI_AGAIN"].includes(e.code)?"DNS_UNAVAILABLE":["ECONNREFUSED","EHOSTUNREACH","ENETUNREACH"].includes(e.code)?"TCP_UNAVAILABLE":String(e.code||"").startsWith("CERT_")?"TLS_ERROR":"PROBE_ERROR"))' 2>/dev/null || true)"
   code="${code:-000}"
   if [[ "$code" == 200 ]]; then ready_epoch="$(date -u +%s)"; ready_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; break; fi
   if [[ $attempt -eq 90 ]]; then
@@ -279,7 +279,7 @@ fi
 
 tests_started_epoch="$(date -u +%s)"
 tests_started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-docker exec -e CI=true -e YS_APP_RECOVERY_BASE_URL=https://recovery.test:8443 \
+docker exec -e CI=true -e YS_APP_RECOVERY_BASE_URL=https://recovery.test \
   -e YS_APP_RECOVERY_OWNER_EMAIL=owner@recovery.test -e YS_APP_RECOVERY_OWNER_PASSWORD="$owner_password" \
   -e YS_APP_RECOVERY_BOOTSTRAP_TOKEN="$owner_bootstrap" "$browser_container" \
   node /workspace/node_modules/@playwright/test/cli.js test -c playwright.ys-sys-001-recovery.config.ts \

@@ -4,7 +4,7 @@ const ownerEmail = process.env.YS_APP_RECOVERY_OWNER_EMAIL;
 const ownerPassword = process.env.YS_APP_RECOVERY_OWNER_PASSWORD;
 const bootstrapToken = process.env.YS_APP_RECOVERY_BOOTSTRAP_TOKEN;
 const baseURL = process.env.YS_APP_RECOVERY_BASE_URL;
-if (ownerEmail !== "owner@recovery.test" || baseURL !== "https://recovery.test:8443" || !ownerPassword || !bootstrapToken) {
+if (ownerEmail !== "owner@recovery.test" || baseURL !== "https://recovery.test" || !ownerPassword || !bootstrapToken) {
   throw new Error("Generated synthetic owner credentials are required");
 }
 const api = (path: string) => new URL(path, baseURL).toString();
