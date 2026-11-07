@@ -39,7 +39,7 @@ function categoryFor(phase: string, rawCode: string, sqlstate: string | undefine
     };
     return categories[sqlstate.slice(0, 2)] ?? "database_failure";
   }
-  if (["ECONNREFUSED", "ETIMEDOUT", "EHOSTUNREACH", "ENETUNREACH"].includes(rawCode)) return "connection_failure";
+  if (["ECONNREFUSED", "ECONNRESET", "ETIMEDOUT", "EHOSTUNREACH", "ENETUNREACH", "EAI_AGAIN"].includes(rawCode)) return "connection_failure";
   if (phase === "empty source verification") return "precondition_failure";
   if (phase === "repository migration range verification") return "repository_validation_failure";
   if (phase === "synthetic migration application") return "migration_execution_failure";

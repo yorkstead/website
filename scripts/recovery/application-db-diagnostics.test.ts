@@ -33,4 +33,18 @@ describe("synthetic application database preparation diagnostics", () => {
     expect(diagnostic).not.toContain("private data");
     expect(diagnostic.length).toBeLessThan(240);
   });
+
+  test("categorizes bounded startup connection failures without exposing driver text", () => {
+    const diagnostic = formatPreparationFailure("empty source verification", undefined, {
+      code: "ECONNRESET",
+      message: "password=synthetic-secret host=private.internal SQL: SELECT private_column",
+    });
+
+    expect(diagnostic).toContain("category connection_failure");
+    expect(diagnostic).not.toContain("ECONNRESET");
+    expect(diagnostic).not.toContain("synthetic-secret");
+    expect(diagnostic).not.toContain("private.internal");
+    expect(diagnostic).not.toContain("private_column");
+    expect(diagnostic.length).toBeLessThan(240);
+  });
 });

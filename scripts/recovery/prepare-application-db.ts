@@ -44,11 +44,24 @@ let phase = "initial connection";
 let migrationVersion: string | undefined;
 try {
   phase = "empty source verification";
-  const existing = await pool.query<{ count: string }>(`SELECT count(*)::text AS count
-    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-    WHERE c.relkind IN ('r','p','v','m','S')
-      AND n.nspname NOT IN ('pg_catalog','information_schema')
-      AND n.nspname NOT LIKE 'pg_toast%' AND n.nspname NOT LIKE 'pg_temp_%'`);
+  let existing: { rows: Array<{ count: string }> } | undefined;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      existing = await pool.query<{ count: string }>(`SELECT count(*)::text AS count
+        FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+        WHERE c.relkind IN ('r','p','v','m','S')
+          AND n.nspname NOT IN ('pg_catalog','information_schema')
+          AND n.nspname NOT LIKE 'pg_toast%' AND n.nspname NOT LIKE 'pg_temp_%'`);
+      break;
+    } catch (error) {
+      const code = (error as { code?: unknown } | null)?.code;
+      const connectionFailure = typeof code === "string" && (/^08[A-Z0-9]{3}$/.test(code)
+        || ["ECONNREFUSED", "ECONNRESET", "ETIMEDOUT", "EHOSTUNREACH", "ENETUNREACH", "EAI_AGAIN"].includes(code));
+      if (!connectionFailure || attempt === 4) throw error;
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 250 * (attempt + 1)));
+    }
+  }
+  if (!existing) throw new Error("synthetic source connection retry limit reached");
   if (Number(existing.rows[0]?.count) !== 0) throw new Error("source database must be empty");
 
   const migrationDirectory = resolve(import.meta.dir, "../../migrations");
