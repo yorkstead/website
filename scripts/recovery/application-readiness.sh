@@ -165,6 +165,9 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 1 -keyout "$workspace/key.pem" -
 chmod 0600 "$workspace/key.pem" "$workspace/cert.pem"
 cp scripts/recovery/application-proxy.conf.template "$workspace/default.conf"
 chmod 0644 "$workspace/default.conf"
+# This disposable, self-signed key stays inside the mode-0700 workspace and is
+# mounted only into the no-egress proxy; readable mode is needed with all caps dropped.
+chmod 0644 "$workspace/key.pem" "$workspace/cert.pem"
 
 app_started_epoch="$(date -u +%s)"
 app_started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
