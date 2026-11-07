@@ -25,7 +25,7 @@ function requireDisposableInputs() {
   const validPort = /^\d{1,5}$/.test(port) && Number(port) >= 1 && Number(port) <= 65535;
   if (!validHost || !validPort) throw new Error("private synthetic source service required");
   if (!/^recovery_[a-f0-9]{24}$/.test(database)) throw new Error("generated synthetic database required");
-  if (!/^recovery_[a-f0-9]{16}$/.test(user) || !/^[a-f0-9]{64}$/.test(password)) throw new Error("generated synthetic database credentials required");
+  if (!/^recovery_(?:admin_)?[a-f0-9]{16}$/.test(user) || !/^[a-f0-9]{64}$/.test(password)) throw new Error("generated synthetic database credentials required");
 }
 
 requireDisposableInputs();
