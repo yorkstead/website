@@ -18,6 +18,12 @@ Before any separately authorized Production migration, verify the actual deploye
 
 ## Recovery readiness
 
+### Latest owner-reported database restore status — 2026-11-07
+
+The owner reports successful retrieval/decryption/archive validation and a successful isolated PostgreSQL 18.6 database restore after an initial attempt stopped on a missing Neon-managed role dependency. The sanitized status and limits are recorded in [`recovery-rehearsal-evidence.md`](recovery-rehearsal-evidence.md). Database restoration has passed by owner report; application readiness and the full 60-minute RTO have not been tested. Do not use the older “no restore has been tested” wording below as current status. The missing managed role must be resolved through a provider-supported target or reviewed least-privilege role mapping; never recreate a provider-managed role with elevated privileges.
+
+The next rehearsal is application-readiness validation on a fresh disposable copy of the restored state, with outbound networking blocked and all scheduled jobs, queue consumers, webhooks, email, payments, and other external effects disabled or mocked. Keep migrations 0023/0024 unapplied. Acceptance requires synthetic authentication/owner authorization, essential read-only dashboard and legacy Directory workflows, tenant-isolation checks, proof of no external or persistent side effects, and a continuously measured incident-to-ready RTO of at most 60 minutes. The reported restore-operation interval is not an end-to-end RTO result. No production access, restore, migration, or activation is authorized by this documentation plan.
+
 Use `recovery-runbook.md` as the controlled recovery plan. Current PITR history is six hours; no snapshot schedule or saved snapshots were found. The document covers a one-time snapshot if available and approved, an encrypted logical export, or PITR as a short-window option; non-production restore rehearsal; verification; data-loss exposure; and approvals. No backup, export, restore, schedule, branch, or production setting is changed by this specification.
 
 ## Migration conventions

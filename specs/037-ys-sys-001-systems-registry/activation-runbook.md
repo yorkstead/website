@@ -6,7 +6,13 @@
 
 Keep the currently configured Production and Preview databases. Do not pursue former-database recovery. The former seven-entry/eleven-audit evidence is historical and no longer a parity gate. Before a future migration, capture a new prospective baseline from the then-current Production database, allowing an empty, partial, or populated inventory. Preserve whatever entries, revisions, relationships, billing/monitoring evidence, and append-only audit history are actually present.
 
-Recovery planning policy: daily encrypted PostgreSQL custom-format dump, 30-day retention, 24-hour RPO, 60-minute RTO target. The owner is sole operator and approver; the single-person risk exception must be acknowledged. Synthetic R2 transport/encryption and recovery-key retrieval tests are owner-reported PASS. Production export, actual artifact retrieval/restore, expiry enforcement, and measured RTO remain unverified. The first export, recurring schedule, restore, migration and activation each require separate explicit authorization.
+Recovery planning policy: daily encrypted PostgreSQL custom-format dump, 30-day retention, 24-hour RPO, 60-minute RTO target. The owner is sole operator and approver; the single-person risk exception must be acknowledged. Synthetic R2 transport/encryption and recovery-key retrieval tests are owner-reported PASS. The November 2026 owner-reported artifact retrieval and database restore are recorded below; expiry enforcement and measured end-to-end RTO remain unverified. Any further export, recurring schedule, restore, migration and activation require separate explicit authorization.
+
+## Latest recovery status — 2026-11-07
+
+The owner now reports that an encrypted Production backup was retrieved, decrypted, checksum-validated, and successfully restored in an isolated disposable PostgreSQL 18.6 container after a first attempt stopped on a missing Neon-managed role dependency. The sanitized evidence is in [`recovery-rehearsal-evidence.md`](recovery-rehearsal-evidence.md). This new evidence supersedes the preceding sentence's statement that no artifact retrieval/restore exists. Application readiness and full incident-to-verified-service RTO remain NOT RUN/NOT DEMONSTRATED. Keep 0023/0024 unapplied and Registry activation off; the restore does not authorize a migration, activation, deployment, or further Production operation.
+
+The restore role dependency must be documented against the successful isolated method before another restore. Do not recreate Neon-managed roles with elevated privileges. Next, plan an application-readiness test against a fresh disposable copy, with network egress blocked and all jobs, webhooks, email, payment processing, and external integrations disabled or mocked.
 
 ## Gate 0 — release candidate and ownership
 

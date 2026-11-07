@@ -1,3 +1,11 @@
+# Current status — YS-SYS-001 recovery rehearsal — 2026-11-07
+
+- Owner-reported PASS: encrypted Production backup retrieval/decryption/archive validation and database restore in isolated PostgreSQL 18.6 after a first attempt stopped on a missing Neon-managed role. See [`recovery-rehearsal-evidence.md`](../../specs/037-ys-sys-001-systems-registry/recovery-rehearsal-evidence.md); source artifacts and row-level data remain private.
+- Database-level recovery is recorded; application readiness and the complete 60-minute RTO are **NOT RUN / NOT DEMONSTRATED**. The reported restore interval is only the restore step.
+- Next: prepare/run a separately approved disposable application-readiness rehearsal with outbound networking blocked and jobs, webhooks, email, payments, and integrations disabled or mocked. Keep migrations 0023/0024 unapplied.
+- Restore role blocker: do not recreate Neon-managed roles with elevated privileges. Document and review provider-supported role/ownership mapping before relying on another restore.
+- Production migration 0023/0024, Registry activation, Production changes, and merge/deployment remain **NO-GO** absent their separate approvals. Prior handoff text below is historical and preserved.
+
 # Current status — YS-SYS-001 dependency impact and activation readiness — 2026-11-03
 
 ## Active handoff
