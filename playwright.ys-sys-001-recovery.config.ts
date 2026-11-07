@@ -14,7 +14,6 @@ export default defineConfig({
     baseURL,
     browserName: "chromium",
     ignoreHTTPSErrors: true,
-    launchOptions: { args: ["--host-resolver-rules=MAP recovery.test 127.0.0.1"] },
     trace: "off",
     screenshot: "off",
     video: "off",

@@ -33,6 +33,7 @@ source_container="ys-app-recovery-source-${run_tag}"
 target_container="ys-app-recovery-target-${run_tag}"
 app_container="ys-app-recovery-web-${run_tag}"
 proxy_container="ys-app-recovery-proxy-${run_tag}"
+browser_container="ys-app-recovery-browser-${run_tag}"
 app_image="ys-app-recovery:${run_tag}"
 source_db="recovery_$(openssl rand -hex 12)"
 db_user="recovery_$(openssl rand -hex 8)"
@@ -62,7 +63,7 @@ for secret in "$db_user" "$db_password" "$owner_password" "$owner_bootstrap" "$a
 cleanup() {
   status=$?
   set +e
-  docker rm -f "$proxy_container" "$app_container" "$target_container" "$source_container" >/dev/null 2>&1
+  docker rm -f "$browser_container" "$proxy_container" "$app_container" "$target_container" "$source_container" >/dev/null 2>&1
   docker network rm "$runtime_network" >/dev/null 2>&1
   docker network rm "$source_network" >/dev/null 2>&1
   docker image rm "$app_image" >/dev/null 2>&1
@@ -74,6 +75,7 @@ trap cleanup EXIT HUP INT TERM
 
 docker pull postgres:18-alpine >/dev/null
 docker pull nginx:1.27-alpine >/dev/null
+docker pull mcr.microsoft.com/playwright:v1.62.1-noble >/dev/null
 docker network create --internal "$source_network" >/dev/null
 docker network create --internal "$runtime_network" >/dev/null
 [[ "$(docker network inspect -f '{{.Internal}}' "$source_network")" == true \
@@ -177,16 +179,24 @@ docker run -d --rm --name "$app_container" --network "$runtime_network" --networ
   -e HOSTNAME=0.0.0.0 -e PORT=3000 "$app_image" >/dev/null
 
 docker run -d --rm --name "$proxy_container" --network "$runtime_network" --network-alias recovery.test \
-  --publish 127.0.0.1:443:8443 --read-only --cap-drop=ALL --security-opt=no-new-privileges \
+  --read-only --cap-drop=ALL --security-opt=no-new-privileges \
   --tmpfs /var/cache/nginx:rw,noexec,nosuid,nodev,size=16m \
   --tmpfs /var/run:rw,noexec,nosuid,nodev,size=2m \
   --volume "$workspace/default.conf:/etc/nginx/conf.d/default.conf:ro" \
   --volume "$workspace/cert.pem:/etc/nginx/cert.pem:ro" --volume "$workspace/key.pem:/etc/nginx/key.pem:ro" \
   --log-driver=none nginx:1.27-alpine >/dev/null
 
+docker run -d --rm --name "$browser_container" --network "$runtime_network" \
+  --read-only --cap-drop=ALL --security-opt=no-new-privileges \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777 \
+  --volume "$GITHUB_WORKSPACE:/workspace:ro" --workdir /workspace \
+  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+  --log-driver=none mcr.microsoft.com/playwright:v1.62.1-noble sleep infinity >/dev/null
+
 code=000
 for attempt in $(seq 1 90); do
-  code="$(curl --resolve recovery.test:443:127.0.0.1 -kfsS --connect-timeout 1 --max-time 2 -o /dev/null -w '%{http_code}' https://recovery.test/api/health 2>/dev/null || true)"
+  code="$(docker exec "$browser_container" node -e 'const https=require("node:https");let done=false;const out=(s)=>{if(!done){done=true;process.stdout.write(s)}};const req=https.get({hostname:"recovery.test",port:443,path:"/api/health",rejectUnauthorized:false,timeout:1500},res=>{out(String(res.statusCode));res.resume()});req.on("timeout",()=>{req.destroy();out("000")});req.on("error",()=>out("000"))' 2>/dev/null || true)"
+  code="${code:-000}"
   if [[ "$code" == 200 ]]; then ready_epoch="$(date -u +%s)"; ready_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; break; fi
   if [[ $attempt -eq 90 ]]; then
     app_health="$(docker exec "$app_container" bun -e 'fetch("http://127.0.0.1:3000/api/health").then(r=>{process.stdout.write(String(r.status));process.exit(r.status===200?0:1)}).catch(()=>{process.stdout.write("unavailable");process.exit(1)})' 2>/dev/null || true)"
@@ -197,17 +207,18 @@ for attempt in $(seq 1 90); do
 done
 
 attached="$(docker network inspect -f '{{range $id, $container := .Containers}}{{println $container.Name}}{{end}}' "$runtime_network" | sort)"
-expected_attached="$(printf '%s\n' "$app_container" "$proxy_container" "$target_container" | sort)"
-[[ "$attached" == "$expected_attached" ]] || fail "runtime network membership differs from the three approved containers"
+expected_attached="$(printf '%s\n' "$app_container" "$browser_container" "$proxy_container" "$target_container" | sort)"
+[[ "$attached" == "$expected_attached" ]] || fail "runtime network membership differs from the four approved containers"
 [[ "$(docker network inspect -f '{{.Internal}}' "$runtime_network")" == true \
   && "$(docker network inspect -f '{{.Internal}}' "$source_network")" == true ]] || fail "a rehearsal network is not internal"
 
 tests_started_epoch="$(date -u +%s)"
 tests_started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-env -i PATH="$PATH" HOME="$HOME" CI=true YS_APP_RECOVERY_BASE_URL=https://recovery.test \
-  YS_APP_RECOVERY_OWNER_EMAIL=owner@recovery.test YS_APP_RECOVERY_OWNER_PASSWORD="$owner_password" \
-  YS_APP_RECOVERY_BOOTSTRAP_TOKEN="$owner_bootstrap" \
-  bunx playwright test -c playwright.ys-sys-001-recovery.config.ts >"$workspace/playwright.log" 2>&1 \
+docker exec -e CI=true -e YS_APP_RECOVERY_BASE_URL=https://recovery.test \
+  -e YS_APP_RECOVERY_OWNER_EMAIL=owner@recovery.test -e YS_APP_RECOVERY_OWNER_PASSWORD="$owner_password" \
+  -e YS_APP_RECOVERY_BOOTSTRAP_TOKEN="$owner_bootstrap" "$browser_container" \
+  node /workspace/node_modules/@playwright/test/cli.js test -c playwright.ys-sys-001-recovery.config.ts \
+  --output=/tmp/ys-app-recovery-playwright >"$workspace/playwright.log" 2>&1 \
   || fail "synthetic owner/browser readiness checks failed"
 env -i PATH="$PATH" HOME="$HOME" NODE_ENV=test TEST_DATABASE_URL="$target_url" \
   bun test tests/client-project-data-database.test.ts >"$workspace/tenant-tests.log" 2>&1 \

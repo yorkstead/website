@@ -2,7 +2,7 @@
 
 - PR #110 merged as `d92ecf1459ff09a620bebc4144262daf15f4a3e6`; this is the verified starting main revision for the next synthetic-only recovery milestone.
 - Active work: implementation is in `feat/ys-sys-001-application-recovery`; validation and exact-head CI are pending. The rehearsal migrates synthetic source PostgreSQL 18 only through 0022, archives/restores it into a fresh isolated target, then runs the production-built website against that restored target.
-- Source preparation and restored-app runtime use separate Docker internal networks. The runtime app/database/proxy/probe boundary is checked independently; synthetic owner auth, owner-only dashboard/legacy Directory reads, anonymous denial, and actual-session cross-tenant denial are required.
+- Source preparation and restored-app runtime use separate Docker internal networks. The runtime network contains only the restored database, app, HTTPS proxy, and Playwright browser; no ports are published, and external TCP egress is probed independently. Fixed host-side schema checks use only verified Docker-assigned private subnet addresses. Synthetic owner auth, owner-only dashboard/legacy Directory reads, anonymous denial, and actual-session cross-tenant denial are required.
 - Production, R2, and the owner's recovery containers are out of scope. Migrations 0023/0024 and Registry activation remain unauthorized. Full Production-derived 60-minute RTO remains NOT DEMONSTRATED.
 - Specification and task state: [`application-recovery/`](../../specs/037-ys-sys-001-systems-registry/application-recovery/). Keep the original dirty CC-022B worktree untouched.
 

@@ -231,8 +231,6 @@ jobs:
           bun-version: 1.3.14
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
-      - name: Install isolated browser runtime
-        run: bunx playwright install --with-deps chromium
       - name: Check recovery scripts
         run: |
           bash -n scripts/recovery/application-readiness.sh

@@ -20,7 +20,7 @@ Provide a repeatable CI rehearsal that creates a synthetic database at the migra
 ## Isolation and side-effect controls
 
 - The workflow has `contents: read`, no deployment/environment secrets, and no Production or Cloudflare credentials.
-- Runtime containers join only an internal Docker network. The app has no published port; a disposable TLS proxy is the only host-published service, bound to loopback for the CI test client.
+- Runtime application, proxy, and Playwright browser containers join only an internal Docker network. No database, application, proxy, or browser port is published. The browser reaches the proxy by its Docker network alias. Host-side fixed schema helpers may reach only database IPs verified against their inspected internal subnets.
 - The app receives only generated synthetic database/auth values and explicit local configuration. It receives no provider tokens, job secrets, webhook credentials, payment credentials, or email API keys. Cron secrets are absent; analytics is disabled; no scheduler, queue worker, integration worker, email sender, payment action, or webhook consumer is started. External requests that application code may attempt have no route out of the Docker internal network.
 - Analytics is explicitly disabled. Cron endpoints have no cron secret. Email, payment, push, webhook, queue, and provider integrations have no credentials or reachable egress; they are not invoked by the smoke suite.
 - Build-time dependency downloads occur in the dedicated CI job before runtime isolation is exercised. The source and runtime networks are both internal; a TCP egress probe runs on the restored-app runtime network and must fail.
