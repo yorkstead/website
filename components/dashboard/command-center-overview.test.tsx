@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { CommandCenterOverview } from "@/components/dashboard/command-center-overview";
 
 const baseProps = {
+  automationHub: { state: "unavailable" as const, checkedAt: "2026-10-29T10:00:00.000Z" },
   crm: null,
   crmUnavailable: false,
   analyticsSnapshot: { sessions: 21, inquiries: 3, previousInquiries: 2, changePercent: 50, lastEventAt: "2026-10-29T10:00:00.000Z" },

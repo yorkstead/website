@@ -6,6 +6,7 @@ const summaryText = z.string().max(700);
 const isoTimestamp = z.string().datetime({ offset: true });
 
 const SectionState = z.enum(["available", "unavailable"]);
+const ProjectionState = z.enum(["available", "unavailable", "partial"]);
 const SectionBase = z.object({
   source: z.string().min(1).max(120),
   state: SectionState,
@@ -55,6 +56,15 @@ const Task = z.object({
   status: z.string().max(40),
   dueAt: isoTimestamp.nullable(),
   updatedAt: isoTimestamp,
+});
+const DashboardTaskProjection = z.object({
+  source: z.string().min(1).max(120), state: ProjectionState, checkedAt: isoTimestamp, truncated: z.boolean(), errorCode: z.string().max(80).nullable(),
+  items: z.array(Task).max(100),
+});
+const CalendarEventProjection = z.object({ id: identifier, summary: shortText, date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), startAt: isoTimestamp.nullable(), allDay: z.boolean() });
+const CalendarProjection = z.object({
+  source: z.string().min(1).max(120), state: ProjectionState, checkedAt: isoTimestamp, truncated: z.boolean(), errorCode: z.string().max(80).nullable(),
+  items: z.array(CalendarEventProjection).max(40),
 });
 
 const CaptureAction = z.object({
@@ -108,6 +118,9 @@ const AutomationHubSnapshot = z.object({
   }),
   reviewQueue: SectionBase.extend({ items: z.array(Review).max(20) }),
   tasks: SectionBase.extend({ items: z.array(Task).max(20) }),
+  dateContext: z.object({ timeZone: z.literal("America/Denver"), today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), tomorrow: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).optional(),
+  dashboardTasks: DashboardTaskProjection.optional(),
+  calendar: CalendarProjection.optional(),
 }).strip();
 
 export type AutomationHubSnapshot = z.infer<typeof AutomationHubSnapshot>;
@@ -118,6 +131,9 @@ export type AutomationHubSection<T> = {
   truncated: boolean;
   errorCode: string | null;
   items: T[];
+};
+export type AutomationHubProjectionSection<T> = {
+  source: string; state: "available" | "unavailable" | "partial"; checkedAt: string; truncated: boolean; errorCode: string | null; items?: T[];
 };
 
 export type AutomationHubDataResult =
