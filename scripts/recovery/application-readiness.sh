@@ -448,8 +448,32 @@ PY
     fail "synthetic owner/browser readiness failed at ${browser_stage}; private details suppressed"
   }
 env -i PATH="$PATH" HOME="$HOME" NODE_ENV=test TEST_DATABASE_URL="$target_url" \
-  bun test tests/client-project-data-database.test.ts >"$workspace/tenant-tests.log" 2>&1 \
-  || fail "synthetic cross-tenant integration tests failed"
+  bun test tests/client-project-data-database.test.ts --reporter=junit --reporter-outfile="$workspace/tenant-tests.junit.xml" \
+  >"$workspace/tenant-tests.log" 2>&1 || {
+    failed_test_line="$(python3 - "$workspace/tenant-tests.junit.xml" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+try:
+    root = ET.parse(sys.argv[1]).getroot()
+except Exception:
+    print("unavailable")
+    raise SystemExit
+
+lines = [
+    case.get("line", "")
+    for case in root.iter("testcase")
+    if case.find("failure") is not None and case.get("file") == "tests/client-project-data-database.test.ts"
+]
+if lines and all(line.isdigit() for line in lines[:5]):
+    print(",".join(lines[:5]))
+else:
+    print("unavailable")
+PY
+    )"
+    printf 'Sanitized tenant integration failure test definition line(s): %s\n' "$failed_test_line" >&2
+    fail "synthetic cross-tenant integration tests failed; private details suppressed"
+  }
 tests_finished_epoch="$(date -u +%s)"
 tests_finished_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
