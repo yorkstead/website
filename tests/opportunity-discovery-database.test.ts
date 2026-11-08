@@ -90,7 +90,7 @@ describe("opportunity discovery transactional boundaries in disposable PostgreSQ
     expect(row?.next_action_at).toBe("2020-01-02");
     expect(typeof row?.next_action_at).toBe("string");
     const attention = await opportunityStore.attentionActions();
-    expect(attention.items.find((item) => item.id === created.id)).toMatchObject({ next_action: "Review the receiving handoff", next_action_at: "2020-01-02", research_status: "new" });
+    expect(attention.items.find((item) => item.id === created.id)).toMatchObject({ next_action: "Review the receiving handoff", next_action_at: "2020-01-02", research_status: "hypothesis" });
     expect(attention.truncated).toBe(false);
   });
 
