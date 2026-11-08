@@ -2,7 +2,7 @@
 
 ## Current result
 
-Implementation is based on `4b8fa4714ad865ef7bf066d815ca6b14d5a8d542`. Local checks were run in the isolated `feat/cc-027-unified-attention` clone. Exact implementation SHA, disposable PostgreSQL/browser CI, and Vercel Preview evidence are pending push and draft-PR creation.
+Implementation source commit: `7216b64a5ddf0c751f86c1f4baf622f9c7ea75ec`, based on verified `main` SHA `4b8fa4714ad865ef7bf066d815ca6b14d5a8d542`. Local checks were run in the isolated `feat/cc-027-unified-attention` clone. Exact PR-head disposable PostgreSQL/browser CI and Vercel Preview evidence are pending push and draft-PR creation.
 
 ## Acceptance evidence
 
