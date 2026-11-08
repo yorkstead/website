@@ -89,6 +89,20 @@ describe("opportunity discovery transactional boundaries in disposable PostgreSQ
     const row = (await opportunityStore.reports()).overdueActions.find((item) => item.id === created.id);
     expect(row?.next_action_at).toBe("2020-01-02");
     expect(typeof row?.next_action_at).toBe("string");
+    const attention = await opportunityStore.attentionActions();
+    expect(attention.items.find((item) => item.id === created.id)).toMatchObject({ next_action: "Review the receiving handoff", next_action_at: "2020-01-02", research_status: "hypothesis" });
+    expect(attention.truncated).toBe(false);
+  });
+
+  databaseTest("bounds overdue attention actions and reports when more records exist", async () => {
+    mutableEnv.DATABASE_URL = databaseURL!;
+    for (let index = 0; index < 26; index++) {
+      const created = await opportunityStore.create({ ...basicOpportunity(`CC-027 bounded ${index} ${randomUUID().slice(0,8)}`), nextActionAt: "2020-01-02" }, "cc027-disposable-owner");
+      opportunityIds.push(created.id);
+    }
+    const attention = await opportunityStore.attentionActions();
+    expect(attention.items).toHaveLength(25);
+    expect(attention.truncated).toBe(true);
   });
 
   databaseTest("purges unrelated expired inquiries while retaining linked research and later releases the link on erasure", async () => {

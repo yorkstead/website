@@ -11,10 +11,14 @@ import type { CommandCenterCrmSnapshot } from "@/lib/contact-inquiries";
 import type { Project } from "@/lib/projects";
 import type { ActivityItem, Task } from "@/lib/workspace";
 import type { AnalyticsOverviewSnapshot } from "@/lib/analytics-dashboard";
+import { UnifiedAttentionView } from "@/components/dashboard/unified-attention-view";
+import type { ProjectIntelligenceEntry } from "@/lib/project-intelligence-client";
+
+type ResearchAction = { id: string; business_name: string; industry: string; next_action: string; next_action_at: string; research_status: string };
 
 export function CommandCenterOverview({
   crm, crmUnavailable, analyticsSnapshot, analyticsUnavailable, projects, tasks, googleTasks, activity, today, staleProjectDays, ready,
-  onCompleteTask, onOpenTask, onCompleteGoogleTask, onCreateTask,
+  onCompleteTask, onOpenTask, onCompleteGoogleTask, onCreateTask, researchActions, researchUnavailable, researchTruncated, intelligence,
 }: {
   crm: CommandCenterCrmSnapshot | null;
   crmUnavailable: boolean;
@@ -31,6 +35,10 @@ export function CommandCenterOverview({
   onOpenTask: (task: Task) => void;
   onCompleteGoogleTask: (task: GoogleCommandTask) => void;
   onCreateTask: () => void;
+  researchActions: ResearchAction[];
+  researchUnavailable: boolean;
+  researchTruncated: boolean;
+  intelligence: Record<string, ProjectIntelligenceEntry>;
 }) {
   const actions = selectCommandCenterActions({
     leads: crm?.dueFollowUps.concat(crm.stalledOpportunities.filter((lead) => !crm.dueFollowUps.some((due) => due.id === lead.id))) ?? [],
@@ -40,6 +48,7 @@ export function CommandCenterOverview({
   const recent = activity.filter((item) => Number.isFinite(Date.parse(item.createdAt))).slice().sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 5);
 
   return <div className="space-y-4">
+    <UnifiedAttentionView crm={crm} crmUnavailable={crmUnavailable} research={{ items: researchActions, unavailable: researchUnavailable, truncated: researchTruncated }} projects={projects} tasks={tasks} intelligence={intelligence} ready={ready} />
     <section id="focus" aria-labelledby="command-center-actions-heading" className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
       <Card className="min-w-0 overflow-hidden"><CardContent className="p-4 sm:p-5">
         <div className="mb-4 flex items-start justify-between gap-3"><div><div className="mb-1 flex items-center gap-2"><Target className="size-4 text-primary" /><h2 id="command-center-actions-heading" className="text-sm font-semibold">Today’s actions</h2></div><p className="text-xs text-muted-foreground">Sorted by due date, stalled work, and priority · Denver time</p></div><Badge className="shrink-0 border-primary/20 bg-primary/10 text-primary">{ready ? actions.length : "…"} shown</Badge></div>

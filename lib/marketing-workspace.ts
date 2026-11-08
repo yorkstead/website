@@ -5,6 +5,7 @@ import { isValidDateValue, isValidEmailAddress, normalizeHTTPSURL, uniqueById } 
 
 export type MarketingProspect = {
   id: string;
+  crmLeadId: number | null;
   company: string;
   website: string;
   contactName: string;
@@ -22,6 +23,15 @@ export type MarketingProspect = {
   notes: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type MarketingCrmInquiry = {
+  id: number;
+  company: string;
+  name: string;
+  status: string;
+  nextStep: string;
+  followUpAt: string | null;
 };
 
 export type MarketingActivity = {
@@ -56,6 +66,22 @@ export type MarketingWorkspace = {
 
 export const emptyMarketingWorkspace: MarketingWorkspace = { campaignStart: "", prospects: [], activities: [], content: [] };
 
+export function marketingCrmLinkShapeError(value: unknown): "invalid" | "duplicate" | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const prospects = (value as Record<string, unknown>).prospects;
+  if (!Array.isArray(prospects)) return null;
+  const linkedIds = new Set<number>();
+  for (const raw of prospects) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    const item = raw as Record<string, unknown>;
+    if (!("crmLeadId" in item) || item.crmLeadId === null || item.crmLeadId === undefined) continue;
+    if (typeof item.crmLeadId !== "number" || !Number.isSafeInteger(item.crmLeadId) || item.crmLeadId < 1) return "invalid";
+    if (linkedIds.has(item.crmLeadId)) return "duplicate";
+    linkedIds.add(item.crmLeadId);
+  }
+  return null;
+}
+
 export function beginMarketingCampaign(workspace: MarketingWorkspace, dateValue = new Date(), timeZone = defaultTimeZone) {
   const now = dateValue.toISOString();
   const existingWeeks = new Set(workspace.content.map((item) => item.week));
@@ -84,7 +110,8 @@ export function normalizeMarketingWorkspace(value: unknown): MarketingWorkspace 
     const id = text(item.id, 80); const company = text(item.company, 200).trim();
     if (!id || !company) return [];
     return [{
-      id, company, website: normalizeHTTPSURL(item.website) ?? "", contactName: text(item.contactName, 160), contactTitle: text(item.contactTitle, 160),
+      id, crmLeadId: Number.isSafeInteger(item.crmLeadId) && Number(item.crmLeadId) > 0 ? Number(item.crmLeadId) : null,
+      company, website: normalizeHTTPSURL(item.website) ?? "", contactName: text(item.contactName, 160), contactTitle: text(item.contactTitle, 160),
       email: optionalEmail(item.email), phone: text(item.phone, 80), location: text(item.location, 200),
       segment: choice(item.segment, prospectSegments, "other"), stage: choice(item.stage, marketingFunnelStages, "target"),
       source: choice(item.source, marketingSources, "direct-outreach"), operationalSignals: text(item.operationalSignals),

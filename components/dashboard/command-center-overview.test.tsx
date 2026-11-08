@@ -19,12 +19,17 @@ const baseProps = {
   onOpenTask: () => undefined,
   onCompleteGoogleTask: () => undefined,
   onCreateTask: () => undefined,
+  researchActions: [],
+  researchUnavailable: false,
+  researchTruncated: false,
+  intelligence: {},
 };
 
 describe("Command Center Overview states", () => {
   test("shows clear empty states without adding activity", () => {
     const html = renderToStaticMarkup(createElement(CommandCenterOverview, baseProps));
     expect(html).toContain('id="focus"');
+    expect(html).toContain("Unified attention");
     expect(html).toContain("You’re clear for now");
     expect(html).toContain("No saved activity yet.");
     expect(html).toContain("No open inquiries in the pipeline.");
@@ -39,5 +44,13 @@ describe("Command Center Overview states", () => {
     expect(html).toContain("CRM actions are unavailable");
     expect(html).toContain("Pipeline data is unavailable right now.");
     expect(html).not.toContain("No open inquiries in the pipeline.");
+  });
+
+  test("shows unavailable source states distinctly in unified attention", () => {
+    const html = renderToStaticMarkup(createElement(CommandCenterOverview, { ...baseProps, crmUnavailable: true, researchUnavailable: true }));
+    expect(html).toContain("Website CRM");
+    expect(html).toContain("Opportunity Discovery");
+    expect(html).toContain("One or more sources are unavailable");
+    expect(html).toContain("this is not an empty queue");
   });
 });

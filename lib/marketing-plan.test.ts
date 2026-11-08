@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { idealCustomerProfile, launchBudget, launchWeeks, marketingFunnelStages, marketingTargets, marketingTemplates, outreachSequence, partnerResources } from "@/lib/marketing-plan";
-import { beginMarketingCampaign, normalizeMarketingWorkspace } from "@/lib/marketing-workspace";
+import { beginMarketingCampaign, marketingCrmLinkShapeError, normalizeMarketingWorkspace } from "@/lib/marketing-workspace";
 
 describe("90-day marketing plan", () => {
   test("defines twelve distinct weeks and the approved funnel targets", () => {
@@ -28,7 +28,7 @@ describe("marketing workspace validation", () => {
     const now = "2026-08-10T12:00:00.000Z";
     const workspace = normalizeMarketingWorkspace({
       campaignStart: "2026-08-10",
-      prospects: [{ id: "prospect-1", company: "Example Shop", segment: "job-shop", stage: "contacted", source: "direct-outreach", fitScore: 9, createdAt: now, updatedAt: now }],
+      prospects: [{ id: "prospect-1", crmLeadId: 47, company: "Example Shop", segment: "job-shop", stage: "contacted", source: "direct-outreach", fitScore: 9, createdAt: now, updatedAt: now }],
       activities: [
         { id: "activity-1", prospectId: "prospect-1", type: "call", outcome: "Conversation scheduled", value: 0, createdAt: now },
         { id: "activity-2", prospectId: "missing", type: "call", outcome: "Orphan", value: 0, createdAt: now },
@@ -38,6 +38,7 @@ describe("marketing workspace validation", () => {
     });
     expect(workspace).not.toBeNull();
     expect(workspace?.prospects[0].fitScore).toBe(5);
+    expect(workspace?.prospects[0].crmLeadId).toBe(47);
     expect(workspace?.activities).toHaveLength(2);
     expect(workspace?.content[0].week).toBe(12);
   });
@@ -72,8 +73,22 @@ describe("marketing workspace validation", () => {
     expect(workspace?.activities.map((item) => item.outcome)).toEqual(["First"]);
     expect(workspace?.content.map((item) => item.title)).toEqual(["First"]);
   });
+  test("rejects malformed or duplicate CRM inquiry references", () => {
+    expect(marketingCrmLinkShapeError({ prospects: [{ id: "p1", crmLeadId: "47" }] })).toBe("invalid");
+    expect(marketingCrmLinkShapeError({ prospects: [{ id: "p1", crmLeadId: 0 }] })).toBe("invalid");
+    expect(marketingCrmLinkShapeError({ prospects: [{ id: "p1", crmLeadId: 47 }, { id: "p2", crmLeadId: 47 }] })).toBe("duplicate");
+    expect(marketingCrmLinkShapeError({ prospects: [{ id: "p1", crmLeadId: 47 }, { id: "p2", crmLeadId: 48 }] })).toBeNull();
+  });
+  test("keeps outreach history and campaign content when a CRM link is added", () => {
+    const now = "2026-08-10T12:00:00.000Z";
+    const value = { campaignStart: "2026-08-10", prospects: [{ id: "p1", company: "Example Shop", crmLeadId: 47 }], activities: [{ id: "a1", prospectId: "p1", type: "call", outcome: "Spoke with the owner", createdAt: now }], content: [{ id: "c1", title: "Workflow signal", week: 1 }] };
+    const workspace = normalizeMarketingWorkspace(value);
+    expect(workspace?.prospects[0].crmLeadId).toBe(47);
+    expect(workspace?.activities[0].outcome).toBe("Spoke with the owner");
+    expect(workspace?.content[0].title).toBe("Workflow signal");
+  });
   test("starts the campaign without deleting existing prospects or activity", () => {
-    const prospect = { id: "p1", company: "Example Shop", website: "", contactName: "", contactTitle: "", email: "", phone: "", location: "", segment: "other" as const, stage: "target" as const, source: "direct-outreach" as const, operationalSignals: "", fitScore: 3, nextAction: "", nextActionAt: "", notes: "", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" };
+    const prospect = { id: "p1", crmLeadId: null, company: "Example Shop", website: "", contactName: "", contactTitle: "", email: "", phone: "", location: "", segment: "other" as const, stage: "target" as const, source: "direct-outreach" as const, operationalSignals: "", fitScore: 3, nextAction: "", nextActionAt: "", notes: "", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" };
     const activity = { id: "a1", prospectId: "p1", type: "note" as const, outcome: "Qualified", value: 0, createdAt: "2026-08-01T00:00:00.000Z" };
     const started = beginMarketingCampaign({ campaignStart: "", prospects: [prospect], activities: [activity], content: [] }, new Date("2026-08-10T12:00:00.000Z"));
     expect(started.campaignStart).toBe("2026-08-10");
