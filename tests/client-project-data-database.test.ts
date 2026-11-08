@@ -308,7 +308,7 @@ dbTest("owner workflow requires verified owner and explicit project selection; i
   expect(view.selected?.preview).toBeNull();
   expect(view.selected?.records).toHaveLength(1);
   await pool.query("UPDATE customer_tenant_projects SET status='archived' WHERE project_id=$1",[f.projects[1]]);
-  expect((await service.publishingWorkspace(headers,f.projects[1])).selected?.reason).toContain('No tenant/project mapping');
+  expect((await service.publishingWorkspace(headers,f.projects[1])).selected?.reason).toContain('mapping is inactive');
 });
 
 

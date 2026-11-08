@@ -462,7 +462,7 @@ except Exception:
     raise SystemExit
 
 lines = [
-    re.findall(r"tests/client-project-data-database\.test\.ts:(\d+)", "".join(case.find("failure").itertext()))
+    re.findall(r"client-project-data-database\.test\.ts:(\d+)", "".join(case.find("failure").itertext()))
     or [case.get("line", "")]
     for case in root.iter("testcase")
     if case.find("failure") is not None and case.get("file") == "tests/client-project-data-database.test.ts"
