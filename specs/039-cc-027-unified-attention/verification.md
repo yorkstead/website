@@ -2,7 +2,7 @@
 
 ## Current result
 
-Implementation source commit: `7216b64a5ddf0c751f86c1f4baf622f9c7ea75ec`, based on verified `main` SHA `4b8fa4714ad865ef7bf066d815ca6b14d5a8d542`. Local checks were run in the isolated `feat/cc-027-unified-attention` clone. Exact PR-head disposable PostgreSQL/browser CI and Vercel Preview evidence are pending push and draft-PR creation.
+Implementation source commit: `7216b64a5ddf0c751f86c1f4baf622f9c7ea75ec`, based on verified `main` SHA `4b8fa4714ad865ef7bf066d815ca6b14d5a8d542`. Browser-test corrections are in commits `bbf9df6efa25cfdd9b76846bc30d9b30d09a7e0e` and `5a41caea5dee1e073ef6a15f0ab6587caa6226b0`. Exact-head GitHub Actions run [42429982621](https://github.com/yorkstead/website/actions/runs/42429982621) passed all jobs on `5a41caea5dee1e073ef6a15f0ab6587caa6226b0`, including disposable PostgreSQL, all browser workflows, the authenticated Marketing-to-CRM workflow, production build, Registry synthetic role verification, and isolated Recovery rehearsal. GitHub's Vercel check is successful on this SHA. The Vercel deployment list contained no matching record and lookup by the status target returned 404, so the preview's deployment URL/readiness could not be independently confirmed through the available Vercel API scope. A documentation-only follow-up will change the PR head; its checks must be verified separately.
 
 ## Acceptance evidence
 
@@ -18,8 +18,8 @@ Implementation source commit: `7216b64a5ddf0c751f86c1f4baf622f9c7ea75ec`, based 
 | A8 | Attention component contains no write controls, mutation fetches, task persistence, automation command, or external API call other than the existing owner-gated read endpoint. Existing dedicated Google Task completion and Workspace editor interfaces remain intact. |
 | A9 | Unit coverage checks populated/empty/unavailable/truncated source states, status/date/navigation, URL validation, and display-only behavior. Retrieval timestamp is shown only for Hub and last-known GitHub data where evidence is provided. |
 | A10 | Dashboard page verifies owner session before source reads; Hub BFF verifies owner again. Links use encoded same-origin IDs, fixed Hub URL, or validated GitHub HTTPS URLs. |
-| A11 | Added component tests and authenticated Playwright test covering CRM and Hub records, anonymous Hub denial, no Hub writes, mobile width, and existing Workspace task editability. Playwright has not run locally due unavailable PostgreSQL and loopback server restrictions; exact-head CI is pending. |
-| A12 | Repository checks below pass or are explicitly pending. Handoff and this record are updated. Draft PR and exact-head status are pending. |
+| A11 | Added component tests and authenticated Playwright coverage for CRM and Hub records, anonymous Hub denial, no Hub writes, mobile width, and existing Workspace task editability. The exact-head browser workflows passed in CI, including the existing Workspace project-task editability and authenticated Marketing-to-CRM test. |
+| A12 | Local checks and exact-head CI passed on the code head documented above. Handoff and this record are updated. PR #114 remains a draft and unmerged; documentation follow-up exact-head checks remain to be verified. |
 
 ## Local checks
 
@@ -33,7 +33,14 @@ Implementation source commit: `7216b64a5ddf0c751f86c1f4baf622f9c7ea75ec`, based 
 - `git diff --check` — PASS.
 - `bun run test:e2e` targeted CC-018 Playwright test — NOT RUN successfully. The default config does not include `tests/e2e-cc018`; its CC-018 config was then used. The test server was denied loopback binding (`listen EPERM`); `pg_isready` found no local PostgreSQL. Docker could not be started: the installed Snap refused its confinement state. This is an environment limitation, not evidence that the browser regression passes.
 - `bun audit --audit-level=critical` — NOT COMPLETED; npm advisory endpoint DNS resolution failed (`DNSResolveFailed`).
-- Disposable PostgreSQL integration and browser tests — pending GitHub Actions disposable Postgres service.
+- Disposable PostgreSQL integration and browser tests — passed in exact-head GitHub Actions run 42429982621 on code head `5a41caea5dee1e073ef6a15f0ab6587caa6226b0` (see exact-head evidence below).
+
+### Exact-head GitHub Actions evidence
+
+- Run [42429982621](https://github.com/yorkstead/website/actions/runs/42429982621) passed all 3 jobs on code head `5a41caea5dee1e073ef6a15f0ab6587caa6226b0`.
+- Disposable PostgreSQL migration validation and database integration tests passed. Lint, typecheck, full browser suite, all focused browser workflows, and build without production secrets passed. Synthetic Registry least-privilege verification and isolated synthetic Recovery rehearsal passed; no Recovery-owned files were changed.
+- The first run found one test expectation inconsistent with the Opportunity Discovery model's `hypothesis` default, plus ambiguous Playwright selectors (including an existing project-link selector made non-unique by the new overview link). These assertions were corrected; the full workflow passed on the subsequent code head.
+- GitHub's Vercel status context reports success for this code SHA. The available Vercel deployment list returned no matching deployment, and direct lookup using the check target returned 404. Therefore a specific Preview deployment URL/readiness is not independently confirmed; no deployment was initiated manually.
 
 ## Security, ownership, and data integrity review
 
