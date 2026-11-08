@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Eye, ListChecks } from "lucide-react";
 import type { CommandCenterCrmSnapshot } from "@/lib/contact-inquiries";
@@ -85,7 +84,8 @@ function AttentionRows({ rows }: { rows: Row[] }) {
   </ul>;
 }
 
-export function UnifiedAttentionView({ crm, crmUnavailable, research, projects, tasks, intelligence, ready }: {
+export function UnifiedAttentionView({ automationHub: hub, crm, crmUnavailable, research, projects, tasks, intelligence, ready }: {
+  automationHub: AutomationHubDataResult;
   crm: CommandCenterCrmSnapshot | null;
   crmUnavailable: boolean;
   research: ResearchSource;
@@ -94,19 +94,7 @@ export function UnifiedAttentionView({ crm, crmUnavailable, research, projects, 
   intelligence: Record<string, ProjectIntelligenceEntry>;
   ready: boolean;
 }) {
-  const [hub, setHub] = useState<AutomationHubDataResult | null>(null);
-  const [hubError, setHubError] = useState(false);
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/dashboard/automation-hub", { cache: "no-store", signal: controller.signal })
-      .then(async (response) => {
-        const body = await response.json() as AutomationHubDataResult;
-        if (!response.ok || !body || typeof body.state !== "string") throw new Error("hub_read_failed");
-        setHub(body);
-      })
-      .catch(() => { if (!controller.signal.aborted) setHubError(true); });
-    return () => controller.abort();
-  }, []);
+  const hubError = false;
 
   const rows: Row[] = [];
   if (ready) {
@@ -133,9 +121,10 @@ export function UnifiedAttentionView({ crm, crmUnavailable, research, projects, 
     { name: "Command Center", text: ready ? "Available" : "Loading", detail: ready ? `${tasks.filter((item) => !item.done).length} open Workspace tasks${tasks.filter((item) => !item.done).length ? "" : " · available, empty"}` : "Workspace data is loading", href: "#tasks", tone: ready ? "available" : "loading" },
     { name: "Website CRM", text: crmUnavailable || !crm ? "Unavailable" : crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? "At query limit" : "Available", detail: crmUnavailable ? "CRM summary did not load; this is not an empty queue." : crm ? `${crm.dueFollowUps.length + crm.stalledOpportunities.length + crm.proposalNextActions.length} action records reported${crm.dueFollowUps.length + crm.stalledOpportunities.length + crm.proposalNextActions.length ? "" : " · available, empty"}. The current snapshot does not expose a checked-at timestamp.${crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? " Results may be incomplete." : ""}` : "No CRM data returned.", href: "/dashboard/leads", tone: crmUnavailable || !crm ? "unavailable" : crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? "partial" : "available" },
     { name: "Opportunity Discovery", text: research.unavailable ? "Unavailable" : research.truncated ? "At query limit" : "Available", detail: research.unavailable ? "Research follow-ups did not load; this is not an empty queue." : `${research.items.length} research actions due today or overdue reported${research.items.length ? "" : " · available, empty"}. The current report does not expose a checked-at timestamp.${research.truncated ? " The result may be incomplete." : ""}`, href: "/dashboard/opportunities", tone: research.unavailable ? "unavailable" : research.truncated ? "partial" : "available" },
-    { name: "Google Tasks and Automation Hub", ...hubSource, href: "https://cal.yorkstead.com/command" },
+    { name: "Automation Hub review and captures", ...hubSource, href: "https://cal.yorkstead.com/command" },
+    { name: "Google Tasks", text: hub.state === "available" && hub.data.dashboardTasks && hub.data.dateContext ? hub.data.dashboardTasks.state === "unavailable" ? "Unavailable" : hub.data.dashboardTasks.truncated ? "Partial · query bound reached" : hub.data.dashboardTasks.items.length ? "Available" : "Available, empty" : "Unavailable · unsupported response", detail: hub.state === "available" && hub.data.dashboardTasks && hub.data.dateContext ? `${hub.data.dashboardTasks.items.length} due open tasks returned${hub.data.dashboardTasks.errorCode ? ` · ${hub.data.dashboardTasks.errorCode}` : ""}${hub.data.dashboardTasks.truncated ? "; provider scan was truncated" : ""}. Checked ${hub.data.dashboardTasks.checkedAt}.` : "This Hub v1 response does not include the Dashboard task projection; no empty queue is inferred.", href: "https://tasks.google.com/", tone: hub.state !== "available" || !hub.data.dashboardTasks || !hub.data.dateContext || hub.data.dashboardTasks.state === "unavailable" ? "unavailable" : hub.data.dashboardTasks.truncated ? "partial" : "available" },
     { name: "GitHub", text: !linkedProjects.length ? "Not configured" : githubUnavailableCount === linkedProjects.length ? "Unavailable" : githubStaleCount ? "Last known data" : githubLimitedCount ? "At query limit" : githubKnownCount ? "Available" : "Checking source", detail: !linkedProjects.length ? "No project repositories are linked." : `${githubKnownCount} of ${linkedProjects.length} repositories returned GitHub data${githubKnownCount === linkedProjects.length && githubUnavailableCount === 0 && githubItemCount === 0 ? " · available, empty" : ""}${githubStaleCount ? `; ${githubStaleCount} use last-known data` : ""}${githubLimitedCount ? `; ${githubLimitedCount} at the displayed issue/PR limit` : ""}${githubCheckedAt ? `; last checked ${githubCheckedAt}` : ""}.`, href: "#development", tone: !linkedProjects.length ? "available" : githubEntries.every(({ entry }) => !entry) ? "loading" : githubUnavailableCount === linkedProjects.length ? "unavailable" : githubUnavailableCount || githubLimitedCount ? "partial" : githubStaleCount ? "stale" : "available" },
-    { name: "Google Calendar", text: "Existing calendar view", detail: "Scheduled commitments stay in the CalendarTimeline; source freshness is not checked by this panel.", href: "#calendar", tone: "available" },
+    { name: "Google Calendar", text: hub.state === "available" && hub.data.calendar && hub.data.dateContext ? hub.data.calendar.state === "unavailable" ? "Unavailable" : hub.data.calendar.truncated ? "Partial · query bound reached" : hub.data.calendar.items.length ? "Available" : "Available, empty" : "Unavailable · unsupported response", detail: hub.state === "available" && hub.data.calendar && hub.data.dateContext ? `${hub.data.calendar.items.filter((event) => event.date === hub.data.dateContext?.today).length} today · ${hub.data.calendar.items.filter((event) => event.date === hub.data.dateContext?.tomorrow).length} tomorrow${hub.data.calendar.errorCode ? ` · ${hub.data.calendar.errorCode}` : ""}${hub.data.calendar.truncated ? "; provider scan was truncated" : ""}. Checked ${hub.data.calendar.checkedAt}.` : "This Hub v1 response does not include the Calendar projection; no empty agenda is inferred.", href: "#calendar", tone: hub.state !== "available" || !hub.data.calendar || !hub.data.dateContext || hub.data.calendar.state === "unavailable" ? "unavailable" : hub.data.calendar.truncated ? "partial" : "available" },
   ];
 
   for (const project of linkedProjects) {
@@ -153,8 +142,8 @@ export function UnifiedAttentionView({ crm, crmUnavailable, research, projects, 
   }
   if (hub?.state === "available") {
     const sections = hub.data;
-    // The safe Hub contract is already restricted to open Google Tasks; preserve its returned status verbatim.
-    for (const task of sections.tasks.items) rows.push({ key: `google:${task.listId}:${task.id}`, title: task.title, source: "Google Tasks", context: "Personal action", status: task.status, due: dateLabel(task.dueAt), href: "https://cal.yorkstead.com/command", external: true });
+    // Dashboard rows come from the bounded optional projection; legacy v1 responses remain explicitly unsupported.
+    for (const task of sections.dashboardTasks?.items ?? []) rows.push({ key: `google:${task.listId}:${task.id}`, title: task.title, source: "Google Tasks", context: "Personal action", status: task.status, due: dateLabel(task.dueAt), href: "https://tasks.google.com/", external: true });
     for (const item of sections.reviewQueue.items) rows.push({ key: `hub-review:${item.id}`, title: item.title, source: "Automation Hub review", context: item.summary || item.kind, status: item.status, due: null, href: "https://cal.yorkstead.com/command", external: true });
     for (const item of sections.captures.items.filter((capture) => capture.classification.requiresConfirmation)) rows.push({ key: `hub-capture:${item.id}`, title: item.classification.title, source: "Automation Hub capture", context: item.classification.summary || "Confirmation requested", status: item.status, due: dateLabel(item.classification.dueDate), href: "https://cal.yorkstead.com/command", external: true });
   }

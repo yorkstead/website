@@ -8,7 +8,7 @@ const crm: CommandCenterCrmSnapshot = {
   stageCounts: { new: 0, contacted: 0, qualified: 0, proposal: 1 }, dueFollowUps: [{ id: 42, name: "Ada Owner", company: "Northstar", projectType: "Workflow", status: "qualified", followUpAt: "2026-11-06T18:00:00.000Z", updatedAt: "2026-11-06T17:00:00.000Z", nextStep: "Review canonical workflow scope" }], stalledOpportunities: [], pendingProposalCount: 0, pipelineValueCents: 0, wonValueCents: 0, conversionRate: null, proposalNextActions: [],
 };
 
-const baseProps = { crm, crmUnavailable: false, research: { items: [], unavailable: false, truncated: false }, projects: [], tasks: [], intelligence: {}, ready: true };
+const baseProps = { automationHub: { state: "unavailable" as const, checkedAt: "2026-11-07T18:00:00.000Z" }, crm, crmUnavailable: false, research: { items: [], unavailable: false, truncated: false }, projects: [], tasks: [], intelligence: {}, ready: true };
 
 describe("Unified attention", () => {
   test("shows canonical CRM status, due date, and the existing record link", () => {

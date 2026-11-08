@@ -44,6 +44,25 @@ describe("Automation Hub data client", () => {
     expect(result.data.captures.items[0]?.classification.title).toBe("Replace filter");
     expect("rawText" in result.data.captures.items[0]!).toBe(false);
     expect(result.data.tasks.items[0]?.id).toBe("task-1");
+    expect(result.data.calendar).toBeUndefined();
+  });
+
+  test("accepts the additive v1 calendar and 100-task projection while keeping the fields optional", async () => {
+    process.env.YORKSTEAD_AUTOMATIONS_READ_SECRET = "synthetic-read-token-at-least-32-characters";
+    const taskItems = Array.from({ length: 100 }, (_, index) => ({ id: `task-${index}`, listId: "list-1", title: `Task ${index}`, status: "needsAction", dueAt: at, updatedAt: at }));
+    globalThis.fetch = (async () => Response.json({
+      ...fixture,
+      dateContext: { timeZone: "America/Denver", today: "2026-10-29", tomorrow: "2026-10-30" },
+      dashboardTasks: { source: "Google Tasks via Automation Hub", state: "partial", checkedAt: at, truncated: true, errorCode: null, items: taskItems },
+      calendar: { source: "Google Calendar via Automation Hub", state: "available", checkedAt: at, truncated: false, errorCode: null, items: [{ id: "event-1", date: "2026-10-29", summary: "All-day event", startAt: null, allDay: true }] },
+    })) as unknown as typeof fetch;
+    const result = await getAutomationHubData();
+    expect(result.state).toBe("available");
+    if (result.state !== "available") throw new Error("expected available contract");
+    expect(result.data.dateContext?.timeZone).toBe("America/Denver");
+    expect(result.data.dashboardTasks?.items).toHaveLength(100);
+    expect(result.data.dashboardTasks?.state).toBe("partial");
+    expect(result.data.calendar?.items[0]?.allDay).toBe(true);
   });
 
   test("distinguishes Hub errors, malformed contracts, and oversized responses from empty success", async () => {
