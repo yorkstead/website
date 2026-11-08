@@ -272,6 +272,8 @@ fi
 app_url="postgresql://${app_user}:${app_password}@ys-app-recovery-target:5432/${source_db}"
 target_url="postgresql://${app_user}:${app_password}@${target_ip}:${target_port}/${source_db}"
 
+target_admin_url="$(printf 'postgresql://%s:%s@%s:%s/%s' "$admin_user" "$admin_password" "$target_ip" "$target_port" "$source_db")"
+
 docker build --quiet --file scripts/recovery/application.Dockerfile --tag "$app_image" . >"$workspace/build.log" 2>&1 \
   || fail "production application image build failed"
 
@@ -447,7 +449,7 @@ PY
     )"
     fail "synthetic owner/browser readiness failed at ${browser_stage}; private details suppressed"
   }
-env -i PATH="$PATH" HOME="$HOME" NODE_ENV=test TEST_DATABASE_URL="$target_url" \
+env -i PATH="$PATH" HOME="$HOME" NODE_ENV=test TEST_DATABASE_URL="$target_url" TEST_DATABASE_ADMIN_URL="$target_admin_url" \
   bun test tests/client-project-data-database.test.ts --reporter=junit --reporter-outfile="$workspace/tenant-tests.junit.xml" \
   >"$workspace/tenant-tests.log" 2>&1 || {
     failed_test_line="$(python3 - "$workspace/tenant-tests.junit.xml" <<'PY'
