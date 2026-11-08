@@ -52,7 +52,7 @@ type SnapshotNotice = { tone: "success" | "error"; message: string; authenticati
 type SnapshotHistoryItem = { id: string; createdAt: string };
 type UndoToast = { label: string; canUndo: boolean; canRedo: boolean; actionType: "mutate" | "undo" | "redo" };
 
-export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable, analyticsSnapshot, analyticsUnavailable }: { googleOperations: GoogleOperations | null; crmSnapshot: CommandCenterCrmSnapshot | null; crmUnavailable: boolean; analyticsSnapshot: AnalyticsOverviewSnapshot | null; analyticsUnavailable: boolean }) {
+export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable, analyticsSnapshot, analyticsUnavailable, researchActions, researchUnavailable, researchTruncated }: { googleOperations: GoogleOperations | null; crmSnapshot: CommandCenterCrmSnapshot | null; crmUnavailable: boolean; analyticsSnapshot: AnalyticsOverviewSnapshot | null; analyticsUnavailable: boolean; researchActions: Array<{ id: string; business_name: string; industry: string; next_action: string; next_action_at: string; research_status: string }>; researchUnavailable: boolean; researchTruncated: boolean }) {
   const router = useRouter();
   const requestedProjectId = useSearchParams().get("project");
   const [workspace, setWorkspace] = useState<Workspace>(emptyWorkspace);
@@ -863,6 +863,10 @@ export function Dashboard({ googleOperations, crmSnapshot, crmUnavailable, analy
             onOpenTask={setEditingTask}
             onCompleteGoogleTask={(task) => void finishGoogleTask(task)}
             onCreateTask={() => setComposer("task")}
+            researchActions={researchActions}
+            researchUnavailable={researchUnavailable}
+            researchTruncated={researchTruncated}
+            intelligence={intelligence}
           />
 
           <ProjectJournal projects={workspace.projects} notes={workspace.notes ?? []} onAdd={addProjectNote} onDelete={deleteProjectNote} />
