@@ -76,6 +76,47 @@ test("navigation preserves initial focus, supports mobile keyboard access, and s
   await expect(desktopLogo).toBeVisible();
 });
 
+test("authenticated unified attention reads canonical CRM and Hub records without external mutation", async ({ page, context }) => {
+  const checkedAt = "2026-11-07T18:00:00.000Z";
+  const externalWrites: string[] = [];
+  await page.route("**/api/dashboard/automation-hub", async (route) => {
+    if (route.request().method() !== "GET") externalWrites.push(route.request().method());
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ state: "available", checkedAt, data: {
+      contractVersion: 1, source: "Automation Hub", generatedAt: checkedAt,
+      captures: { source: "Automation Hub", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      activity: { source: "Automation Hub", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      reviewQueue: { source: "Automation Hub", state: "available", checkedAt, truncated: false, errorCode: null, items: [] },
+      tasks: { source: "Google Tasks", state: "available", checkedAt, truncated: false, errorCode: null, items: [{ id: "cc027-google-task", listId: "cc027-list", title: "CC-027 read-only Google follow-up", status: "needsAction", dueAt: "2026-11-08T17:00:00.000Z", updatedAt: checkedAt }] },
+      integrationHealth: { source: "Automation Hub", state: "available", checkedAt, database: "healthy", googleTasks: "healthy", errorCode: null },
+    } }) });
+  });
+  expect((await context.request.get("/api/dashboard/automation-hub")).status()).toBe(401);
+  expect((await context.request.post("/api/auth/sign-in/email", { headers: { origin }, data: cc018Owner })).status()).toBe(200);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dashboard");
+
+  const attention = page.getByRole("region", { name: "Unified attention" });
+  await expect(attention.getByText("CC-027 read-only Google follow-up")).toBeVisible();
+  await expect(attention.getByText("Website CRM", { exact: true }).first()).toBeVisible();
+  await expect(attention.getByText("Opportunity Discovery", { exact: true })).toBeVisible();
+  const crmAction = attention.locator("li").filter({ hasText: cc018Company }).first();
+  await expect(crmAction).toContainText(/new|contacted|qualified|proposal/);
+  await expect(crmAction.getByRole("link", { name: /Open Website CRM record/ })).toHaveAttribute("href", /\/dashboard\/leads\?lead=/);
+  const googleTask = attention.locator("li").filter({ hasText: "CC-027 read-only Google follow-up" });
+  await expect(googleTask.getByRole("link", { name: /Open Google Tasks record/ })).toHaveAttribute("href", "https://cal.yorkstead.com/command");
+  await expect(googleTask.getByRole("button")).toHaveCount(0);
+
+  const workspaceTask = attention.locator("li").filter({ hasText: "CC-018 Complete workspace task" });
+  await expect(workspaceTask.getByRole("link", { name: /Open Command Center task/ })).toHaveAttribute("href", "#tasks");
+  await workspaceTask.getByRole("link", { name: /Open Command Center task/ }).click();
+  const existingTaskAction = page.locator("section[aria-labelledby='command-center-actions-heading'] article").filter({ hasText: "CC-018 Complete workspace task" });
+  await existingTaskAction.getByRole("button", { name: "Open task" }).click();
+  await expect(page.getByRole("heading", { name: "Edit task" })).toBeVisible();
+  await page.getByRole("button", { name: "Cancel" }).click();
+  expect(externalWrites).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
 test("owner overview prioritizes persisted work and supports exact links and actions", async ({ page, context }) => {
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/login/);
@@ -110,7 +151,7 @@ test("owner overview prioritizes persisted work and supports exact links and act
   await expect(page.getByText("CC-018 Stalled Opportunity")).toBeVisible();
 
   await page.goto("/dashboard");
-  const projectLink = page.locator(`a[href='/dashboard?project=${encodeURIComponent(cc018ProjectId)}']`);
+  const projectLink = page.getByRole("link", { name: "Open project", exact: true });
   await expect(projectLink).toBeVisible();
   await projectLink.click();
   await expect(page).toHaveURL(new RegExp(`project=${cc018ProjectId}`));

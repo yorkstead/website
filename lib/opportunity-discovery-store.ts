@@ -357,6 +357,16 @@ export const opportunityStore = {
     });
   },
 
+  async attentionActions() {
+    const result = await pool().query<{ id: string; business_name: string; industry: string; research_status: string; next_action: string; next_action_at: string }>(
+      "SELECT id,business_name,industry,research_status,next_action,next_action_at::text AS next_action_at FROM research_opportunities WHERE archived_at IS NULL AND next_action_at<=CURRENT_DATE AND btrim(next_action)<>'' ORDER BY next_action_at,id LIMIT 26",
+    );
+    return {
+      items: result.rows.slice(0, 25).map((row) => ({ ...row, id: String(row.id), next_action_at: String(row.next_action_at) })),
+      truncated: result.rows.length > 25,
+    };
+  },
+
   async reports() {
     const client = await pool().connect();
     try {
