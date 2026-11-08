@@ -154,7 +154,7 @@ dbTest("saved edits, deletion and restoration invalidate snapshots and require p
   await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'",[f.workspace]);
   expect(await read(f.sessions[0],f.projects[0])).toBeNull();
   await expect(prepare(f,"project",f.projects[0],5)).rejects.toThrow("access denied");
-  await pool.query("DELETE FROM workspaces WHERE id='primary'");
+  await setupPool.query("DELETE FROM workspaces WHERE id='primary'");
   expect(await read(f.sessions[0],f.projects[0])).toBeNull();
   await pool.query("INSERT INTO workspaces(id,data) VALUES ('primary',$1)",[f.workspace]);
   expect(await read(f.sessions[0],f.projects[0])).toBeNull();
@@ -294,7 +294,7 @@ dbTest("owner workflow refresh distinguishes invalidation, removed sources and r
   expect(view.selected?.preview).toBeNull();
   const invalid=view.selected!.records[0];
   await service.withdraw(headers,f.projects[0],fresh.id,invalid.revision);
-  await pool.query("DELETE FROM workspaces WHERE id='primary'");
+  await setupPool.query("DELETE FROM workspaces WHERE id='primary'");
   expect((await service.publishingWorkspace(headers,f.projects[0])).selected?.audit.length).toBeGreaterThan(0);
 });
 
