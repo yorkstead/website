@@ -9,22 +9,25 @@ import type { Workspace } from "@/lib/workspace";
 
 const dbTest = process.env.TEST_DATABASE_URL ? test : test.skip;
 const pool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
+// Runtime connections exercise application workflows; synthetic admin access
+// is used only to seed fixtures and simulate external lifecycle changes.
+const setupPool = new Pool({ connectionString: process.env.TEST_DATABASE_ADMIN_URL ?? process.env.TEST_DATABASE_URL });
 const authPool = new Pool({ connectionString: process.env.TEST_DATABASE_URL, options: "-c search_path=customer_auth" });
 const auth = betterAuth(createCustomerAuthOptions({ baseURL: "http://localhost:3100", databaseURL: process.env.TEST_DATABASE_URL ?? "postgresql://localhost/disposable", secret: "fictional-cc008-provider-secret-123456789012345" }, authPool));
 const owner = async () => ({ user: { id: "fictional-cc008-owner" } });
 const service = createClientProjectPublicationService(pool, owner);
 const read = createClientProjectReader(pool, headers => auth.api.getSession({ headers, query: { disableCookieCache: true } }));
 const headers = new Headers();
-afterAll(async () => { await pool.end(); await authPool.end(); });
+afterAll(async () => { await pool.end(); await setupPool.end(); await authPool.end(); });
 // Preserve the shared application's source fixture for existing CRM integration tests.
 let previousWorkspace: { data: unknown; updated_at: Date } | undefined;
 beforeEach(async () => {
-  if (process.env.TEST_DATABASE_URL) previousWorkspace = (await pool.query("SELECT data,updated_at FROM workspaces WHERE id='primary'")).rows[0];
+  if (process.env.TEST_DATABASE_URL) previousWorkspace = (await setupPool.query("SELECT data,updated_at FROM workspaces WHERE id='primary'")).rows[0];
 });
 afterEach(async () => {
   if (!process.env.TEST_DATABASE_URL) return;
-  if (previousWorkspace) await pool.query("INSERT INTO workspaces(id,data,updated_at) VALUES ('primary',$1,$2) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated_at=excluded.updated_at",[previousWorkspace.data,previousWorkspace.updated_at]);
-  else await pool.query("DELETE FROM workspaces WHERE id='primary'");
+  if (previousWorkspace) await setupPool.query("INSERT INTO workspaces(id,data,updated_at) VALUES ('primary',$1,$2) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated_at=excluded.updated_at",[previousWorkspace.data,previousWorkspace.updated_at]);
+  else await setupPool.query("DELETE FROM workspaces WHERE id='primary'");
 });
 
 
@@ -39,13 +42,13 @@ async function fixture() {
   const sessions: Headers[] = [];
   for (let i=0;i<2;i++) {
     const email = `${subjects[i]}@example.test`;
-    await pool.query("INSERT INTO customer_tenants(id,name,status) VALUES ($1,'Fictional CC008 tenant','active')", [tenants[i]]);
-    await pool.query("INSERT INTO customer_tenant_projects(tenant_id,project_id,status) VALUES ($1,$2,'active')", [tenants[i], projects[i]]);
-    await pool.query("INSERT INTO customer_identities(id,auth_provider,auth_subject,email,status) VALUES ($1,$2,$3,$4,'active')", [identities[i], customerAuthBoundary.identityProvider, subjects[i], email]);
-    await pool.query("INSERT INTO customer_tenant_memberships(tenant_id,identity_id,status) VALUES ($1,$2,'active')", [tenants[i],identities[i]]);
-    await pool.query("INSERT INTO customer_project_grants(tenant_id,project_id,identity_id,status) VALUES ($1,$2,$3,'active')", [tenants[i],projects[i],identities[i]]);
-    await pool.query('INSERT INTO customer_auth."user"(id,name,email,"emailVerified") VALUES ($1,\'Fictional CC008 customer\',$2,true)', [subjects[i],email]);
-    await pool.query('INSERT INTO customer_auth."account"(id,"userId","accountId","providerId",password) VALUES ($1,$1,$1,\'credential\',$2)', [subjects[i],hashed]);
+    await setupPool.query("INSERT INTO customer_tenants(id,name,status) VALUES ($1,'Fictional CC008 tenant','active')", [tenants[i]]);
+    await setupPool.query("INSERT INTO customer_tenant_projects(tenant_id,project_id,status) VALUES ($1,$2,'active')", [tenants[i], projects[i]]);
+    await setupPool.query("INSERT INTO customer_identities(id,auth_provider,auth_subject,email,status) VALUES ($1,$2,$3,$4,'active')", [identities[i], customerAuthBoundary.identityProvider, subjects[i], email]);
+    await setupPool.query("INSERT INTO customer_tenant_memberships(tenant_id,identity_id,status) VALUES ($1,$2,'active')", [tenants[i],identities[i]]);
+    await setupPool.query("INSERT INTO customer_project_grants(tenant_id,project_id,identity_id,status) VALUES ($1,$2,$3,'active')", [tenants[i],projects[i],identities[i]]);
+    await setupPool.query('INSERT INTO customer_auth."user"(id,name,email,"emailVerified") VALUES ($1,\'Fictional CC008 customer\',$2,true)', [subjects[i],email]);
+    await setupPool.query('INSERT INTO customer_auth."account"(id,"userId","accountId","providerId",password) VALUES ($1,$1,$1,\'credential\',$2)', [subjects[i],hashed]);
     const response = await auth.api.signInEmail({ body: { email,password }, asResponse: true });
     expect(response.status).toBe(200);
     sessions.push(new Headers({ cookie: response.headers.getSetCookie().map(c => c.split(";")[0]).join("; ") }));
@@ -55,7 +58,7 @@ async function fixture() {
     deliverables: [{ id: "deliverable", title: "Reviewed deliverable",description: "Optional description",status: "in_progress" }],
     activity: [{ id: "activity", message: "PRIVATE ACTIVITY",createdAt: "2026-10-01T12:00:00Z" }], decisions: [{ id: "decision",title: "PRIVATE DECISION",notes: "PRIVATE DECISION NOTES",status: "accepted" }], links: [{ id: "link",title: "PRIVATE FILE",kind: "document",url: "https://private.example.test" }],payment: { status: "paid",reference: "PRIVATE PAYMENT",updatedAt: "2026-10-01T12:00:00Z" },
   } })), tasks: [],activity: [],notes: [{ id: "update",projectId: projects[0],type: "Update",content: "Reviewed customer update",createdAt: "2026-10-01T12:00:00Z" },{ id: "private-note",projectId: projects[0],type: "Decision",content: "PRIVATE DECISION",createdAt: "2026-10-01T12:00:00Z" }] };
-  await pool.query("INSERT INTO workspaces(id,data) VALUES ('primary',$1) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated_at=now()", [workspace]);
+  await setupPool.query("INSERT INTO workspaces(id,data) VALUES ('primary',$1) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated_at=now()", [workspace]);
   return { tenants,projects,identities,subjects,sessions,workspace };
 }
 async function prepare(f: Awaited<ReturnType<typeof fixture>>, kind: PublicationRecord["kind"], sourceId = kind === "project" ? f.projects[0] : kind, expectedRevision = 0) {
@@ -96,7 +99,7 @@ dbTest("actual Better Auth session receives only opt-in approved project/childre
   expect(await read(f.sessions[1],f.projects[0])).toBeNull();
   expect(await read(f.sessions[0],f.projects[1])).toBeNull();
   // Membership alone never grants a second, already-published project.
-  await pool.query("INSERT INTO customer_tenant_memberships(tenant_id,identity_id,status) VALUES ($1,$2,'active')",[f.tenants[1],f.identities[0]]);
+  await setupPool.query("INSERT INTO customer_tenant_memberships(tenant_id,identity_id,status) VALUES ($1,$2,'active')",[f.tenants[1],f.identities[0]]);
   expect(await read(f.sessions[0],f.projects[1])).toBeNull();
   expect(await read(new Headers({ "x-user-id": f.subjects[0] }),f.projects[0])).toBeNull();
   await expect(prepare(f,"update","private-note")).rejects.toThrow("access denied");
@@ -113,14 +116,14 @@ dbTest("withdrawals, suspended lifecycle, grant/session revocation and owner imp
   await service.withdraw(headers,f.projects[0],child.id,child.revision);
   expect((await read(f.sessions[0],f.projects[0]))!.milestones).toHaveLength(0);
   for (const [table,column,value] of [["customer_identities","id",f.identities[0]],["customer_tenants","id",f.tenants[0]],["customer_tenant_memberships","identity_id",f.identities[0]],["customer_tenant_projects","project_id",f.projects[0]],["customer_project_grants","project_id",f.projects[0]]]) {
-    await pool.query(`UPDATE ${table} SET status='disabled' WHERE ${column}=$1`,[value]);
+    await setupPool.query(`UPDATE ${table} SET status='disabled' WHERE ${column}=$1`,[value]);
     expect(await read(f.sessions[0],f.projects[0])).toBeNull();
     await expect(prepare(f,"milestone")).rejects.toThrow();
-    await pool.query(`UPDATE ${table} SET status='active' WHERE ${column}=$1`,[value]);
+    await setupPool.query(`UPDATE ${table} SET status='active' WHERE ${column}=$1`,[value]);
   }
-  await pool.query("UPDATE customer_project_grants SET status='revoked' WHERE project_id=$1",[f.projects[0]]);
+  await setupPool.query("UPDATE customer_project_grants SET status='revoked' WHERE project_id=$1",[f.projects[0]]);
   expect(await read(f.sessions[0],f.projects[0])).toBeNull();
-  await pool.query("UPDATE customer_project_grants SET status='active' WHERE project_id=$1",[f.projects[0]]);
+  await setupPool.query("UPDATE customer_project_grants SET status='active' WHERE project_id=$1",[f.projects[0]]);
   await service.withdraw(headers,f.projects[0],overview.id,overview.revision);
   expect(await read(f.sessions[0],f.projects[0])).toBeNull();
   const denied = createClientProjectPublicationService(pool,async () => null);
@@ -151,7 +154,7 @@ dbTest("saved edits, deletion and restoration invalidate snapshots and require p
   await pool.query("UPDATE workspaces SET data=$1 WHERE id='primary'",[f.workspace]);
   expect(await read(f.sessions[0],f.projects[0])).toBeNull();
   await expect(prepare(f,"project",f.projects[0],5)).rejects.toThrow("access denied");
-  await pool.query("DELETE FROM workspaces WHERE id='primary'");
+  await setupPool.query("DELETE FROM workspaces WHERE id='primary'");
   expect(await read(f.sessions[0],f.projects[0])).toBeNull();
   await pool.query("INSERT INTO workspaces(id,data) VALUES ('primary',$1)",[f.workspace]);
   expect(await read(f.sessions[0],f.projects[0])).toBeNull();
@@ -169,8 +172,10 @@ dbTest("competing owner decisions serialize, audit is immutable and failed opera
   const staged = await prepare(f,"project",f.projects[0],current.revision);
   const invalidOwner = createClientProjectPublicationService(pool,async () => ({ user: { id: " " } }));
   await expect(invalidOwner.approve(headers,f.projects[0],staged.id,staged.revision)).rejects.toThrow("access denied");
-  await expect(pool.query("UPDATE client_project_publication_audit SET actor_id='forged' WHERE project_id=$1",[f.projects[0]])).rejects.toThrow("append-only");
-  await expect(pool.query("DELETE FROM client_project_publications WHERE project_id=$1",[f.projects[0]])).rejects.toThrow("retained");
+  // The runtime role may be stopped by the ACL before the append-only trigger
+  // runs; either boundary must reject the attempted write.
+  await expect(pool.query("UPDATE client_project_publication_audit SET actor_id='forged' WHERE project_id=$1",[f.projects[0]])).rejects.toThrow(/append-only|permission denied/i);
+  await expect(pool.query("DELETE FROM client_project_publications WHERE project_id=$1",[f.projects[0]])).rejects.toThrow(/retained|permission denied/i);
   await expect(pool.query("UPDATE client_project_publications SET state='approved' WHERE id=$1",[staged.id])).rejects.toThrow("owner required");
   history = await service.inspect(headers,f.projects[0]);
   expect(history.records[0].state).toBe('draft');
@@ -197,11 +202,11 @@ dbTest("archived mappings and suspended tenant/membership deny publication and p
   const f = await fixture();
   await published(f);
   for (const [table,column,value,status] of [["customer_tenants","id",f.tenants[0],"suspended"],["customer_tenant_memberships","identity_id",f.identities[0],"suspended"],["customer_tenant_projects","project_id",f.projects[0],"archived"]]) {
-    await pool.query(`UPDATE ${table} SET status=$2 WHERE ${column}=$1`,[value,status]);
+    await setupPool.query(`UPDATE ${table} SET status=$2 WHERE ${column}=$1`,[value,status]);
     expect(await read(f.sessions[0],f.projects[0])).toBeNull();
     // Owner preparation is scoped to active tenant/project, independent of any one customer membership.
     if (table !== "customer_tenant_memberships") await expect(prepare(f,"deliverable")).rejects.toThrow("access denied");
-    await pool.query(`UPDATE ${table} SET status='active' WHERE ${column}=$1`,[value]);
+    await setupPool.query(`UPDATE ${table} SET status='active' WHERE ${column}=$1`,[value]);
   }
 });
 
@@ -289,7 +294,7 @@ dbTest("owner workflow refresh distinguishes invalidation, removed sources and r
   expect(view.selected?.preview).toBeNull();
   const invalid=view.selected!.records[0];
   await service.withdraw(headers,f.projects[0],fresh.id,invalid.revision);
-  await pool.query("DELETE FROM workspaces WHERE id='primary'");
+  await setupPool.query("DELETE FROM workspaces WHERE id='primary'");
   expect((await service.publishingWorkspace(headers,f.projects[0])).selected?.audit.length).toBeGreaterThan(0);
 });
 
@@ -305,8 +310,8 @@ dbTest("owner workflow requires verified owner and explicit project selection; i
   expect(view.selected?.canPublish).toBe(false);
   expect(view.selected?.preview).toBeNull();
   expect(view.selected?.records).toHaveLength(1);
-  await pool.query("DELETE FROM customer_tenant_projects WHERE project_id=$1",[f.projects[1]]);
-  expect((await service.publishingWorkspace(headers,f.projects[1])).selected?.reason).toContain('No tenant/project mapping');
+  await pool.query("UPDATE customer_tenant_projects SET status='archived' WHERE project_id=$1",[f.projects[1]]);
+  expect((await service.publishingWorkspace(headers,f.projects[1])).selected?.reason).toContain('mapping is inactive');
 });
 
 
