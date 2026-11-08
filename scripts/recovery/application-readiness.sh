@@ -217,27 +217,32 @@ grant_audit="$(docker exec -e PGPASSWORD="$admin_password" "$target_container" p
 sequence_audit="$(docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -At -v ON_ERROR_STOP=1 \
   -U "$admin_user" -d "$source_db" -c "SELECT NOT EXISTS (SELECT 1 FROM pg_sequences s WHERE s.schemaname IN ('public','customer_auth') AND (has_sequence_privilege('${app_user}',format('%I.%I',s.schemaname,s.sequencename),'SELECT') OR (has_sequence_privilege('${app_user}',format('%I.%I',s.schemaname,s.sequencename),'USAGE') AND NOT (s.schemaname='public' AND s.sequencename IN ('workspace_snapshots_id_seq','contact_inquiries_id_seq','conversion_events_id_seq','opportunity_history_id_seq','portal_release_evidence_id_seq','client_project_publication_audit_id_seq','client_access_admin_audit_id_seq','document_audit_events_id_seq','portal_release_audit_id_seq','system_directory_audit_id_seq','customer_mail_audit_id_seq'))))) AND NOT EXISTS (SELECT 1 FROM unnest(ARRAY['workspace_snapshots_id_seq','contact_inquiries_id_seq','conversion_events_id_seq','opportunity_history_id_seq','portal_release_evidence_id_seq','client_project_publication_audit_id_seq','client_access_admin_audit_id_seq','document_audit_events_id_seq','portal_release_audit_id_seq','system_directory_audit_id_seq','customer_mail_audit_id_seq']) s(name) WHERE NOT has_sequence_privilege('${app_user}',format('public.%I',s.name),'USAGE'))")"
 [[ "$sequence_audit" == t ]] || fail "synthetic application sequence privileges differ from the application INSERT allowlist"
+grant_option_audit="$(docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -At -v ON_ERROR_STOP=1 \
+  -U "$admin_user" -d "$source_db" -c "SELECT NOT EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN LATERAL unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']::text[]) p(priv) WHERE c.relkind IN ('r','p','v','m') AND n.nspname IN ('public','customer_auth') AND has_table_privilege('${app_user}',c.oid,p.priv || ' WITH GRANT OPTION')) AND NOT EXISTS (SELECT 1 FROM pg_sequences s CROSS JOIN LATERAL unnest(ARRAY['USAGE','SELECT','UPDATE']::text[]) p(priv) WHERE s.schemaname IN ('public','customer_auth') AND has_sequence_privilege('${app_user}',format('%I.%I',s.schemaname,s.sequencename),p.priv || ' WITH GRANT OPTION'))")"
+[[ "$grant_option_audit" == t ]] || fail "synthetic application role has an unexpected grant option"
 
 probe_sequence="ys_sys_001_runtime_denied_${run_tag}"
 docker exec -e PGPASSWORD="$admin_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$admin_user" -d "$source_db" \
   -c "CREATE SEQUENCE public.${probe_sequence}" >/dev/null 2>&1 || fail "synthetic sequence denial probe setup failed"
-for control in create_schema alter_schema create_role self_add_insert set_admin_role; do
+for control in create_schema alter_schema create_role set_admin_role; do
   case "$control" in
     create_schema) operation="BEGIN; CREATE SCHEMA ys_sys_001_runtime_schema_probe; ROLLBACK" ;;
     alter_schema) operation="BEGIN; ALTER SCHEMA public RENAME TO ys_sys_001_runtime_schema_probe; ROLLBACK" ;;
     create_role) operation="BEGIN; CREATE ROLE ys_sys_001_runtime_role_probe; ROLLBACK" ;;
-    self_add_insert) operation="BEGIN; GRANT INSERT ON public.application_migrations TO ${app_user}; ROLLBACK" ;;
     set_admin_role) operation="BEGIN; SET ROLE ${admin_user}; ROLLBACK" ;;
   esac
   if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$app_user" -d "$source_db" -c "$operation" >/dev/null 2>&1; then
     fail "synthetic application role passed the denied ${control} privilege check"
   fi
 done
+self_grant_result="$(docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -qAt -v ON_ERROR_STOP=1 \
+  -U "$app_user" -d "$source_db" -c "BEGIN; GRANT INSERT ON public.application_migrations TO ${app_user}; SELECT has_table_privilege(current_user, 'public.application_migrations', 'INSERT'); ROLLBACK" 2>/dev/null || true)"
+[[ "$self_grant_result" != t ]] || fail "synthetic application role granted itself INSERT on the migration ledger"
 for operation in \
-  "INSERT INTO public.application_migrations(version,name,checksum) VALUES('9999','privilege_probe',repeat('0',64))" \
-  "UPDATE public.application_migrations SET name=name WHERE false" \
-  "DELETE FROM public.application_migrations WHERE false" \
-  "TRUNCATE public.application_migrations"; do
+  "BEGIN; INSERT INTO public.application_migrations(version,name,checksum) VALUES('9999','privilege_probe',repeat('0',64)); ROLLBACK" \
+  "BEGIN; UPDATE public.application_migrations SET name=name WHERE false; ROLLBACK" \
+  "BEGIN; DELETE FROM public.application_migrations WHERE false; ROLLBACK" \
+  "BEGIN; TRUNCATE public.application_migrations; ROLLBACK"; do
   if docker exec -e PGPASSWORD="$app_password" "$target_container" psql -X -v ON_ERROR_STOP=1 -U "$app_user" -d "$source_db" -c "$operation" >/dev/null 2>&1; then
     fail "synthetic application role unexpectedly modified migration history"
   fi
