@@ -169,8 +169,10 @@ dbTest("competing owner decisions serialize, audit is immutable and failed opera
   const staged = await prepare(f,"project",f.projects[0],current.revision);
   const invalidOwner = createClientProjectPublicationService(pool,async () => ({ user: { id: " " } }));
   await expect(invalidOwner.approve(headers,f.projects[0],staged.id,staged.revision)).rejects.toThrow("access denied");
-  await expect(pool.query("UPDATE client_project_publication_audit SET actor_id='forged' WHERE project_id=$1",[f.projects[0]])).rejects.toThrow("append-only");
-  await expect(pool.query("DELETE FROM client_project_publications WHERE project_id=$1",[f.projects[0]])).rejects.toThrow("retained");
+  // The runtime role may be stopped by the ACL before the append-only trigger
+  // runs; either boundary must reject the attempted write.
+  await expect(pool.query("UPDATE client_project_publication_audit SET actor_id='forged' WHERE project_id=$1",[f.projects[0]])).rejects.toThrow(/append-only|permission denied/i);
+  await expect(pool.query("DELETE FROM client_project_publications WHERE project_id=$1",[f.projects[0]])).rejects.toThrow(/retained|permission denied/i);
   await expect(pool.query("UPDATE client_project_publications SET state='approved' WHERE id=$1",[staged.id])).rejects.toThrow("owner required");
   history = await service.inspect(headers,f.projects[0]);
   expect(history.records[0].state).toBe('draft');
