@@ -97,7 +97,7 @@ test("authenticated unified attention reads canonical CRM and Hub records withou
 
   const attention = page.getByRole("region", { name: "Unified attention" });
   await expect(attention.getByText("CC-027 read-only Google follow-up")).toBeVisible();
-  await expect(attention.getByText("Website CRM", { exact: true })).toBeVisible();
+  await expect(attention.getByText("Website CRM", { exact: true }).first()).toBeVisible();
   await expect(attention.getByText("Opportunity Discovery", { exact: true })).toBeVisible();
   const crmAction = attention.locator("li").filter({ hasText: cc018Company }).first();
   await expect(crmAction).toContainText(/new|contacted|qualified|proposal/);
@@ -151,7 +151,7 @@ test("owner overview prioritizes persisted work and supports exact links and act
   await expect(page.getByText("CC-018 Stalled Opportunity")).toBeVisible();
 
   await page.goto("/dashboard");
-  const projectLink = page.locator(`a[href='/dashboard?project=${encodeURIComponent(cc018ProjectId)}']`);
+  const projectLink = page.getByRole("link", { name: "Open project", exact: true });
   await expect(projectLink).toBeVisible();
   await projectLink.click();
   await expect(page).toHaveURL(new RegExp(`project=${cc018ProjectId}`));
