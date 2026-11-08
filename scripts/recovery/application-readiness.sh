@@ -452,6 +452,7 @@ env -i PATH="$PATH" HOME="$HOME" NODE_ENV=test TEST_DATABASE_URL="$target_url" \
   >"$workspace/tenant-tests.log" 2>&1 || {
     failed_test_line="$(python3 - "$workspace/tenant-tests.junit.xml" <<'PY'
 import sys
+import re
 import xml.etree.ElementTree as ET
 
 try:
@@ -461,12 +462,14 @@ except Exception:
     raise SystemExit
 
 lines = [
-    case.get("line", "")
+    re.findall(r"tests/client-project-data-database\.test\.ts:(\d+)", "".join(case.find("failure").itertext()))
+    or [case.get("line", "")]
     for case in root.iter("testcase")
     if case.find("failure") is not None and case.get("file") == "tests/client-project-data-database.test.ts"
 ]
-if lines and all(line.isdigit() for line in lines[:5]):
-    print(",".join(lines[:5]))
+flat = list(dict.fromkeys(line for group in lines for line in group))
+if flat and all(line.isdigit() for line in flat[:5]):
+    print(",".join(flat[:5]))
 else:
     print("unavailable")
 PY
