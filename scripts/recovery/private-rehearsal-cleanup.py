@@ -139,9 +139,9 @@ def cleanup_workspace(workspace: pathlib.Path, artifact: pathlib.Path) -> None:
     expected = json.loads(expected_path.read_text(encoding="utf-8"))
     if artifact_identity(artifact) != expected:
         raise CleanupError("approved encrypted artifact changed; private workspace retained")
-    # Preserve sanitized and private diagnostic evidence. Only ephemeral plaintext,
-    # generated credentials, and TLS key material may be removed here.
-    for name in ("plaintext", "secrets", "tls", "app-source"):
+    # Preserve diagnostics. Only target-scoped plaintext, credentials, TLS, and
+    # extracted build contexts may be removed here.
+    for name in ("plaintext", "secrets", "tls", "app-source", "runner-source"):
         candidate = workspace / name
         if candidate.exists():
             if candidate.is_symlink() or candidate.resolve().parent != workspace:

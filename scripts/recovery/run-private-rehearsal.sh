@@ -10,6 +10,9 @@ config=$(realpath -e -- "$1")
 script_path=$(realpath -e -- "$0")
 # Trusted owner-authored config; never source an archive-provided file.
 source "$config"
+set -Eeuo pipefail
+set +x
+umask 077
 for key in YS_PRIVATE_DOCKER_CONTEXT YS_PRIVATE_WORKSPACE_ROOT YS_PRIVATE_ARTIFACT YS_PRIVATE_AGE_IDENTITY YS_PRIVATE_POSTGRES_IMAGE YS_PRIVATE_NGINX_IMAGE YS_PRIVATE_APP_REPOSITORY YS_PRIVATE_APP_REVISION YS_PRIVATE_OWNER_CONFIRM; do
   [[ -n ${!key:-} ]] || fail "missing config value: $key"
 done
@@ -32,6 +35,12 @@ for tool in docker age git openssl python3 sha256sum bun realpath; do command -v
 docker --context "$YS_PRIVATE_DOCKER_CONTEXT" image inspect "$YS_PRIVATE_POSTGRES_IMAGE" >/dev/null 2>&1 || fail 'pinned PostgreSQL image must already be present locally'
 docker --context "$YS_PRIVATE_DOCKER_CONTEXT" image inspect "$YS_PRIVATE_NGINX_IMAGE" >/dev/null 2>&1 || fail 'pinned proxy image must already be present locally'
 repo=$(git -C "$(dirname "$script_path")/../.." rev-parse --show-toplevel)
+repo=$(realpath -e -- "$repo")
+case "$config/" in "$repo/"*) fail 'private rehearsal config must remain outside the repository' ;; esac
+YS_PRIVATE_WORKSPACE_ROOT=$(realpath -e -- "$YS_PRIVATE_WORKSPACE_ROOT")
+case "$YS_PRIVATE_WORKSPACE_ROOT/" in "$repo/"*) fail 'private workspace must remain outside the repository' ;; esac
+[[ -z $(git -C "$repo" status --porcelain --untracked-files=all) ]] || fail 'reviewed recovery worktree must be clean before the run'
+recovery_revision=$(git -C "$repo" rev-parse HEAD)
 git -C "$YS_PRIVATE_APP_REPOSITORY" cat-file -e "$YS_PRIVATE_APP_REVISION^{commit}" 2>/dev/null || fail 'pinned app commit is unavailable locally'
 app_remote=$(git -C "$YS_PRIVATE_APP_REPOSITORY" remote get-url origin 2>/dev/null || true)
 [[ $app_remote == https://github.com/yorkstead/website.git || $app_remote == git@github.com:yorkstead/website.git ]] || fail 'application repository origin is not the approved Yorkstead website'
@@ -54,14 +63,14 @@ admin_password=$(openssl rand -hex 32); setup_password=$(openssl rand -hex 32); 
 owner_password=$(openssl rand -hex 24); auth_secret=$(openssl rand -hex 32)
 for secret in "$admin_password" "$setup_password" "$runtime_password" "$owner_password" "$auth_secret"; do printf '::add-mask::%s\n' "$secret"; done
 workspace=$(mktemp -d "$YS_PRIVATE_WORKSPACE_ROOT/ys-sys-001-${target_id}.XXXXXXXX"); chmod 700 "$workspace"
-mkdir -m 700 "$workspace/plaintext" "$workspace/secrets" "$workspace/tls" "$workspace/app-source"
-trap 'status=$?; rm -rf -- "$workspace/plaintext" "$workspace/secrets" "$workspace/tls" "$workspace/app-source"; exit "$status"' EXIT
+mkdir -m 700 "$workspace/plaintext" "$workspace/secrets" "$workspace/tls" "$workspace/app-source" "$workspace/runner-source"
+trap 'status=$?; rm -rf -- "$workspace/plaintext" "$workspace/secrets" "$workspace/tls" "$workspace/app-source" "$workspace/runner-source"; exit "$status"' EXIT
+printf 'Private rehearsal workspace: %s\n' "$workspace"
 
 state="$workspace/rto.json"
 report="$workspace/verification.json"
-cleanup_started=0
+artifact_recorded=0
 ready=0
-cleanup_ok=0
 artifact_sha_expected=${YS_PRIVATE_ARTIFACT_SHA256:-}
 [[ $artifact_sha_expected =~ ^[a-f0-9]{64}$ ]] || fail 'owner-approved artifact SHA-256 is required in the private config'
 [[ -n ${YS_PRIVATE_NGINX_IMAGE:-} && $YS_PRIVATE_NGINX_IMAGE =~ ^nginx:alpine@sha256:[a-f0-9]{64}$ ]] || fail 'pinned TLS proxy image digest is required'
@@ -69,6 +78,10 @@ artifact_sha_expected=${YS_PRIVATE_ARTIFACT_SHA256:-}
 # T0 precedes hashing or reading any artifact bytes.
 python3 "$repo/scripts/recovery/private-rehearsal-clock.py" start --state "$state" >"$workspace/t0.json"
 [[ -f $YS_PRIVATE_ARTIFACT && ! -L $YS_PRIVATE_ARTIFACT && -f $YS_PRIVATE_AGE_IDENTITY && ! -L $YS_PRIVATE_AGE_IDENTITY ]] || fail 'artifact and identity must be regular local files'
+YS_PRIVATE_ARTIFACT=$(realpath -e -- "$YS_PRIVATE_ARTIFACT")
+YS_PRIVATE_AGE_IDENTITY=$(realpath -e -- "$YS_PRIVATE_AGE_IDENTITY")
+case "$YS_PRIVATE_ARTIFACT/" in "$repo/"*) fail 'approved encrypted artifact must remain outside the repository' ;; esac
+case "$YS_PRIVATE_AGE_IDENTITY/" in "$repo/"*) fail 'age identity must remain outside the repository' ;; esac
 for path in "$YS_PRIVATE_ARTIFACT" "$YS_PRIVATE_AGE_IDENTITY"; do
   [[ $(stat -c '%u' "$path") == "$(id -u)" ]] || fail 'artifact and identity must be owned by the operator'
   [[ $(stat -c '%a' "$path") == 400 || $(stat -c '%a' "$path") == 600 ]] || fail 'artifact and identity must be owner-only (mode 0400 or 0600)'
@@ -76,7 +89,7 @@ done
 artifact_before=$(sha256sum -- "$YS_PRIVATE_ARTIFACT" | cut -d' ' -f1)
 [[ $artifact_before == "$artifact_sha_expected" ]] || fail 'artifact fingerprint differs from owner-approved local fingerprint'
 python3 "$repo/scripts/recovery/private-rehearsal-cleanup.py" record-artifact --target-id "$target_id" --workspace "$workspace" --artifact "$YS_PRIVATE_ARTIFACT" >/dev/null
-printf 'Private rehearsal target: %s\nPrivate workspace: %s\n' "$target_id" "$workspace"
+artifact_recorded=1
 
 log_step() { printf '%s\n' "$1" >>"$workspace/private-steps.log"; }
 docker_target() { docker --context "$YS_PRIVATE_DOCKER_CONTEXT" "$@"; }
@@ -91,40 +104,44 @@ unrelated_resource_fingerprint() {
 unrelated_before=''
 cleanup() {
   local status=$?
+  local execution_status=$status cleanup_failure=0
   trap - EXIT INT TERM HUP
-  if (( cleanup_started )); then
+  if (( artifact_recorded )); then
     if [[ $fault == cleanup ]]; then
       python3 "$repo/scripts/recovery/private-rehearsal-cleanup.py" cleanup --target-id "$target_id" --workspace "$workspace" --artifact "$YS_PRIVATE_ARTIFACT" --docker-context '__fault-injected-context-mismatch__' >>"$workspace/cleanup.log" 2>&1 || true
-      status=1
+      cleanup_failure=1
       printf '%s\n' 'Synthetic cleanup fault injected; target retained for explicit scoped recovery.' >>"$workspace/cleanup.log"
     elif python3 "$repo/scripts/recovery/private-rehearsal-cleanup.py" cleanup --target-id "$target_id" --workspace "$workspace" --artifact "$YS_PRIVATE_ARTIFACT" --docker-context "$YS_PRIVATE_DOCKER_CONTEXT" >>"$workspace/cleanup.log" 2>&1; then
-      cleanup_ok=1
-      if (( ready )); then
-        clock_cleanup=$(python3 "$repo/scripts/recovery/private-rehearsal-clock.py" cleanup-verified --state "$state") || status=1
-        printf '%s\n' "$clock_cleanup" >>"$workspace/cleanup.log"
-        python3 - "$report" "$clock_cleanup" <<'PY' || status=1
-import json, pathlib, sys
-path = pathlib.Path(sys.argv[1]); report = json.loads(path.read_text())
-report["timing"]["cleanup"] = json.loads(sys.argv[2]); report["cleanup"] = "VERIFIED"
-path.write_text(json.dumps(report, separators=(",", ":")) + "\n"); path.chmod(0o600)
-PY
-      fi
+      clock_cleanup=$(python3 "$repo/scripts/recovery/private-rehearsal-clock.py" cleanup-verified --state "$state") || cleanup_failure=1
+      printf '%s\n' "$clock_cleanup" >>"$workspace/cleanup.log"
     else
       printf '%s\n' 'Target-scoped cleanup failed; preserve workspace and inspect exact target labels.' >>"$workspace/cleanup.log"
-      status=1
+      cleanup_failure=1
     fi
     if [[ -n $unrelated_before ]]; then
-      unrelated_after=$(unrelated_resource_fingerprint) || status=1
-      [[ $unrelated_before == "$unrelated_after" ]] || { printf '%s\n' 'Unrelated Docker resource inventory changed during scoped cleanup.' >>"$workspace/cleanup.log"; status=1; }
+      unrelated_after=$(unrelated_resource_fingerprint) || cleanup_failure=1
+      [[ $unrelated_before == "$unrelated_after" ]] || { printf '%s\n' 'Unrelated Docker resource inventory changed during scoped cleanup.' >>"$workspace/cleanup.log"; cleanup_failure=1; }
     fi
-    if (( status != 0 )) && [[ -f $report ]]; then
-      python3 - "$report" <<'PY' || true
+    if [[ -f $report ]]; then
+      python3 - "$report" "$execution_status" "$cleanup_failure" "$workspace/cleanup.log" <<'PY' || cleanup_failure=1
 import json, pathlib, sys
-path=pathlib.Path(sys.argv[1]); report=json.loads(path.read_text()); report["cleanup"]="FAILED"; report["result"]="FAIL_CLEANUP"; path.write_text(json.dumps(report,separators=(",",":"))+"\n"); path.chmod(0o600)
+path=pathlib.Path(sys.argv[1]); report=json.loads(path.read_text())
+execution_failed=int(sys.argv[2]) != 0; cleanup_failed=int(sys.argv[3]) != 0
+if not cleanup_failed:
+    log=pathlib.Path(sys.argv[4]).read_text() if pathlib.Path(sys.argv[4]).exists() else ""
+    for line in log.splitlines():
+        try:
+            item=json.loads(line)
+            if item.get("cleanup") == "VERIFIED": report.setdefault("timing", {})["cleanup"] = item
+        except (ValueError, TypeError): pass
+report["cleanup"]="FAILED" if cleanup_failed else "VERIFIED"
+report["result"]="FAIL_READINESS_AND_CLEANUP" if execution_failed and cleanup_failed else ("FAIL_READINESS" if execution_failed else ("FAIL_CLEANUP" if cleanup_failed else "PASS"))
+path.write_text(json.dumps(report,separators=(",",":"))+"\n"); path.chmod(0o600)
 PY
     fi
+    if (( cleanup_failure != 0 )); then status=1; fi
   else
-    rm -rf -- "$workspace/plaintext" "$workspace/secrets" "$workspace/tls" "$workspace/app-source"
+    rm -rf -- "$workspace/plaintext" "$workspace/secrets" "$workspace/tls" "$workspace/app-source" "$workspace/runner-source"
   fi
   if (( status != 0 )); then printf 'Private rehearsal failed; diagnostics retained in private workspace: %s\n' "$workspace" >&2; fi
   exit "$status"
@@ -132,9 +149,10 @@ PY
 on_signal() { printf 'interrupted\n' >>"$workspace/private-steps.log"; exit 130; }
 trap cleanup EXIT
 trap on_signal INT TERM HUP
+printf '{"schemaVersion":1,"result":"RUNNING","target":"disposable","recoveryCode":"%s","cleanup":"PENDING"}\n' "$recovery_revision" >"$report"
+chmod 600 "$report"
 
 # All resources have both an exact target name and the required target label.
-cleanup_started=1
 unrelated_before=$(unrelated_resource_fingerprint) || fail 'could not snapshot unrelated Docker resources'
 docker_target network create --internal --label "ys-sys-001.target=$target_id" "$net" >/dev/null
 docker_target volume create --label "ys-sys-001.target=$target_id" "$vol" >/dev/null
@@ -174,10 +192,23 @@ SQL
 if [[ $fault == interrupt-int ]]; then kill -INT "$$"; fi
 if [[ $fault == interrupt-term ]]; then kill -TERM "$$"; fi
 
+# Resolve and build the application and browser images before any archive
+# bytes are decrypted or restored into the target database.
+git -C "$YS_PRIVATE_APP_REPOSITORY" archive --format=tar "$YS_PRIVATE_APP_REVISION" | tar -xf - -C "$workspace/app-source"
+docker_target build --label "ys-sys-001.target=$target_id" --tag "ys-sys-001-rehearsal-app:$target_id" \
+  --file "$repo/scripts/recovery/application.Dockerfile" "$workspace/app-source" >"$workspace/app-build.private.log" 2>&1 || fail 'pinned application image build failed'
+mkdir -p "$workspace/runner-source/scripts/recovery" "$workspace/runner-source/tests/e2e-ys-sys-001-private-recovery"
+cp -- "$repo/package.json" "$repo/bun.lock" "$workspace/runner-source/"
+cp -- "$repo/scripts/recovery/private-rehearsal.playwright.config.ts" "$workspace/runner-source/scripts/recovery/"
+cp -- "$repo/tests/e2e-ys-sys-001-private-recovery/private-recovery.e2e.ts" "$workspace/runner-source/tests/e2e-ys-sys-001-private-recovery/"
+docker_target build --label "ys-sys-001.target=$target_id" --tag "ys-sys-001-rehearsal-runner:$target_id" \
+  --file "$repo/scripts/recovery/private-rehearsal-runner.Dockerfile" "$workspace/runner-source" >"$workspace/runner-build.private.log" 2>&1 || fail 'private Playwright runner image build failed'
+
 plaintext="$workspace/plaintext/restored.dump"
 age -d -i "$YS_PRIVATE_AGE_IDENTITY" -o "$plaintext" "$YS_PRIVATE_ARTIFACT" 2>"$workspace/decrypt.private.log" || fail 'local artifact decryption failed'
 chmod 600 "$plaintext"
 [[ -s $plaintext ]] || fail 'decrypted archive is empty'
+docker_target exec -i "$db_container" pg_restore --list <"$plaintext" >"$workspace/archive-list.private.log" 2>&1 || fail 'decrypted artifact is not a valid PostgreSQL custom-format archive'
 if [[ $fault == restore ]]; then printf 'synthetic invalid archive fault\n' >"$plaintext"; fi
 docker_target exec -i -e PGPASSFILE=/run/secrets/setup-pgpass "$db_container" pg_restore --no-owner --no-acl --exit-on-error \
   -h 127.0.0.1 -U "$setup_role" -d "$db_name" <"$plaintext" >"$workspace/restore.private.log" 2>&1 || fail 'normalized restore failed'
@@ -196,7 +227,6 @@ printf '%s\n' \
   "YS_APP_RECOVERY_RUNTIME_PASSWORD=$runtime_password" \
   "YS_APP_RECOVERY_OWNER_PASSWORD=$owner_password" \
   'OWNER_EMAIL=owner@recovery.test' \
-  "BETTER_AUTH_SECRET=$auth_secret" \
   'BETTER_AUTH_URL=https://recovery.test' \
   'PASSKEY_RP_ID=recovery.test' >"$prep_env"
 chmod 600 "$prep_env"
@@ -208,7 +238,6 @@ inject_fault preparation
 run_private_bun scripts/recovery/prepare-private-rehearsal.ts >"$workspace/preparation.private.log" 2>&1 || fail 'synthetic owner, tenant, RLS, or runtime role preparation failed'
 run_private_bun scripts/recovery/verify-private-auth-synthetic.ts >"$workspace/auth-check.private.log" 2>&1 || fail 'synthetic Better Auth preparation verification failed'
 log_step 'restore-and-runtime-preparation-passed'
-printf '{"status":"RUNNING","target":"%s"}\n' "$target_id" >"$report"
 
 # Snapshot only the reviewed business relations; Better Auth session activity is
 # deliberately outside this comparison. Data and digest remain private.
@@ -220,14 +249,6 @@ snapshot_business_data() {
   [[ -s $output ]] || fail 'business-data integrity snapshot failed'
 }
 snapshot_business_data "$workspace/integrity-before.sha256"
-
-# Build pinned application source and a private browser runner before starting
-# any private-data-connected application process.
-git -C "$YS_PRIVATE_APP_REPOSITORY" archive --format=tar "$YS_PRIVATE_APP_REVISION" | tar -xf - -C "$workspace/app-source"
-docker_target build --label "ys-sys-001.target=$target_id" --tag "ys-sys-001-rehearsal-app:$target_id" \
-  --file "$repo/scripts/recovery/application.Dockerfile" "$workspace/app-source" >"$workspace/app-build.private.log" 2>&1 || fail 'pinned application image build failed'
-docker_target build --label "ys-sys-001.target=$target_id" --tag "ys-sys-001-rehearsal-runner:$target_id" \
-  --file "$repo/scripts/recovery/private-rehearsal-runner.Dockerfile" "$repo" >"$workspace/runner-build.private.log" 2>&1 || fail 'private Playwright runner image build failed'
 
 openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj '/CN=recovery.test' \
   -keyout "$workspace/tls/key.pem" -out "$workspace/tls/cert.pem" >"$workspace/tls-build.private.log" 2>&1 || fail 'private TLS certificate generation failed'
@@ -295,7 +316,7 @@ chmod 600 "$browser_env"
 docker_target run -d --name "$browser_container" --label "ys-sys-001.target=$target_id" \
   --network "$net" --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m --tmpfs /runner/test-results:rw,noexec,nosuid,size=16m \
   --shm-size=512m --cap-drop ALL --security-opt no-new-privileges --env HOME=/tmp --env-file "$browser_env" \
-  "ys-sys-001-rehearsal-runner:$target_id" bun run test:e2e -- --config scripts/recovery/private-rehearsal.playwright.config.ts \
+  "ys-sys-001-rehearsal-runner:$target_id" run test:e2e -- --config scripts/recovery/private-rehearsal.playwright.config.ts \
   >/dev/null
 expected_browser_members=$(printf '%s\n' "$app_container" "$browser_container" "$db_container" "$proxy_container" | sort)
 browser_members=$(docker_target network inspect -f '{{range $id,$c := .Containers}}{{println $c.Name}}{{end}}' "$net" | sed '/^$/d' | sort)
@@ -311,7 +332,7 @@ if docker_target exec "$app_container" bun -e 'await fetch("https://example.com"
   fail 'application-originated external egress unexpectedly succeeded'
 fi
 members=$(docker_target network inspect -f '{{range $id,$c := .Containers}}{{println $c.Name}}{{end}}' "$net" | sed '/^$/d' | sort)
-expected_members=$(printf '%s\n' "$app_container" "$browser_container" "$db_container" "$proxy_container" | sort)
+expected_members=$(printf '%s\n' "$app_container" "$db_container" "$proxy_container" | sort)
 [[ $members == "$expected_members" ]] || fail 'target network has an unexpected member'
 for container in "$db_container" "$app_container" "$proxy_container" "$browser_container"; do
   ports=$(docker_target inspect -f '{{range .NetworkSettings.Ports}}{{range .}}{{.HostPort}}{{end}}{{end}}' "$container")
@@ -326,7 +347,7 @@ artifact_after=$(sha256sum -- "$YS_PRIVATE_ARTIFACT" | cut -d' ' -f1)
 python3 "$repo/scripts/recovery/private-rehearsal-clock.py" ready --state "$state" >"$workspace/t-ready.json" || fail 'RTO exceeded 60 minutes or T-ready clock failed'
 ready=1
 cat >"$report" <<JSON
-{"schemaVersion":1,"result":"PASS","target":"disposable","application":"$YS_PRIVATE_APP_REVISION","migrationCeiling":"0022","restoreOwnershipAcl":"normalized","checks":{"restore":"PASS","routineInventory":"PASS","runtimePrivileges":"PASS","ownerSignIn":"PASS","dashboard":"PASS","directory":"PASS","tenantIsolation":"PASS","businessIntegrity":"PASS","egressDenied":"PASS","externalSideEffects":"none"},"timing":$(cat "$workspace/t-ready.json" | tr -d '\n')}
+{"schemaVersion":1,"result":"PASS","target":"disposable","application":"$YS_PRIVATE_APP_REVISION","recoveryCode":"$recovery_revision","migrationCeiling":"0022","restoreOwnershipAcl":"normalized","checks":{"restore":"PASS","routineInventory":"PASS","runtimePrivileges":"PASS","ownerSignIn":"PASS","dashboard":"PASS","directory":"PASS","tenantIsolation":"PASS","businessIntegrity":"PASS","egressDenied":"PASS","externalSideEffects":"none"},"timing":$(cat "$workspace/t-ready.json" | tr -d '\n')}
 JSON
 chmod 600 "$report"
 printf 'Synthetic/private rehearsal acceptance checks passed; sanitized report: %s\n' "$report"

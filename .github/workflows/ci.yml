@@ -289,8 +289,10 @@ jobs:
           bun-version: 1.3.14
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
+      - name: Validate private rehearsal entry point syntax
+        run: bash -n scripts/recovery/run-private-rehearsal.sh
       - name: Verify target-scoped private cleanup safety
-        run: python3 -m unittest scripts/recovery/test_private_rehearsal_cleanup.py
+        run: python3 -m unittest scripts/recovery/test_private_rehearsal_cleanup.py scripts/recovery/test_private_rehearsal_clock.py
       - name: Validate private runtime setup with synthetic-only PostgreSQL
         env:
           CI: true

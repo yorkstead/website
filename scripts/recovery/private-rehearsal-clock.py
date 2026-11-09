@@ -54,7 +54,7 @@ def save_state(path: pathlib.Path, state: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=("start", "ready", "cleanup-verified"))
+    parser.add_argument("action", choices=("start", "ready", "cleanup-verified", "cleanup-after-reboot"))
     parser.add_argument("--state", required=True, type=pathlib.Path)
     args = parser.parse_args()
     path = args.state.resolve()
@@ -70,6 +70,28 @@ def main() -> None:
         print(json.dumps({"T0": state["t0Utc"], "status": "RUNNING"}, separators=(",", ":")))
         return
 
+    if args.action == "cleanup-after-reboot":
+        try:
+            metadata = path.stat()
+            if stat.S_IMODE(metadata.st_mode) != 0o600:
+                fail("clock state must have mode 0600")
+            state = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            fail("clock state is missing or invalid")
+        if state.get("bootId") == boot_id() or "tCleanupVerifiedUtc" in state:
+            fail("reboot cleanup recording requires a prior boot and no existing cleanup timestamp")
+        now = time.monotonic_ns()
+        state.update({
+            "tCleanupVerifiedUtc": utc_now(),
+            "tCleanupVerifiedMonotonicNs": now,
+            "cleanupAfterReboot": True,
+            "continuousRtoValid": False,
+        })
+        save_state(path, state)
+        print(json.dumps({"T0": state["t0Utc"], "TCleanupVerified": state["tCleanupVerifiedUtc"],
+                          "cleanup": "VERIFIED", "continuousRto": "INVALID_AFTER_REBOOT"}, separators=(",", ":")))
+        return
+
     state = load_state(path)
     if args.action == "ready":
         if "tReadyUtc" in state:
@@ -83,12 +105,20 @@ def main() -> None:
             raise SystemExit(1)
         return
 
-    if "tReadyMonotonicNs" not in state or "tCleanupVerifiedUtc" in state:
-        fail("record T-ready first and record cleanup only once")
+    if "tCleanupVerifiedUtc" in state:
+        fail("record cleanup only once")
     now = time.monotonic_ns()
     state.update({"tCleanupVerifiedUtc": utc_now(), "tCleanupVerifiedMonotonicNs": now})
     save_state(path, state)
-    print(json.dumps({"T0": state["t0Utc"], "TReady": state["tReadyUtc"], "TCleanupVerified": state["tCleanupVerifiedUtc"], "cleanup": "VERIFIED", "rtoSeconds": round((int(state["tReadyMonotonicNs"]) - int(state["t0MonotonicNs"])) / 1_000_000_000, 3)}, separators=(",", ":")))
+    if "tReadyMonotonicNs" in state:
+        result = {"T0": state["t0Utc"], "TReady": state["tReadyUtc"],
+                  "TCleanupVerified": state["tCleanupVerifiedUtc"], "cleanup": "VERIFIED",
+                  "rtoSeconds": round((int(state["tReadyMonotonicNs"]) - int(state["t0MonotonicNs"])) / 1_000_000_000, 3)}
+    else:
+        result = {"T0": state["t0Utc"], "TCleanupVerified": state["tCleanupVerifiedUtc"],
+                  "cleanup": "VERIFIED", "readiness": "NOT_REACHED", "rtoPass": False,
+                  "elapsedToCleanupSeconds": round((now - int(state["t0MonotonicNs"])) / 1_000_000_000, 3)}
+    print(json.dumps(result, separators=(",", ":")))
 
 
 if __name__ == "__main__":
