@@ -6,6 +6,7 @@
 - [x] Add an isolated production application image and TLS proxy configuration without adding a general deployment Dockerfile or Production configuration path.
 - [x] Add a disposable orchestration script that creates source/target PostgreSQL 18, restores the synthetic archive, verifies Docker internal networking, and cleans every artifact on exit.
 - [x] Add Playwright HTTP/browser coverage for synthetic owner authentication, owner authorization, dashboard/legacy Directory read workflows, and anonymous denial.
+- [ ] Prepare a separate owner-operated private Production-derived rehearsal path: pre-provisioned synthetic owner, exact migration-0022 routine verification, target-only PUBLIC routine restriction, read-only business runtime role, synthetic tenant authorization checks, continuous T-ready/RTO and separate cleanup timestamp. Do not run it in CI.
 - [x] Run the existing actual-session cross-tenant client publication database suite against the restored synthetic target.
 - [x] Add a dedicated least-permission GitHub Actions job with no secrets/deployment permissions and upload only redacted aggregate evidence.
 - [x] Update recovery runbook, verification record, and the current handoff with exact results and remaining limits.

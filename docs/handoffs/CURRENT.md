@@ -1,3 +1,10 @@
+# Active work — YS-SYS-001 private application recovery preparation — 2026-11-08
+
+- Authorized repository-only implementation is isolated in `/tmp/ys-sys-001-auth-routines`, branch `feat/ys-sys-001-rehearsal-auth-routines`, based on verified live `main` `a235ce254294df7efe3f2c9f472feb10dc5792ef`. The original dirty Infrastructure checkout remains untouched.
+- Added a separate target-only preparation path for a Better Auth-hashed synthetic owner, synthetic tenant fixtures, read-only runtime grants, exact migration-0022 routine/source verification, and app-routine PUBLIC EXECUTE revocation. The private rehearsal runbook pins the app to `6fba1dd297067f7c3af219d2ffdec18006274c53`, records T-ready separately from T-cleanup-verified, and forbids use of GitHub Actions for Production-derived data.
+- No private artifact, ThinkPad database, restore container, Production, R2, credentials, or migrations were accessed. Owner execution against a fresh PostgreSQL 18.6 disposable target remains required; source-to-target ACL equivalence and Production RTO remain unverified. The existing synthetic harness is unchanged.
+- Next: run repository/offline validation, review exact-head CI on the draft PR, then request separate owner authorization for the one local disposable rehearsal. No merge or deployment.
+
 # Current status — CC-021 Dashboard read consolidation — 2026-11-08
 
 - Current verified Website `main` baseline for this implementation: `6fba1dd297067f7c3af219d2ffdec18006274c53` (includes merged Recovery PR #111). Work is isolated in `/tmp/yorkstead-cc021-website`, branch `feat/cc021-dashboard-read`; older documentation-only handoff branch `docs/cc027-postmerge-acceptance` was not cherry-picked or merged.
