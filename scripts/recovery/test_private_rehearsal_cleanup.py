@@ -1,0 +1,116 @@
+import importlib.util
+import pathlib
+import tempfile
+import unittest
+from unittest.mock import patch
+
+
+MODULE_PATH = pathlib.Path(__file__).with_name("private-rehearsal-cleanup.py")
+SPEC = importlib.util.spec_from_file_location("private_rehearsal_cleanup", MODULE_PATH)
+cleanup = importlib.util.module_from_spec(SPEC)
+assert SPEC and SPEC.loader
+SPEC.loader.exec_module(cleanup)
+
+
+class PrivateCleanupTests(unittest.TestCase):
+    target = "0123456789abcdef01234567"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = pathlib.Path(self.tmp.name)
+        self.workspace = self.root / "workspace"
+        self.workspace.mkdir(mode=0o700)
+        (self.workspace / ".ys-sys-001-target-id").write_text(self.target)
+        self.artifact = self.root / "approved.dump.age"
+        self.artifact.write_bytes(b"synthetic encrypted artifact fixture")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_artifact_identity_includes_inode_size_mtime_and_digest(self):
+        before = cleanup.artifact_identity(self.artifact)
+        self.assertEqual(before, cleanup.artifact_identity(self.artifact))
+        self.artifact.write_bytes(b"changed")
+        self.assertNotEqual(before, cleanup.artifact_identity(self.artifact))
+
+    def test_record_artifact_is_private_and_refuses_replacement(self):
+        (self.workspace / ".ys-sys-001-target-id").unlink()
+        cleanup.record_artifact(self.workspace, self.target, self.artifact)
+        marker = self.workspace / ".ys-sys-001-target-id"
+        identity = self.workspace / ".artifact-identity.json"
+        self.assertEqual(marker.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(identity.stat().st_mode & 0o777, 0o600)
+        with self.assertRaises(cleanup.CleanupError):
+            cleanup.record_artifact(self.workspace, self.target, self.artifact)
+
+    def test_cleanup_removes_only_ephemeral_private_material_and_keeps_evidence(self):
+        (self.workspace / ".ys-sys-001-target-id").unlink()
+        cleanup.record_artifact(self.workspace, self.target, self.artifact)
+        (self.workspace / "plaintext").mkdir()
+        (self.workspace / "plaintext" / "restore.dump").write_bytes(b"synthetic plaintext")
+        (self.workspace / "secrets").mkdir()
+        (self.workspace / "secrets" / "runtime.env").write_text("synthetic-only")
+        (self.workspace / "report.json").write_text('{"status":"synthetic"}')
+        cleanup.cleanup_workspace(self.workspace, self.artifact)
+        self.assertFalse((self.workspace / "plaintext").exists())
+        self.assertFalse((self.workspace / "secrets").exists())
+        self.assertTrue((self.workspace / "report.json").exists())
+        self.assertTrue(self.artifact.exists())
+
+    def test_changed_artifact_fails_before_removing_private_evidence(self):
+        (self.workspace / ".ys-sys-001-target-id").unlink()
+        cleanup.record_artifact(self.workspace, self.target, self.artifact)
+        (self.workspace / "plaintext").mkdir()
+        self.artifact.write_bytes(b"tampered")
+        with self.assertRaises(cleanup.CleanupError):
+            cleanup.cleanup_workspace(self.workspace, self.artifact)
+        self.assertTrue((self.workspace / "plaintext").exists())
+
+    def test_workspace_requires_private_mode_and_matching_marker(self):
+        cleanup.validate_workspace(self.workspace, self.target)
+        (self.workspace / ".ys-sys-001-target-id").write_text("f" * 24)
+        with self.assertRaises(cleanup.CleanupError):
+            cleanup.validate_workspace(self.workspace, self.target)
+
+    def test_removes_only_prevalidated_resources_in_dependency_order(self):
+        ids = {"container": ["c1"], "network": ["n1"], "volume": ["v1"], "image": ["i1"]}
+        removed = []
+
+        def fake_docker(args, check=True):
+            if args[0] in ("ps", "network", "volume", "image") and "--filter" in args:
+                kind = "container" if args[0] == "ps" else args[0]
+                return "\n".join(ids[kind])
+            if args[0] == "inspect" or args[:2] in (["network", "inspect"], ["volume", "inspect"], ["image", "inspect"]):
+                return "{}"
+            removed.append(tuple(args))
+            if args[0] == "rm":
+                ids["container"].remove(args[-1])
+            elif args[0] in ("network", "volume", "image") and args[1] == "rm":
+                ids[args[0]].remove(args[-1])
+            return ""
+
+        with patch.object(cleanup, "docker", side_effect=fake_docker), patch.object(cleanup, "inspect_label") as verify:
+            cleanup.remove_resources(self.target)
+        self.assertEqual(verify.call_count, 4)
+        self.assertEqual(removed, [("rm", "--force", "c1"), ("network", "rm", "n1"),
+                                   ("volume", "rm", "v1"), ("image", "rm", "i1")])
+        self.assertFalse(any("prune" in arg for command in removed for arg in command))
+
+    def test_label_mismatch_stops_before_any_removal(self):
+        removed = []
+        with patch.object(cleanup, "resource_ids", side_effect=lambda kind, _: ["unowned"] if kind == "container" else []), \
+             patch.object(cleanup, "inspect_label", side_effect=cleanup.CleanupError("unverified")), \
+             patch.object(cleanup, "docker", side_effect=lambda args, **_: removed.append(args) or ""):
+            with self.assertRaises(cleanup.CleanupError):
+                cleanup.remove_resources(self.target)
+        self.assertEqual(removed, [])
+
+    def test_symlink_artifact_is_rejected(self):
+        link = self.root / "artifact-link"
+        link.symlink_to(self.artifact)
+        with self.assertRaises(cleanup.CleanupError):
+            cleanup.artifact_identity(link)
+
+
+if __name__ == "__main__":
+    unittest.main()
