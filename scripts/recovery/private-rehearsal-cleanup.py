@@ -52,19 +52,24 @@ def resource_ids(kind: str, target_id: str) -> list[str]:
 
 
 def inspect_label(kind: str, resource_id: str, target_id: str) -> None:
+    expected_name = f"ys-sys-001-{target_id}-"
     if kind == "container":
         raw = docker(["inspect", resource_id])
         obj = json.loads(raw)[0]
         labels = obj.get("Config", {}).get("Labels") or {}
+        name = (obj.get("Name") or "").lstrip("/")
     elif kind == "image":
         raw = docker(["image", "inspect", resource_id])
         obj = json.loads(raw)[0]
         labels = obj.get("Config", {}).get("Labels") or {}
+        tags = obj.get("RepoTags") or []
+        name_ok = f"ys-sys-001-rehearsal:{target_id}" in tags
     else:
         raw = docker([kind, "inspect", resource_id])
         obj = json.loads(raw)[0]
         labels = obj.get("Labels") or {}
-    if labels.get(LABEL) != target_id:
+        name = obj.get("Name") or ""
+    if labels.get(LABEL) != target_id or (kind == "image" and not name_ok) or (kind != "image" and not name.startswith(expected_name)):
         raise CleanupError("resource identity could not be proven; no resources removed")
 
 

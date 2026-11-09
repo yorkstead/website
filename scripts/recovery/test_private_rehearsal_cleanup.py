@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import pathlib
 import tempfile
 import unittest
@@ -104,6 +105,13 @@ class PrivateCleanupTests(unittest.TestCase):
             with self.assertRaises(cleanup.CleanupError):
                 cleanup.remove_resources(self.target)
         self.assertEqual(removed, [])
+
+    def test_existing_resource_name_is_not_accepted_by_target_label_alone(self):
+        payload = [{"Name": "/ys-sys-001-original-recovery-container",
+                    "Config": {"Labels": {cleanup.LABEL: self.target}}}]
+        with patch.object(cleanup, "docker", return_value=json.dumps(payload)):
+            with self.assertRaises(cleanup.CleanupError):
+                cleanup.inspect_label("container", "existing-id", self.target)
 
     def test_symlink_artifact_is_rejected(self):
         link = self.root / "artifact-link"
