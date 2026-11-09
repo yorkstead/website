@@ -9,6 +9,12 @@ import { founderStructuredData, organizationStructuredData } from "@/lib/founder
 import { getServiceStructuredData, publicServices } from "@/lib/services";
 
 describe("technical search foundations", () => {
+  test("uses the live www hostname as the single canonical URL base", () => {
+    expect(brand.siteURL).toBe("https://www.yorkstead.com");
+    expect(sitemap().every(({ url }) => new URL(url).origin === brand.siteURL)).toBe(true);
+    expect(organizationStructuredData["@id"]).toBe(`${brand.siteURL}/#organization`);
+  });
+
   test("publishes every public route once and excludes owner routes", () => {
     const urls = sitemap().map((entry) => entry.url);
     expect(new Set(urls).size).toBe(urls.length);
