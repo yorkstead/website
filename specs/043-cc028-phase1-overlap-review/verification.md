@@ -10,7 +10,7 @@ Implementation is isolated in a writable checkout from the code-equivalent `8c41
 - `bun run yorkstead:check`: passed, 44 active spec directories in the local checkout (current remote main includes the parent 042 spec, which is absent from this code-equivalent local checkout).
 - `bun run db:migrate:check`: passed, 24 migrations; no migration changed.
 - `bun run lint`: passed with one existing warning in `components/login-panel.tsx:62`.
-- `bun run typecheck`: passed before the final loader test was added; final validation must rerun typecheck on the published head.
+- `bun run typecheck`: passed after the final loader test was added.
 - `bun test`: 525 passed, 123 database-gated skips, 0 failed before the final loader test was added. The new focused loader test passed separately.
 - `bun run build`: attempted; Turbopack could not resolve `next/package.json` because this isolated checkout uses a symlinked `node_modules` outside its filesystem root. This is an environment limit, not a successful build.
 - Browser E2E was not run locally: owner flows require disposable PostgreSQL, which is not available in this checkout. Review exact-head GitHub CI for build and browser evidence.
@@ -22,3 +22,5 @@ The server page checks the owner session before calling the read adapter. Search
 ## Remaining review
 
 Confirm the final GitHub PR head and CI results. Marketing has no prospect-specific deep link, so its source link opens the workspace; this is disclosed in the spec. Candidate matching is deliberately conservative and bounded; no result proves uniqueness.
+
+The PR also restores the complete `docs/handoffs/CURRENT.md` history. The previous GitHub file update had committed a truncated copy with a truncation marker; the restored file's local Git blob SHA was compared with GitHub's returned blob SHA. The historical content is preserved and only the active status section is reconciled.
