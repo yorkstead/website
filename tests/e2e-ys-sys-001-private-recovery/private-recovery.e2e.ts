@@ -28,6 +28,10 @@ privateTest("pre-provisioned synthetic owner signs in and reads the restored das
     return { status: response.status, authorized: response.ok && (await response.json()).authorized === true };
   });
   expect(session).toEqual({ status: 200, authorized: true });
+  if (process.env.YS_PRIVATE_TEST_BROWSER_FAIL === "true") {
+    expect(process.env.YS_PRIVATE_SYNTHETIC_FIXTURE).toBe("true");
+    throw new Error("synthetic browser-stage failure injection");
+  }
 
   const dashboard = await page.goto("/dashboard");
   expect(dashboard?.status()).toBe(200);
@@ -40,4 +44,15 @@ privateTest("pre-provisioned synthetic owner signs in and reads the restored das
     return response.ok && Array.isArray(body.entries);
   });
   expect(directory).toBe(true);
+
+  const deniedBusinessWrite = await page.evaluate(async () => {
+    const response = await fetch("/api/workspace", {
+      method: "PUT",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ syntheticRecoveryProbe: true }),
+    });
+    return response.status;
+  });
+  expect(deniedBusinessWrite).toBe(403);
 });

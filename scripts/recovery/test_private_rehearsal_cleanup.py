@@ -51,10 +51,13 @@ class PrivateCleanupTests(unittest.TestCase):
         (self.workspace / "plaintext" / "restore.dump").write_bytes(b"synthetic plaintext")
         (self.workspace / "secrets").mkdir()
         (self.workspace / "secrets" / "runtime.env").write_text("synthetic-only")
+        (self.workspace / "app-source").mkdir()
+        (self.workspace / "app-source" / "source.ts").write_text("synthetic source")
         (self.workspace / "report.json").write_text('{"status":"synthetic"}')
         cleanup.cleanup_workspace(self.workspace, self.artifact)
         self.assertFalse((self.workspace / "plaintext").exists())
         self.assertFalse((self.workspace / "secrets").exists())
+        self.assertFalse((self.workspace / "app-source").exists())
         self.assertTrue((self.workspace / "report.json").exists())
         self.assertTrue(self.artifact.exists())
 
@@ -113,6 +116,12 @@ class PrivateCleanupTests(unittest.TestCase):
             with self.assertRaises(cleanup.CleanupError):
                 cleanup.remove_resources(self.target, "thinkpad-wsl")
         self.assertEqual(call.call_args_list, [unittest.mock.call(["context", "show"])])
+
+    def test_cleanup_docker_calls_pin_the_explicit_context(self):
+        with patch.object(cleanup.subprocess, "run", return_value=type("Result", (), {"stdout": "ok", "returncode": 0})()) as run:
+            cleanup.ACTIVE_CONTEXT = "thinkpad-wsl"
+            self.assertEqual(cleanup.docker(["ps", "-aq"]), "ok")
+        self.assertEqual(run.call_args.args[0], ["docker", "--context", "thinkpad-wsl", "ps", "-aq"])
 
     def test_existing_resource_name_is_not_accepted_by_target_label_alone(self):
         payload = [{"Name": "/ys-sys-001-original-recovery-container",

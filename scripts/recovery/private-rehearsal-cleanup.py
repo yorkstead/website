@@ -13,6 +13,7 @@ import subprocess
 import sys
 
 LABEL = "ys-sys-001.target"
+ACTIVE_CONTEXT: str | None = None
 RESOURCE_TYPES = {
     "container": ("ps", "-aq"),
     "network": ("network", "ls", "-q"),
@@ -26,7 +27,8 @@ class CleanupError(RuntimeError):
 
 
 def docker(args: list[str], *, check: bool = True) -> str:
-    result = subprocess.run(["docker", *args], text=True, capture_output=True, check=False)
+    context_args = ["--context", ACTIVE_CONTEXT] if ACTIVE_CONTEXT else []
+    result = subprocess.run(["docker", *context_args, *args], text=True, capture_output=True, check=False)
     if check and result.returncode:
         raise CleanupError("Docker operation failed; target retained for owner review")
     return result.stdout.strip()
@@ -63,7 +65,10 @@ def inspect_label(kind: str, resource_id: str, target_id: str) -> None:
         obj = json.loads(raw)[0]
         labels = obj.get("Config", {}).get("Labels") or {}
         tags = obj.get("RepoTags") or []
-        name_ok = f"ys-sys-001-rehearsal:{target_id}" in tags
+        name_ok = any(tag in tags for tag in (
+            f"ys-sys-001-rehearsal-app:{target_id}",
+            f"ys-sys-001-rehearsal-runner:{target_id}",
+        ))
     else:
         raw = docker([kind, "inspect", resource_id])
         obj = json.loads(raw)[0]
@@ -74,7 +79,11 @@ def inspect_label(kind: str, resource_id: str, target_id: str) -> None:
 
 
 def remove_resources(target_id: str, expected_context: str) -> None:
-    if not expected_context or docker(["context", "show"]) != expected_context:
+    global ACTIVE_CONTEXT
+    if not expected_context:
+        raise CleanupError("Docker context was not explicitly approved; no resources removed")
+    ACTIVE_CONTEXT = expected_context
+    if docker(["context", "show"]) != expected_context:
         raise CleanupError("Docker context differs from the explicitly approved context; no resources removed")
     remove_args = {
         "container": lambda rid: ["rm", "--force", rid],
@@ -132,7 +141,7 @@ def cleanup_workspace(workspace: pathlib.Path, artifact: pathlib.Path) -> None:
         raise CleanupError("approved encrypted artifact changed; private workspace retained")
     # Preserve sanitized and private diagnostic evidence. Only ephemeral plaintext,
     # generated credentials, and TLS key material may be removed here.
-    for name in ("plaintext", "secrets", "tls"):
+    for name in ("plaintext", "secrets", "tls", "app-source"):
         candidate = workspace / name
         if candidate.exists():
             if candidate.is_symlink() or candidate.resolve().parent != workspace:
