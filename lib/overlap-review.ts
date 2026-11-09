@@ -38,17 +38,33 @@ export function findOverlapCandidates(records: OverlapRecord[]): OverlapCandidat
   }).slice(0, MAX_SOURCE_RECORDS);
 }
 
-export async function loadOverlapReview(query: string) {
+type OverlapSources = {
+  marketing: typeof getMarketingWorkspace;
+  discovery: typeof opportunityStore.list;
+  crm: (pattern: string) => Promise<Array<{ id: number; name: string; company: string | null; email: string }>>;
+};
+
+const defaultSources: OverlapSources = {
+  marketing: getMarketingWorkspace,
+  discovery: (options) => opportunityStore.list(options),
+  crm: async (pattern) => {
+    const sql = await contactDatabase();
+    const rows = await sql.query(`SELECT i.id,i.name,i.company,i.email FROM contact_inquiries i
+      WHERE NOT EXISTS(SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)
+      AND (i.company ILIKE $1 ESCAPE '\\' OR i.name ILIKE $1 ESCAPE '\\' OR i.email ILIKE $1 ESCAPE '\\')
+      ORDER BY i.updated_at DESC,i.id DESC LIMIT 51`, [pattern]);
+    return rows.map((row) => ({ id: Number(row.id), name: String(row.name ?? ""), company: row.company === null ? null : String(row.company ?? ""), email: String(row.email ?? "") }));
+  },
+};
+
+export async function loadOverlapReview(query: string, sources: OverlapSources = defaultSources) {
   const parsed = parseOverlapQuery(query);
   if (!parsed) throw new Error("Search must be 3–80 characters.");
   const escaped = parsed.replace(/[\\%_]/g, "\\$&");
   const [marketing, discovery, crm] = await Promise.all([
-    getMarketingWorkspace(),
-    opportunityStore.list({ query: parsed, page: 1 }),
-    contactDatabase().then((sql) => sql.query(`SELECT i.id,i.name,i.company,i.email FROM contact_inquiries i
-      WHERE NOT EXISTS(SELECT 1 FROM inquiry_retirements r WHERE r.inquiry_id=i.id)
-      AND (i.company ILIKE $1 ESCAPE '\\' OR i.name ILIKE $1 ESCAPE '\\' OR i.email ILIKE $1 ESCAPE '\\')
-      ORDER BY i.updated_at DESC,i.id DESC LIMIT 51`, [`%${escaped}%`])),
+    sources.marketing(),
+    sources.discovery({ query: parsed, page: 1 }),
+    sources.crm(`%${escaped}%`),
   ]);
   const marketingMatches = marketing.workspace.prospects.filter((item) => [item.company, item.contactName, item.email].some((field) => field.toLowerCase().includes(parsed.toLowerCase())));
   const records: OverlapRecord[] = [
@@ -57,4 +73,9 @@ export async function loadOverlapReview(query: string) {
     ...crm.slice(0, MAX_SOURCE_RECORDS).map((item) => ({ source: "CRM" as const, id: String(item.id), company: String(item.company ?? ""), email: String(item.email ?? ""), href: `/dashboard/leads?lead=${Number(item.id)}`, crmLeadId: Number(item.id) })),
   ];
   return { candidates: findOverlapCandidates(records), limited: marketingMatches.length > MAX_SOURCE_RECORDS || discovery.pagination.hasNext || crm.length > MAX_SOURCE_RECORDS };
+}
+
+export async function loadOwnerOverlapReview(authorized: boolean, query: string | null, read = loadOverlapReview) {
+  if (!authorized || !query) return null;
+  return read(query);
 }
