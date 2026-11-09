@@ -1,3 +1,11 @@
+# Active work — Professional entity SEO — 2026-11-08
+
+- Owner authorized implementation and a reviewable PR, but not merge, production deployment, Vercel domain changes, or external-profile edits.
+- Branch: `feat/seo-brandon-york-entity`, started from current GitHub main after a read-only SEO/entity audit; implementation is isolated to public-site schema, profile content, metadata, sitemap, editorial links, tests and spec documentation.
+- `/brandon-york` is the dedicated founder ProfilePage. Person `@id` is `https://yorkstead.com/brandon-york#person` and Organization `@id` remains `https://yorkstead.com/#organization`. `/about` remains the company About page. Unverified personal LinkedIn/GitHub identities are deliberately omitted.
+- Owner subsequently authorized resolving canonical URLs by standardizing on `https://www.yorkstead.com` to match Vercel's existing non-www → www 308; the centralized `lib/brand.ts` base, schema IDs, sitemap, metadata and SEO tests now use www. Vercel settings remain unchanged; no production action was performed.
+- Source of truth: `specs/041-professional-entity-identity/{spec,plan,tasks,verification}.md`. Exact-head validation and PR review remain outstanding; rendered browser regression assertions added in `tests/e2e/founder-profile.e2e.ts`. No database or recovery code changes.
+
 # Current status — CC-021 Dashboard read consolidation — 2026-11-08
 
 - Current verified Website `main` baseline for this implementation: `6fba1dd297067f7c3af219d2ffdec18006274c53` (includes merged Recovery PR #111). Work is isolated in `/tmp/yorkstead-cc021-website`, branch `feat/cc021-dashboard-read`; older documentation-only handoff branch `docs/cc027-postmerge-acceptance` was not cherry-picked or merged.

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { founder, founderExperience, founderStructuredData } from "@/lib/founder";
+import { founder, founderExperience, founderProfileStructuredData, founderStructuredData, organizationId, personId, personPageUrl, profilePageId } from "@/lib/founder";
 
 describe("public founder profile", () => {
   test("uses the approved founder identity and verified experience areas", () => {
@@ -25,9 +25,23 @@ describe("public founder profile", () => {
     const [person, organization] = founderStructuredData["@graph"];
     expect(person["@type"]).toBe("Person");
     expect(person.name).toBe("Brandon York");
-    expect(person.image).toBe("https://yorkstead.com/media/founder/brandon-york.jpg");
+    expect(person.image).toBe("https://www.yorkstead.com/media/founder/brandon-york.jpg");
     expect(organization["@type"]).toBe("Organization");
     expect(organization.founder["@id"]).toBe(person["@id"]);
     expect(JSON.stringify(founderStructuredData)).not.toMatch(/employer|award|alumniOf|credential/i);
+    expect(person["@id"]).toBe(personId);
+    expect(personId).toBe("https://www.yorkstead.com/brandon-york#person");
+    expect(organizationId).toBe("https://www.yorkstead.com/#organization");
+    expect(person.url).toBe(personPageUrl);
+    expect(person.jobTitle).toBe("Founder & Systems Architect");
+    expect(person.worksFor["@id"]).toBe(organizationId);
+    expect(organization["@id"]).toBe(organizationId);
+    const [profilePage, profilePerson, profileOrganization] = founderProfileStructuredData["@graph"];
+    expect(profilePage["@id"]).toBe(profilePageId);
+    expect(profilePage.mainEntity["@id"]).toBe(personId);
+    expect(profilePerson["@id"]).toBe(personId);
+    expect(profileOrganization["@id"]).toBe(organizationId);
+    expect(JSON.stringify(founderProfileStructuredData)).not.toContain("/about#brandon-york");
+
   });
 });
