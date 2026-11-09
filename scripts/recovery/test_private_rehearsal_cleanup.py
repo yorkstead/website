@@ -78,6 +78,8 @@ class PrivateCleanupTests(unittest.TestCase):
         removed = []
 
         def fake_docker(args, check=True):
+            if args == ["context", "show"]:
+                return "thinkpad-wsl"
             if args[0] in ("ps", "network", "volume", "image") and "--filter" in args:
                 kind = "container" if args[0] == "ps" else args[0]
                 return "\n".join(ids[kind])
@@ -91,7 +93,7 @@ class PrivateCleanupTests(unittest.TestCase):
             return ""
 
         with patch.object(cleanup, "docker", side_effect=fake_docker), patch.object(cleanup, "inspect_label") as verify:
-            cleanup.remove_resources(self.target)
+            cleanup.remove_resources(self.target, "thinkpad-wsl")
         self.assertEqual(verify.call_count, 4)
         self.assertEqual(removed, [("rm", "--force", "c1"), ("network", "rm", "n1"),
                                    ("volume", "rm", "v1"), ("image", "rm", "i1")])
@@ -101,10 +103,16 @@ class PrivateCleanupTests(unittest.TestCase):
         removed = []
         with patch.object(cleanup, "resource_ids", side_effect=lambda kind, _: ["unowned"] if kind == "container" else []), \
              patch.object(cleanup, "inspect_label", side_effect=cleanup.CleanupError("unverified")), \
-             patch.object(cleanup, "docker", side_effect=lambda args, **_: removed.append(args) or ""):
+             patch.object(cleanup, "docker", side_effect=lambda args, **_: "thinkpad-wsl" if args == ["context", "show"] else removed.append(args) or ""):
             with self.assertRaises(cleanup.CleanupError):
-                cleanup.remove_resources(self.target)
+                cleanup.remove_resources(self.target, "thinkpad-wsl")
         self.assertEqual(removed, [])
+
+    def test_docker_context_mismatch_stops_before_resource_listing(self):
+        with patch.object(cleanup, "docker", return_value="default") as call:
+            with self.assertRaises(cleanup.CleanupError):
+                cleanup.remove_resources(self.target, "thinkpad-wsl")
+        self.assertEqual(call.call_args_list, [unittest.mock.call(["context", "show"])])
 
     def test_existing_resource_name_is_not_accepted_by_target_label_alone(self):
         payload = [{"Name": "/ys-sys-001-original-recovery-container",

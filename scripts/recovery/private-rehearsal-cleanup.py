@@ -73,7 +73,9 @@ def inspect_label(kind: str, resource_id: str, target_id: str) -> None:
         raise CleanupError("resource identity could not be proven; no resources removed")
 
 
-def remove_resources(target_id: str) -> None:
+def remove_resources(target_id: str, expected_context: str) -> None:
+    if not expected_context or docker(["context", "show"]) != expected_context:
+        raise CleanupError("Docker context differs from the explicitly approved context; no resources removed")
     remove_args = {
         "container": lambda rid: ["rm", "--force", rid],
         "network": lambda rid: ["network", "rm", rid],
@@ -147,6 +149,7 @@ def main() -> int:
     parser.add_argument("--target-id", required=True)
     parser.add_argument("--workspace", required=True, type=pathlib.Path)
     parser.add_argument("--artifact", required=True, type=pathlib.Path)
+    parser.add_argument("--docker-context")
     args = parser.parse_args()
     target_id = args.target_id
     if not re.fullmatch(r"[a-f0-9]{24}", target_id):
@@ -160,7 +163,9 @@ def main() -> int:
         print(json.dumps({"target": "recorded", "artifact": "identity stored privately"}, separators=(",", ":")))
         return 0
     validate_workspace(workspace, target_id)
-    remove_resources(target_id)
+    if not args.docker_context:
+        raise CleanupError("explicit Docker context is required for destructive cleanup")
+    remove_resources(target_id, args.docker_context)
     cleanup_workspace(workspace, artifact)
     print(json.dumps({"target": "synthetic-or-private-disposable", "resources": "removed",
                       "artifact": "unchanged", "temporarySecretsAndPlaintext": "removed",
