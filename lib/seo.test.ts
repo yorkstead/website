@@ -13,6 +13,7 @@ describe("technical search foundations", () => {
     const urls = sitemap().map((entry) => entry.url);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).toContain(`${brand.siteURL}/privacy`);
+    expect(urls.filter((url) => url === `${brand.siteURL}/brandon-york`)).toHaveLength(1);
     for (const service of publicServices) expect(urls).toContain(`${brand.siteURL}/services/${service.slug}`);
     for (const study of caseStudies) expect(urls).toContain(`${brand.siteURL}/work/${study.slug}`);
     for (const path of ["/login", "/account", "/dashboard", "/api/", "/cmd", "/ctrl"]) expect(urls.some((url) => url.includes(path))).toBe(false);
