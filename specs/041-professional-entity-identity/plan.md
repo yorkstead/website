@@ -8,5 +8,5 @@
 6. Submit a draft PR; do not merge, release, or modify Vercel hostname redirects.
 
 ## Deferred decisions
-- Canonical host: Vercel currently redirects non-www to www while the app uses non-www. A separate authorized change should reverse the redirect after verifying existing external integrations.
+- Canonical host decision: use `https://www.yorkstead.com` across the existing centralized brand base, canonical tags, sitemap and JSON-LD. This matches the already-configured Vercel non-www → www redirect; no Vercel setting change is part of this PR.
 - Personal LinkedIn/GitHub: add verified URLs to Person `sameAs` only after account ownership is confirmed.
