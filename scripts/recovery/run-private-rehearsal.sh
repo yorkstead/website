@@ -23,7 +23,13 @@ if [[ -n $fault ]]; then
 fi
 [[ $YS_PRIVATE_APP_REVISION == 6fba1dd297067f7c3af219d2ffdec18006274c53 ]] || fail 'application revision must be the approved SHA'
 [[ $YS_PRIVATE_POSTGRES_IMAGE =~ ^postgres:18\.6-alpine@sha256:[a-f0-9]{64}$ ]] || fail 'PostgreSQL 18.6 image digest is required'
-[[ $(uname -s) == Linux ]] && grep -qiE '(microsoft|wsl)' /proc/version || fail 'ThinkPad WSL is required'
+if [[ ${YS_PRIVATE_TEST_ALLOW_NON_WSL:-} == true ]]; then
+  [[ ${CI:-} == true && ${GITHUB_ACTIONS:-} == true && ${YS_PRIVATE_SYNTHETIC_FIXTURE:-} == true \
+    && $(basename "$YS_PRIVATE_ARTIFACT") == ys-sys-001-synthetic-* ]] \
+    || fail 'non-WSL execution is restricted to the isolated synthetic GitHub Actions fixture'
+else
+  [[ $(uname -s) == Linux ]] && grep -qiE '(microsoft|wsl)' /proc/version || fail 'ThinkPad WSL is required'
+fi
 for tool in docker age git openssl python3 sha256sum bun realpath; do command -v "$tool" >/dev/null || fail "missing tool: $tool"; done
 [[ $YS_PRIVATE_APP_REVISION == 6fba1dd297067f7c3af219d2ffdec18006274c53 ]] || fail 'application revision must be the approved SHA'
 [[ $YS_PRIVATE_POSTGRES_IMAGE =~ ^postgres:18\.6-alpine@sha256:[a-f0-9]{64}$ ]] || fail 'PostgreSQL 18.6 image digest is required'

@@ -301,6 +301,43 @@ jobs:
           YS_PRIVATE_TEST_ADMIN_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
         run: bun scripts/recovery/private-rehearsal-synthetic.ts
 
+  ys-sys-001-private-rehearsal-matrix:
+    name: YS-SYS-001 synthetic private-rehearsal lifecycle matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - name: Check out complete repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Install synthetic archive encryption utility
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y age
+      - name: Use approved repository origin for pinned application source
+        run: git remote set-url origin https://github.com/yorkstead/website.git
+      - name: Execute the synthetic owner-rehearsal success and fault matrix
+        env:
+          CI: true
+          GITHUB_ACTIONS: true
+        run: bash scripts/recovery/private-rehearsal-matrix.sh
+      - name: Upload sanitized aggregate matrix evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ys-sys-001-private-rehearsal-matrix
+          path: ${{ runner.temp }}/ys-sys-001-rehearsal-matrix-${{ github.run_id }}.json
+          if-no-files-found: ignore
+          retention-days: 7
+
   ys-sys-001-readonly-role:
     name: YS-SYS-001 synthetic read-only role verification
     runs-on: ubuntu-latest
