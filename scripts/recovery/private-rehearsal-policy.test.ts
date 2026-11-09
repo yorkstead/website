@@ -31,6 +31,17 @@ describe("private production-derived recovery target policy", () => {
     expect(() => validatePrivateRecoveryEnvironment(integration)).toThrow();
   });
 
+  test("permits loopback only for an explicitly synthetic GitHub Actions target", () => {
+    const target = env();
+    target.YS_APP_RECOVERY_SETUP_DATABASE_URL = `postgresql://ys_sys_setup_${targetId.slice(0,12)}:private@127.0.0.1:5432/ys_sys_001_${targetId}`;
+    target.YS_APP_RECOVERY_SYNTHETIC_VALIDATION = "true";
+    target.CI = "true";
+    target.GITHUB_ACTIONS = "true";
+    expect(validatePrivateRecoveryEnvironment(target).database).toBe(`ys_sys_001_${targetId}`);
+    delete target.CI;
+    expect(() => validatePrivateRecoveryEnvironment(target)).toThrow();
+  });
+
   test("limits runtime DML to owner-session creation and omits unused publication reads", () => {
     expect(privateSessionWriteTables).toEqual(['public."session"']);
     expect(privateDatabaseTables).not.toContain("public.client_project_publications");

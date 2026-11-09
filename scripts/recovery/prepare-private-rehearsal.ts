@@ -30,13 +30,18 @@ const tenantFixtures = ["a", "b"].map((side) => ({
 }));
 
 async function assertDisposableTarget() {
-  const result = await pool.query<{ db: string; role: string; isSuperuser: boolean; isCreateRole: boolean; version: number; comment: string | null }>(`
+  const result = await pool.query<{ db: string; role: string; isSuperuser: boolean; canLogin: boolean; isCreateDb: boolean; isCreateRole: boolean; isReplication: boolean; bypassRls: boolean; inherits: boolean; version: number; comment: string | null; databaseOwner: boolean; hasMembership: boolean }>(`
     SELECT current_database() AS db, current_user AS role, r.rolsuper AS "isSuperuser",
-      r.rolcreaterole AS "isCreateRole", current_setting('server_version_num')::int AS version,
-      shobj_description(d.oid,'pg_database') AS comment
+      r.rolcanlogin AS "canLogin", r.rolcreatedb AS "isCreateDb", r.rolcreaterole AS "isCreateRole",
+      r.rolreplication AS "isReplication", r.rolbypassrls AS "bypassRls", r.rolinherit AS inherits,
+      current_setting('server_version_num')::int AS version,
+      shobj_description(d.oid,'pg_database') AS comment, d.datdba=r.oid AS "databaseOwner",
+      EXISTS(SELECT 1 FROM pg_auth_members m WHERE m.member=r.oid) AS "hasMembership"
     FROM pg_roles r JOIN pg_database d ON d.datname=current_database() WHERE r.rolname=current_user`);
   const row = result.rows[0];
-  if (!row || row.db !== config.database || row.role !== config.setupRole || row.comment !== targetComment || row.isSuperuser || !row.isCreateRole || row.version !== 180006) {
+  if (!row || row.db !== config.database || row.role !== config.setupRole || row.comment !== targetComment
+    || row.isSuperuser || !row.canLogin || row.isCreateDb || !row.isCreateRole || row.isReplication || row.bypassRls || row.inherits
+    || !row.databaseOwner || row.hasMembership || row.version !== 180006) {
     throw new Error("connection is not the marked PostgreSQL 18 disposable target and setup role");
   }
 }
@@ -79,31 +84,87 @@ async function seedSyntheticOwner() {
   if (existing.rows[0]?.found) throw new Error("reserved synthetic owner identity already exists; refusing to modify it");
   const auth = betterAuth({ baseURL: "https://recovery.test", secret: authSecret, database: pool, emailAndPassword: { enabled: true } });
   const passwordHash = await (await auth.$context).password.hash(ownerPassword);
-  await pool.query("BEGIN");
+  const client = await pool.connect();
   try {
-    await pool.query('INSERT INTO public."user"("id","name","email","emailVerified","createdAt","updatedAt") VALUES($1,$2,$3,true,clock_timestamp(),clock_timestamp())', [ownerId, "Synthetic Recovery Owner", ownerEmail]);
-    await pool.query('INSERT INTO public."account"("id","userId","accountId","providerId","password","createdAt","updatedAt") VALUES($1,$2,$2,\'credential\',$3,clock_timestamp(),clock_timestamp())', [`${ownerId}-credential`, ownerId, passwordHash]);
-    await pool.query("COMMIT");
+    await client.query("BEGIN");
+    await client.query('INSERT INTO public."user"("id","name","email","emailVerified","createdAt","updatedAt") VALUES($1,$2,$3,true,clock_timestamp(),clock_timestamp())', [ownerId, "Synthetic Recovery Owner", ownerEmail]);
+    await client.query('INSERT INTO public."account"("id","userId","accountId","providerId","password","createdAt","updatedAt") VALUES($1,$2,$2,\'credential\',$3,clock_timestamp(),clock_timestamp())', [`${ownerId}-credential`, ownerId, passwordHash]);
+    const hiddenId = `ys-sys-001-hidden-${config.targetId}`;
+    await client.query('INSERT INTO public."user"("id","name","email","emailVerified","createdAt","updatedAt") VALUES($1,$2,$3,false,clock_timestamp(),clock_timestamp())', [hiddenId, "Synthetic Isolation Control", `hidden-${config.targetId}@recovery.test`]);
+    await client.query('INSERT INTO public."account"("id","userId","accountId","providerId","password","createdAt","updatedAt") VALUES($1,$2,$2,\'synthetic-isolation-control\',NULL,clock_timestamp(),clock_timestamp())', [`${hiddenId}-account`, hiddenId]);
+    await client.query("COMMIT");
   } catch (error) {
-    await pool.query("ROLLBACK");
+    await client.query("ROLLBACK");
     throw error;
+  } finally {
+    client.release();
   }
 }
 
 async function seedSyntheticTenantChecks() {
-  await pool.query("BEGIN");
+  const client = await pool.connect();
   try {
+    await client.query("BEGIN");
     for (const [index, fixture] of tenantFixtures.entries()) {
-      await pool.query("INSERT INTO public.customer_tenants(id,name,status) VALUES($1,$2,'active')", [fixture.tenantId, `Synthetic Recovery Tenant ${index + 1}`]);
-      await pool.query("INSERT INTO public.customer_tenant_projects(tenant_id,project_id,status) VALUES($1,$2,'active')", [fixture.tenantId, fixture.projectId]);
-      await pool.query("INSERT INTO public.customer_identities(id,auth_provider,auth_subject,email,status) VALUES($1,$2,$3,$4,'active')", [fixture.identityId, "yorkstead-customer-auth", fixture.subject, fixture.email]);
-      await pool.query("INSERT INTO public.customer_tenant_memberships(tenant_id,identity_id,role,status) VALUES($1,$2,'member','active')", [fixture.tenantId, fixture.identityId]);
-      await pool.query("INSERT INTO public.customer_project_grants(tenant_id,project_id,identity_id,permission,status) VALUES($1,$2,$3,'view','active')", [fixture.tenantId, fixture.projectId, fixture.identityId]);
+      await client.query("INSERT INTO public.customer_tenants(id,name,status) VALUES($1,$2,'active')", [fixture.tenantId, `Synthetic Recovery Tenant ${index + 1}`]);
+      await client.query("INSERT INTO public.customer_tenant_projects(tenant_id,project_id,status) VALUES($1,$2,'active')", [fixture.tenantId, fixture.projectId]);
+      await client.query("INSERT INTO public.customer_identities(id,auth_provider,auth_subject,email,status) VALUES($1,$2,$3,$4,'active')", [fixture.identityId, "yorkstead-customer-auth", fixture.subject, fixture.email]);
+      await client.query("INSERT INTO public.customer_tenant_memberships(tenant_id,identity_id,role,status) VALUES($1,$2,'member','active')", [fixture.tenantId, fixture.identityId]);
+      await client.query("INSERT INTO public.customer_project_grants(tenant_id,project_id,identity_id,permission,status) VALUES($1,$2,$3,'view','active')", [fixture.tenantId, fixture.projectId, fixture.identityId]);
     }
-    await pool.query("COMMIT");
+    const hidden = `ys-sys-001-hidden-${config.targetId}`;
+    await client.query("INSERT INTO public.customer_tenants(id,name,status) VALUES($1,'Synthetic isolation control','active')", [`${hidden}-tenant`]);
+    await client.query("INSERT INTO public.customer_tenant_projects(tenant_id,project_id,status) VALUES($1,$2,'active')", [`${hidden}-tenant`, `${hidden}-project`]);
+    await client.query("INSERT INTO public.customer_identities(id,auth_provider,auth_subject,email,status) VALUES($1,'synthetic-isolation-control',$2,$3,'active')", [`${hidden}-identity`, `${hidden}-subject`, `hidden-${config.targetId}@recovery.test`]);
+    await client.query("INSERT INTO public.customer_tenant_memberships(tenant_id,identity_id,role,status) VALUES($1,$2,'member','active')", [`${hidden}-tenant`, `${hidden}-identity`]);
+    await client.query("INSERT INTO public.customer_project_grants(tenant_id,project_id,identity_id,permission,status) VALUES($1,$2,$3,'view','active')", [`${hidden}-tenant`, `${hidden}-project`, `${hidden}-identity`]);
+    await client.query("COMMIT");
   } catch (error) {
-    await pool.query("ROLLBACK");
+    await client.query("ROLLBACK");
     throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function installRuntimeRowPolicies() {
+  const authTables = ["user", "account", "session"];
+  const identityTables = ["customer_identities", "customer_tenants", "customer_tenant_memberships", "customer_tenant_projects", "customer_project_grants"];
+  const names = [...authTables, ...identityTables];
+  const existing = await pool.query<{ count: number }>(`
+    SELECT count(*)::int AS count FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND c.relname=ANY($1::text[]) AND (c.relrowsecurity OR EXISTS(SELECT 1 FROM pg_policy p WHERE p.polrelid=c.oid))`, [names]);
+  if (existing.rows[0]?.count !== 0) throw new Error("target authentication or tenant relations already have row-security configuration");
+
+  const ownerLiteral = literal(ownerId);
+  const tenantPrefix = literal(`ys-sys-001-${config.targetId}-tenant-%`);
+  const identityPrefix = literal(`ys-sys-001-${config.targetId}-identity-%`);
+  for (const table of authTables) await pool.query(`ALTER TABLE public."${table}" ENABLE ROW LEVEL SECURITY`);
+  await pool.query(`CREATE POLICY ys_sys_001_runtime_owner_read ON public."user" FOR SELECT TO ${quotedRole} USING (id=${ownerLiteral})`);
+  await pool.query(`CREATE POLICY ys_sys_001_runtime_owner_read ON public."account" FOR SELECT TO ${quotedRole} USING ("userId"=${ownerLiteral})`);
+  await pool.query(`CREATE POLICY ys_sys_001_runtime_owner_read ON public."session" FOR SELECT TO ${quotedRole} USING ("userId"=${ownerLiteral})`);
+  await pool.query(`CREATE POLICY ys_sys_001_runtime_owner_session_insert ON public."session" FOR INSERT TO ${quotedRole} WITH CHECK ("userId"=${ownerLiteral})`);
+
+  const predicates: Record<string, string> = {
+    customer_identities: `id LIKE ${literal(`ys-sys-001-${config.targetId}-identity-%`)}`,
+    customer_tenants: `id LIKE ${tenantPrefix}`,
+    customer_tenant_memberships: `tenant_id LIKE ${tenantPrefix} AND identity_id LIKE ${identityPrefix}`,
+    customer_tenant_projects: `tenant_id LIKE ${tenantPrefix}`,
+    customer_project_grants: `tenant_id LIKE ${tenantPrefix} AND identity_id LIKE ${identityPrefix}`,
+  };
+  for (const table of identityTables) {
+    await pool.query(`ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`);
+    await pool.query(`CREATE POLICY ys_sys_001_runtime_synthetic_rows ON public.${table} FOR SELECT TO ${quotedRole} USING (${predicates[table]})`);
+  }
+
+  const configured = await pool.query<{ count: number; enabled: number }>(`
+    SELECT count(DISTINCT c.oid)::int AS count,count(DISTINCT c.oid) FILTER (WHERE c.relrowsecurity)::int AS enabled
+    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname=ANY($1::text[])`, [names]);
+  const policies = await pool.query<{ count: number }>(`
+    SELECT count(*)::int AS count FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND c.relname=ANY($1::text[]) AND $2::oid=ANY(p.polroles)`, [names, (await pool.query<{ oid: string }>("SELECT oid FROM pg_roles WHERE rolname=$1", [runtimeRole])).rows[0]?.oid]);
+  if (configured.rows[0]?.count !== names.length || configured.rows[0]?.enabled !== names.length || policies.rows[0]?.count !== 9) {
+    throw new Error("target runtime row policies are incomplete");
   }
 }
 
@@ -120,6 +181,7 @@ async function configureRuntime() {
   await pool.query("REVOKE EXECUTE ON ALL ROUTINES IN SCHEMA public, customer_auth FROM PUBLIC");
   for (const table of privateDatabaseTables) await pool.query(`GRANT SELECT ON TABLE ${table} TO ${quotedRole}`);
   for (const table of privateSessionWriteTables) await pool.query(`GRANT INSERT ON TABLE ${table} TO ${quotedRole}`);
+  await installRuntimeRowPolicies();
 
   const defaults = await pool.query<{ count: number }>(`
     SELECT count(*)::int AS count FROM pg_default_acl d

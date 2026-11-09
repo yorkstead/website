@@ -1,9 +1,10 @@
 # Active work — YS-SYS-001 private application recovery preparation — 2026-11-08
 
 - Authorized repository-only implementation is isolated in `/tmp/ys-sys-001-auth-routines`, branch `feat/ys-sys-001-rehearsal-auth-routines`, based on verified live `main` `a235ce254294df7efe3f2c9f472feb10dc5792ef`. The original dirty Infrastructure checkout remains untouched.
-- Added a separate target-only preparation path for a Better Auth-hashed synthetic owner, synthetic tenant fixtures, read-only runtime grants, exact migration-0022 routine/source verification, and app-routine PUBLIC EXECUTE revocation. The private rehearsal runbook pins the app to `6fba1dd297067f7c3af219d2ffdec18006274c53`, records T-ready separately from T-cleanup-verified, and forbids use of GitHub Actions for Production-derived data.
-- No private artifact, ThinkPad database, restore container, Production, R2, credentials, or migrations were accessed. Owner execution against a fresh PostgreSQL 18.6 disposable target remains required; source-to-target ACL equivalence and Production RTO remain unverified. The existing synthetic harness is unchanged.
-- Next: run repository/offline validation, review exact-head CI on the draft PR, then request separate owner authorization for the one local disposable rehearsal. No merge or deployment.
+- Final review of draft PR #116 at `9f2c60cb52b36e79b88d04d8b305520f7a53df78` found that broad auth/tenant table SELECT grants exposed restored identity rows outside the synthetic owner path. A target-only RLS boundary, strict setup-role attribute checks, and synthetic Better Auth/runtime integration job are being added on the same branch. The target policies permit only the synthetic owner and target-scoped tenant fixtures.
+- The private runbook is now explicitly marked BLOCKED for execution: it still lacks exact target creation/restore, app/proxy/browser orchestration, before/after data-integrity capture, and failure-safe target-scoped cleanup commands. Do not change PR #116 from draft until these are repaired and reviewed.
+- No private artifact, ThinkPad database, restore container, Production, R2, credentials, or migrations were accessed. Application functionality on `--no-owner --no-acl` plus target-only RLS is normalized-target evidence, not source-to-target ownership/ACL/RLS equivalence. The existing synthetic recovery harness remains unchanged.
+- Next: finish the authorized same-PR synthetic-only review corrections, rerun exact-head CI, and retain draft status. The Production-derived rehearsal remains separately gated and unexecuted.
 
 # Current status — CC-021 Dashboard read consolidation — 2026-11-08
 

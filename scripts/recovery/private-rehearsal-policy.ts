@@ -113,7 +113,8 @@ export function validatePrivateRecoveryEnvironment(env: NodeJS.ProcessEnv) {
   }
   let url: URL;
   try { url = new URL(setupUrl); } catch { throw new Error("private setup database URL is required"); }
-  if (!/^postgres(?:ql)?:$/.test(url.protocol) || url.search || url.hash || !isPrivateRecoveryIPv4(url.hostname)) {
+  const syntheticLoopback = env.YS_APP_RECOVERY_SYNTHETIC_VALIDATION === "true" && env.CI === "true" && env.GITHUB_ACTIONS === "true" && url.hostname === "127.0.0.1";
+  if (!/^postgres(?:ql)?:$/.test(url.protocol) || url.search || url.hash || (!isPrivateRecoveryIPv4(url.hostname) && !syntheticLoopback)) {
     throw new Error("private literal-IP disposable PostgreSQL target is required");
   }
   const database = decodeURIComponent(url.pathname.slice(1));

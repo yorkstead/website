@@ -70,6 +70,25 @@ try {
     (SELECT count(*)>=0 FROM public.research_opportunities) AS ok`);
   if (ledger.rows[0]?.latest !== "0022" || ledger.rows[0]?.future !== 0 || reads.rows[0]?.ok !== true) throw new Error("approved read paths or migration ceiling failed");
 
+  const identityBoundary = await pool.query<{ ok: boolean }>(`SELECT
+    (SELECT count(*)=1 FROM public."user") AND
+    (SELECT count(*)=1 FROM public."account") AND
+    (SELECT count(*)>0 FROM public."session") AND
+    NOT EXISTS(SELECT 1 FROM public."user" WHERE id=$1) AND
+    NOT EXISTS(SELECT 1 FROM public."account" WHERE "userId"=$1) AND
+    (SELECT count(*)=2 FROM public.customer_identities) AND
+    (SELECT count(*)=2 FROM public.customer_tenants) AND
+    (SELECT count(*)=2 FROM public.customer_tenant_memberships) AND
+    (SELECT count(*)=2 FROM public.customer_tenant_projects) AND
+    (SELECT count(*)=2 FROM public.customer_project_grants) AND
+    NOT EXISTS(SELECT 1 FROM public.customer_identities WHERE id LIKE $2) AND
+    NOT EXISTS(SELECT 1 FROM public.customer_tenants WHERE id LIKE $3) AS ok`, [
+    `ys-sys-001-hidden-${config.targetId}`,
+    `ys-sys-001-hidden-${config.targetId}%`,
+    `ys-sys-001-hidden-${config.targetId}%`,
+  ]);
+  if (identityBoundary.rows[0]?.ok !== true) throw new Error("runtime row-security boundary exposed non-synthetic identity rows");
+
   await denied("database temporary-object", "CREATE TEMP TABLE ys_sys_001_privilege_probe(id integer)");
   await denied("migration-ledger insert", "INSERT INTO public.application_migrations(version,name,checksum) VALUES('9999','probe',repeat('0',64))");
   await denied("business-data insert", "INSERT INTO public.workspaces(id,data) VALUES('ys-sys-001-probe','{}'::jsonb)");
