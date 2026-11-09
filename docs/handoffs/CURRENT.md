@@ -1,12 +1,18 @@
-Warning: truncated output (original token count: 25061)
-Total output lines: 368
+Warning: truncated output (original token count: 25226)
+Total output lines: 374
 
-# Active work — Command Center consolidation audit #119 — 2026-11-09
+# Active work — CC-028 Command Center consolidation specification — 2026-11-09
 
-- Scope is the owner-requested read-only audit and documentation publication. Findings: [`docs/audits/2026-11-09-command-center-consolidation.md`](../audits/2026-11-09-command-center-consolidation.md). No product implementation, data changes, Production/provider operations, infrastructure/recovery changes, merge, or deployment is authorized or performed.
-- Verified live GitHub `main`: `8c41a59e2ef656cde8cde6cc17224e70dc990061`; this documentation branch is based on that exact snapshot. Issues #112 and #119 were read; #119 remains the tracking issue.
-- Relevant consolidation PR states: #113 merged 2026-11-07 at `4b8fa4714ad865ef7bf066d815ca6b14d5a8d542`; #114 merged 2026-11-08 at `c269e66dab3d44bcc0934c6fd479e434b3e76696`; #115 merged 2026-11-08 at `a235ce254294df7efe3f2c9f472feb10dc5792ef`. The earlier CC-027, CC-021, and Marketing handoff sections are retained below as historical implementation evidence and their old open/draft states are superseded by these verified merges.
-- Publication branch: `docs/119-command-center-consolidation`; [PR #121](https://github.com/yorkstead/website/pull/121) is open for owner review and references issue #119. The published head is verified through GitHub after the handoff update; no merge or deployment.
+- Tracking issue [#119](https://github.com/yorkstead/website/issues/119); proposed spec, phased plan, and task checklist: [`specs/042-cc-028-command-center-consolidation/`](../../specs/042-cc-028-command-center-consolidation/). The merged audit is the architectural reference.
+- Audit PR [#121](https://github.com/yorkstead/website/pull/121) merged 2026-11-09 at `2d2e69232bb6b4126864aebd3032e93f0524bfb5`. Its source snapshot was `8c41a59e2ef656cde8cde6cc17224e70dc990061`; this merge adds the audit and handoff only.
+- Specification/plan PR [#122](https://github.com/yorkstead/website/pull/122) is open for review from `docs/119-command-center-spec-plan`, based on current `main` `2d2e69232bb6b4126864aebd3032e93f0524bfb5`. The plan requires owner decisions before any implementation slice. No product implementation, production/provider operation, data change, infrastructure/recovery change, merge, or deployment is authorized or performed.
+- Planning documentation checks: `bun run yorkstead:check`, `git diff --check`, relative Markdown link resolution, and trailing-whitespace scan passed in the isolated documentation worktree. No tests or product code changes were made.
+
+# Historical handoff — Command Center consolidation audit publication — 2026-11-09 (PR #121 merged)
+
+- The audit records the inventory, data/workflow ownership, overlap distinctions, incomplete/disconnected functionality, KEEP / CONSOLIDATE / COMPLETE / ARCHIVE / REMOVE recommendations, and proposed follow-up slices. See [`docs/audits/2026-11-09-command-center-consolidation.md`](../audits/2026-11-09-command-center-consolidation.md).
+- Relevant earlier implementation PRs #113, #114, and #115 are merged; stale open/draft claims in the historical handoffs below describe earlier verification snapshots.
+- The independent Infrastructure & Recovery workstream and its owned modules remain outside this consolidation scope.
 
 # Active work — Professional entity SEO — 2026-11-08
 
@@ -128,12 +134,7 @@ _Recorded at the earlier implementation checkpoint; later exact-head evidence is
 - Read-only production database preflight is **blocked at identity binding**. Vercel connector access returned 403 (App installation lacks project access); Vercel environment metadata without decryption returned 404 under the available scope; Neon has multiple plausible `website` projects without a binding to production `DATABASE_URL`. No production SQL was run. See `specs/037-ys-sys-001-systems-registry/production-preflight.md`.
 - Earlier counts from an unconfirmed candidate (7 entries, 11 audit rows, no entry without audit, 22 migration checksums) remain candidate-only and are not accepted as production evidence. Applied migrations, stable IDs, revisions/archive state, audit fingerprints/triggers, constraints and production recovery capabilities remain unverified.
 - **PR 1 implementation: NO-GO.** Wait for non-secret provider binding and the redacted production preservation/recovery evidence bundle. The existing additive schema, default-off flag and rollback strategy remain proposals; no schema or code implementation is authorized in this readiness update.
-- No production database/configuration action, merge or deployment occurred. The original dirty CC-022B checkout was preserved. This update is based on a clean dedicated checkout at the verified main commit.
-
-# Previous handoff — YS-SYS-001 PR 0 — 2026-11-01 (historical)
-
-- User authorizes read-only discovery, repository-native spec/plan/tasks/decision/roadmap/handoff work, verification, and PR 0 creation for issue [#86](https://github.com/yorkstead/website/issues/86). Subsequent small implementation PRs are requested as the program sequence, with no merge, deployment, production migration/data/configuration change, or purchase authorized. Each production operation remains separately gated.
-- Verified GitH…9061 tokens truncated…tion, customer message or endpoint retirement.
+- No production database/configuration action, merge or dep…9226 tokens truncated…tion, customer message or endpoint retirement.
 - Verified before edits: Website PR #78 was open at `46e068919a3c6a5cbd00747f3750aa69b26d568f`; Hub PR #91 was open at `99aeb263dee4ca44fee0306156295bd029c2488a`. Existing branches/checkouts are retained. Existing untracked `website.code-workspace` is preserved.
 - CC-021 merged read contract remains GET-only/version 1 and backward compatible; optional safe `captureActions` adds Hub audit metadata. Website independent Better Auth owner gate and Hub dedicated read auth remain.
 - Hub follow-up adds an ordered command processing lease migration, compare-and-set finalization, a durable Google Task external-write marker, interrupted-write recovery and a guard against reclassifying unresolved writes. Website stores same-key command recovery state before submission and fixes valid immediate reclassification selection. The latest review fix treats `hub_unavailable` as uncertain and preserves the same key; `needs_review` captures show manual reconciliation and expose no state-changing controls because legacy Tasker/Calendar writes may lack CC-022 markers. Local Website unit suite passes (391 pass, 110 DB-dependent skips), typecheck/lint/scaffold/migration checks pass; Hub full suite, typecheck and build pass. Latest Hub exact-head verification and PostgreSQL 16 compatibility passed at `7422f1197b2a9cf3a97a7aff346b496dca64a93e` ([run](https://github.com/yorkstead/yorkstead-automation-hub/actions/runs/40936292670), [PostgreSQL](https://github.com/yorkstead/yorkstead-automation-hub/actions/runs/40936292765)). Website exact-head CI passed at `8a2a85059e215acecee4b2c1449d5e578ff0b1be` ([run](https://github.com/yorkstead/website/actions/runs/40940215215)), including disposable PostgreSQL, unit/integration tests, browser suites, lint, typecheck, build and clean-worktree verification.
