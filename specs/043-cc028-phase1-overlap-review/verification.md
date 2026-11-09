@@ -19,6 +19,19 @@ Implementation is isolated in a writable checkout from the code-equivalent `8c41
 
 The server page checks the owner session before calling the read adapter. Search length is bounded; CRM SQL is parameterized and excludes retired inquiries; Marketing and Discovery reads use existing owner data contracts. The UI is noindex and has no write action. It displays only source, company, optional email, existing CRM link, and source navigation. No operational notes, research evidence, tokens, or customer portal data are exposed. If one source read fails, the page shows unavailable rather than a conclusive empty result. Pure matching does not mutate input records. No production data was queried.
 
+## Spec convergence
+
+| Criterion | Evidence |
+|---|---|
+| A1 | Page owner check precedes `loadOverlapReview`; page authorization test confirms no read for a denied session; CRM navigation link is present. |
+| A2 | `parseOverlapQuery`, per-source limits, loader-limit test, and incomplete-result warning. |
+| A3 | Pure matcher and false-positive tests for substrings, generic names, one-source duplicates, different emails, and exact email plus company. |
+| A4 | Page renders source, company, available email, existing CRM link, and source links; Marketing deep-link limitation is documented below. |
+| A5 | Read adapter uses SELECT-only CRM query and existing read contracts; no mutation form/endpoint; frozen-input preservation test. |
+| A6 | Eight focused tests cover the named cases; page fails closed on source read errors. |
+
+No high-severity security finding was identified in the new owner-only read path. The bounded search can miss matches; the UI and spec disclose that limitation.
+
 ## Remaining review
 
 Confirm the final GitHub PR head and CI results. Marketing has no prospect-specific deep link, so its source link opens the workspace; this is disclosed in the spec. Candidate matching is deliberately conservative and bounded; no result proves uniqueness.
