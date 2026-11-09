@@ -6,12 +6,12 @@ Implementation is isolated in a writable checkout from the code-equivalent `8c41
 
 ## Checks
 
-- Focused matching, loader-limit, and page authorization tests: 8 passed, 0 failed.
+- Focused matching, loader-limit, and authorization tests: 7 passed, 0 failed after removing global module mocks.
 - `bun run yorkstead:check`: passed, 44 active spec directories in the local checkout (current remote main includes the parent 042 spec, which is absent from this code-equivalent local checkout).
 - `bun run db:migrate:check`: passed, 24 migrations; no migration changed.
 - `bun run lint`: passed with one existing warning in `components/login-panel.tsx:62`.
 - `bun run typecheck`: passed after the final loader test was added.
-- `bun test`: 525 passed, 123 database-gated skips, 0 failed before the final loader test was added. The new focused loader test passed separately.
+- `bun test`: final local rerun after the CI correction passed 525, skipped 123 database-gated cases, and failed 0 across 148 files. This local run has no disposable PostgreSQL; exact-head CI provides database evidence.
 - `bun run build`: attempted; Turbopack could not resolve `next/package.json` because this isolated checkout uses a symlinked `node_modules` outside its filesystem root. This is an environment limit, not a successful build.
 - Browser E2E was not run locally: owner flows require disposable PostgreSQL, which is not available in this checkout. Review exact-head GitHub CI for build and browser evidence.
 
@@ -35,5 +35,9 @@ No high-severity security finding was identified in the new owner-only read path
 ## Remaining review
 
 Confirm the final GitHub PR head and CI results. Marketing has no prospect-specific deep link, so its source link opens the workspace; this is disclosed in the spec. Candidate matching is deliberately conservative and bounded; no result proves uniqueness.
+
+## CI correction
+
+Initial PR-head CI run 42637085849 failed in unrelated database tests because the new loader/page tests used `mock.module` on shared modules. Bun retained those mocks across test files, replacing the tagged database query function in analytics and other suites. Tests now inject bounded readers and the owner gate directly; no global module replacement remains. The production read path is unchanged apart from extracting typed source readers. Final local typecheck and full suite pass; exact-head CI must confirm database and browser coverage.
 
 The PR also restores the complete `docs/handoffs/CURRENT.md` history. The previous GitHub file update had committed a truncated copy with a truncation marker; the restored file's local Git blob SHA was compared with GitHub's returned blob SHA. The historical content is preserved and only the active status section is reconciled.
