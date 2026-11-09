@@ -39,6 +39,17 @@ cleanup_matrix() {
   status=$?
   trap - EXIT INT TERM HUP
   set +e
+  if [[ -d $workspace_root && -f $artifact ]]; then
+    shopt -s nullglob
+    for run_workspace in "$workspace_root"/*; do
+      [[ -f $run_workspace/.ys-sys-001-target-id ]] || continue
+      run_target=$(cat "$run_workspace/.ys-sys-001-target-id" 2>/dev/null)
+      [[ $run_target =~ ^[a-f0-9]{24}$ ]] || continue
+      python3 "$repo/scripts/recovery/private-rehearsal-cleanup.py" cleanup \
+        --target-id "$run_target" --workspace "$run_workspace" --artifact "$artifact" \
+        --docker-context default >/dev/null 2>&1 || true
+    done
+  fi
   docker --context default rm -f "$source_container" "$sentinel_container" >/dev/null 2>&1
   docker --context default network rm "$source_network" "$sentinel_network" >/dev/null 2>&1
   docker --context default volume rm "$sentinel_volume" >/dev/null 2>&1
