@@ -3,19 +3,20 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getOwnerSession } from "@/lib/owner-session";
-import { loadOverlapReview, parseOverlapQuery } from "@/lib/overlap-review";
+import { loadOwnerOverlapReview, loadOverlapReview, parseOverlapQuery } from "@/lib/overlap-review";
 
 export const metadata: Metadata = { title: "Account overlap review | Yorkstead", robots: { index: false, follow: false, noarchive: true } };
 
 export default async function OverlapReviewPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
-  if (!(await getOwnerSession(await headers()))) redirect("/login?next=/dashboard/overlap-review");
+  const authorized = Boolean(await getOwnerSession(await headers()));
+  if (!authorized) redirect("/login?next=/dashboard/overlap-review");
   const requested = (await searchParams).q;
   const raw = Array.isArray(requested) ? requested[0] : requested;
   const query = parseOverlapQuery(raw);
   let result: Awaited<ReturnType<typeof loadOverlapReview>> | null = null;
   let unavailable = false;
   if (query) {
-    try { result = await loadOverlapReview(query); }
+    try { result = await loadOwnerOverlapReview(authorized, query); }
     catch { unavailable = true; }
   }
   return <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 text-foreground sm:px-8">
