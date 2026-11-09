@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: siteURL, changeFrequency: "monthly", priority: 1 },
     { url: `${siteURL}/about`, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${siteURL}/brandon-york`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${siteURL}/solutions`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteURL}/platform`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${siteURL}/demos`, changeFrequency: "monthly", priority: 0.9 },

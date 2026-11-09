@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { caseStudies } from "@/lib/case-studies";
+import { brand } from "@/lib/brand";
 import { getPublicService, getServiceContactHref, getServiceStructuredData, publicServices } from "@/lib/services";
 
 describe("public service pages", () => {
@@ -62,7 +63,7 @@ describe("public service pages", () => {
     for (const service of publicServices) {
       const data = getServiceStructuredData(service);
       expect(data["@graph"].map((item) => item["@type"])).toEqual(["Service", "FAQPage", "BreadcrumbList"]);
-      expect(JSON.stringify(data)).toContain(`https://yorkstead.com/services/${service.slug}`);
+      expect(JSON.stringify(data)).toContain(`${brand.siteURL}/services/${service.slug}`);
       expect(getPublicService(service.slug)?.name).toBe(service.name);
     }
     expect(getPublicService("not-a-service")).toBeNull();
