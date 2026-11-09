@@ -232,7 +232,7 @@ async function configureRuntime() {
       AND NOT EXISTS(SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
         JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname='session' AND NOT t.tgisinternal)
       AND NOT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-        CROSS JOIN LATERAL aclexplode(COALESCE(p.proacl,acldefault(CASE WHEN p.prokind='p' THEN 'p' ELSE 'f' END,p.proowner))) a
+        CROSS JOIN LATERAL aclexplode(COALESCE(p.proacl,acldefault(CASE WHEN p.prokind='p' THEN 'p'::\"char\" ELSE 'f'::\"char\" END,p.proowner))) a
         WHERE n.nspname IN ('public','customer_auth') AND a.grantee IN (0,r.oid) AND a.privilege_type='EXECUTE') AS ok
     FROM pg_roles r WHERE r.rolname=$1`, [runtimeRole, privateDatabaseTables.map((name) => name.replaceAll('"', ""))]);
   if (bad.rows[0]?.ok !== true) throw new Error("effective runtime privileges exceed the private rehearsal allowlist");

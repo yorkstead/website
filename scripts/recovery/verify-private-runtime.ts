@@ -97,7 +97,7 @@ try {
   await denied("business-data truncate", "TRUNCATE public.workspaces");
   await deniedRoutine();
   const routine = await pool.query<{ count: number }>(`SELECT count(*)::int AS count FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-    CROSS JOIN LATERAL aclexplode(COALESCE(p.proacl,acldefault(CASE WHEN p.prokind='p' THEN 'p' ELSE 'f' END,p.proowner))) a
+    CROSS JOIN LATERAL aclexplode(COALESCE(p.proacl,acldefault(CASE WHEN p.prokind='p' THEN 'p'::\"char\" ELSE 'f'::\"char\" END,p.proowner))) a
     WHERE n.nspname IN ('public','customer_auth') AND a.grantee IN (0,(SELECT oid FROM pg_roles WHERE rolname=current_user)) AND a.privilege_type='EXECUTE'`);
   if (routine.rows[0]?.count !== 0) throw new Error("unapproved routine execution remains available");
   const sequences = await pool.query<{ count: number }>(`SELECT count(*)::int AS count FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
