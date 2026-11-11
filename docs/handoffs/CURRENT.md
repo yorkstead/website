@@ -7,8 +7,9 @@ Total output lines: 374
 - Current worktree is based on verified GitHub `main` `683ef64281cf80f8df5d6289544dbb695199cda6`; local branch `chore/cc028-disconnected-components`. GitHub MCP confirmed main and open PR #123; PR #123 (`CC-028 Phase 1: owner-only account overlap review`) remains open and is not part of this branch. Shell GitHub connectivity was unavailable; the connected GitHub source provided the live ref and PR metadata.
 - Exact-branch search found no static import, dynamic import, route or package export for either removed component; each identifier only appeared in its own definition. The active `LeadPriorityQueue` remains intact. No records, migrations, integrations, external actions, or production settings are changed.
 - Source spec and task list: `specs/042-cc-028-command-center-consolidation/`; verification: `specs/042-cc-028-command-center-consolidation/verification.md`. Remaining CC-028 phases are unselected and their listed owner decisions remain open. No merge, deployment, provider operation, or production query is authorized.
-- Verification: offline frozen install, scaffold, migration validation, lint, typecheck, full unit/database-gated suite, and production build passed. Full results and the database skips are recorded in `specs/042-cc-028-command-center-consolidation/verification.md`; final diff check and PR delivery remain.
-- Next: run `git diff --check`, review the exact staged scope, then push this branch and open one draft PR against `main`. Do not merge or deploy.
+- Verification: offline frozen install, scaffold, migration validation, lint, typecheck, full unit/database-gated suite, production build, and final diff check passed. Full results and database skips are recorded in `specs/042-cc-028-command-center-consolidation/verification.md`.
+- Draft PR [#124](https://github.com/yorkstead/website/pull/124) is open against `main` at implementation head `03dc15c43f14bf34fcf2ebc98b93b86dd3988bab`; a documentation-only follow-up will produce the final PR head. Exact-head CI for that final head remains to be checked. No merge or deployment is authorized.
+- Next: verify GitHub CI for the final PR head; keep the PR draft/open and do not merge or deploy.
 
 # Historical handoff — CC-028 Command Center consolidation specification — 2026-11-09
 

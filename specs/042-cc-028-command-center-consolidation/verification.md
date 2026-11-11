@@ -35,4 +35,4 @@ No production query, data mutation, migration, provider change, merge, or deploy
 
 ## Delivery
 
-Pending branch push and draft PR creation. No merge or deployment is authorized.
+Draft PR [#124](https://github.com/yorkstead/website/pull/124) is open against `main` and references issue #119. Its base is verified `main` `683ef64281cf80f8df5d6289544dbb695199cda6`; the implementation commit is `03dc15c43f14bf34fcf2ebc98b93b86dd3988bab`. The final documentation-only PR head and exact-head CI state must be checked after the handoff update. No merge or deployment is authorized.
