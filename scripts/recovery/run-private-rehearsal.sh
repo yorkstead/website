@@ -305,7 +305,7 @@ else
 fi
 docker_target run -d --name "$proxy_container" --label "ys-sys-001.target=$target_id" \
   --network "$net" --network-alias recovery.test --read-only --tmpfs /var/cache/nginx:rw,noexec,nosuid,size=8m \
-  --tmpfs /var/run:rw,noexec,nosuid,size=2m --cap-drop ALL --cap-add NET_BIND_SERVICE --cap-add SETUID --cap-add SETGID --group-add "$(id -g)" --security-opt no-new-privileges \
+  --tmpfs /var/run:rw,noexec,nosuid,size=2m --cap-drop ALL --cap-add NET_BIND_SERVICE --cap-add SETUID --cap-add SETGID --cap-add CHOWN --group-add "$(id -g)" --security-opt no-new-privileges \
   --mount "type=bind,src=$workspace/nginx.conf,dst=/etc/nginx/nginx.conf,readonly" \
   --mount "type=bind,src=$workspace/tls,dst=/run/tls,readonly" "$YS_PRIVATE_NGINX_IMAGE" >/dev/null
 fail_proxy_exit() {
