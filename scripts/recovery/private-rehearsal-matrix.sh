@@ -180,13 +180,19 @@ run_case() {
     || fail "${stage}: sanitized report or private RTO state is missing or exposed"
   after=$(sha256sum -- "$artifact" | cut -d' ' -f1)
   [[ $before == "$artifact_sha" && $after == "$artifact_sha" ]] || fail "${stage}: original synthetic artifact changed"
-  python3 - "$report" "$state" "$stage" "$expected" "$rc" <<'PY'
-import json,pathlib,sys
+  python3 - "$report" "$state" "$stage" "$expected" "$rc" "$log" <<'PY'
+import json,pathlib,re,sys
 report=json.loads(pathlib.Path(sys.argv[1]).read_text())
 state=json.loads(pathlib.Path(sys.argv[2]).read_text())
 stage,expected,rc=sys.argv[3],sys.argv[4],int(sys.argv[5])
 if expected=="success":
-    assert rc==0 and report.get("result")=="PASS" and report.get("cleanup")=="VERIFIED"
+    if not (rc==0 and report.get("result")=="PASS" and report.get("cleanup")=="VERIFIED"):
+        log=pathlib.Path(sys.argv[6]).read_text(errors="replace")
+        reasons=re.findall(r"(?m)^Private rehearsal failed: ([A-Za-z0-9 _.,:-]{1,120})$",log)
+        reason=reasons[-1] if reasons else "unclassified"
+        result=report.get("result") if report.get("result") in {"PASS","FAIL_READINESS","FAIL_CLEANUP","FAIL_READINESS_AND_CLEANUP"} else "UNKNOWN"
+        cleanup=report.get("cleanup") if report.get("cleanup") in {"VERIFIED","FAILED","PENDING"} else "UNKNOWN"
+        raise SystemExit(f"Synthetic success case failed: exit={rc}, result={result}, cleanup={cleanup}, category={reason}")
     timing=report.get("timing",{}); cleanup=timing.get("cleanup",{})
     assert timing.get("T0") and timing.get("TReady") and cleanup.get("TCleanupVerified")
     assert timing["TReady"] != cleanup["TCleanupVerified"]
