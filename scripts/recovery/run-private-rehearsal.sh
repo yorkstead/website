@@ -307,17 +307,21 @@ docker_target run -d --name "$proxy_container" --label "ys-sys-001.target=$targe
   --tmpfs /var/run:rw,noexec,nosuid,size=2m --cap-drop ALL --cap-add NET_BIND_SERVICE --security-opt no-new-privileges \
   --mount "type=bind,src=$workspace/nginx.conf,dst=/etc/nginx/nginx.conf,readonly" \
   --mount "type=bind,src=$workspace/tls,dst=/run/tls,readonly" "$YS_PRIVATE_NGINX_IMAGE" >/dev/null
-for attempt in $(seq 1 60); do
-  if docker_target exec "$proxy_container" nginx -t >/dev/null 2>&1 && docker_target exec "$proxy_container" wget -q --no-check-certificate -O /dev/null https://recovery.test/ >/dev/null 2>&1; then break; fi
-  (( attempt < 60 )) || fail 'internal TLS proxy did not become ready'
+proxy_config_ok=0
+for attempt in $(seq 1 10); do
+  if docker_target exec "$proxy_container" nginx -t >/dev/null 2>&1; then proxy_config_ok=1; break; fi
+  [[ $(docker_target inspect -f '{{.State.Running}}' "$proxy_container") == true ]] || fail 'internal TLS proxy container exited'
   sleep 1
 done
+(( proxy_config_ok == 1 )) || fail 'internal TLS proxy configuration check failed'
 app_ready=0
 for attempt in $(seq 1 60); do
   if docker_target exec "$proxy_container" wget -q --no-check-certificate -O /dev/null https://recovery.test/ >/dev/null 2>&1; then app_ready=1; break; fi
+  [[ $(docker_target inspect -f '{{.State.Running}}' "$proxy_container") == true ]] || fail 'internal TLS proxy container exited'
+  [[ $(docker_target inspect -f '{{.State.Running}}' "$app_container") == true ]] || fail 'pinned application container exited before proxy readiness'
   sleep 1
 done
-(( app_ready == 1 )) || fail 'pinned application did not become ready behind the internal proxy'
+(( app_ready == 1 )) || fail 'internal TLS proxy could not reach the pinned application'
 browser_fault_env=()
 browser_env="$workspace/secrets/browser.env"
 printf '%s\n' 'YS_APP_RECOVERY_PRIVATE_REHEARSAL=true' 'YS_APP_RECOVERY_BASE_URL=https://recovery.test' \
