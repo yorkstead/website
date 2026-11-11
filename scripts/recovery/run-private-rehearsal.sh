@@ -305,7 +305,7 @@ else
 fi
 docker_target run -d --name "$proxy_container" --label "ys-sys-001.target=$target_id" \
   --network "$net" --network-alias recovery.test --read-only --tmpfs /var/cache/nginx:rw,noexec,nosuid,size=8m \
-  --tmpfs /var/run:rw,noexec,nosuid,size=2m --cap-drop ALL --cap-add NET_BIND_SERVICE --group-add "$(id -g)" --security-opt no-new-privileges \
+  --tmpfs /var/run:rw,noexec,nosuid,size=2m --cap-drop ALL --cap-add NET_BIND_SERVICE --cap-add SETUID --cap-add SETGID --group-add "$(id -g)" --security-opt no-new-privileges \
   --mount "type=bind,src=$workspace/nginx.conf,dst=/etc/nginx/nginx.conf,readonly" \
   --mount "type=bind,src=$workspace/tls,dst=/run/tls,readonly" "$YS_PRIVATE_NGINX_IMAGE" >/dev/null
 fail_proxy_exit() {
@@ -337,7 +337,10 @@ fail_proxy_exit() {
   fi
   if [[ $fatal_log == *'bind()'* ]]; then fail 'internal TLS proxy socket bind failed'; fi
   if [[ $fatal_log == *'No such file or directory'* || $fatal_log == *'no such file or directory'* ]]; then fail 'internal TLS proxy required path is missing'; fi
-  if [[ $fatal_log == *'Operation not permitted'* || $fatal_log == *'operation not permitted'* ]]; then fail 'internal TLS proxy operation denied'; fi
+  if [[ $fatal_log == *'Operation not permitted'* || $fatal_log == *'operation not permitted'* ]]; then
+    if [[ $fatal_log == *'setgid'* || $fatal_log == *'setuid'* || $fatal_log == *'setgroups'* ]]; then fail 'internal TLS proxy worker privilege transition denied'; fi
+    fail 'internal TLS proxy operation denied'
+  fi
   if [[ ${CI:-} == true && ${GITHUB_ACTIONS:-} == true && ${YS_PRIVATE_SYNTHETIC_FIXTURE:-} == true ]]; then
     local synthetic_detail
     synthetic_detail=$(python3 - "$workspace/proxy.private.log" <<'PY'
