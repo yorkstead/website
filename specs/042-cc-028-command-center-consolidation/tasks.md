@@ -1,15 +1,15 @@
 # CC-028 — Command Center workflow consolidation tasks
 
 **Tracking:** issue [#119](https://github.com/yorkstead/website/issues/119)
-**Status:** Planning artifacts prepared for owner review. No implementation tasks are authorized or started.
+**Status:** T105 disconnected-component cleanup selected and verified on branch `chore/cc028-disconnected-components`; other implementation slices remain unselected.
 
 ## Planning and owner review
 
 - [x] T001 — Review merged audit and existing source-of-truth specs; map existing work to this proposal.
 - [x] T002 — Define program boundaries, acceptance criteria, explicit non-goals, risks, and owner decision gates.
 - [x] T003 — Sequence independent candidate implementation slices with effort, risk, benefit, and review gates.
-- [ ] T004 — Owner reviews this specification and plan, selects follow-up slices, and records the required decisions in issue #119 or the affected specs.
-- [ ] T005 — Reconfirm current main and exact source/API/component contracts before opening an implementation slice; revise this plan if the audit/source has changed.
+- [x] T004 — Owner authorized continuing with the consolidation plan; T105 was selected for this independently verifiable slice after current source review. Decisions for other gated slices remain outstanding.
+- [x] T005 — Reconfirmed live `main` at `683ef64281cf80f8df5d6289544dbb695199cda6` through GitHub and fetched that exact ref before implementation.
 
 ## Conditional implementation slices — separately authorized after T004
 
@@ -17,7 +17,7 @@
 - [ ] T102 — If selected, refine existing CC-021/CC-027 attention source, destination, freshness, partial-state, and supported-action presentation; update those owning specs.
 - [ ] T103 — After the owner decides snapshot semantics, clarify consultation identity behavior and add workflow regression coverage.
 - [ ] T104 — After value/handoff decisions, clarify CRM commercial amount versus Marketing attribution; add an explicit project-creation handoff only if approved.
-- [ ] T105 — Confirm no static, dynamic, route, or external consumer before removing either disconnected attention/briefing component.
+- [x] T105 — Confirmed no static, dynamic, route, package, or other in-repository consumer for the two disconnected components; removed only those files. `LeadPriorityQueue` and active Automation Hub integration remain untouched.
 - [ ] T106 — If selected, adjust navigation labels/grouping using CC-017/CC-025 contracts and owner-confirmed Quick Launch targets.
 - [ ] T107 — Route active external prospecting outputs into existing Discovery/CRM only through a separately authorized scope; otherwise leave outside this repository.
 
