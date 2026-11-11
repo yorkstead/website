@@ -309,19 +309,27 @@ docker_target run -d --name "$proxy_container" --label "ys-sys-001.target=$targe
   --mount "type=bind,src=$workspace/nginx.conf,dst=/etc/nginx/nginx.conf,readonly" \
   --mount "type=bind,src=$workspace/tls,dst=/run/tls,readonly" "$YS_PRIVATE_NGINX_IMAGE" >/dev/null
 fail_proxy_exit() {
-  local proxy_log
+  local proxy_log fatal_log
   docker_target logs "$proxy_container" >"$workspace/proxy.private.log" 2>&1 || true
   [[ $(docker_target inspect -f '{{.State.Running}}' "$app_container" 2>/dev/null || true) == true ]] \
     || fail 'pinned application container exited before proxy readiness'
   proxy_log=$(cat "$workspace/proxy.private.log")
-  if [[ $proxy_log == *'Permission denied'* || $proxy_log == *'permission denied'* ]]; then
-    if [[ $proxy_log == *'/etc/nginx/nginx.conf'* ]]; then fail 'internal TLS proxy config access denied'; fi
-    if [[ $proxy_log == *'/run/tls/'* ]]; then fail 'internal TLS proxy key access denied'; fi
-    if [[ $proxy_log == *'/var/cache/nginx/'* ]]; then fail 'internal TLS proxy cache access denied'; fi
+  fatal_log=$(printf '%s\n' "$proxy_log" | grep -E '\[(emerg|crit|alert)\]' || true)
+  [[ -n $fatal_log ]] || fatal_log=$proxy_log
+  if [[ $fatal_log == *'Permission denied'* || $fatal_log == *'permission denied'* ]]; then
+    if [[ $fatal_log == *'/etc/nginx/nginx.conf'* ]]; then fail 'internal TLS proxy config access denied'; fi
+    if [[ $fatal_log == *'/run/tls/'* ]]; then fail 'internal TLS proxy key access denied'; fi
+    if [[ $fatal_log == *'/var/cache/nginx/'* ]]; then fail 'internal TLS proxy cache access denied'; fi
     fail 'internal TLS proxy filesystem access denied'
   fi
-  if [[ $proxy_log == *'Read-only file system'* || $proxy_log == *'read-only file system'* ]]; then fail 'internal TLS proxy needs an unwritable path'; fi
-  if [[ $proxy_log == *'host not found in upstream'* ]]; then fail 'internal TLS proxy upstream DNS unavailable'; fi
+  if [[ $fatal_log == *'Read-only file system'* || $fatal_log == *'read-only file system'* ]]; then
+    if [[ $fatal_log == *'/var/run/nginx.pid'* || $fatal_log == *'/run/nginx.pid'* ]]; then fail 'internal TLS proxy pid path is read only'; fi
+    if [[ $fatal_log == *'/var/cache/nginx/'* ]]; then fail 'internal TLS proxy cache path is read only'; fi
+    if [[ $fatal_log == *'/etc/nginx/'* ]]; then fail 'internal TLS proxy config path is read only'; fi
+    if [[ $fatal_log == *'/tmp/'* ]]; then fail 'internal TLS proxy temporary path is read only'; fi
+    fail 'internal TLS proxy needs an unwritable path'
+  fi
+  if [[ $fatal_log == *'host not found in upstream'* ]]; then fail 'internal TLS proxy upstream DNS unavailable'; fi
   fail 'internal TLS proxy container exited'
 }
 proxy_config_ok=0
