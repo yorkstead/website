@@ -386,7 +386,23 @@ browser_members=$(docker_target network inspect -f '{{range $id,$c := .Container
 [[ $browser_members == "$expected_browser_members" ]] || fail 'browser did not join the exact isolated target network'
 browser_exit=$(docker_target wait "$browser_container") || fail 'private browser container wait failed'
 docker_target logs "$browser_container" >"$workspace/browser.private.log" 2>&1
-[[ $browser_exit == 0 ]] || fail 'authenticated dashboard, Directory, or denied-write browser verification failed'
+if [[ $browser_exit != 0 ]]; then
+  browser_failure=$(python3 - "$workspace/browser.private.log" <<'PY'
+import pathlib,re,sys
+log=pathlib.Path(sys.argv[1]).read_text(errors="replace")
+lines=[int(line) for line in re.findall(r"private-recovery\.e2e\.ts:(\d+):\d+",log)]
+if lines:
+    print(f"assertion line {lines[-1]}")
+elif "browserType.launch" in log:
+    print("browser launch")
+elif "No tests found" in log:
+    print("test discovery")
+else:
+    print("unclassified")
+PY
+)
+  fail "authenticated browser verification failed: $browser_failure"
+fi
 run_private_bun scripts/recovery/verify-private-runtime.ts >"$workspace/runtime-check.private.log" 2>&1 || fail 'tenant isolation or restricted runtime verification failed'
 
 # App and proxy are the only runtime services; the internal network must reject
