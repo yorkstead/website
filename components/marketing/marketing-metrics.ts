@@ -42,7 +42,10 @@ export function scoreFor(workspace: MarketingWorkspace, week: number, timeZone: 
     comments: activities.filter((item) => item.type === "linkedin-comment").length,
     paidAudits: activities.filter((item) => item.type === "audit-paid").length,
     paidClients: activities.filter((item) => item.type === "client-won").length,
-    bookedRevenue: activities.filter((item) => ["audit-paid", "client-won"].includes(item.type)).reduce((sum, item) => sum + item.value, 0),
+    // Marketing attribution from outreach activity. The accepted CRM proposal
+    // amount is the commercial figure (CC-028 T104), so this value never counts
+    // as booked revenue on its own.
+    attributedValue: activities.filter((item) => ["audit-paid", "client-won"].includes(item.type)).reduce((sum, item) => sum + item.value, 0),
     posts: workspace.content.filter((item) => item.status === "published" && inWeek(item.publishAt || item.updatedAt, workspace.campaignStart, week, timeZone)).length,
   };
 }
