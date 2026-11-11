@@ -238,6 +238,7 @@ printf '%s\n' \
   "YS_APP_RECOVERY_OWNER_PASSWORD=$owner_password" \
   'OWNER_EMAIL=owner@recovery.test' \
   'BETTER_AUTH_URL=https://recovery.test' \
+  "BETTER_AUTH_SECRET=$auth_secret" \
   'PASSKEY_RP_ID=recovery.test' >"$prep_env"
 chmod 600 "$prep_env"
 run_private_bun() {
