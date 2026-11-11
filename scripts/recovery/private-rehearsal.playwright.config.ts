@@ -12,6 +12,7 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   reporter: "dot",
+  outputDir: "/tmp/ys-sys-001-playwright-results",
   use: {
     baseURL,
     ignoreHTTPSErrors: true,

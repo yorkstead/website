@@ -377,7 +377,7 @@ printf '%s\n' 'YS_APP_RECOVERY_PRIVATE_REHEARSAL=true' 'YS_APP_RECOVERY_BASE_URL
 if [[ $fault == browser ]]; then printf '%s\n' 'YS_PRIVATE_TEST_BROWSER_FAIL=true' 'YS_PRIVATE_SYNTHETIC_FIXTURE=true' >>"$browser_env"; fi
 chmod 600 "$browser_env"
 docker_target run -d --name "$browser_container" --label "ys-sys-001.target=$target_id" \
-  --network "$net" --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m --tmpfs /runner/test-results:rw,noexec,nosuid,size=16m \
+  --network "$net" --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m \
   --shm-size=512m --cap-drop ALL --security-opt no-new-privileges --env HOME=/tmp --env-file "$browser_env" \
   "ys-sys-001-rehearsal-runner:$target_id" x playwright test --config scripts/recovery/private-rehearsal.playwright.config.ts \
   >/dev/null
