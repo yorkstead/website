@@ -256,7 +256,8 @@ business_tables=(application_migrations workspaces workspace_snapshots system_di
 snapshot_business_data() {
   local output=$1 table_args=()
   for table in "${business_tables[@]}"; do table_args+=(--table="public.$table"); done
-  docker_target exec "$db_container" pg_dump -U postgres -d "$db_name" --data-only --no-owner --no-acl "${table_args[@]}" 2>/dev/null | sha256sum | cut -d' ' -f1 >"$output"
+  docker_target exec "$db_container" pg_dump -U postgres -d "$db_name" --data-only --no-owner --no-acl \
+    --restrict-key=YS001IntegrityOnly "${table_args[@]}" 2>/dev/null | sha256sum | cut -d' ' -f1 >"$output"
   [[ -s $output ]] || fail 'business-data integrity snapshot failed'
 }
 snapshot_business_data "$workspace/integrity-before.sha256"
