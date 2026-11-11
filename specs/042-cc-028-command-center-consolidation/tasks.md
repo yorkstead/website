@@ -18,7 +18,8 @@
 - [x] T103 — Linked consultation identity is specified as a meeting-time snapshot; the editor shows a read-only snapshot with a CRM link and `updateConsultation` preserves identity and link. See `specs/045-cc028-phase3-consultation-identity/`. PR open for review.
 - [ ] T104 — After value/handoff decisions, clarify CRM commercial amount versus Marketing attribution; add an explicit project-creation handoff only if approved.
 - [x] T105 — Confirmed no static, dynamic, route, package, or other in-repository consumer for the two disconnected components; removed only those files. `LeadPriorityQueue` and active Automation Hub integration remain untouched. Merged in PR [#124](https://github.com/yorkstead/website/pull/124) at `6a0173239aeb4860d0dccecc14749ff2f314070b`.
-- [ ] T106 — If selected, adjust navigation labels/grouping using CC-017/CC-025 contracts and owner-confirmed Quick Launch targets.
+- [x] T106a — Quick Launch and workspace defaults now target `yorkstead`; `4twentydev` is retired for GitHub and Vercel per the owner (2026-11-11). See `specs/047-cc028-phase6a-quick-launch-targets/`. PR open for review.
+- [ ] T106b — Navigation label/grouping regrouping is proposed but not implemented; it needs owner acceptance of the taxonomy and a route-preserving change.
 - [ ] T107 — Route active external prospecting outputs into existing Discovery/CRM only through a separately authorized scope; otherwise leave outside this repository.
 
 ## Excluded work

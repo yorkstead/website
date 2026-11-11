@@ -12,7 +12,7 @@ describe("quick launch project link resolution", () => {
     status: "Active",
     kind: "Software",
     stack: ["Next.js", "Tailwind", "Shopify"],
-    repo: "https://github.com/4twentydev/jwld-store",
+    repo: "https://github.com/yorkstead/jwld-store",
     deployment: "https://jwld.store",
     updatedAt: "2026-08-20T12:00:00Z",
     updatedLabel: "Updated yesterday",
@@ -25,9 +25,16 @@ describe("quick launch project link resolution", () => {
     const links = resolveProjectLinks(baseProject);
 
     expect(links.liveUrl).toBe("https://jwld.store");
-    expect(links.repoUrl).toBe("https://github.com/4twentydev/jwld-store");
+    expect(links.repoUrl).toBe("https://github.com/yorkstead/jwld-store");
     expect(links.vercelProjectSlug).toBe("jwld-store");
-    expect(links.vercelConsoleUrl).toBe("https://vercel.com/4twentydev/jwld-store");
+    expect(links.vercelConsoleUrl).toBe("https://vercel.com/yorkstead/jwld-store");
+  });
+
+  test("explicit account targets still override the defaults", () => {
+    const links = resolveProjectLinks({ ...baseProject, repo: undefined }, undefined, "another-user", "another-team");
+
+    expect(links.vercelConsoleUrl).toBe("https://vercel.com/another-team/jwld-store");
+    expect(links.repoUrl).toBe("https://github.com/another-user/jwld-store");
   });
 
   test("falls back to intelligence vercel URL when deployment is empty", () => {

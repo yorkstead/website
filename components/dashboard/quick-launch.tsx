@@ -38,8 +38,8 @@ export type QuickLaunchTab = "all" | "projects" | "consoles" | "operations";
 export function resolveProjectLinks(
   project: Project,
   intelligenceEntry?: ProjectIntelligenceEntry,
-  githubUsername = "4twentydev",
-  vercelTeam = "4twentydev"
+  githubUsername = "yorkstead",
+  vercelTeam = "yorkstead"
 ) {
   const vercelProjectSlug = project.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   const liveUrl = project.deployment || (intelligenceEntry?.data?.vercel?.url ? `https://${intelligenceEntry.data.vercel.url}` : undefined);
@@ -64,8 +64,8 @@ export interface QuickLaunchProps {
 export function QuickLaunch({
   projects,
   intelligence,
-  githubUsername = "4twentydev",
-  vercelTeam = "4twentydev",
+  githubUsername = "yorkstead",
+  vercelTeam = "yorkstead",
   onNewTask,
   onNewIdea,
   onNewProject,

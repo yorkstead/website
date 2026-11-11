@@ -54,8 +54,8 @@ export type ProjectNote = {
 export const defaultWorkspaceSettings: WorkspaceSettings = {
   displayName: "4twen",
   timezone: defaultTimeZone,
-  githubUsername: "4twentydev",
-  vercelTeam: "4twentydev",
+  githubUsername: "yorkstead",
+  vercelTeam: "yorkstead",
   staleProjectDays: 14,
   defaultTaskPriority: "Medium",
 };

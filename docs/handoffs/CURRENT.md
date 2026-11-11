@@ -1,3 +1,11 @@
+# Active work — CC-028 Phase 6a Quick Launch targets — 2026-11-11
+
+- Owner confirmation: `4twentydev` is retired for GitHub and Vercel; both targets are `yorkstead`. The Neon organization may still be named 4twenty, which does not affect these links.
+- Specification and plan: [`specs/047-cc028-phase6a-quick-launch-targets/`](../../specs/047-cc028-phase6a-quick-launch-targets/). Parent task split into T106a/T106b in `specs/042-cc-028-command-center-consolidation/tasks.md`.
+- Implementation: `resolveProjectLinks` and `QuickLaunch` prop defaults, `defaultWorkspaceSettings`, and the unauthenticated project-import listing now use `yorkstead`. Explicit caller values and stored workspace settings still override the defaults.
+- Verification: focused link tests 4/4 including explicit overrides; scaffold PASS (47 spec directories); 24 migration checks; full suite 650 pass / 0 fail / 0 skip against the local disposable database; lint 0 errors (one pre-existing `login-panel.tsx:62` warning); typecheck and build pass.
+- Deliberately unchanged: stored workspace settings that already contain `4twentydev` (owner edits Settings), and the published sic-pizza case-study link to `github.com/4twentydev/sic-pizza`, which needs an owner decision if that repository no longer exists. T106b navigation regrouping is proposed but not implemented.
+
 # Documentation closeout — CC-028 ledger reconciliation — 2026-11-11
 
 - Verified through GitHub: `main` is `c4aeca67e0e1e96d0e77a747e22b27462a0efa84`, the merge of PR [#127](https://github.com/yorkstead/website/pull/127) (2026-11-11 10:01:37 UTC, final head `7cc2cc6265ab`). Duplicate draft PR #126 was closed at 09:59:22Z after its diff was compared against #127; its behavior is covered by #127.

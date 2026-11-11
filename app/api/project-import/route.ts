@@ -44,7 +44,7 @@ export async function GET(request: Request) {
   const githubAuthenticated = Boolean(process.env.GITHUB_TOKEN);
   const githubHeaders: HeadersInit = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
   if (process.env.GITHUB_TOKEN) githubHeaders.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-  const githubEndpoint = githubAuthenticated ? "https://api.github.com/user/repos?per_page=100&sort=pushed&affiliation=owner" : "https://api.github.com/users/4twentydev/repos?per_page=100&sort=pushed&type=owner";
+  const githubEndpoint = githubAuthenticated ? "https://api.github.com/user/repos?per_page=100&sort=pushed&affiliation=owner" : "https://api.github.com/users/yorkstead/repos?per_page=100&sort=pushed&type=owner";
   const githubPromise = requestJSON(githubEndpoint, { headers: githubHeaders, cache: "no-store" }, githubAuthenticated, (value) => Array.isArray(value) ? value as GitHubRepo[] : null);
 
   const vercelPromise: Promise<IntegrationResult<VercelProject[] | null>> = process.env.VERCEL_TOKEN
