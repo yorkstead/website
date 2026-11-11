@@ -3,7 +3,7 @@
 **Tracking:** issue [#119](https://github.com/yorkstead/website/issues/119)
 **Specification:** [`spec.md`](spec.md)
 **Architectural baseline:** merged Command Center audit, [`docs/audits/2026-11-09-command-center-consolidation.md`](../../docs/audits/2026-11-09-command-center-consolidation.md).
-**Plan status:** Proposed; sequence and owner gates require review. No implementation is authorized by this plan.
+**Plan status:** Active in small owner-directed slices. T101 and T105 are merged; T102 is underway. Remaining slices stay gated by their documented owner decisions and selection.
 
 ## Delivery strategy
 

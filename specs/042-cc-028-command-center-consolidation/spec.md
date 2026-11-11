@@ -2,7 +2,7 @@
 
 **Tracking:** GitHub issue [#119](https://github.com/yorkstead/website/issues/119)
 **Architectural reference:** [`docs/audits/2026-11-09-command-center-consolidation.md`](../../docs/audits/2026-11-09-command-center-consolidation.md), reviewed on the `main` snapshot that includes merged PR #121.
-**Status:** The owner authorized the independently reviewable T105 disconnected-component cleanup slice on 2026-11-10. Other phases remain proposed and gated by their listed owner decisions.
+**Status:** T105 disconnected-component cleanup and T101 account overlap review are merged. The owner continued with T102 attention observation clarity on 2026-11-10; remaining phases retain their listed owner decisions and gates.
 
 ## User value
 
@@ -42,7 +42,7 @@ This is a phased consolidation program for the existing Marketing → Opportunit
 4. Confirm the intended GitHub/Vercel owners for Quick Launch when workspace overrides are unset.
 5. Confirm the status and owner of the external prospecting schedule and paused monitor. Review their contracts through their owning platforms only under separate authorization.
 6. **T105 cleanup review (2026-11-10):** exact-branch static search found no import, dynamic import, route, or package export for `ConnectedOperations` or `DashboardOperationsBriefing`; each identifier appeared only in its own component definition. These are private application components, not exported package entry points. No consumer exists in this application tree; T105 removes only these two files. The active `LeadPriorityQueue` is separate and remains unchanged.
-7. Select and prioritize follow-up slices after reviewing this spec; client portal activation and Registry/recovery remain separate workstreams. T105 selection does not authorize other slices.
+7. Select and prioritize follow-up slices after reviewing this spec; client portal activation and Registry/recovery remain separate workstreams. T105 selection alone did not authorize other slices; the owner later continued with T102.
 
 ## Risks and controls
 

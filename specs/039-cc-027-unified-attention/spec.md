@@ -47,6 +47,7 @@ flowchart LR
 - A10: All data is available only in the existing owner-authenticated dashboard. No tenant or other-user data is added, no privileged token is sent to the browser, and links are validated or fixed same-origin paths.
 - A11: Focused regression coverage verifies source states, source names and canonical status/due/action display, safe links, CRM/research record navigation, no external mutation or aggregation persistence, preservation of existing project task editability, and responsive/accessibility basics.
 - A12: Required repository checks and applicable browser tests are recorded; spec, verification record, and active handoff match the implementation. Open one reviewable draft PR; no merge, production change, or deployment.
+- A13: Successful Website CRM and Opportunity Discovery snapshots show when the dashboard read them, labeled as a snapshot read in Denver time. This observation time is not represented as a source-record update time or as proof that upstream data is current. Failed reads do not show a successful observation time.
 
 ## Constraints and non-goals
 
@@ -55,6 +56,7 @@ flowchart LR
 - Keep the existing Google Task completion flow in its current dedicated interface.
 - Do not change the Automation Hub execution contract or the dashboard's existing `/api/briefing` caller in this PR. If that path has side effects, document the follow-up separately.
 - Existing CRM, research, and GitHub reads are bounded. Where totals are unavailable, exact-limit results are labelled as potentially incomplete, and the linked source remains the complete queue.
+- CRM and Opportunity Discovery do not provide source freshness metadata. Their dashboard read observation time may be shown; upstream record freshness must remain unknown.
 - Google Calendar events stay in the existing CalendarTimeline unless a current safe read model provides a verified action-oriented commitment.
 
 ## Rollback

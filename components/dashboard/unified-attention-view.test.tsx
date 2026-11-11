@@ -36,6 +36,28 @@ describe("Unified attention", () => {
     expect(cappedHtml).toContain("The result may be incomplete.");
   });
 
+  test("shows when CRM and research snapshots were read without calling them source-update times", () => {
+    const html = renderToStaticMarkup(createElement(UnifiedAttentionView, {
+      ...baseProps,
+      crmObservedAt: "2026-11-07T18:00:00.000Z",
+      researchObservedAt: "2026-11-07T19:30:00.000Z",
+    }));
+    expect(html).toContain("Snapshot read Nov 7, 11:00 AM MST");
+    expect(html).toContain("Snapshot read Nov 7, 12:30 PM MST");
+    expect(html).not.toContain("Last updated Nov 7");
+
+    const unavailableHtml = renderToStaticMarkup(createElement(UnifiedAttentionView, {
+      ...baseProps,
+      crmUnavailable: true,
+      crmObservedAt: null,
+      research: { items: [], unavailable: true, truncated: false },
+      researchObservedAt: null,
+    }));
+    expect(unavailableHtml).not.toContain("Snapshot read");
+    expect(unavailableHtml).toContain("CRM summary did not load; this is not an empty queue.");
+    expect(unavailableHtml).toContain("Research follow-ups did not load; this is not an empty queue.");
+  });
+
   test("rejects non-GitHub and non-HTTPS external destinations", () => {
     expect(safeGitHubUrl("https://github.com/yorkstead/website/issues/1")).toBe("https://github.com/yorkstead/website/issues/1");
     expect(safeGitHubUrl("https://attacker.example/yorkstead/website/issues/1")).toBeNull();

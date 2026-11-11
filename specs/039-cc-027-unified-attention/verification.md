@@ -2,6 +2,17 @@
 
 ## Current result
 
+T102 observation-time refinement verified locally on 2026-11-11 from base `3bc6e1076db103770d20f82087f5147ea50354a3`:
+
+- Focused `bun test components/dashboard/unified-attention-view.test.tsx components/dashboard/command-center-overview.test.tsx` — PASS, 11 tests, 51 assertions.
+- `bun run yorkstead:check` — PASS, 45 active spec directories.
+- `bun run db:migrate:check` — PASS, all 24 migrations; none changed.
+- `bun run lint` — PASS with the existing warning at `components/login-panel.tsx:62`.
+- `bun run typecheck` — PASS.
+- `bun test` — PASS, 526 passed, 123 database-gated skipped, 0 failed; 649 tests across 148 files.
+- `bun run build` — PASS, Next.js 16.4.2 generated all 89 static pages.
+- `git diff --check` — PASS. Browser E2E not run: this change adds read-only timestamp text and does not change routes, authentication, or browser interactions.
+
 Implementation source commit: `7216b64a5ddf0c751f86c1f4baf622f9c7ea75ec`, based on verified `main` SHA `4b8fa4714ad865ef7bf066d815ca6b14d5a8d542`. Browser-test corrections are in commits `bbf9df6efa25cfdd9b76846bc30d9b30d09a7e0e` and `5a41caea5dee1e073ef6a15f0ab6587caa6226b0`. Exact-head GitHub Actions run [42429982621](https://github.com/yorkstead/website/actions/runs/42429982621) passed all jobs on `5a41caea5dee1e073ef6a15f0ab6587caa6226b0`, including disposable PostgreSQL, all browser workflows, the authenticated Marketing-to-CRM workflow, production build, Registry synthetic role verification, and isolated Recovery rehearsal. GitHub's Vercel check is successful on this SHA. The Vercel deployment list contained no matching record and lookup by the status target returned 404, so the preview's deployment URL/readiness could not be independently confirmed through the available Vercel API scope. A documentation-only follow-up will change the PR head; its checks must be verified separately.
 
 ## Acceptance evidence
@@ -16,7 +27,7 @@ Implementation source commit: `7216b64a5ddf0c751f86c1f4baf622f9c7ea75ec`, based 
 | A6 | Existing `/api/dashboard/automation-hub` owner gate and bounded DTO are reused. The view calls GET only, displays section availability/truncation/checked time, and includes only open Google Tasks, review queue items, and captures requiring confirmation. No token is sent to the browser. |
 | A7 | Calendar commitments remain in the existing `CalendarTimeline`; the view links to it and does not infer that arbitrary events require action. |
 | A8 | Attention component contains no write controls, mutation fetches, task persistence, automation command, or external API call other than the existing owner-gated read endpoint. Existing dedicated Google Task completion and Workspace editor interfaces remain intact. |
-| A9 | Unit coverage checks populated/empty/unavailable/truncated source states, status/date/navigation, URL validation, and display-only behavior. Retrieval timestamp is shown only for Hub and last-known GitHub data where evidence is provided. |
+| A9 | Unit coverage checks populated/empty/unavailable/truncated source states, status/date/navigation, URL validation, and display-only behavior. Hub and stale GitHub retain their source-provided timestamps; successful CRM and research reads show an explicitly labeled dashboard observation time only. |
 | A10 | Dashboard page verifies owner session before source reads; Hub BFF verifies owner again. Links use encoded same-origin IDs, fixed Hub URL, or validated GitHub HTTPS URLs. |
 | A11 | Added component tests and authenticated Playwright coverage for CRM and Hub records, anonymous Hub denial, no Hub writes, mobile width, and existing Workspace task editability. The exact-head browser workflows passed in CI, including the existing Workspace project-task editability and authenticated Marketing-to-CRM test. |
 | A12 | Local checks and exact-head CI passed on the code head documented above. Handoff and this record are updated. PR #114 remains a draft and unmerged; documentation follow-up exact-head checks remain to be verified. |
@@ -53,7 +64,7 @@ Implementation source commit: `7216b64a5ddf0c751f86c1f4baf622f9c7ea75ec`, based 
 
 ## Known limitations and deferred work
 
-- CRM and Opportunity Discovery snapshots do not include a checked-at field; the view explicitly discloses that freshness cannot be determined.
+- CRM and Opportunity Discovery snapshots do not include an upstream checked-at field. The dashboard shows only the successful Website read completion time, labeled `Snapshot read` in America/Denver; it does not imply source-record freshness. Failed reads omit this timestamp and remain visibly unavailable.
 - CRM lists use existing fixed query limits. An exact-limit result is marked as potentially incomplete. GitHub issue/PR lists likewise mark the known existing display limit. Automation Hub uses its explicit truncation markers.
 - Calendar records are not copied into this panel. The existing CalendarTimeline and month API remain the authority and destination; this panel does not claim live calendar availability.
 - This view does not change duplicate reminders, push subscriptions, cron schedules, Tasker, OAuth paths, or Workspace lifecycle behavior.

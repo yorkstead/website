@@ -27,6 +27,13 @@ Run results on the final local implementation revision:
 
 No production query, data mutation, migration, provider change, merge, or deployment is authorized or performed by this slice.
 
+## T102 attention observation review — 2026-11-10
+
+- Source ownership remains Website CRM for sales follow-ups, Opportunity Discovery for research actions, Automation Hub for its projected review/task sections, GitHub for linked project issues/PRs, and Google Calendar for calendar commitments. Workspace tasks remain in the existing Workspace editor and CalendarTimeline.
+- CRM and Opportunity Discovery reads expose bounded items and failure/limit state but no upstream `checkedAt` or record freshness field. The view already links CRM rows to `/dashboard/leads?lead=<id>` and research rows to `/dashboard/opportunities?id=<id>`; supported mutations remain in those source-owned workflows.
+- T102 adds only the time at which successful CRM/research reads completed, labeled `Snapshot read` in America/Denver. It does not claim record freshness, alter item ownership/status, extend query bounds, or add source writes. An unsuccessful read has no observation timestamp and remains unavailable rather than empty.
+- Focused regression coverage verifies localized observation labels and omission on failed reads. Full command/check evidence will be recorded after execution.
+
 ## Spec convergence
 
 - A7: exact-branch consumer scan found no consumers; only the two disconnected presentation files were removed.
@@ -35,4 +42,18 @@ No production query, data mutation, migration, provider change, merge, or deploy
 
 ## Delivery
 
-Draft PR [#124](https://github.com/yorkstead/website/pull/124) is open against `main` and references issue #119. Its base is verified `main` `683ef64281cf80f8df5d6289544dbb695199cda6`; the implementation commit is `03dc15c43f14bf34fcf2ebc98b93b86dd3988bab`. The final documentation-only PR head and exact-head CI state must be checked after the handoff update. No merge or deployment is authorized.
+PR [#124](https://github.com/yorkstead/website/pull/124) merged to `main` at `6a0173239aeb4860d0dccecc14749ff2f314070b`; its final head was `32f85a1615cbf3b191a9eaaa88644253ce90977a`. The implementation was limited to the two disconnected component files and supporting CC-028 documentation. No production data or configuration was changed.
+
+## T102 local verification — 2026-11-11
+
+- Base: live GitHub `main` `3bc6e1076db103770d20f82087f5147ea50354a3`; isolated branch `chore/119-attention-observation-time`.
+- Focused attention/overview tests: 11 passed, 51 assertions.
+- `bun run yorkstead:check`: PASS, 45 active spec directories.
+- `bun run db:migrate:check`: PASS, all 24 existing migrations; no migration changed.
+- `bun run lint`: PASS with the existing warning at `components/login-panel.tsx:62`.
+- `bun run typecheck`: PASS.
+- `bun test`: PASS, 526 passed, 123 database-gated skipped, 0 failed; 649 tests across 148 files.
+- `bun run build`: PASS; Next.js 16.4.2 generated all 89 static pages.
+- `git diff --check`: PASS. E2E was not run because the change adds read-only observation labels without changing routes, auth, or browser interaction.
+- Dependency install in the isolated worktree used `bun install --frozen-lockfile --offline`; the committed lockfile is unchanged.
+- No records, migration, provider, production data/configuration, Registry/Operations, recovery, customer workflow, or external action changed.

@@ -5,6 +5,7 @@
 - [x] Define ownership and acceptance criteria without adding a competing task manager.
 - [x] Build a read-only source-aware attention model and Overview component.
 - [x] Reuse existing owner-protected CRM, Opportunity Discovery, project status, Automation Hub, Workspace, and Calendar pathways.
+- [x] Show a Denver-time observation timestamp for successful CRM and Opportunity Discovery dashboard reads; do not label it as record freshness or display it after a failed read.
 - [x] Add source state, bounded-result, error, and safe-navigation regression coverage.
 - [x] Add authenticated Playwright coverage for the new view and verify existing Workspace task editor remains available (local run blocked; exact-head CI pending).
 - [x] Run focused and repository-required local checks; record skipped/blocked checks.

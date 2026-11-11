@@ -13,10 +13,10 @@ export default async function DashboardPage() {
   if (!session) redirect("/login?next=/dashboard");
   const [automationHub, crmResult, analyticsResult, researchResult] = await Promise.all([
     getAutomationHubData(),
-    getCommandCenterCrmSnapshot().then((snapshot) => ({ snapshot, unavailable: false })).catch(() => ({ snapshot: null, unavailable: true })),
+    getCommandCenterCrmSnapshot().then((snapshot) => ({ snapshot, unavailable: false, observedAt: new Date().toISOString() })).catch(() => ({ snapshot: null, unavailable: true, observedAt: null })),
     getAnalyticsOverviewSnapshot().then((snapshot) => ({ snapshot, unavailable: false })).catch(() => ({ snapshot: null, unavailable: true })),
-    opportunityStore.attentionActions().then((reports) => ({ ...reports, unavailable: false })).catch(() => ({ items: [], unavailable: true, truncated: false })),
+    opportunityStore.attentionActions().then((reports) => ({ ...reports, unavailable: false, observedAt: new Date().toISOString() })).catch(() => ({ items: [], unavailable: true, truncated: false, observedAt: null })),
   ]);
-  return <Dashboard automationHub={automationHub} googleOperations={getGoogleOperations(automationHub)} crmSnapshot={crmResult.snapshot} crmUnavailable={crmResult.unavailable} analyticsSnapshot={analyticsResult.snapshot} analyticsUnavailable={analyticsResult.unavailable} researchActions={researchResult.items} researchUnavailable={researchResult.unavailable} researchTruncated={researchResult.truncated} />;
+  return <Dashboard automationHub={automationHub} googleOperations={getGoogleOperations(automationHub)} crmSnapshot={crmResult.snapshot} crmUnavailable={crmResult.unavailable} crmObservedAt={crmResult.observedAt} analyticsSnapshot={analyticsResult.snapshot} analyticsUnavailable={analyticsResult.unavailable} researchActions={researchResult.items} researchUnavailable={researchResult.unavailable} researchTruncated={researchResult.truncated} researchObservedAt={researchResult.observedAt} />;
 }
 

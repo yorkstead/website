@@ -12,7 +12,16 @@ import { dateKeyInTimeZone } from "@/lib/date-time";
 type ResearchAction = { id: string; business_name: string; industry: string; next_action: string; next_action_at: string; research_status: string };
 type ResearchSource = { items: ResearchAction[]; unavailable: boolean; truncated: boolean };
 type Row = { key: string; title: string; source: string; context: string; status?: string; due?: string | null; href: string; stale?: string; external: boolean };
-type SourceState = { name: string; text: string; detail?: string; href?: string; tone: "available" | "unavailable" | "partial" | "stale" | "loading" };
+type SourceState = { name: string; text: string; detail?: string; observedAt?: string | null; href?: string; tone: "available" | "unavailable" | "partial" | "stale" | "loading" };
+
+function observationLabel(value?: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (!Number.isFinite(date.valueOf())) return null;
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short",
+  }).format(date);
+}
 
 function safeGitHubUrl(raw: string) {
   try {
@@ -65,6 +74,7 @@ function SourceStateList({ states }: { states: SourceState[] }) {
     {states.map((source) => <li key={source.name} className="min-w-0 rounded-lg border border-border/70 bg-background/40 px-3 py-2.5">
       <div className="flex items-start justify-between gap-2"><span className="text-xs font-medium">{source.name}</span><span className={`shrink-0 text-[10px] ${source.tone === "unavailable" ? "text-amber-600" : source.tone === "partial" || source.tone === "stale" ? "text-amber-500" : "text-muted-foreground"}`}>{source.text}</span></div>
       {source.detail ? <p className="mt-1 text-[10px] text-muted-foreground">{source.detail}</p> : null}
+      {observationLabel(source.observedAt) ? <time className="mt-1 block text-[10px] text-muted-foreground" dateTime={source.observedAt ?? undefined}>Snapshot read {observationLabel(source.observedAt)}</time> : null}
       {source.href ? <Link className="mt-1 inline-flex min-h-7 items-center gap-1 text-[10px] text-primary underline-offset-4 hover:underline focus-visible:underline" href={source.href}>Open source <ArrowUpRight className="size-3" /></Link> : null}
     </li>)}
   </ul>;
@@ -84,11 +94,13 @@ function AttentionRows({ rows }: { rows: Row[] }) {
   </ul>;
 }
 
-export function UnifiedAttentionView({ automationHub: hub, crm, crmUnavailable, research, projects, tasks, intelligence, ready }: {
+export function UnifiedAttentionView({ automationHub: hub, crm, crmUnavailable, crmObservedAt, research, researchObservedAt, projects, tasks, intelligence, ready }: {
   automationHub: AutomationHubDataResult;
   crm: CommandCenterCrmSnapshot | null;
   crmUnavailable: boolean;
+  crmObservedAt?: string | null;
   research: ResearchSource;
+  researchObservedAt?: string | null;
   projects: Project[];
   tasks: Task[];
   intelligence: Record<string, ProjectIntelligenceEntry>;
@@ -119,8 +131,8 @@ export function UnifiedAttentionView({ automationHub: hub, crm, crmUnavailable, 
   const hubSource = describeHubSectionStates(hub, hubError);
   const sourceStates: SourceState[] = [
     { name: "Command Center", text: ready ? "Available" : "Loading", detail: ready ? `${tasks.filter((item) => !item.done).length} open Workspace tasks${tasks.filter((item) => !item.done).length ? "" : " · available, empty"}` : "Workspace data is loading", href: "#tasks", tone: ready ? "available" : "loading" },
-    { name: "Website CRM", text: crmUnavailable || !crm ? "Unavailable" : crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? "At query limit" : "Available", detail: crmUnavailable ? "CRM summary did not load; this is not an empty queue." : crm ? `${crm.dueFollowUps.length + crm.stalledOpportunities.length + crm.proposalNextActions.length} action records reported${crm.dueFollowUps.length + crm.stalledOpportunities.length + crm.proposalNextActions.length ? "" : " · available, empty"}. The current snapshot does not expose a checked-at timestamp.${crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? " Results may be incomplete." : ""}` : "No CRM data returned.", href: "/dashboard/leads", tone: crmUnavailable || !crm ? "unavailable" : crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? "partial" : "available" },
-    { name: "Opportunity Discovery", text: research.unavailable ? "Unavailable" : research.truncated ? "At query limit" : "Available", detail: research.unavailable ? "Research follow-ups did not load; this is not an empty queue." : `${research.items.length} research actions due today or overdue reported${research.items.length ? "" : " · available, empty"}. The current report does not expose a checked-at timestamp.${research.truncated ? " The result may be incomplete." : ""}`, href: "/dashboard/opportunities", tone: research.unavailable ? "unavailable" : research.truncated ? "partial" : "available" },
+    { name: "Website CRM", text: crmUnavailable || !crm ? "Unavailable" : crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? "At query limit" : "Available", detail: crmUnavailable ? "CRM summary did not load; this is not an empty queue." : crm ? `${crm.dueFollowUps.length + crm.stalledOpportunities.length + crm.proposalNextActions.length} action records reported${crm.dueFollowUps.length + crm.stalledOpportunities.length + crm.proposalNextActions.length ? "" : " · available, empty"}.${crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? " Results may be incomplete." : ""}` : "No CRM data returned.", observedAt: crmUnavailable ? null : crmObservedAt, href: "/dashboard/leads", tone: crmUnavailable || !crm ? "unavailable" : crm.dueFollowUps.length >= 8 || crm.stalledOpportunities.length >= 5 || crm.proposalNextActions.length >= 5 ? "partial" : "available" },
+    { name: "Opportunity Discovery", text: research.unavailable ? "Unavailable" : research.truncated ? "At query limit" : "Available", detail: research.unavailable ? "Research follow-ups did not load; this is not an empty queue." : `${research.items.length} research actions due today or overdue reported${research.items.length ? "" : " · available, empty"}.${research.truncated ? " The result may be incomplete." : ""}`, observedAt: research.unavailable ? null : researchObservedAt, href: "/dashboard/opportunities", tone: research.unavailable ? "unavailable" : research.truncated ? "partial" : "available" },
     { name: "Automation Hub review and captures", ...hubSource, href: "https://cal.yorkstead.com/command" },
     { name: "Google Tasks", text: hub.state === "available" && hub.data.dashboardTasks && hub.data.dateContext ? hub.data.dashboardTasks.state === "unavailable" ? "Unavailable" : hub.data.dashboardTasks.truncated ? "Partial · query bound reached" : hub.data.dashboardTasks.items.length ? "Available" : "Available, empty" : "Unavailable · unsupported response", detail: hub.state === "available" && hub.data.dashboardTasks && hub.data.dateContext ? `${hub.data.dashboardTasks.items.length} due open tasks returned${hub.data.dashboardTasks.errorCode ? ` · ${hub.data.dashboardTasks.errorCode}` : ""}${hub.data.dashboardTasks.truncated ? "; provider scan was truncated" : ""}. Checked ${hub.data.dashboardTasks.checkedAt}.` : "This Hub v1 response does not include the Dashboard task projection; no empty queue is inferred.", href: "https://tasks.google.com/", tone: hub.state !== "available" || !hub.data.dashboardTasks || !hub.data.dateContext || hub.data.dashboardTasks.state === "unavailable" ? "unavailable" : hub.data.dashboardTasks.truncated ? "partial" : "available" },
     { name: "GitHub", text: !linkedProjects.length ? "Not configured" : githubUnavailableCount === linkedProjects.length ? "Unavailable" : githubStaleCount ? "Last known data" : githubLimitedCount ? "At query limit" : githubKnownCount ? "Available" : "Checking source", detail: !linkedProjects.length ? "No project repositories are linked." : `${githubKnownCount} of ${linkedProjects.length} repositories returned GitHub data${githubKnownCount === linkedProjects.length && githubUnavailableCount === 0 && githubItemCount === 0 ? " · available, empty" : ""}${githubStaleCount ? `; ${githubStaleCount} use last-known data` : ""}${githubLimitedCount ? `; ${githubLimitedCount} at the displayed issue/PR limit` : ""}${githubCheckedAt ? `; last checked ${githubCheckedAt}` : ""}.`, href: "#development", tone: !linkedProjects.length ? "available" : githubEntries.every(({ entry }) => !entry) ? "loading" : githubUnavailableCount === linkedProjects.length ? "unavailable" : githubUnavailableCount || githubLimitedCount ? "partial" : githubStaleCount ? "stale" : "available" },
