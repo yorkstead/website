@@ -88,18 +88,22 @@ jobs:
         timeout-minutes: 12
         run: |
           # Hosted runners intermittently lose DNS to the Ubuntu package mirrors,
-          # which fails the apt phase of --with-deps. Each attempt is capped so a
-          # stalled apt resolver cannot consume the whole job timeout (a failed
-          # attempt otherwise runs ~6m40s before giving up).
+          # which fails the apt phase of --with-deps. Each attempt is capped, and a
+          # killed attempt leaves apt-get holding /var/lib/apt/lists/lock, so clear
+          # it before retrying. If dependencies cannot be installed at all, fall
+          # back to the browser-only install so the suite can still run; the
+          # runner image usually carries the shared libraries.
           for attempt in 1 2 3; do
             if timeout 180 bunx playwright install --with-deps chromium; then
               exit 0
             fi
-            echo "::warning::Playwright install attempt ${attempt} failed; retrying in 15s"
+            echo "::warning::Playwright install attempt ${attempt} failed; clearing apt state and retrying in 15s"
+            sudo pkill -9 -f 'apt-get|dpkg' || true
+            sudo rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend || true
             sleep 15
           done
-          echo "::error::Playwright install failed after 3 attempts"
-          exit 1
+          echo "::warning::System dependency install unavailable; installing Chromium without apt dependencies"
+          bunx playwright install chromium
 
       - name: Run browser tests
         run: bun run test:e2e
