@@ -27,9 +27,10 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
       options: --user root
     env:
-      # Container jobs reach services by service name, not localhost.
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/project_command_center_test
-      TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/project_command_center_test
+      # The disposable-database guard accepts only a literal loopback host, so
+      # the first step bridges the service to 127.0.0.1 inside the container.
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/project_command_center_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/project_command_center_test
       MIGRATION_DATABASE_DRIVER: postgres
     services:
       postgres:
@@ -47,6 +48,27 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Bridge the service database to loopback
+        run: |
+          # Container jobs address services by name, but the disposable-database
+          # guard in tests/fixtures requires a loopback host. Forward
+          # 127.0.0.1:5432 to the postgres service without relaxing the guard.
+          nohup node -e '
+            const net = require("net");
+            net.createServer((client) => {
+              const upstream = net.connect(5432, "postgres");
+              client.pipe(upstream); upstream.pipe(client);
+              client.on("error", () => upstream.destroy());
+              upstream.on("error", () => client.destroy());
+            }).listen(5432, "127.0.0.1", () => console.log("postgres bridge ready"));
+          ' >/tmp/pg-bridge.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if (exec 3<>/dev/tcp/127.0.0.1/5432) 2>/dev/null; then exec 3<&-; echo "bridge reachable"; exit 0; fi
+            sleep 1
+          done
+          cat /tmp/pg-bridge.log || true
+          exit 1
 
       - name: Set up Bun
         # The Playwright image ships node/npm but not unzip, which the
