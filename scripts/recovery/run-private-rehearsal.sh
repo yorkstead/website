@@ -175,12 +175,14 @@ printf '%s' "$runtime_password" >"$runtime_password_file"; chmod 600 "$runtime_p
 printf '%s' "$owner_password" >"$owner_password_file"; chmod 600 "$owner_password_file"
 printf '%s' "$auth_secret" >"$auth_secret_file"; chmod 600 "$auth_secret_file"
 docker_target run -d --name "$db_container" --label "ys-sys-001.target=$target_id" \
-  --network "$net" --network-alias postgres --mount "type=volume,src=$vol,dst=/var/lib/postgresql/data" \
+  --network "$net" --network-alias postgres --mount "type=volume,src=$vol,dst=/var/lib/postgresql" \
   --mount "type=bind,src=$admin_password_file,dst=/run/secrets/postgres-admin,readonly" \
   --mount "type=bind,src=$setup_password_file,dst=/run/secrets/setup-pgpass,readonly" \
   --env POSTGRES_USER=postgres --env POSTGRES_PASSWORD_FILE=/run/secrets/postgres-admin \
   --env POSTGRES_DB=postgres --health-cmd 'pg_isready -U postgres -d postgres' --health-interval 2s --health-timeout 2s --health-retries 60 \
   "$YS_PRIVATE_POSTGRES_IMAGE" >/dev/null
+[[ $(docker_target inspect -f '{{range .Mounts}}{{if eq .Destination "/var/lib/postgresql"}}{{.Name}}{{end}}{{end}}' "$db_container") == "$vol" ]] \
+  || fail 'PostgreSQL data is not on the labeled target volume'
 
 for attempt in $(seq 1 90); do
   [[ $(docker_target inspect -f '{{.State.Health.Status}}' "$db_container" 2>/dev/null || true) == healthy ]] && break

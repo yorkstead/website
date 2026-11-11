@@ -101,7 +101,7 @@ class PrivateCleanupTests(unittest.TestCase):
         with patch.object(cleanup, "docker", side_effect=fake_docker), patch.object(cleanup, "inspect_label") as verify:
             cleanup.remove_resources(self.target, "thinkpad-wsl")
         self.assertEqual(verify.call_count, 4)
-        self.assertEqual(removed, [("rm", "--force", "c1"), ("network", "rm", "n1"),
+        self.assertEqual(removed, [("rm", "--force", "--volumes", "c1"), ("network", "rm", "n1"),
                                    ("volume", "rm", "v1"), ("image", "rm", "i1")])
         self.assertFalse(any("prune" in arg for command in removed for arg in command))
 

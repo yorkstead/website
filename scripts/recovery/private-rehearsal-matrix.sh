@@ -50,7 +50,7 @@ cleanup_matrix() {
         --docker-context default >/dev/null 2>&1 || true
     done
   fi
-  docker --context default rm -f "$source_container" "$sentinel_container" >/dev/null 2>&1
+  docker --context default rm -f -v "$source_container" "$sentinel_container" >/dev/null 2>&1
   docker --context default network rm "$source_network" "$sentinel_network" >/dev/null 2>&1
   docker --context default volume rm "$sentinel_volume" >/dev/null 2>&1
   rm -rf -- "$private_root"

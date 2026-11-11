@@ -86,7 +86,7 @@ def remove_resources(target_id: str, expected_context: str) -> None:
     if docker(["context", "show"]) != expected_context:
         raise CleanupError("Docker context differs from the explicitly approved context; no resources removed")
     remove_args = {
-        "container": lambda rid: ["rm", "--force", rid],
+        "container": lambda rid: ["rm", "--force", "--volumes", rid],
         "network": lambda rid: ["network", "rm", rid],
         "volume": lambda rid: ["volume", "rm", rid],
         "image": lambda rid: ["image", "rm", rid],
