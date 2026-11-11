@@ -1,7 +1,7 @@
 # CC-028 — Command Center workflow consolidation tasks
 
 **Tracking:** issue [#119](https://github.com/yorkstead/website/issues/119)
-**Status:** T105 disconnected-component cleanup and T101 cross-source account overlap review are merged. T102 attention observation clarity is selected and in progress on `chore/119-attention-observation-time`; remaining implementation slices stay unselected or owner-gated.
+**Status:** T105 disconnected-component cleanup and T101 cross-source account overlap review are merged. T102 attention observation clarity is under review in draft PR #126 from `chore/119-attention-observation-time`; remaining implementation slices stay unselected or owner-gated.
 
 ## Planning and owner review
 
