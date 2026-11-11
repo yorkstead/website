@@ -1,10 +1,19 @@
-# Active work — CC-028 Phase 6a Quick Launch targets — 2026-11-11
+# Active work — CC-028 Phase 4a commercial value — 2026-11-11
+
+- Owner decision: the **accepted CRM proposal amount is the commercial figure**; Marketing activity `value` is attribution/reporting only. T104b, an explicit project-creation step on acceptance, is approved in principle and remains a separate slice.
+- Specification and plan: [`specs/046-cc028-phase4a-commercial-value/`](../../specs/046-cc028-phase4a-commercial-value/). Parent task split into T104a/T104b in `specs/042-cc-028-command-center-consolidation/tasks.md`.
+- Implementation: Marketing metric `bookedRevenue` → `attributedValue` with a comment naming CRM as commercial truth; the Marketing panel reads "Marketing-attributed" with an attribution caption; the activity field reads "Attributed value"; the CRM card reads "Proposal value · commercial" with a "Draft/sent CRM amounts · commercial truth" caption.
+- Verification: focused metrics tests 2/2; scaffold PASS (47 spec directories); 24 migration checks; full suite 649 pass / 0 fail / 0 skip against the local disposable database; lint 0 errors (one pre-existing `login-panel.tsx:62` warning); typecheck and build pass.
+- Corrected after CI: the CC-018 browser flow asserted the old card label. Three assertions now match "Proposal value · commercial", and the CC-018 config passes 4/4 locally.
+- No schema, migration, calculation, data, or API contract change; only naming and captions. No merge or deployment is authorized.
+
+# Historical handoff — CC-028 Phase 6a Quick Launch targets — 2026-11-11 (merged as `b6a6319`)
 
 - Owner confirmation: `4twentydev` is retired for GitHub and Vercel; both targets are `yorkstead`. The Neon organization may still be named 4twenty, which does not affect these links.
 - Specification and plan: [`specs/047-cc028-phase6a-quick-launch-targets/`](../../specs/047-cc028-phase6a-quick-launch-targets/). Parent task split into T106a/T106b in `specs/042-cc-028-command-center-consolidation/tasks.md`.
 - Implementation: `resolveProjectLinks` and `QuickLaunch` prop defaults, `defaultWorkspaceSettings`, and the unauthenticated project-import listing now use `yorkstead`. Explicit caller values and stored workspace settings still override the defaults.
 - Verification: focused link tests 4/4 including explicit overrides; scaffold PASS (47 spec directories); 24 migration checks; full suite 650 pass / 0 fail / 0 skip against the local disposable database; lint 0 errors (one pre-existing `login-panel.tsx:62` warning); typecheck and build pass.
-- Deliberately unchanged: stored workspace settings that already contain `4twentydev` (owner edits Settings), and the published sic-pizza case-study link to `github.com/4twentydev/sic-pizza`, which needs an owner decision if that repository no longer exists. T106b navigation regrouping is proposed but not implemented.
+- Deliberately unchanged: stored workspace settings that already contain `4twentydev` (owner edits Settings), and the published sic-pizza case-study link to `github.com/4twentydev/sic-pizza`, which needs an owner decision if that repository no longer exists. T106b navigation regrouping followed in PR #132.
 
 # Documentation closeout — CC-028 ledger reconciliation — 2026-11-11
 

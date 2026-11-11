@@ -24,6 +24,6 @@ describe("marketing operations metrics", () => {
       content: [content, { ...content, id: "content-2", status: "draft", publishAt: "2026-08-13" }],
     }, 1, "America/Denver");
 
-    expect(score).toMatchObject({ accounts: 1, outreach: 1, conversations: 1, paidAudits: 1, paidClients: 0, bookedRevenue: 750, posts: 1 });
+    expect(score).toMatchObject({ accounts: 1, outreach: 1, conversations: 1, paidAudits: 1, paidClients: 0, attributedValue: 750, posts: 1 });
   });
 });
