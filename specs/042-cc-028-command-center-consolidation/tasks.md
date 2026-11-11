@@ -1,7 +1,7 @@
 # CC-028 — Command Center workflow consolidation tasks
 
 **Tracking:** issue [#119](https://github.com/yorkstead/website/issues/119)
-**Status:** T105 disconnected-component cleanup selected and verified on branch `chore/cc028-disconnected-components`; other implementation slices remain unselected.
+**Status:** T101, T102, and T105 are merged. T103, T104, T106, and T107 remain owner-gated or unselected.
 
 ## Planning and owner review
 
@@ -13,11 +13,11 @@
 
 ## Conditional implementation slices — separately authorized after T004
 
-- [ ] T101 — If selected, specify and implement bounded owner-reviewed cross-source account candidates; no auto-link or merged account record.
-- [ ] T102 — If selected, refine existing CC-021/CC-027 attention source, destination, freshness, partial-state, and supported-action presentation; update those owning specs.
+- [x] T101 — Bounded owner-only cross-source account candidates implemented with no auto-link or merged account record; merged in PR [#123](https://github.com/yorkstead/website/pull/123) at `381a64e5b57094dcf2c4317670913cde5a8a3869`. See `specs/043-cc028-phase1-overlap-review/`.
+- [x] T102 — Attention source read times added without treating them as source-record freshness; merged in PR [#127](https://github.com/yorkstead/website/pull/127) at `c4aeca67e0e1e96d0e77a747e22b27462a0efa84`. See `specs/044-cc028-phase2-attention-freshness/`. The duplicate draft PR #126 was closed once #127 covered the same behavior.
 - [ ] T103 — After the owner decides snapshot semantics, clarify consultation identity behavior and add workflow regression coverage.
 - [ ] T104 — After value/handoff decisions, clarify CRM commercial amount versus Marketing attribution; add an explicit project-creation handoff only if approved.
-- [x] T105 — Confirmed no static, dynamic, route, package, or other in-repository consumer for the two disconnected components; removed only those files. `LeadPriorityQueue` and active Automation Hub integration remain untouched.
+- [x] T105 — Confirmed no static, dynamic, route, package, or other in-repository consumer for the two disconnected components; removed only those files. `LeadPriorityQueue` and active Automation Hub integration remain untouched. Merged in PR [#124](https://github.com/yorkstead/website/pull/124) at `6a0173239aeb4860d0dccecc14749ff2f314070b`.
 - [ ] T106 — If selected, adjust navigation labels/grouping using CC-017/CC-025 contracts and owner-confirmed Quick Launch targets.
 - [ ] T107 — Route active external prospecting outputs into existing Discovery/CRM only through a separately authorized scope; otherwise leave outside this repository.
 

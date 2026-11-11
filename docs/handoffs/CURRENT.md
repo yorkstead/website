@@ -1,4 +1,16 @@
-# Active work — CC-028 Phase 2 attention source and read-time clarity — 2026-11-11
+# Documentation closeout — CC-028 ledger reconciliation — 2026-11-11
+
+- Verified through GitHub: `main` is `c4aeca67e0e1e96d0e77a747e22b27462a0efa84`, the merge of PR [#127](https://github.com/yorkstead/website/pull/127) (2026-11-11 10:01:37 UTC, final head `7cc2cc6265ab`). Duplicate draft PR #126 was closed at 09:59:22Z after its diff was compared against #127; its behavior is covered by #127.
+- This is a documentation-only reconciliation of the CC-028 program ledger against merged work. It changes no application code, migration, configuration, data, or deployment.
+- `specs/042-cc-028-command-center-consolidation/tasks.md` now records T101 as merged in PR #123 (`381a64e5`), T102 as merged in PR #127 (`c4aeca67`) with a note that duplicate #126 was closed, and T105 as merged in PR #124 (`6a017323`). The status line no longer describes T105 as verified on an unmerged branch. T103, T104, T106, and T107 remain owner-gated or unselected.
+- `specs/042-cc-028-command-center-consolidation/verification.md` delivery text was superseded from "draft PR open" to the verified merge for #124.
+- The merged Phase 2 implementation shows a dashboard source-read time for successful Website CRM and Opportunity Discovery reads. `specs/039-cc-027-unified-attention/spec.md` acceptance criterion A9 now states that behavior, including that the timestamp is a read-completion time and not source-record freshness. Stale PR-delivery task checkboxes in `specs/039` (PR #114, `c269e66d`) and `specs/040` (PR #115, `a235ce25`) are marked complete with their merge commits; historical verification evidence is preserved.
+- Not carried into #127 and still open as an optional UI follow-up: #126 rendered the read time with a semantic `<time dateTime>` element formatted in `America/Denver`, while #127 interpolates the raw ISO value into the source detail text. Recorded on PR #127.
+- Owner decisions for T103 (consultation identity snapshot vs projection), T104 (CRM proposal amount as commercial value; explicit post-acceptance project action), T106 (navigation taxonomy and Quick Launch targets), and T107 (external prospecting schedules) remain outstanding. No implementation is authorized by this closeout.
+
+# Historical handoff — CC-028 Phase 2 attention source and read-time clarity — 2026-11-11 (PR #127 merged)
+
+_The open-PR and pending-CI statements below describe the pre-merge snapshot; the closeout above and PR #127 supersede them._
 
 - Tracking issue [#119](https://github.com/yorkstead/website/issues/119); active specification, plan, tasks, and verification: [`specs/044-cc028-phase2-attention-freshness/`](../../specs/044-cc028-phase2-attention-freshness/). Phase 2 builds on merged Phase 1 and the CC-021/CC-027 source ownership contracts.
 - Verified live `main` before this PR: `3bc6e1076db103770d20f82087f5147ea50354a3` (PR #125 merge). The Phase 2 branch is `feat/119-attention-source-freshness`.
