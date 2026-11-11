@@ -379,7 +379,7 @@ chmod 600 "$browser_env"
 docker_target run -d --name "$browser_container" --label "ys-sys-001.target=$target_id" \
   --network "$net" --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m --tmpfs /runner/test-results:rw,noexec,nosuid,size=16m \
   --shm-size=512m --cap-drop ALL --security-opt no-new-privileges --env HOME=/tmp --env-file "$browser_env" \
-  "ys-sys-001-rehearsal-runner:$target_id" run test:e2e -- --config scripts/recovery/private-rehearsal.playwright.config.ts \
+  "ys-sys-001-rehearsal-runner:$target_id" x playwright test --config scripts/recovery/private-rehearsal.playwright.config.ts \
   >/dev/null
 expected_browser_members=$(printf '%s\n' "$app_container" "$browser_container" "$db_container" "$proxy_container" | sort)
 browser_members=$(docker_target network inspect -f '{{range $id,$c := .Containers}}{{println $c.Name}}{{end}}' "$net" | sed '/^$/d' | sort)
