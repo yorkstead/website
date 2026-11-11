@@ -104,9 +104,9 @@ docker_target() { docker --context "$YS_PRIVATE_DOCKER_CONTEXT" "$@"; }
 inject_fault() { [[ -z $fault || $fault != "$1" ]] || fail "synthetic fault injection at $1"; }
 unrelated_resource_fingerprint() {
   {
-    docker_target ps -aq --filter "label!=ys-sys-001.target=$target_id" | sed 's/^/container:/'
-    docker_target network ls -q --filter "label!=ys-sys-001.target=$target_id" | sed 's/^/network:/'
-    docker_target volume ls -q --filter "label!=ys-sys-001.target=$target_id" | sed 's/^/volume:/'
+    docker_target ps -aq | sed 's/^/container:/'
+    docker_target network ls -q | sed 's/^/network:/'
+    docker_target volume ls -q | sed 's/^/volume:/'
   } | sort | sha256sum | cut -d' ' -f1
 }
 unrelated_before=''
