@@ -308,17 +308,33 @@ docker_target run -d --name "$proxy_container" --label "ys-sys-001.target=$targe
   --tmpfs /var/run:rw,noexec,nosuid,size=2m --cap-drop ALL --cap-add NET_BIND_SERVICE --group-add "$(id -g)" --security-opt no-new-privileges \
   --mount "type=bind,src=$workspace/nginx.conf,dst=/etc/nginx/nginx.conf,readonly" \
   --mount "type=bind,src=$workspace/tls,dst=/run/tls,readonly" "$YS_PRIVATE_NGINX_IMAGE" >/dev/null
+fail_proxy_exit() {
+  local proxy_log
+  docker_target logs "$proxy_container" >"$workspace/proxy.private.log" 2>&1 || true
+  [[ $(docker_target inspect -f '{{.State.Running}}' "$app_container" 2>/dev/null || true) == true ]] \
+    || fail 'pinned application container exited before proxy readiness'
+  proxy_log=$(cat "$workspace/proxy.private.log")
+  if [[ $proxy_log == *'Permission denied'* || $proxy_log == *'permission denied'* ]]; then
+    if [[ $proxy_log == *'/etc/nginx/nginx.conf'* ]]; then fail 'internal TLS proxy config access denied'; fi
+    if [[ $proxy_log == *'/run/tls/'* ]]; then fail 'internal TLS proxy key access denied'; fi
+    if [[ $proxy_log == *'/var/cache/nginx/'* ]]; then fail 'internal TLS proxy cache access denied'; fi
+    fail 'internal TLS proxy filesystem access denied'
+  fi
+  if [[ $proxy_log == *'Read-only file system'* || $proxy_log == *'read-only file system'* ]]; then fail 'internal TLS proxy needs an unwritable path'; fi
+  if [[ $proxy_log == *'host not found in upstream'* ]]; then fail 'internal TLS proxy upstream DNS unavailable'; fi
+  fail 'internal TLS proxy container exited'
+}
 proxy_config_ok=0
 for attempt in $(seq 1 10); do
   if docker_target exec "$proxy_container" nginx -t >/dev/null 2>&1; then proxy_config_ok=1; break; fi
-  [[ $(docker_target inspect -f '{{.State.Running}}' "$proxy_container") == true ]] || fail 'internal TLS proxy container exited'
+  [[ $(docker_target inspect -f '{{.State.Running}}' "$proxy_container") == true ]] || fail_proxy_exit
   sleep 1
 done
 (( proxy_config_ok == 1 )) || fail 'internal TLS proxy configuration check failed'
 app_ready=0
 for attempt in $(seq 1 60); do
   if docker_target exec "$proxy_container" wget -q --no-check-certificate -O /dev/null https://recovery.test/ >/dev/null 2>&1; then app_ready=1; break; fi
-  [[ $(docker_target inspect -f '{{.State.Running}}' "$proxy_container") == true ]] || fail 'internal TLS proxy container exited'
+  [[ $(docker_target inspect -f '{{.State.Running}}' "$proxy_container") == true ]] || fail_proxy_exit
   [[ $(docker_target inspect -f '{{.State.Running}}' "$app_container") == true ]] || fail 'pinned application container exited before proxy readiness'
   sleep 1
 done
