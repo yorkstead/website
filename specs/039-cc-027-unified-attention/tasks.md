@@ -10,4 +10,4 @@
 - [x] Run focused and repository-required local checks; record skipped/blocked checks.
 - [x] Complete security review and acceptance-criteria convergence.
 - [x] Update verification and active handoff docs; review scope and diff.
-- [ ] Push exact head and open a draft PR; verify exact-head CI/preview status without merging or deploying.
+- [x] Push exact head and open a draft PR; verify exact-head CI/preview status without merging or deploying. Delivered as draft PR [#114](https://github.com/yorkstead/website/pull/114); merged 2026-11-08 at `c269e66dab3d44bcc0934c6fd479e434b3e76696`.

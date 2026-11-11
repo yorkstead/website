@@ -10,4 +10,4 @@
 - [x] Add focused unit, authenticated browser, and no-briefing-call coverage. Browser case is credential-gated and will be reported if skipped.
 - [x] Update CC-027 verification and handoff documentation without deleting historical evidence.
 - [x] Run focused tests and required Website checks; record environment skips and exact SHA evidence.
-- [ ] Push the implementation branch and open a draft Website PR after the Hub PR/head is available; do not merge or deploy.
+- [x] Push the implementation branch and open a draft Website PR after the Hub PR/head is available; do not merge or deploy. Delivered as draft PR [#115](https://github.com/yorkstead/website/pull/115); merged 2026-11-08 at `a235ce254294df7efe3f2c9f472feb10dc5792ef`.
