@@ -8,7 +8,7 @@ const crm: CommandCenterCrmSnapshot = {
   stageCounts: { new: 0, contacted: 0, qualified: 0, proposal: 1 }, dueFollowUps: [{ id: 42, name: "Ada Owner", company: "Northstar", projectType: "Workflow", status: "qualified", followUpAt: "2026-11-06T18:00:00.000Z", updatedAt: "2026-11-06T17:00:00.000Z", nextStep: "Review canonical workflow scope" }], stalledOpportunities: [], pendingProposalCount: 0, pipelineValueCents: 0, wonValueCents: 0, conversionRate: null, proposalNextActions: [],
 };
 
-const baseProps = { automationHub: { state: "unavailable" as const, checkedAt: "2026-11-07T18:00:00.000Z" }, crm, crmUnavailable: false, research: { items: [], unavailable: false, truncated: false }, projects: [], tasks: [], intelligence: {}, ready: true };
+const baseProps = { automationHub: { state: "unavailable" as const, checkedAt: "2026-11-07T18:00:00.000Z" }, crm, crmUnavailable: false, crmReadAt: "2026-11-11T18:00:00.000Z", research: { items: [], unavailable: false, truncated: false, readAt: "2026-11-11T18:00:01.000Z" }, projects: [], tasks: [], intelligence: {}, ready: true };
 
 describe("Unified attention", () => {
   test("shows canonical CRM status, due date, and the existing record link", () => {
@@ -21,7 +21,7 @@ describe("Unified attention", () => {
   });
 
   test("identifies research records and links to their authoritative workflow", () => {
-    const html = renderToStaticMarkup(createElement(UnifiedAttentionView, { ...baseProps, research: { items: [{ id: "abc-123", business_name: "Northstar", industry: "manufacturing", next_action: "Validate shift handoff", next_action_at: "2026-11-05", research_status: "validated" }], unavailable: false, truncated: false } }));
+    const html = renderToStaticMarkup(createElement(UnifiedAttentionView, { ...baseProps, research: { items: [{ id: "abc-123", business_name: "Northstar", industry: "manufacturing", next_action: "Validate shift handoff", next_action_at: "2026-11-05", research_status: "validated" }], unavailable: false, truncated: false, readAt: null } }));
     expect(html).toContain("Opportunity Discovery");
     expect(html).toContain("validated");
     expect(html).toContain("/dashboard/opportunities?id=abc-123");
@@ -31,9 +31,19 @@ describe("Unified attention", () => {
     const emptyHtml = renderToStaticMarkup(createElement(UnifiedAttentionView, { ...baseProps, crm: { ...crm, dueFollowUps: [], stalledOpportunities: [], proposalNextActions: [] } }));
     expect(emptyHtml).toContain("0 action records reported · available, empty");
 
-    const cappedHtml = renderToStaticMarkup(createElement(UnifiedAttentionView, { ...baseProps, research: { items: Array.from({ length: 25 }, (_, index) => ({ id: `research-${index}`, business_name: "Northstar", industry: "Manufacturing", next_action: "Verify process", next_action_at: "2026-11-01", research_status: "validated" })), unavailable: false, truncated: true } }));
+    const cappedHtml = renderToStaticMarkup(createElement(UnifiedAttentionView, { ...baseProps, research: { items: Array.from({ length: 25 }, (_, index) => ({ id: `research-${index}`, business_name: "Northstar", industry: "Manufacturing", next_action: "Verify process", next_action_at: "2026-11-01", research_status: "validated" })), unavailable: false, truncated: true, readAt: null } }));
     expect(cappedHtml).toContain("At query limit");
     expect(cappedHtml).toContain("The result may be incomplete.");
+  });
+
+  test("shows dashboard read times while failed sources remain timestamp-free", () => {
+    const html = renderToStaticMarkup(createElement(UnifiedAttentionView, baseProps));
+    expect(html).toContain("Read at 2026-11-11T18:00:00.000Z (dashboard source read time)");
+    expect(html).toContain("Read at 2026-11-11T18:00:01.000Z (dashboard source read time)");
+    const unavailable = renderToStaticMarkup(createElement(UnifiedAttentionView, { ...baseProps, crm: null, crmUnavailable: true, crmReadAt: null, research: { ...baseProps.research, unavailable: true, readAt: null } }));
+    expect(unavailable).toContain("CRM summary did not load; this is not an empty queue.");
+    expect(unavailable).toContain("Research follow-ups did not load; this is not an empty queue.");
+    expect(unavailable).not.toContain("Read at 2026-11-11T18:00");
   });
 
   test("rejects non-GitHub and non-HTTPS external destinations", () => {

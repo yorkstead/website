@@ -53,7 +53,7 @@ type SnapshotNotice = { tone: "success" | "error"; message: string; authenticati
 type SnapshotHistoryItem = { id: string; createdAt: string };
 type UndoToast = { label: string; canUndo: boolean; canRedo: boolean; actionType: "mutate" | "undo" | "redo" };
 
-export function Dashboard({ automationHub, googleOperations, crmSnapshot, crmUnavailable, analyticsSnapshot, analyticsUnavailable, researchActions, researchUnavailable, researchTruncated }: { automationHub: AutomationHubDataResult; googleOperations: GoogleOperations; crmSnapshot: CommandCenterCrmSnapshot | null; crmUnavailable: boolean; analyticsSnapshot: AnalyticsOverviewSnapshot | null; analyticsUnavailable: boolean; researchActions: Array<{ id: string; business_name: string; industry: string; next_action: string; next_action_at: string; research_status: string }>; researchUnavailable: boolean; researchTruncated: boolean }) {
+export function Dashboard({ automationHub, googleOperations, crmSnapshot, crmUnavailable, crmReadAt, analyticsSnapshot, analyticsUnavailable, researchActions, researchUnavailable, researchTruncated, researchReadAt }: { automationHub: AutomationHubDataResult; googleOperations: GoogleOperations; crmSnapshot: CommandCenterCrmSnapshot | null; crmUnavailable: boolean; crmReadAt: string | null; analyticsSnapshot: AnalyticsOverviewSnapshot | null; analyticsUnavailable: boolean; researchActions: Array<{ id: string; business_name: string; industry: string; next_action: string; next_action_at: string; research_status: string }>; researchUnavailable: boolean; researchTruncated: boolean; researchReadAt: string | null }) {
   const router = useRouter();
   const requestedProjectId = useSearchParams().get("project");
   const [workspace, setWorkspace] = useState<Workspace>(emptyWorkspace);
@@ -851,6 +851,7 @@ export function Dashboard({ automationHub, googleOperations, crmSnapshot, crmUna
           <CommandCenterOverview
             crm={crmSnapshot}
             crmUnavailable={crmUnavailable}
+            crmReadAt={crmReadAt}
             analyticsSnapshot={analyticsSnapshot}
             analyticsUnavailable={analyticsUnavailable}
             projects={workspace.projects}
@@ -868,6 +869,7 @@ export function Dashboard({ automationHub, googleOperations, crmSnapshot, crmUna
             researchActions={researchActions}
             researchUnavailable={researchUnavailable}
             researchTruncated={researchTruncated}
+            researchReadAt={researchReadAt}
             intelligence={intelligence}
           />
 
