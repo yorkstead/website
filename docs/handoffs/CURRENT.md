@@ -1,7 +1,16 @@
 Warning: truncated output (original token count: 25226)
 Total output lines: 374
 
-# Active work — CC-028 Command Center consolidation specification — 2026-11-09
+# Active work — CC-028 T105 disconnected-component cleanup — 2026-11-10
+
+- Owner authorized continuing the consolidation plan. This slice removes only the two code-unreferenced components `ConnectedOperations` and `DashboardOperationsBriefing` after exact-branch consumer review. It does not change the active Hub CRM queue, CC-021/CC-027 attention views, Operations, Systems Registry, Recovery, or production workflows.
+- Current worktree is based on verified GitHub `main` `683ef64281cf80f8df5d6289544dbb695199cda6`; local branch `chore/cc028-disconnected-components`. GitHub MCP confirmed main and open PR #123; PR #123 (`CC-028 Phase 1: owner-only account overlap review`) remains open and is not part of this branch. Shell GitHub connectivity was unavailable; the connected GitHub source provided the live ref and PR metadata.
+- Exact-branch search found no static import, dynamic import, route or package export for either removed component; each identifier only appeared in its own definition. The active `LeadPriorityQueue` remains intact. No records, migrations, integrations, external actions, or production settings are changed.
+- Source spec and task list: `specs/042-cc-028-command-center-consolidation/`; verification: `specs/042-cc-028-command-center-consolidation/verification.md`. Remaining CC-028 phases are unselected and their listed owner decisions remain open. No merge, deployment, provider operation, or production query is authorized.
+- Verification: offline frozen install, scaffold, migration validation, lint, typecheck, full unit/database-gated suite, and production build passed. Full results and the database skips are recorded in `specs/042-cc-028-command-center-consolidation/verification.md`; final diff check and PR delivery remain.
+- Next: run `git diff --check`, review the exact staged scope, then push this branch and open one draft PR against `main`. Do not merge or deploy.
+
+# Historical handoff — CC-028 Command Center consolidation specification — 2026-11-09
 
 - Tracking issue [#119](https://github.com/yorkstead/website/issues/119); proposed spec, phased plan, and task checklist: [`specs/042-cc-028-command-center-consolidation/`](../../specs/042-cc-028-command-center-consolidation/). The merged audit is the architectural reference.
 - Audit PR [#121](https://github.com/yorkstead/website/pull/121) merged 2026-11-09 at `2d2e69232bb6b4126864aebd3032e93f0524bfb5`. Its source snapshot was `8c41a59e2ef656cde8cde6cc17224e70dc990061`; this merge adds the audit and handoff only.

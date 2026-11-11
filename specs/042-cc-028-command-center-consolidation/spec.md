@@ -2,7 +2,7 @@
 
 **Tracking:** GitHub issue [#119](https://github.com/yorkstead/website/issues/119)
 **Architectural reference:** [`docs/audits/2026-11-09-command-center-consolidation.md`](../../docs/audits/2026-11-09-command-center-consolidation.md), reviewed on the `main` snapshot that includes merged PR #121.
-**Status:** Proposed for owner review. This specification authorizes no implementation or operational change.
+**Status:** The owner authorized the independently reviewable T105 disconnected-component cleanup slice on 2026-11-10. Other phases remain proposed and gated by their listed owner decisions.
 
 ## User value
 
@@ -41,8 +41,8 @@ This is a phased consolidation program for the existing Marketing → Opportunit
 3. Decide whether proposal acceptance should offer an explicit project-creation action; no automatic creation is proposed by default.
 4. Confirm the intended GitHub/Vercel owners for Quick Launch when workspace overrides are unset.
 5. Confirm the status and owner of the external prospecting schedule and paused monitor. Review their contracts through their owning platforms only under separate authorization.
-6. Confirm whether the two disconnected attention/briefing components have any dynamic or external consumers before cleanup.
-7. Select and prioritize follow-up slices after reviewing this spec; client portal activation and Registry/recovery remain separate workstreams.
+6. **T105 cleanup review (2026-11-10):** exact-branch static search found no import, dynamic import, route, or package export for `ConnectedOperations` or `DashboardOperationsBriefing`; each identifier appeared only in its own component definition. These are private application components, not exported package entry points. No consumer exists in this application tree; T105 removes only these two files. The active `LeadPriorityQueue` is separate and remains unchanged.
+7. Select and prioritize follow-up slices after reviewing this spec; client portal activation and Registry/recovery remain separate workstreams. T105 selection does not authorize other slices.
 
 ## Risks and controls
 
