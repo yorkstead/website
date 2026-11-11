@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 17012)
-Total output lines: 916
-
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -411,7 +408,406 @@ export function Dashboard({ automationHub, googleOperations, crmSnapshot, crmUna
     });
   }
   function updateProject(project: Project) {
-    updateWorkspace(`Updated project · ${project.name}…7012 tokens truncated…    >
+    updateWorkspace(`Updated project · ${project.name}`, (current) => ({
+      ...current,
+      projects: current.projects.map((item) => (item.id === project.id ? project : item)),
+      activity: [record(`Updated project · ${project.name}`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function updateProjectDelivery(projectId: string, delivery: ClientDelivery) {
+    const project = workspace.projects.find((item) => item.id === projectId);
+    if (!project) return;
+    updateWorkspace(`Updated client delivery · ${project.name}`, (current) => ({
+      ...current,
+      projects: current.projects.map((item) => item.id === projectId ? {
+        ...item,
+        delivery,
+        updatedAt: new Date().toISOString(),
+        updatedLabel: "Client delivery updated",
+      } : item),
+      activity: [record(`Updated client delivery · ${project.name}`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function updateTask(task: Task) {
+    updateWorkspace(`Updated task · ${task.title}`, (current) => ({
+      ...current,
+      tasks: current.tasks.map((item) => (item.id === task.id ? task : item)),
+      activity: [record(`Updated task · ${task.title}`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function deleteTask(id: string) {
+    const task = workspace.tasks.find((item) => item.id === id);
+    if (!task) return;
+    setConfirmation({
+      title: "Delete this task?",
+      message: `“${task.title}” will be removed. You can undo this change with Ctrl+Z.`,
+      actionLabel: "Delete task",
+      onConfirm: () => {
+        updateWorkspace(`Deleted task · ${task.title}`, (current) => ({
+          ...current,
+          tasks: current.tasks.filter((item) => item.id !== id),
+          activity: [record(`Removed task · ${task.title}`), ...current.activity].slice(0, 30),
+        }));
+      },
+    });
+  }
+
+  const downloadWorkspace = useCallback((value: Workspace, filename?: string) => {
+    const timeZone = normalizeTimeZone(workspace.settings?.timezone);
+    const today = dateKeyInTimeZone(new Date(), timeZone);
+    const resolvedFilename = filename ?? `work-ctrl-backup-${today}.json`;
+    const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), workspace: value }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url; anchor.download = resolvedFilename; anchor.click();
+    URL.revokeObjectURL(url);
+  }, [workspace.settings?.timezone]);
+
+  const exportWorkspace = useCallback(() => { downloadWorkspace(workspace); }, [downloadWorkspace, workspace]);
+
+  function useCloudConflict() {
+    if (!conflict?.cloud) return;
+    saveGenerationRef.current += 1;
+    skipNextSaveRef.current = true;
+    conflictRef.current = false;
+    workspaceVersionRef.current = conflict.cloudVersion;
+    localStorage.setItem(workspaceStorageKey, JSON.stringify(conflict.cloud));
+    setWorkspace(conflict.cloud);
+    setConflict(null);
+    setSyncState("saved");
+  }
+
+  async function keepLocalConflict() {
+    if (!conflict || conflict.loading || conflict.error) return;
+    setConflict((current) => current ? { ...current, resolving: true } : current);
+    const result = await saveVersionedWorkspace("/api/workspace", conflict.local, conflict.cloudVersion);
+    if (result.status === "conflict") { await loadConflict(conflict.local); return; }
+    if (result.status === "error") {
+      setConflict((current) => current ? { ...current, resolving: false, error: "The local workspace could not be saved. Export it for safekeeping or retry the cloud read." } : current);
+      return;
+    }
+    workspaceVersionRef.current = result.updatedAt ?? conflict.cloudVersion;
+    conflictRef.current = false;
+    setWorkspace(conflict.local);
+    localStorage.setItem(workspaceStorageKey, JSON.stringify(conflict.local));
+    setConflict(null);
+    setSyncState("saved");
+  }
+
+  async function importWorkspace(file: File) {
+    try {
+      const parsed: unknown = JSON.parse(await file.text());
+      const incoming: unknown = parsed && typeof parsed === "object" && "workspace" in parsed ? (parsed as { workspace?: unknown }).workspace : parsed;
+      if (!isWorkspaceData(incoming)) throw new Error("Invalid backup");
+      const normalized = normalizeWorkspace(incoming);
+      setConfirmation({
+        title: "Restore this backup?",
+        message: "The current workspace will be replaced by the imported projects, tasks, and activity. You can undo this change with Ctrl+Z.",
+        actionLabel: "Restore backup",
+        onConfirm: () => {
+          updateWorkspace("Restored backup", () => normalized);
+        },
+      });
+    } catch {
+      setConfirmation({
+        title: "Backup not recognized",
+        message: "Choose a JSON backup exported from WORK//CTRL.",
+        actionLabel: "Close",
+        onConfirm: () => undefined,
+      });
+    }
+    if (importInputRef.current) importInputRef.current.value = "";
+  }
+
+  const createSnapshot = useCallback(async () => {
+    setSnapshotting(true);
+    setSnapshotNotice(null);
+    try {
+      const result = await requestSnapshot();
+      if (result.status === "created") {
+        setLastSnapshotAt(result.createdAt);
+        setSnapshots((current) => [{ id: result.id, createdAt: result.createdAt }, ...current.filter((snapshot) => snapshot.id !== result.id)].slice(0, 10));
+        setSnapshotNotice({ tone: "success", message: "Cloud snapshot created successfully." });
+      } else if (result.status === "authentication-required") {
+        setSnapshotNotice({ tone: "error", message: "Your session expired. Sign in again before creating a snapshot.", authenticationRequired: true });
+      } else if (result.status === "workspace-not-saved") {
+        setSnapshotNotice({ tone: "error", message: "Save the workspace to the cloud before creating its first snapshot." });
+      } else if (result.status === "storage-unavailable") {
+        setSnapshotNotice({ tone: "error", message: "Cloud storage could not create the snapshot. Try again in a moment." });
+      } else if (result.status === "invalid-response") {
+        setSnapshotNotice({ tone: "error", message: "Cloud storage returned an unexpected response. No snapshot was confirmed." });
+      } else {
+        setSnapshotNotice({ tone: "error", message: "The snapshot request could not reach cloud storage. Check your connection and try again." });
+      }
+    } finally {
+      setSnapshotting(false);
+    }
+  }, [requestSnapshot]);
+
+  async function restoreSnapshot(snapshot: SnapshotHistoryItem) {
+    setRestoringSnapshotId(snapshot.id);
+    setSnapshotNotice(null);
+    try {
+      const result = await requestWorkspaceSnapshotRestore(snapshot.id);
+      if (result.status === "restored" && isWorkspaceData(result.workspace)) {
+        const restored = normalizeWorkspace(result.workspace);
+        updateWorkspace("Restored cloud snapshot", () => restored);
+        workspaceVersionRef.current = result.updatedAt;
+        conflictRef.current = false;
+        setSnapshots((current) => [result.safetySnapshot, ...current.filter((item) => item.id !== result.safetySnapshot.id)].slice(0, 10));
+        setLastSnapshotAt(result.safetySnapshot.createdAt);
+        setSyncState("saved");
+        setSnapshotNotice({ tone: "success", message: "Cloud snapshot restored. A safety snapshot preserved the workspace it replaced." });
+      } else if (result.status === "authentication-required") {
+        setSnapshotNotice({ tone: "error", message: "Your session expired. Sign in again before restoring a snapshot.", authenticationRequired: true });
+      } else if (result.status === "snapshot-not-found") {
+        setSnapshots((current) => current.filter((item) => item.id !== snapshot.id));
+        setSnapshotNotice({ tone: "error", message: "That snapshot is no longer available. The recovery list has been updated." });
+      } else if (result.status === "snapshot-not-restorable" || result.status === "invalid-response" || result.status === "restored") {
+        setSnapshotNotice({ tone: "error", message: "That snapshot did not contain a valid workspace and was not restored." });
+      } else if (result.status === "storage-unavailable") {
+        setSnapshotNotice({ tone: "error", message: "Cloud storage could not restore the snapshot. Try again in a moment." });
+      } else {
+        setSnapshotNotice({ tone: "error", message: "The restore request could not reach cloud storage. Check your connection and try again." });
+      }
+    } finally {
+      setRestoringSnapshotId(null);
+    }
+  }
+
+  function confirmSnapshotRestore(snapshot: SnapshotHistoryItem) {
+    setConfirmation({
+      title: "Restore this cloud snapshot?",
+      message: `The current workspace will be replaced with the snapshot from ${new Date(snapshot.createdAt).toLocaleString()}. A new safety snapshot will preserve the workspace being replaced.`,
+      actionLabel: "Restore snapshot",
+      onConfirm: () => void restoreSnapshot(snapshot),
+    });
+  }
+
+  function resetWorkspace() {
+    setConfirmation({
+      title: "Reset the entire workspace?",
+      message: "All projects, tasks, ideas, and activity will be cleared. Export a backup or create a snapshot first. You can undo this change with Ctrl+Z.",
+      actionLabel: "Reset workspace",
+      onConfirm: () => {
+        updateWorkspace("Reset workspace", () => emptyWorkspace);
+      },
+    });
+  }
+  function inboxToTask(item: InboxItem) {
+    updateWorkspace(`Promoted idea to task · ${item.text.length > 32 ? `${item.text.slice(0, 30)}…` : item.text}`, (current) => ({
+      ...current,
+      inbox: (current.inbox ?? []).filter((entry) => entry.id !== item.id),
+      tasks: [{ id: crypto.randomUUID(), title: item.text, priority: "Medium", done: false, createdAt: new Date().toISOString() }, ...current.tasks],
+      activity: [record(`Promoted inbox item to task · ${item.text}`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function inboxToProject(item: InboxItem) {
+    const now = new Date();
+    const project: Project = {
+      id: crypto.randomUUID(),
+      name: item.text.length > 48 ? `${item.text.slice(0, 45)}…` : item.text,
+      eyebrow: "New concept",
+      description: item.text,
+      status: "Planning",
+      kind: "Experiment",
+      stack: [],
+      updatedAt: now.toISOString(),
+      updatedLabel: "Just now",
+      note: "Define the next useful action.",
+      progress: 0,
+      accent: "violet",
+    };
+    updateWorkspace(`Promoted idea to project · ${project.name}`, (current) => ({
+      ...current,
+      inbox: (current.inbox ?? []).filter((entry) => entry.id !== item.id),
+      projects: [project, ...current.projects],
+      activity: [record(`Promoted inbox item to project · ${project.name}`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function archiveInboxItem(item: InboxItem) {
+    updateWorkspace(`Archived idea · ${item.text.length > 32 ? `${item.text.slice(0, 30)}…` : item.text}`, (current) => ({
+      ...current,
+      inbox: (current.inbox ?? []).filter((entry) => entry.id !== item.id),
+      activity: [record(`Archived inbox item · ${item.text}`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function importProjects(candidates: ImportCandidate[]) {
+    const imported: Project[] = candidates.map((candidate) => ({
+      id: crypto.randomUUID(),
+      name: candidate.name,
+      eyebrow: candidate.vercelProject ? "GitHub + Vercel" : "GitHub repository",
+      description: candidate.description,
+      status: "Active",
+      kind: "Software",
+      stack: candidate.stack,
+      repo: candidate.repo,
+      deployment: candidate.deployment,
+      updatedAt: candidate.pushedAt,
+      updatedLabel: "Imported",
+      note: "Define the next useful action.",
+      progress: 0,
+      accent: candidate.vercelProject ? "cyan" : "violet",
+    }));
+    updateWorkspace(`Imported ${imported.length} project${imported.length === 1 ? "" : "s"} from GitHub`, (current) => ({
+      ...current,
+      projects: [...imported, ...current.projects],
+      activity: [record(`Imported ${imported.length} project${imported.length === 1 ? "" : "s"} from GitHub`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function saveSettings(settings: WorkspaceSettings) {
+    updateWorkspace("Updated workspace settings", (current) => ({
+      ...current,
+      settings,
+      activity: [record("Updated workspace settings"), ...current.activity].slice(0, 30),
+    }));
+  }
+  function addProjectNote(note: ProjectNote) {
+    const project = workspace.projects.find((item) => item.id === note.projectId);
+    updateWorkspace(`Added ${note.type.toLowerCase()} note to ${project?.name ?? "project"}`, (current) => ({
+      ...current,
+      notes: [note, ...(current.notes ?? [])],
+      activity: [record(`Added ${note.type.toLowerCase()} to ${project?.name ?? "project"}`), ...current.activity].slice(0, 30),
+    }));
+  }
+  function deleteProjectNote(note: ProjectNote) {
+    setConfirmation({
+      title: "Delete journal entry?",
+      message: "This entry will be removed from the project history. You can undo this change with Ctrl+Z.",
+      actionLabel: "Delete entry",
+      onConfirm: () => {
+        updateWorkspace("Deleted journal entry", (current) => ({
+          ...current,
+          notes: (current.notes ?? []).filter((item) => item.id !== note.id),
+          activity: [record("Removed project journal entry"), ...current.activity].slice(0, 30),
+        }));
+      },
+    });
+  }
+  function saveWeeklyReview(review: WeeklyReview) {
+    updateWorkspace("Completed weekly review", (current) => ({
+      ...current,
+      reviews: [review, ...(current.reviews ?? [])].slice(0, 52),
+      activity: [record("Completed weekly review"), ...current.activity].slice(0, 30),
+    }));
+    window.setTimeout(() => void createSnapshot(), 900);
+  }
+
+  const filteredCommands = useMemo(() => {
+    const actions = [
+      ...(history.past.length > 0
+        ? [
+            {
+              id: "undo-last-action",
+              section: "Actions",
+              label: `Undo: ${history.past[history.past.length - 1].label}`,
+              hint: "Ctrl + Z",
+              icon: <RotateCcw />,
+              run: () => {
+                setCommandOpen(false);
+                performUndo();
+              },
+            },
+          ]
+        : []),
+      ...(history.future.length > 0
+        ? [
+            {
+              id: "redo-last-action",
+              section: "Actions",
+              label: `Redo: ${history.future[0].label}`,
+              hint: "Ctrl + Y",
+              icon: <RotateCw />,
+              run: () => {
+                setCommandOpen(false);
+                performRedo();
+              },
+            },
+          ]
+        : []),
+      { id: "new-project", section: "Create", label: "New project", hint: "Create a workspace project", icon: <Grid2X2 />, run: () => setComposer("project") },
+      { id: "new-task", section: "Create", label: "New task", hint: "Alt + N", icon: <ListChecks />, run: () => setComposer("task") },
+      { id: "capture-idea", section: "Create", label: "Capture idea", hint: "Alt + I", icon: <Lightbulb />, run: () => setComposer("idea") },
+      { id: "projects", section: "Navigate", label: "Go to projects", hint: "Project grid", icon: <Grid2X2 />, run: () => document.querySelector("#projects")?.scrollIntoView() },
+      { id: "tasks", section: "Navigate", label: "Go to tasks", hint: "Daily actions", icon: <ListChecks />, run: () => document.querySelector("#tasks")?.scrollIntoView() },
+      { id: "activity", section: "Navigate", label: "Go to activity", hint: "Workspace history", icon: <Activity />, run: () => document.querySelector("#activity")?.scrollIntoView() },
+      { id: "leads", section: "Navigate", label: "Client leads", hint: "Lead pipeline & inquiries", icon: <Inbox />, run: () => router.push("/dashboard/leads") },
+      { id: "client-publishing", section: "Navigate", label: "Client Publishing", hint: "Review customer visibility", icon: <ClipboardCheck />, run: () => router.push("/dashboard/client-publishing") },
+      { id: "client-access", section: "Navigate", label: "Client Access", hint: "Inspect client onboarding", icon: <ClipboardCheck />, run: () => router.push("/dashboard/client-access") },
+      { id: "portal-readiness", section: "Navigate", label: "Portal Readiness", hint: "Review release prerequisites", icon: <ClipboardCheck />, run: () => router.push("/dashboard/portal-readiness") },
+      { id: "customer-communications", section: "Navigate", label: "Customer Communications", hint: "Inspect delivery and recovery", icon: <ClipboardCheck />, run: () => router.push("/dashboard/customer-communications") },
+      { id: "operations", section: "Navigate", label: "Operations", hint: "Service health, incidents & recovery gaps", icon: <Activity />, run: () => router.push("/dashboard/operations") },
+      { id: "systems-directory", section: "Navigate", label: "Systems Directory", hint: "Services, dependencies, costs & renewals", icon: <Settings />, run: () => router.push("/dashboard/systems") },
+      { id: "analytics", section: "Navigate", label: "Analytics", hint: "Traffic, funnels & demand", icon: <BarChart3 />, run: () => router.push("/dashboard/analytics") },
+      { id: "marketing", section: "Navigate", label: "Marketing operations", hint: "Acquisition engine", icon: <Megaphone />, run: () => router.push("/dashboard/marketing") },
+      { id: "consultations", section: "Navigate", label: "Consultation playbooks", hint: "Discovery playbooks", icon: <ClipboardCheck />, run: () => router.push("/dashboard/consultations") },
+      { id: "account", section: "Workspace", label: "Account and passkeys", hint: "Owner credentials", icon: <KeyRound />, run: () => router.push("/account") },
+      { id: "refresh", section: "Workspace", label: "Refresh live status", hint: "GitHub + Vercel", icon: <RefreshCw />, run: () => void refreshIntelligence() },
+      { id: "snapshot", section: "Workspace", label: "Create cloud snapshot", hint: "Neon backup", icon: <DatabaseBackup />, run: () => void createSnapshot() },
+      { id: "export", section: "Workspace", label: "Export workspace", hint: "Download JSON", icon: <Download />, run: exportWorkspace },
+      { id: "import-projects", section: "Workspace", label: "Import connected projects", hint: "GitHub + Vercel", icon: <DownloadCloud />, run: () => setImportOpen(true) },
+      { id: "weekly-review", section: "Workspace", label: "Start weekly review", hint: "Wins + blockers + priorities", icon: <BookOpenCheck />, run: () => setReviewOpen(true) },
+      { id: "settings", section: "Workspace", label: "Workspace settings", hint: "Identity + defaults", icon: <Settings />, run: () => setSettingsOpen(true) },
+      ...workspace.projects.map((project) => ({ id: `project-${project.id}`, section: "Projects", label: project.name, hint: `Edit · ${project.status}`, icon: <CircleDot />, run: () => setEditingProject(project) })),
+      ...workspace.tasks.map((task) => ({ id: `task-${task.id}`, section: "Tasks", label: task.title, hint: `${task.done ? "Completed" : task.priority ?? "Medium"}${task.dueDate ? ` · ${task.dueDate}` : ""}`, icon: task.done ? <CheckCircle2 /> : <ListChecks />, run: () => setEditingTask(task) })),
+    ];
+    if (!commandQuery.trim()) return actions;
+    const query = commandQuery.toLowerCase();
+    return actions.filter((action) => action.label.toLowerCase().includes(query) || action.hint.toLowerCase().includes(query) || action.section.toLowerCase().includes(query));
+  }, [commandQuery, createSnapshot, exportWorkspace, history.future, history.past, performRedo, performUndo, refreshIntelligence, router, workspace]);
+
+  const commandSections = useMemo(() => Array.from(new Set(filteredCommands.map((action) => action.section))), [filteredCommands]);
+
+  const filtered = useMemo(() => workspace.projects.filter((project) => (kind === "All" || project.kind === kind) && `${project.name} ${project.description} ${project.stack.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [kind, query, workspace.projects]);
+  const googleVisible=(googleOperations?.actionableTasks||[]).filter(t=>!googleDone.includes(t.listId+":"+t.id));
+  async function finishGoogleTask(task:{id:string;listId:string;title:string}){
+    if(!window.confirm("Complete Google Task: "+task.title+"?"))return;
+    setGoogleBusy(task.id);setGoogleError("");
+    try{const r=await fetch("/api/dashboard/google-task",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({taskId:task.id,listId:task.listId,title:task.title})});const v=await r.json();if(!r.ok)throw Error(v.error||"Completion not confirmed");setGoogleDone(prev=>[...prev,task.listId+":"+task.id]);router.refresh();}
+    catch(e){setGoogleError((e instanceof Error?e.message:"Connection failed")+". Check Google Tasks before retrying.");}finally{setGoogleBusy(null);}
+  }
+  const timeZone = normalizeTimeZone(workspace.settings?.timezone);
+  const today = dateKeyInTimeZone(new Date(), timeZone);
+  const commandCenterToday = dateKeyInTimeZone(new Date(), "America/Denver");
+  const visibleTasks = selectTasksForView(workspace.tasks, taskView, today);
+  const taskGroups = visibleTasks.reduce<Record<string, Task[]>>((groups, task) => { const name = workspace.projects.find((project) => project.id === task.projectId)?.name ?? "General"; (groups[name] ??= []).push(task); return groups; }, {});
+  const kinds: Array<"All" | ProjectKind> = ["All", "Software", "CNC", "Business", "Experiment"];
+
+  return (
+    <div className="relative min-h-screen bg-background font-sans text-foreground selection:bg-primary/20">
+      {conflict && <DialogBoundary label="Sync conflict resolution" onClose={() => setConflict(null)}><SyncConflictDialog title="Choose which workspace to keep" comparisons={[
+        { label: "Projects", local: conflict.local.projects.length, cloud: conflict.cloud?.projects.length ?? "—" },
+        { label: "Tasks", local: conflict.local.tasks.length, cloud: conflict.cloud?.tasks.length ?? "—" },
+        { label: "Inbox items", local: conflict.local.inbox?.length ?? 0, cloud: conflict.cloud?.inbox?.length ?? "—" },
+        { label: "Activity entries", local: conflict.local.activity.length, cloud: conflict.cloud?.activity.length ?? "—" },
+      ]} cloudUpdatedAt={conflict.cloudVersion} loading={conflict.loading} resolving={conflict.resolving} error={conflict.error} onRetry={() => void loadConflict(conflict.local)} onUseCloud={useCloudConflict} onKeepLocal={() => void keepLocalConflict()} onExportLocal={() => downloadWorkspace(conflict.local, `work-ctrl-conflict-local-${today}.json`)} /></DialogBoundary>}
+      {composer && <DialogBoundary label="Create a project, task, or idea" onClose={() => setComposer(null)}><Composer mode={composer} projects={workspace.projects} onClose={() => setComposer(null)} onProject={addProject} onTask={addTask} onIdea={addIdea} /></DialogBoundary>}
+      {editingProject && <DialogBoundary label="Edit project" onClose={() => setEditingProject(null)}><ProjectEditor project={editingProject} onClose={() => setEditingProject(null)} onSave={updateProject} /></DialogBoundary>}
+      {viewingProjectId && workspace.projects.find((project) => project.id === viewingProjectId) && <DialogBoundary label="Project workspace" onClose={clearProjectDeepLink}><ProjectWorkspace project={workspace.projects.find((project) => project.id === viewingProjectId)!} tasks={workspace.tasks} notes={workspace.notes ?? []} intelligence={intelligence[viewingProjectId]?.data} onClose={clearProjectDeepLink} onEdit={() => { setEditingProject(workspace.projects.find((project) => project.id === viewingProjectId)!); clearProjectDeepLink(); }} onAddTask={(title) => addTask(title, viewingProjectId)} onToggleTask={toggleTask} onEditTask={setEditingTask} onSaveDelivery={(delivery) => updateProjectDelivery(viewingProjectId, delivery)} /></DialogBoundary>}
+      {editingTask && <DialogBoundary label="Edit task" onClose={() => setEditingTask(null)}><TaskEditor task={editingTask} projects={workspace.projects} onClose={() => setEditingTask(null)} onSave={updateTask} /></DialogBoundary>}
+      {confirmation && <DialogBoundary label="Confirm action" onClose={() => setConfirmation(null)}><ConfirmDialog confirmation={confirmation} onClose={() => setConfirmation(null)} /></DialogBoundary>}
+      {commandOpen && <DialogBoundary label="Command palette" onClose={() => setCommandOpen(false)}><div className="fixed inset-0 z-[55] flex justify-center bg-background/75 px-4 pt-[12vh] backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setCommandOpen(false)}><Card className="h-fit w-full max-w-xl overflow-hidden shadow-2xl"><div className="flex items-center gap-3 border-b border-border px-4"><Search className="size-4 text-muted-foreground" /><input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.target.value)} placeholder="Type a command or search projects…" aria-label="Search commands and projects" className="h-14 min-w-0 flex-1 bg-transparent text-sm outline-none" /><kbd className="rounded border border-border bg-secondary px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground">ESC</kbd></div><div className="max-h-[55vh] overflow-y-auto p-2">{filteredCommands.length ? commandSections.map((section) => <div key={section} className="mb-2"><div className="px-2 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">{section}</div>{filteredCommands.filter((action) => action.section === section).map((action) => <button key={action.id} onClick={() => { action.run(); setCommandOpen(false); setCommandQuery(""); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-accent"><span className="text-muted-foreground [&_svg]:size-4">{action.icon}</span><span className="min-w-0 flex-1 truncate text-sm">{action.label}</span><span className="text-[10px] text-muted-foreground">{action.hint}</span><CornerDownLeft className="size-3 text-muted-foreground/50" /></button>)}</div>) : <div className="grid min-h-32 place-items-center text-sm text-muted-foreground">No matching commands</div>}</div><div className="flex items-center gap-4 border-t border-border bg-secondary/30 px-4 py-2 font-mono text-[9px] text-muted-foreground"><span className="flex items-center gap-1"><Keyboard className="size-3" />Ctrl/⌘ K</span><span>Alt N · task</span><span>Alt I · idea</span><span>Ctrl Z · undo</span></div></Card></div></DialogBoundary>}
+      {reviewOpen && <DialogBoundary label="Weekly review" onClose={() => setReviewOpen(false)}><WeeklyReviewDialog onClose={() => setReviewOpen(false)} onSave={saveWeeklyReview} /></DialogBoundary>}
+      {importOpen && <DialogBoundary label="Import projects" onClose={() => setImportOpen(false)}><ProjectImportDialog existing={workspace.projects} onClose={() => setImportOpen(false)} onImport={importProjects} /></DialogBoundary>}
+      {settingsOpen && <DialogBoundary label="Workspace settings" onClose={() => setSettingsOpen(false)}><SettingsDialog settings={workspace.settings ?? defaultWorkspaceSettings} onClose={() => setSettingsOpen(false)} onSave={saveSettings} /></DialogBoundary>}
+      {undoToast && (
+        <div
+          role="status"
+          className="fixed bottom-5 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-3 rounded-xl border border-border/90 bg-card/95 px-4 py-2.5 text-xs shadow-2xl backdrop-blur-xl"
+        >
+          <div className="flex items-center gap-2">
+            <RotateCcw className="size-3.5 text-primary" />
+            <span className="max-w-[220px] truncate font-medium text-foreground sm:max-w-xs">{undoToast.label}</span>
+          </div>
+
+          <div className="flex items-center gap-1 border-l border-border pl-2.5">
+            {undoToast.canUndo && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 gap-1.5 px-2 text-xs font-semibold text-primary hover:bg-primary/10"
+                onClick={performUndo}
+              >
                 <span>Undo</span>
                 <kbd className="hidden rounded border border-border/80 bg-background/80 px-1 py-0.2 font-mono text-[9px] text-muted-foreground sm:inline-block">
                   Ctrl+Z
@@ -455,6 +851,7 @@ export function Dashboard({ automationHub, googleOperations, crmSnapshot, crmUna
           <CommandCenterOverview
             crm={crmSnapshot}
             crmUnavailable={crmUnavailable}
+            crmReadAt={crmReadAt}
             analyticsSnapshot={analyticsSnapshot}
             analyticsUnavailable={analyticsUnavailable}
             projects={workspace.projects}
@@ -472,7 +869,6 @@ export function Dashboard({ automationHub, googleOperations, crmSnapshot, crmUna
             researchActions={researchActions}
             researchUnavailable={researchUnavailable}
             researchTruncated={researchTruncated}
-            crmReadAt={crmReadAt}
             researchReadAt={researchReadAt}
             intelligence={intelligence}
           />
