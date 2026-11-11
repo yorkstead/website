@@ -42,14 +42,15 @@ type NavigationLink = {
 
 const primaryLinks: NavigationLink[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard, active: (path) => path === "/dashboard" },
-  { label: "CRM", href: "/dashboard/leads", icon: Users, active: (path) => path.startsWith("/dashboard/leads") || path.startsWith("/dashboard/consultations") || path.startsWith("/dashboard/opportunities") || path.startsWith("/dashboard/overlap-review") },
+  { label: "Pipeline", href: "/dashboard/leads", icon: Users, active: (path) => ["/dashboard/leads", "/dashboard/consultations", "/dashboard/opportunities", "/dashboard/overlap-review", "/dashboard/marketing"].some((prefix) => path.startsWith(prefix)) },
   { label: "Projects", href: "/dashboard#projects", icon: FolderKanban, active: (path) => path === "/dashboard" },
   { label: "Tasks", href: "/dashboard#tasks", icon: ListChecks, active: (path) => path === "/dashboard" },
-  { label: "Automations", href: "/dashboard/automations", icon: Activity, active: (path) => path.startsWith("/dashboard/automations") },
-  { label: "Insights", href: "/dashboard/analytics", icon: Gauge, active: (path) => ["/dashboard/analytics", "/dashboard/marketing", "/dashboard/operations"].some((prefix) => path.startsWith(prefix)) },
+  { label: "Systems", href: "/dashboard/systems", icon: ServerCog, active: (path) => ["/dashboard/systems", "/dashboard/automations", "/dashboard/operations"].some((prefix) => path.startsWith(prefix)) },
+  { label: "Insights", href: "/dashboard/analytics", icon: Gauge, active: (path) => path.startsWith("/dashboard/analytics") },
 ];
 
-const crmLinks: NavigationLink[] = [
+const pipelineLinks: NavigationLink[] = [
+  { label: "Marketing", href: "/dashboard/marketing", icon: Activity, active: (path) => path.startsWith("/dashboard/marketing") },
   { label: "Opportunity Discovery", href: "/dashboard/opportunities", icon: Lightbulb, active: (path) => path.startsWith("/dashboard/opportunities") },
   { label: "Account overlap review", href: "/dashboard/overlap-review", icon: Users, active: (path) => path.startsWith("/dashboard/overlap-review") },
   { label: "Overdue follow-ups", href: "/dashboard/leads?followUp=overdue", icon: BellRing, active: (_path, query) => query.get("followUp") === "overdue" },
@@ -58,13 +59,14 @@ const crmLinks: NavigationLink[] = [
   { label: "Consultations", href: "/dashboard/consultations", icon: ClipboardCheck, active: (path) => path.startsWith("/dashboard/consultations") },
 ];
 
-const insightLinks: NavigationLink[] = [
-  { label: "Marketing", href: "/dashboard/marketing", icon: Activity, active: (path) => path.startsWith("/dashboard/marketing") },
+const systemsLinks: NavigationLink[] = [
+  { label: "Systems Directory", href: "/dashboard/systems", icon: ServerCog, active: (path) => path.startsWith("/dashboard/systems") },
+  { label: "Automations", href: "/dashboard/automations", icon: Activity, active: (path) => path.startsWith("/dashboard/automations") },
   { label: "Operations", href: "/dashboard/operations", icon: Settings2, active: (path) => path.startsWith("/dashboard/operations") },
+  { label: "Automation Hub", href: "https://cal.yorkstead.com/command", icon: ExternalLink, external: true },
 ];
 
 const toolLinks: NavigationLink[] = [
-  { label: "Systems Directory", href: "/dashboard/systems", icon: ServerCog, active: (path) => path.startsWith("/dashboard/systems") },
   { label: "Client Access", href: "/dashboard/client-access", icon: Users, active: (path) => path.startsWith("/dashboard/client-access") },
   { label: "Client Publishing", href: "/dashboard/client-publishing", icon: FileText, active: (path) => path.startsWith("/dashboard/client-publishing") },
   { label: "Portal Preview", href: "/dashboard/customer-portal-preview", icon: PanelsTopLeft, active: (path) => path.startsWith("/dashboard/customer-portal-preview") || path.startsWith("/dashboard/client-publishing/preview") },
@@ -258,9 +260,9 @@ export function DashboardNavigation({ children }: { children: React.ReactNode })
           <div className={headingClass}>Workspace</div>
           {primaryLinks.map((item) => itemClass(item))}
           <div className={cn("ml-7 mt-1 space-y-1 border-l border-border/70 pl-2", compact && "ml-0 border-l-0 pl-0")}>
-            {crmLinks.map((item) => itemClass(item, true))}
+            {pipelineLinks.map((item) => itemClass(item, true))}
             <div className="h-1" />
-            {insightLinks.map((item) => itemClass(item, true))}
+            {systemsLinks.map((item) => itemClass(item, true))}
           </div>
 
           <div className={headingClass}>Settings &amp; Tools</div>

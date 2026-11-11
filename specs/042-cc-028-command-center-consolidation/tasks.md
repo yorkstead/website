@@ -20,7 +20,7 @@
 - [ ] T104b — Owner approved an explicit project-creation step on proposal acceptance (2026-11-11). Not started: it reuses the existing idempotent conversion and needs its own concurrency, idempotency, and rollback coverage.
 - [x] T105 — Confirmed no static, dynamic, route, package, or other in-repository consumer for the two disconnected components; removed only those files. `LeadPriorityQueue` and active Automation Hub integration remain untouched. Merged in PR [#124](https://github.com/yorkstead/website/pull/124) at `6a0173239aeb4860d0dccecc14749ff2f314070b`.
 - [x] T106a — Quick Launch and workspace defaults now target `yorkstead`; `4twentydev` is retired for GitHub and Vercel per the owner (2026-11-11). Merged in PR [#131](https://github.com/yorkstead/website/pull/131) as `b6a6319`. See `specs/047-cc028-phase6a-quick-launch-targets/`.
-- [ ] T106b — Navigation regrouped into Pipeline, Delivery, Systems, and Insights with all routes preserved; owner accepted the taxonomy on 2026-11-11. Implemented in PR [#132](https://github.com/yorkstead/website/pull/132), under review. See `specs/048-cc028-phase6b-navigation-taxonomy/`.
+- [x] T106b — Navigation regrouped into Pipeline, Delivery, Systems, and Insights with all routes preserved; owner accepted the taxonomy on 2026-11-11. PR [#132](https://github.com/yorkstead/website/pull/132). See `specs/048-cc028-phase6b-navigation-taxonomy/`.
 - [ ] T107 — Route active external prospecting outputs into existing Discovery/CRM only through a separately authorized scope; otherwise leave outside this repository.
 
 ## Excluded work

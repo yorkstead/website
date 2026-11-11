@@ -1,3 +1,11 @@
+# Active work — CC-028 Phase 6b navigation taxonomy — 2026-11-11
+
+- Owner accepted the four-group taxonomy: **Pipeline** (Marketing, Opportunity Discovery, account overlap, follow-up queues, Consultations), **Delivery** (Projects, Tasks), **Systems** (Systems Directory, Automations, Operations, Automation Hub), **Insights** (Analytics).
+- Specification and plan: [`specs/048-cc028-phase6b-navigation-taxonomy/`](../../specs/048-cc028-phase6b-navigation-taxonomy/).
+- Implementation: `primaryLinks` now reads Overview, Pipeline, Projects, Tasks, Systems, Insights; `crmLinks` became `pipelineLinks` with Marketing added; `insightLinks` became `systemsLinks` with the external Hub console; Systems Directory left Settings & Tools. Every route and anchor is preserved.
+- Verification: CC-017 browser suite 10/10 with the new labels and active states; full suite 650 pass / 0 fail / 0 skip; lint 0 errors (one pre-existing `login-panel.tsx:62` warning); typecheck and build pass.
+- No route, page, data-ownership, keyboard, drawer, or print behavior changed. No merge or deployment is authorized.
+
 # Active work — CC-028 Phase 4a commercial value — 2026-11-11
 
 - Owner decision: the **accepted CRM proposal amount is the commercial figure**; Marketing activity `value` is attribution/reporting only. T104b, an explicit project-creation step on acceptance, is approved in principle and remains a separate slice.

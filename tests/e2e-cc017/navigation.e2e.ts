@@ -22,13 +22,14 @@ test("owner navigation covers destinations, active state, collapse, and persiste
   await expect(nav.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
 
   const routes = [
-    ["CRM", "/dashboard/leads", /\/dashboard\/leads$/],
+    ["Pipeline", "/dashboard/leads", /\/dashboard\/leads$/],
     ["Overdue follow-ups", "/dashboard/leads?followUp=overdue", /followUp=overdue/],
     ["Due today", "/dashboard/leads?followUp=today", /followUp=today/],
     ["Upcoming follow-ups", "/dashboard/leads?followUp=upcoming", /followUp=upcoming/],
     ["Consultations", "/dashboard/consultations", /\/dashboard\/consultations$/],
     ["Projects", "/dashboard#projects", /\/dashboard#projects$/],
     ["Tasks", "/dashboard#tasks", /\/dashboard#tasks$/],
+    ["Systems", "/dashboard/systems", /\/dashboard\/systems$/],
     ["Automations", "/dashboard/automations", /\/dashboard\/automations$/],
     ["Insights", "/dashboard/analytics", /\/dashboard\/analytics$/],
     ["Marketing", "/dashboard/marketing", /\/dashboard\/marketing$/],
@@ -47,14 +48,15 @@ test("owner navigation covers destinations, active state, collapse, and persiste
     await expect(link).toHaveAttribute("href", href);
     await link.click();
     await expect(page).toHaveURL(expectedUrl);
-    if (label === "CRM" || label === "Overdue follow-ups" || label === "Due today" || label === "Upcoming follow-ups") {
-      await expect(nav.getByRole("link", { name: "CRM", exact: true })).toHaveAttribute("aria-current", "page");
-      if (label !== "CRM") await expect(link).toHaveAttribute("aria-current", "page");
+    if (label === "Pipeline" || label === "Overdue follow-ups" || label === "Due today" || label === "Upcoming follow-ups" || label === "Consultations" || label === "Marketing") {
+      await expect(nav.getByRole("link", { name: "Pipeline", exact: true })).toHaveAttribute("aria-current", "page");
+      if (label !== "Pipeline") await expect(link).toHaveAttribute("aria-current", "page");
     } else if (label === "Account & passkeys") {
       // The account destination intentionally lives outside the dashboard layout.
       await expect(page.getByRole("heading", { name: "Your passkeys" })).toBeVisible();
-    } else if (label === "Insights" || label === "Marketing" || label === "Operations") {
-      await expect(nav.getByRole("link", { name: "Insights", exact: true })).toHaveAttribute("aria-current", "page");
+    } else if (label === "Systems" || label === "Automations" || label === "Operations") {
+      await expect(nav.getByRole("link", { name: "Systems", exact: true })).toHaveAttribute("aria-current", "page");
+      if (label !== "Systems") await expect(link).toHaveAttribute("aria-current", "page");
     } else {
       await expect(link).toHaveAttribute("aria-current", "page");
     }
@@ -65,7 +67,7 @@ test("owner navigation covers destinations, active state, collapse, and persiste
 
   await page.goto("/dashboard/leads?lead=731&followUp=upcoming");
   await expect(page).toHaveURL(/\/dashboard\/leads\?lead=731&followUp=upcoming/);
-  await expect(nav.getByRole("link", { name: "CRM", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Pipeline", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Upcoming follow-ups", exact: true })).toHaveAttribute("aria-current", "page");
 
   await page.goto("/dashboard/leads?followUp=overdue");
@@ -120,7 +122,7 @@ test("mobile drawer supports keyboard focus, Escape, backdrop, and route selecti
   await expect(opener).toBeFocused();
 
   await opener.click();
-  await page.getByRole("link", { name: "CRM", exact: true }).click();
+  await page.getByRole("link", { name: "Pipeline", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard\/leads$/);
   await expect(page.getByRole("dialog", { name: "Yorkstead navigation" })).toBeHidden();
 
