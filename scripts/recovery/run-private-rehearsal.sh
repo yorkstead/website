@@ -337,10 +337,6 @@ fail_proxy_exit() {
   fi
   if [[ $fatal_log == *'bind()'* ]]; then fail 'internal TLS proxy socket bind failed'; fi
   if [[ $fatal_log == *'No such file or directory'* || $fatal_log == *'no such file or directory'* ]]; then fail 'internal TLS proxy required path is missing'; fi
-  if [[ $fatal_log == *'Operation not permitted'* || $fatal_log == *'operation not permitted'* ]]; then
-    if [[ $fatal_log == *'setgid'* || $fatal_log == *'setuid'* || $fatal_log == *'setgroups'* ]]; then fail 'internal TLS proxy worker privilege transition denied'; fi
-    fail 'internal TLS proxy operation denied'
-  fi
   if [[ ${CI:-} == true && ${GITHUB_ACTIONS:-} == true && ${YS_PRIVATE_SYNTHETIC_FIXTURE:-} == true ]]; then
     local synthetic_detail
     synthetic_detail=$(python3 - "$workspace/proxy.private.log" <<'PY'
