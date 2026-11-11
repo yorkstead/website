@@ -1,4 +1,13 @@
-# Active work — CC-028 Phase 1 account overlap review — 2026-11-09
+# Current status — CC-028 Phase 1 merged — 2026-11-10
+
+- Live GitHub `main` is `381a64e5b57094dcf2c4317670913cde5a8a3869`, the merge commit for [PR #123](https://github.com/yorkstead/website/pull/123), merged 2026-11-11 02:57:28 UTC. The PR's final head was `df10f010c44e7a92c3fe78a108c591e14851f166`.
+- Final-head [CI run 42645872675](https://github.com/yorkstead/website/actions/runs/42645872675) passed on retry: application database tests, lint, typecheck, browser workflows, production build, clean worktree, and three synthetic recovery/role jobs. Its first attempt hit a local browser test-server `ECONNRESET`; the successful retry used the same commit.
+- The owner-only account overlap review, its focused tests, Phase 1 spec/plan/tasks, and verification record are merged repository work. No production activation or deployment state was established by this merge check. Other CC-028 phases and owner decisions remain separate work.
+- This documentation-only correction records the verified merge and CI result; no product, data, infrastructure, recovery, or deployment change is included.
+
+# Historical handoff — CC-028 Phase 1 account overlap review — 2026-11-09 (PR #123 merged)
+
+_The open-PR and pending-CI statements below describe the pre-merge implementation snapshot; the verified status above supersedes them._
 
 - Owner authorized a dedicated Phase 1 specification, implementation, tests, and reviewable PR under issue [#119](https://github.com/yorkstead/website/issues/119). Active artifacts: [`specs/043-cc028-phase1-overlap-review/`](../../specs/043-cc028-phase1-overlap-review/). The merged audit and parent CC-028 specification remain the architectural references.
 - Verified live `main` before this PR: `683ef64281cf80f8df5d6289544dbb695199cda6` (planning PR [#122](https://github.com/yorkstead/website/pull/122) merged 2026-11-09). The implementation PR [#123](https://github.com/yorkstead/website/pull/123) is open from `feat/119-account-overlap-review` against that base. No merge or deployment is authorized or performed.
