@@ -263,7 +263,8 @@ snapshot_business_data "$workspace/integrity-before.sha256"
 
 openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj '/CN=recovery.test' \
   -keyout "$workspace/tls/key.pem" -out "$workspace/tls/cert.pem" >"$workspace/tls-build.private.log" 2>&1 || fail 'private TLS certificate generation failed'
-chmod 600 "$workspace/tls/key.pem"; chmod 644 "$workspace/tls/cert.pem"
+chmod 750 "$workspace/tls"
+chmod 640 "$workspace/tls/key.pem"; chmod 644 "$workspace/tls/cert.pem"
 cat >"$workspace/nginx.conf" <<'NGINX'
 events {}
 http {
@@ -283,7 +284,7 @@ http {
   }
 }
 NGINX
-chmod 600 "$workspace/nginx.conf"
+chmod 640 "$workspace/nginx.conf"
 if [[ $fault == application-startup ]]; then
   docker_target run -d --name "$app_container" --label "ys-sys-001.target=$target_id" \
     --network "$net" --network-alias ys-sys-001-app --read-only --cap-drop ALL --security-opt no-new-privileges \
@@ -304,7 +305,7 @@ else
 fi
 docker_target run -d --name "$proxy_container" --label "ys-sys-001.target=$target_id" \
   --network "$net" --network-alias recovery.test --read-only --tmpfs /var/cache/nginx:rw,noexec,nosuid,size=8m \
-  --tmpfs /var/run:rw,noexec,nosuid,size=2m --cap-drop ALL --cap-add NET_BIND_SERVICE --security-opt no-new-privileges \
+  --tmpfs /var/run:rw,noexec,nosuid,size=2m --cap-drop ALL --cap-add NET_BIND_SERVICE --group-add "$(id -g)" --security-opt no-new-privileges \
   --mount "type=bind,src=$workspace/nginx.conf,dst=/etc/nginx/nginx.conf,readonly" \
   --mount "type=bind,src=$workspace/tls,dst=/run/tls,readonly" "$YS_PRIVATE_NGINX_IMAGE" >/dev/null
 proxy_config_ok=0
