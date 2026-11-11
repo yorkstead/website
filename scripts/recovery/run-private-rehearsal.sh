@@ -330,6 +330,30 @@ fail_proxy_exit() {
     fail 'internal TLS proxy needs an unwritable path'
   fi
   if [[ $fatal_log == *'host not found in upstream'* ]]; then fail 'internal TLS proxy upstream DNS unavailable'; fi
+  if [[ $fatal_log == *'cannot load certificate'* ]]; then fail 'internal TLS proxy certificate load failed'; fi
+  if [[ $fatal_log == *'SSL_CTX_use_PrivateKey_file'* ]]; then fail 'internal TLS proxy key load failed'; fi
+  if [[ $fatal_log == *'invalid number of arguments'* || $fatal_log == *'unknown directive'* || $fatal_log == *'directive is not allowed here'* ]]; then
+    fail 'internal TLS proxy configuration syntax rejected'
+  fi
+  if [[ $fatal_log == *'bind()'* ]]; then fail 'internal TLS proxy socket bind failed'; fi
+  if [[ $fatal_log == *'No such file or directory'* || $fatal_log == *'no such file or directory'* ]]; then fail 'internal TLS proxy required path is missing'; fi
+  if [[ $fatal_log == *'Operation not permitted'* || $fatal_log == *'operation not permitted'* ]]; then fail 'internal TLS proxy operation denied'; fi
+  if [[ ${CI:-} == true && ${GITHUB_ACTIONS:-} == true && ${YS_PRIVATE_SYNTHETIC_FIXTURE:-} == true ]]; then
+    local synthetic_detail
+    synthetic_detail=$(python3 - "$workspace/proxy.private.log" <<'PY'
+import pathlib,re,sys
+lines=pathlib.Path(sys.argv[1]).read_text(errors="replace").splitlines()
+fatal=[line for line in lines if re.search(r"\[(?:emerg|crit|alert)\]",line)]
+line=(fatal or lines or [""])[-1]
+line=re.sub(r"\"[^\"]*\"|'[^']*'", " path ", line)
+line=re.sub(r"/(?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+", " path ", line)
+line=re.sub(r"[A-Za-z0-9_+-]{20,}", " token ", line)
+line=re.sub(r"[^A-Za-z0-9 ,:.-]", " ", line)
+print(re.sub(r"\s+", " ", line).strip()[:100] or "no startup log")
+PY
+)
+    fail "internal TLS proxy synthetic startup: $synthetic_detail"
+  fi
   fail 'internal TLS proxy container exited'
 }
 proxy_config_ok=0
