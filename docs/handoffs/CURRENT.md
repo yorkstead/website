@@ -8,6 +8,14 @@
 - Not carried into #127 and still open as an optional UI follow-up: #126 rendered the read time with a semantic `<time dateTime>` element formatted in `America/Denver`, while #127 interpolates the raw ISO value into the source detail text. Recorded on PR #127.
 - Owner decisions for T103 (consultation identity snapshot vs projection), T104 (CRM proposal amount as commercial value; explicit post-acceptance project action), T106 (navigation taxonomy and Quick Launch targets), and T107 (external prospecting schedules) remain outstanding. No implementation is authorized by this closeout.
 
+# Active work — CC-028 Phase 3 consultation identity — 2026-11-11
+
+- Owner decision recorded: a linked consultation's name/business/email is the **meeting-time snapshot**; the CRM inquiry stays canonical for current contact details. Identity is not migrated or backfilled.
+- Specification, plan, and tasks: [`specs/045-cc028-phase3-consultation-identity/`](../../specs/045-cc028-phase3-consultation-identity/). Parent task T103 in `specs/042-cc-028-command-center-consolidation/`.
+- Implementation: `preserveLinkedIdentity` in `lib/consultation-model.ts` is applied by `updateConsultation`, so linked records keep their stored identity and `lead_id` even if an API caller submits different values. The consultation editor replaces the three identity inputs with a read-only snapshot panel naming the capture date and linking to `/dashboard/leads?lead=<id>`; unlinked consultations keep editable inputs.
+- Verification: focused unit tests 4/4 (linked edits, link repointing, non-identity edits, unlinked behavior); scaffold PASS (47 spec directories); 24 migration checks; full suite 653 pass / 0 fail / 0 skip against the local disposable database; `db:migrate` twice with no-ops on the second pass; `auth:migrate` no-op. Lint and typecheck clean apart from the pre-existing `login-panel.tsx:62` warning. Local Playwright not run for this slice.
+- No schema change, migration, data backfill, CRM write path, re-linking, or record merge. No merge or deployment is authorized.
+
 # Historical handoff — CC-028 Phase 2 attention source and read-time clarity — 2026-11-11 (PR #127 merged)
 
 _The open-PR and pending-CI statements below describe the pre-merge snapshot; the closeout above and PR #127 supersede them._

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { contactDatabase } from "@/lib/contact-inquiries";
-import { consultationStatuses, type ConsultationInput, type ConsultationRecord, type ConsultationStatus } from "@/lib/consultation-model";
+import { consultationStatuses, preserveLinkedIdentity, type ConsultationInput, type ConsultationRecord, type ConsultationStatus } from "@/lib/consultation-model";
 import { consultationIndustryResponseKey, getConsultationPlaybook } from "@/lib/consultation-playbooks";
 import { isValidDateKey } from "@/lib/date-time";
 import { createPagination, normalizeCount } from "@/lib/pagination";
@@ -85,12 +85,21 @@ export async function createConsultation(input: ConsultationInput) {
 
 export async function updateConsultation(id: string, input: ConsultationInput) {
   const sql = await contactDatabase();
-  const responses = JSON.stringify(input.responses);
+  const existingRows = await sql`SELECT lead_id, client_name, business, email FROM consultations WHERE id = ${id} LIMIT 1`;
+  if (!existingRows.length) return null;
+  const existing = existingRows[0];
+  const merged = preserveLinkedIdentity({
+    leadId: existing.lead_id === null || existing.lead_id === undefined ? null : Number(existing.lead_id),
+    clientName: existing.client_name ?? "",
+    business: existing.business ?? "",
+    email: existing.email ?? "",
+  }, input);
+  const responses = JSON.stringify(merged.responses);
   const rows = await sql`
     UPDATE consultations SET
-      lead_id = ${input.leadId}, service_slug = ${input.serviceSlug}, client_name = ${input.clientName},
-      business = ${input.business}, email = ${input.email}, consultation_date = ${input.consultationDate || null},
-      status = ${input.status}, responses = ${responses}::jsonb, updated_at = NOW()
+      lead_id = ${merged.leadId}, service_slug = ${merged.serviceSlug}, client_name = ${merged.clientName},
+      business = ${merged.business}, email = ${merged.email}, consultation_date = ${merged.consultationDate || null},
+      status = ${merged.status}, responses = ${responses}::jsonb, updated_at = NOW()
     WHERE id = ${id}
     RETURNING *
   `;

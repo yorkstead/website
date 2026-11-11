@@ -15,7 +15,7 @@
 
 - [x] T101 — Bounded owner-only cross-source account candidates implemented with no auto-link or merged account record; merged in PR [#123](https://github.com/yorkstead/website/pull/123) at `381a64e5b57094dcf2c4317670913cde5a8a3869`. See `specs/043-cc028-phase1-overlap-review/`.
 - [x] T102 — Attention source read times added without treating them as source-record freshness; merged in PR [#127](https://github.com/yorkstead/website/pull/127) at `c4aeca67e0e1e96d0e77a747e22b27462a0efa84`. See `specs/044-cc028-phase2-attention-freshness/`. The duplicate draft PR #126 was closed once #127 covered the same behavior.
-- [ ] T103 — After the owner decides snapshot semantics, clarify consultation identity behavior and add workflow regression coverage.
+- [x] T103 — Linked consultation identity is specified as a meeting-time snapshot; the editor shows a read-only snapshot with a CRM link and `updateConsultation` preserves identity and link. See `specs/045-cc028-phase3-consultation-identity/`. PR open for review.
 - [ ] T104 — After value/handoff decisions, clarify CRM commercial amount versus Marketing attribution; add an explicit project-creation handoff only if approved.
 - [x] T105 — Confirmed no static, dynamic, route, package, or other in-repository consumer for the two disconnected components; removed only those files. `LeadPriorityQueue` and active Automation Hub integration remain untouched. Merged in PR [#124](https://github.com/yorkstead/website/pull/124) at `6a0173239aeb4860d0dccecc14749ff2f314070b`.
 - [ ] T106 — If selected, adjust navigation labels/grouping using CC-017/CC-025 contracts and owner-confirmed Quick Launch targets.
