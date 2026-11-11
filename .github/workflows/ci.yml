@@ -76,8 +76,28 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
       - name: Install browser runtime
-        run: bunx playwright install --with-deps chromium
+        run: |
+          # Hosted runners intermittently lose DNS to the Ubuntu package mirrors,
+          # which fails the apt phase of --with-deps. Retry rather than fail the
+          # whole job on transient infrastructure errors.
+          for attempt in 1 2 3 4 5; do
+            if bunx playwright install --with-deps chromium; then
+              exit 0
+            fi
+            echo "::warning::Playwright install attempt ${attempt} failed; retrying in 20s"
+            sleep 20
+          done
+          echo "::error::Playwright install failed after 5 attempts"
+          exit 1
 
       - name: Run browser tests
         run: bun run test:e2e
