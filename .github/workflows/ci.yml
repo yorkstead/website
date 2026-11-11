@@ -19,9 +19,17 @@ jobs:
     name: Verify application
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Browsers and every system library are baked into this image, so the job
+    # never calls apt. Hosted-runner DNS failures against the Ubuntu mirrors
+    # (azure.archive.ubuntu.com) previously blocked every PR at
+    # `playwright install --with-deps`.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user root
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/project_command_center_test
-      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/project_command_center_test
+      # Container jobs reach services by service name, not localhost.
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/project_command_center_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/project_command_center_test
       MIGRATION_DATABASE_DRIVER: postgres
     services:
       postgres:
@@ -30,8 +38,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: project_command_center_test
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d project_command_center_test"
           --health-interval 5s
@@ -75,35 +81,6 @@ jobs:
 
       - name: Typecheck
         run: bun run typecheck
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            playwright-${{ runner.os }}-
-
-      - name: Install browser runtime
-        timeout-minutes: 12
-        run: |
-          # Hosted runners intermittently lose DNS to the Ubuntu package mirrors,
-          # which fails the apt phase of --with-deps. Each attempt is capped, and a
-          # killed attempt leaves apt-get holding /var/lib/apt/lists/lock, so clear
-          # it before retrying. If dependencies cannot be installed at all, fall
-          # back to the browser-only install so the suite can still run; the
-          # runner image usually carries the shared libraries.
-          for attempt in 1 2 3; do
-            if timeout 180 bunx playwright install --with-deps chromium; then
-              exit 0
-            fi
-            echo "::warning::Playwright install attempt ${attempt} failed; clearing apt state and retrying in 15s"
-            sudo pkill -9 -f 'apt-get|dpkg' || true
-            sudo rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend || true
-            sleep 15
-          done
-          echo "::warning::System dependency install unavailable; installing Chromium without apt dependencies"
-          bunx playwright install chromium
 
       - name: Run browser tests
         run: bun run test:e2e
@@ -299,8 +276,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d postgres"
           --health-interval 5s
