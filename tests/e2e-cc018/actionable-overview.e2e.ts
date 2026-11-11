@@ -129,7 +129,7 @@ test("owner overview prioritizes persisted work and supports exact links and act
 
   const proposalStage = page.locator("a[href='/dashboard/leads?status=proposal']").first();
   await expect(proposalStage).toContainText("1");
-  await expect(page.getByText("Active proposal value", { exact: true })).toBeVisible();
+  await expect(page.getByText("Proposal value · commercial", { exact: true })).toBeVisible();
 
   const stalledRow = actions.locator("article").filter({ hasText: "Stalled qualified" });
   await expect(stalledRow.getByRole("link", { name: "Open lead" })).toHaveAttribute("href", /lead=/);
@@ -222,7 +222,7 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await page.goto("/dashboard");
   const proposalAction = page.getByRole("link").filter({ hasText: "Reschedule system scope review" });
   await expect(proposalAction).toHaveAttribute("href", `/dashboard/leads?lead=${leadId}`);
-  await expect(page.getByText("Active proposal value").locator(".." )).toContainText("$3,250");
+  await expect(page.getByText("Proposal value · commercial").locator(".." )).toContainText("$3,250");
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   await expect(page.getByRole("heading", { name: "CC-019 Sales Workflow" })).toBeVisible();
   await page.locator(`#lead-${leadId}`).getByText("Qualification, consultations & proposals").click();
@@ -241,7 +241,7 @@ test("owner can qualify a lead, manage an explicit proposal, and see won pipelin
   await expect(updatedEditor.locator('input[name="nextAction"]')).toHaveValue("");
   await page.goto("/dashboard");
   await expect(page.getByRole("link").filter({ hasText: "Review system scope after reschedule" })).toHaveCount(0);
-  await expect(page.getByText("Active proposal value").locator("..")).toContainText("$3,250");
+  await expect(page.getByText("Proposal value · commercial").locator("..")).toContainText("$3,250");
 
   await page.goto(`/dashboard/leads?lead=${leadId}`);
   await expect(page.getByRole("heading", { name: "CC-019 Sales Workflow" })).toBeVisible();
