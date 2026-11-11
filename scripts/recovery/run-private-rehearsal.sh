@@ -398,7 +398,13 @@ elif "browserType.launch" in log:
 elif "No tests found" in log:
     print("test discovery")
 else:
-    print("unclassified")
+    error_lines=[line for line in log.splitlines() if re.search(r"\b(?:error|failed|denied|not found|ENOENT|EACCES)\b",line,re.I)]
+    line=(error_lines or log.splitlines() or [""])[-1]
+    line=re.sub(r"\"[^\"]*\"|'[^']*'", " value ", line)
+    line=re.sub(r"/(?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+", " path ", line)
+    line=re.sub(r"[A-Za-z0-9_+-]{20,}", " token ", line)
+    line=re.sub(r"[^A-Za-z0-9 ,:.-]", " ", line)
+    print("synthetic " + (re.sub(r"\s+", " ", line).strip()[:100] or "unclassified"))
 PY
 )
   fail "authenticated browser verification failed: $browser_failure"
