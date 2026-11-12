@@ -35,3 +35,4 @@ Typed Registry pages and APIs require owner authorization and the default-off fe
 - Legacy Directory behavior and DTO remain unchanged.
 - PostgreSQL integration and browser tests use synthetic data only.
 - Migration 0024 remains unapplied to Production; feature flag remains off pending separately authorized release work.
+- **Superseded 2026-11-11:** migrations 0023 and 0024 are now applied to Production (ledger `24`, latest `0024`). `YS_SYS_001_ENABLED` remains off, and activation still requires separate authorization.
