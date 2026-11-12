@@ -105,3 +105,9 @@ Synthetic negative checks explicitly passed INSERT/UPDATE/DELETE/TRUNCATE denial
 Local final checks: 498 Bun tests passed, 121 PostgreSQL-backed tests skipped, 0 failed; scaffold and ordered migration-plan checks, lint, typecheck, recovery Playwright discovery, shell syntax, and git diff --check passed. Lint retains the existing warning at components/login-panel.tsx:62. Local Docker was unavailable, so database/runtime checks were performed by isolated GitHub Actions. db:migrate:check only validated the ordered migration plan and did not apply migrations.
 
 No Production or Cloudflare R2 access, credential changes, manual merge/deploy, or Production migration occurred. Synthetic source preparation and restore stopped at migration 0022; Production migrations 0023/0024 remain unapplied. Synthetic CI success does not close the Production-derived recovery, measured RPO, retention expiry/deletion, or full 60-minute RTO gates; those remain NOT RUN / NOT DEMONSTRATED.
+
+## Production migration supersession — 2026-11-11
+
+The synthetic rehearsal deliberately excluded migrations 0023/0024 because Production was at `0022`. Both are now applied to Production after explicit owner authorization: ledger `24`/`0024`, five registry columns present, five `system_directory_*` tables created, and the existing directory row preserved with its intended defaults. A second migration pass skipped everything.
+
+That changes the starting point for any future Production-derived rehearsal; the synthetic exclusion remains a historical condition, not current state. This does **not** demonstrate the full Production-derived 60-minute RTO, which is still **NOT RUN / NOT DEMONSTRATED**, and it does not activate the registry feature flag.
