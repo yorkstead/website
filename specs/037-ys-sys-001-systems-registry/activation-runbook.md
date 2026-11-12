@@ -10,9 +10,25 @@ Recovery planning policy: daily encrypted PostgreSQL custom-format dump, 30-day 
 
 ## Latest recovery status — 2026-11-07
 
-The owner now reports that an encrypted Production backup was retrieved, decrypted, checksum-validated, and successfully restored in an isolated disposable PostgreSQL 18.6 container after a first attempt stopped on a missing Neon-managed role dependency. The sanitized evidence is in [`recovery-rehearsal-evidence.md`](recovery-rehearsal-evidence.md). This new evidence supersedes the preceding sentence's statement that no artifact retrieval/restore exists. Application readiness and full incident-to-verified-service RTO remain NOT RUN/NOT DEMONSTRATED. Keep 0023/0024 unapplied and Registry activation off; the restore does not authorize a migration, activation, deployment, or further Production operation.
+The owner now reports that an encrypted Production backup was retrieved, decrypted, checksum-validated, and successfully restored in an isolated disposable PostgreSQL 18.6 container after a first attempt stopped on a missing Neon-managed role dependency. The sanitized evidence is in [`recovery-rehearsal-evidence.md`](recovery-rehearsal-evidence.md). This new evidence supersedes the preceding sentence's statement that no artifact retrieval/restore exists. Application readiness and full incident-to-verified-service RTO remain NOT RUN/NOT DEMONSTRATED. Keep 0023/0024 unapplied and Registry activation off; the restore does not authorize a migration, activation, deployment, or further Production operation. *(Superseded for the migration only on 2026-11-11 — see the status update below. Activation remains off.)*
 
 The restore role dependency must be documented against the successful isolated method before another restore. Do not recreate Neon-managed roles with elevated privileges. Next, plan an application-readiness test against a fresh disposable copy, with network egress blocked and all jobs, webhooks, email, payment processing, and external integrations disabled or mocked.
+
+
+## Status update — 2026-11-11
+
+**Gate 3 executed.** With explicit owner authorization, migrations `0023` and `0024` were applied to the retained Production database. Ledger moved `22`/`0022` → `24`/`0024`; five registry columns and five `system_directory_*` tables verified; the single existing directory row preserved with `entity_class=provider_service`, `verification_state=unknown`, `verification_status=unknown`, `legacy=true`; a second pass skipped every migration. This also closed a live schema/code mismatch, because the deployed application already selected the new columns.
+
+**Gate 1 and 2.1–2.2** were satisfied before applying: the ledger was read as `0022` rather than assumed, the encrypted artifact retrieval and isolated restore are owner-reported PASS, and the repository upgrade path was rehearsed locally against `0022` with an existing row.
+
+**Still outstanding, in order:**
+
+1. **Gate 2.3 — Production-derived application readiness.** Requires the owner-held encrypted artifact and age key, plus an isolated host with outbound egress blocked and jobs, webhooks, mail, payments, and integrations disabled. Cannot be run from this workspace: the Docker socket here is root-owned and Snap confinement blocks the daemon.
+2. **Gate 2.4 — measured end-to-end RTO** against the 60-minute target, from incident to verified service.
+3. **Gate 4 — release verification with the flag off** on the exact deployed revision.
+4. **Gate 5 — activation.** Set `YS_SYS_001_ENABLED` only after the above, with a named operator and a smoke test of the registry workflows.
+
+**Registry activation remains off.** Applying schema did not enable the feature.
 
 ## Gate 0 — release candidate and ownership
 
