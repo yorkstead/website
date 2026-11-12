@@ -6,6 +6,9 @@
 - [x] Add an isolated production application image and TLS proxy configuration without adding a general deployment Dockerfile or Production configuration path.
 - [x] Add a disposable orchestration script that creates source/target PostgreSQL 18, restores the synthetic archive, verifies Docker internal networking, and cleans every artifact on exit.
 - [x] Add Playwright HTTP/browser coverage for synthetic owner authentication, owner authorization, dashboard/legacy Directory read workflows, and anonymous denial.
+- [x] Implement the owner-operated private rehearsal entry point that wires normalized restore, migration/routine checks through 0022, synthetic owner and tenant setup, runtime privilege/RLS verification, pinned app, internal proxy/browser, integrity snapshots, continuous T0/T-ready timing, separately recorded cleanup, target-scoped teardown, and deterministic synthetic fault hooks. Do not run Production-derived data in CI.
+- [ ] Demonstrate the complete entry-point lifecycle and restore/preparation/startup/browser/integrity/interruption/cleanup fault matrix against actual synthetic Docker containers and networks; verify preservation of the synthetic encrypted artifact and unrelated resources. Mocked cleanup tests do not satisfy this task.
+- [x] Restrict runtime visibility of restored Better Auth and tenant identity rows with target-only RLS; verify synthetic-only row visibility and normal Better Auth sign-in in a dedicated synthetic PostgreSQL 18.6 check.
 - [x] Run the existing actual-session cross-tenant client publication database suite against the restored synthetic target.
 - [x] Add a dedicated least-permission GitHub Actions job with no secrets/deployment permissions and upload only redacted aggregate evidence.
 - [x] Update recovery runbook, verification record, and the current handoff with exact results and remaining limits.
