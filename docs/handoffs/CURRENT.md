@@ -1,3 +1,11 @@
+# Documentation closeout — legacy task-list reconciliation — 2026-11-11
+
+- Reconciled the only three specs in 001–032 that still showed unchecked work, after checking each against `main`.
+- `specs/002-social-plan-site-alignment/`: T003–T005 ticked; live production copy checked on 2026-11-11 (the site serves "Workflow Rescue" with Yorkstead naming).
+- `specs/013-document-approval-foundation/`: all six ticked; migration `0011`, the document approval tests, and downstream use by owner publishing confirm delivery. The historical "pending PR" note in its verification record describes the pre-delivery state.
+- `specs/007-morning-briefing/`: the two remaining items stay open on purpose — they are owner-gated acceptance steps (Vercel/Google access confirmation and a locked-phone Tasker test), not code. A dated note explains that the cron schedule is already live.
+- Documentation only: no product code, migration, configuration, data, or deployment change.
+
 # Active work — CC-028 Phase 6b navigation taxonomy — 2026-11-11
 
 - Owner accepted the four-group taxonomy: **Pipeline** (Marketing, Opportunity Discovery, account overlap, follow-up queues, Consultations), **Delivery** (Projects, Tasks), **Systems** (Systems Directory, Automations, Operations, Automation Hub), **Insights** (Analytics).
