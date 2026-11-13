@@ -21,3 +21,10 @@
 - 2026-10-17: full unit/integration suite passed with two expected database skips.
 - 2026-10-17: Next.js production build passed and emitted both new dynamic routes.
 - Not run: production database migration, live Google/NWS/feed calls, Vercel cron invocation, protected production endpoint, and locked-Pixel playback. Those require owner account authorization and deployment confirmation.
+
+## Remaining — owner-gated (reconciled 2026-11-11)
+
+The two unchecked items above are deliberate and are **not** implementation work:
+
+- Production scheduling is already live: `vercel.json` invokes `/api/cron/morning-briefing` at 13:15 and 14:15 UTC so the local run holds through daylight saving.
+- What remains is confirming Vercel and Google account access with the owner, and running the locked-phone Tasker acceptance test. Both need the owner's device and accounts, so they stay open rather than being ticked from the repository side.
