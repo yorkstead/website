@@ -1,12 +1,12 @@
-# Active work — Slice 050: Shared Primitives & Site Chrome Micro-Interactions — 2026-11-15
+# Active work — Slice 051: Public Marketing & Lead Capture Micro-Interactions — 2026-11-15
 
-- Branch: `feat/050-micro-interactions-shared-primitives` (branched from `docs/micro-interactions-spec` `f8cccb2`, based on verified `origin/main` `4303b2531dfec60396c10ec0bec86874adf573e3`).
-- Specification: [`specs/050-micro-interactions-shared-primitives/`](../../specs/050-micro-interactions-shared-primitives/).
+- Branch: `feat/051-micro-interactions-public-site` (branched from `docs/micro-interactions-spec` `f8cccb2`, based on verified `origin/main` `4303b2531dfec60396c10ec0bec86874adf573e3`).
+- Specification: [`specs/051-micro-interactions-public-site/`](../../specs/051-micro-interactions-public-site/).
 - Implementation:
-  - `components/ui/button.tsx`: added `transition-[colors,transform,box-shadow] duration-150 ease-out`, `active:scale-[0.985]` (`disabled:active:scale-100`), and `[&_svg]` transform transitions.
-  - `components/theme-toggle.tsx`: cross-fade/rotate `<Sun>` and `<Moon>` icons via `.dark` CSS transitions without hydration branching.
-  - `components/navigation/navigation-link-styles.ts`: added smooth `after:` hairline `scale-x` active indicator on desktop `site` links.
-  - `components/site-header.tsx`: added icon micro-nudges (`Walkthroughs` CTA and mobile menu items) and `DropdownMenu.Content` open/close scale/opacity transitions.
+  - `components/ui/reveal.tsx`: lightweight `IntersectionObserver` reveal wrapper with `prefers-reduced-motion` guard and SSR-visible fallback.
+  - `components/cost-comparison-table.tsx` & `app/page.tsx`: interactive 3-year cost comparison row hover/focus delta contrast and staggered `Reveal` on Buying Model & Selected Work cards.
+  - `components/case-study-card.tsx`: card border, icon container, and media-frame hover polish.
+  - `components/contact-form.tsx`: `Conversation context` & `role="status"` entrance transitions and `SubmitButton` icon nudge.
 - Verification: `node scripts/yorkstead-check.mjs` PASS (55 spec directories); `git diff --check` clean. Skipped in this sandbox because `bun` and `node_modules` are not installed: `bun run db:migrate:check`, `bun run lint`, `bun run typecheck`, `bun test`, `bun run build`, `bun run test:e2e`. No merge or deployment authorized.
 
 # Active work — Micro-Interactions & Micro-Animations specs (049–053) — 2026-11-15

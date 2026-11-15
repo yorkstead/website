@@ -21,8 +21,8 @@ const initialContactState: ContactState = { status: "idle", message: "" };
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button className="h-11 w-full sm:w-auto" disabled={pending}>
-      {pending ? <LoaderCircle className="animate-spin" /> : <Send />}
+    <Button className="group h-11 w-full sm:w-auto" disabled={pending}>
+      {pending ? <LoaderCircle className="animate-spin" /> : <Send className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />}
       {pending ? "Sending…" : "Send project brief"}
     </Button>
   );
@@ -68,7 +68,7 @@ export function ContactForm() {
     <form action={action} onFocusCapture={trackStart} className="space-y-5">
       <AnalyticsAttributionFields />
       {selectedProduct || selectedService || selectedEngagement ? (
-        <div className="rounded-lg border border-primary/25 bg-primary/10 px-4 py-3">
+        <div className="rounded-lg border border-primary/25 bg-primary/10 px-4 py-3 transition-[opacity,transform,border-color] duration-200 ease-out starting:translate-y-1 starting:opacity-0">
           <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-primary">Conversation context</div>
           {selectedProduct ? (
             <>
@@ -183,7 +183,7 @@ export function ContactForm() {
         <div
           role="status"
           className={cn(
-            "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-xs leading-5",
+            "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-xs leading-5 transition-[opacity,transform] duration-200 ease-out starting:translate-y-1 starting:opacity-0",
             state.status === "success" || state.status === "duplicate"
               ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
               : "border-red-500/20 bg-red-500/10 text-red-400"
