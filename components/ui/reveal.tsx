@@ -33,6 +33,12 @@ export function Reveal({ children, className, delayMs = 0 }: RevealProps) {
       { threshold: 0.08, rootMargin: "0px 0px -24px 0px" },
     );
 
+    const handleBeforePrint = () => {
+      setHidden(false);
+      observer.disconnect();
+    };
+    window.addEventListener("beforeprint", handleBeforePrint);
+
     const frame = requestAnimationFrame(() => {
       setHidden(true);
       observer.observe(node);
@@ -40,6 +46,7 @@ export function Reveal({ children, className, delayMs = 0 }: RevealProps) {
 
     return () => {
       cancelAnimationFrame(frame);
+      window.removeEventListener("beforeprint", handleBeforePrint);
       observer.disconnect();
     };
   }, []);
@@ -47,9 +54,10 @@ export function Reveal({ children, className, delayMs = 0 }: RevealProps) {
   return (
     <div
       ref={ref}
+      data-reveal=""
       style={delayMs > 0 ? { transitionDelay: `${delayMs}ms` } : undefined}
       className={cn(
-        "transition-[opacity,transform] duration-200 ease-out",
+        "transition-[opacity,transform] duration-200 ease-out print:translate-y-0 print:opacity-100",
         hidden ? "translate-y-2 opacity-0" : "translate-y-0 opacity-100",
         className,
       )}
