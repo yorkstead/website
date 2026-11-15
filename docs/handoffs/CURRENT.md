@@ -1,3 +1,10 @@
+# Active work — CC-028 remaining audit specs (T104b & T107) — 2026-11-15
+
+- Specced the remaining undone tasks from [`specs/042-cc-028-command-center-consolidation/tasks.md`](../../specs/042-cc-028-command-center-consolidation/tasks.md):
+  - **T104b** ([`specs/049-cc028-phase4b-proposal-project-creation/`](../../specs/049-cc028-phase4b-proposal-project-creation/)): explicit, owner-triggered project creation on CRM proposal acceptance reusing the existing idempotent `convertLeadToProject` conversion path with concurrency, idempotency, and rollback coverage.
+  - **T107** ([`specs/050-cc028-phase7-prospecting-routing/`](../../specs/050-cc028-phase7-prospecting-routing/)): owner-gated routing of Hub-approved prospecting candidates (`specs/005-prospecting-process-signal/`) into Website Opportunity Discovery (`crm_prospect_dossiers` / `import_qualified_prospect()`).
+- Documentation only: no application code, migration, configuration, data, merge, or deployment change.
+
 # Documentation closeout — legacy task-list reconciliation — 2026-11-11
 
 - Reconciled the only three specs in 001–032 that still showed unchecked work, after checking each against `main`.
