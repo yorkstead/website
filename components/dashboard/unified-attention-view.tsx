@@ -62,10 +62,10 @@ function interleaveBySource(rows: Row[], limit: number) {
 
 function SourceStateList({ states }: { states: SourceState[] }) {
   return <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-    {states.map((source) => <li key={source.name} className="min-w-0 rounded-lg border border-border/70 bg-background/40 px-3 py-2.5">
+    {states.map((source) => <li key={source.name} className="min-w-0 rounded-lg border border-border/70 bg-background/40 px-3 py-2.5 transition-colors duration-150 ease-out hover:border-primary/25">
       <div className="flex items-start justify-between gap-2"><span className="text-xs font-medium">{source.name}</span><span className={`shrink-0 text-[10px] ${source.tone === "unavailable" ? "text-amber-600" : source.tone === "partial" || source.tone === "stale" ? "text-amber-500" : "text-muted-foreground"}`}>{source.text}</span></div>
       {source.detail ? <p className="mt-1 text-[10px] text-muted-foreground">{source.detail}</p> : null}
-      {source.href ? <Link className="mt-1 inline-flex min-h-7 items-center gap-1 text-[10px] text-primary underline-offset-4 hover:underline focus-visible:underline" href={source.href}>Open source <ArrowUpRight className="size-3" /></Link> : null}
+      {source.href ? <Link className="group mt-1 inline-flex min-h-7 items-center gap-1 text-[10px] text-primary underline-offset-4 transition-colors duration-150 hover:underline focus-visible:underline" href={source.href}>Open source <ArrowUpRight className="size-3 transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></Link> : null}
     </li>)}
   </ul>;
 }
@@ -73,12 +73,12 @@ function SourceStateList({ states }: { states: SourceState[] }) {
 function AttentionRows({ rows }: { rows: Row[] }) {
   if (!rows.length) return <p className="py-4 text-xs text-muted-foreground">No attention items were returned by available sources.</p>;
   return <ul className="divide-y divide-border/60" aria-label="Items requiring attention">
-    {rows.slice(0, 12).map((row) => <li key={row.key} className="flex min-w-0 flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+    {rows.slice(0, 12).map((row) => <li key={row.key} className="flex min-w-0 flex-col gap-2 rounded-lg px-2 -mx-2 py-3 transition-[colors,opacity,transform] duration-150 ease-out hover:bg-accent/25 first:pt-2 last:pb-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="break-words text-sm font-medium">{row.title}</span><span className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">{row.source}</span></div>
         <p className="mt-1 break-words text-xs text-muted-foreground">{row.context}{row.status ? ` · ${row.status}` : ""}{row.due ? ` · Due ${row.due}` : ""}{row.stale ? ` · ${row.stale}` : ""}</p>
       </div>
-      <Link href={row.href} prefetch={false} className="inline-flex min-h-9 shrink-0 items-center gap-1 self-start rounded-md border border-border px-2.5 text-xs hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring sm:self-auto" aria-label={`Open ${row.source} record: ${row.title}`}>
-        {row.external ? "Open source" : "Open in Command Center"} <ArrowUpRight className="size-3.5" />
+      <Link href={row.href} prefetch={false} className="group inline-flex min-h-9 shrink-0 items-center gap-1 self-start rounded-md border border-border px-2.5 text-xs transition-[colors,transform,box-shadow] duration-150 ease-out hover:bg-accent active:scale-[0.985] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring sm:self-auto" aria-label={`Open ${row.source} record: ${row.title}`}>
+        {row.external ? "Open source" : "Open in Command Center"} <ArrowUpRight className="size-3.5 transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
       </Link>
     </li>)}
   </ul>;

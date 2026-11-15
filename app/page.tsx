@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { CaseStudyCard } from "@/components/case-study-card";
 import { ContactForm } from "@/components/contact-form";
+import { CostComparisonTable } from "@/components/cost-comparison-table";
 import { TrackedLink } from "@/components/conversion-tracker";
 import { EngagementPricing } from "@/components/engagement-pricing";
 import { FounderIntroduction } from "@/components/founder-introduction";
@@ -28,6 +29,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { SystemForm } from "@/components/system-form";
 import { Card, CardContent } from "@/components/ui/card";
+import { Reveal } from "@/components/ui/reveal";
 import { brand, brandMailto } from "@/lib/brand";
 import { caseStudies } from "@/lib/case-studies";
 import { organizationStructuredData } from "@/lib/founder";
@@ -194,27 +196,7 @@ export default function Home() {
           </div>
           <div className="rounded-xl border border-border bg-card/60 p-6 sm:p-8">
             <div className="font-mono text-[9px] uppercase tracking-wider text-primary">Illustration // Three years of cost</div>
-            <table className="mt-4 w-full text-sm">
-              <caption className="sr-only">Illustrative three-year cost of a monthly subscription compared with a one-time purchase</caption>
-              <thead>
-                <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                  <th scope="col" className="py-2 font-medium">Monthly software fees</th>
-                  <th scope="col" className="py-2 text-right font-medium">Over 3 years</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[500, 1000, 1500].map((monthly) => (
-                  <tr key={monthly} className="border-b border-border/60">
-                    <td className="py-3">${monthly.toLocaleString("en-US")} per month</td>
-                    <td className="py-3 text-right font-medium">${(monthly * 36).toLocaleString("en-US")}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td className="py-3 font-medium text-primary">A Yorkstead system</td>
-                  <td className="py-3 text-right font-medium text-primary">$7,500 once</td>
-                </tr>
-              </tbody>
-            </table>
+            <CostComparisonTable />
             <p className="mt-4 text-xs leading-5 text-muted-foreground">
               Illustration only. Your current fees and scope will differ. The $7,500 price applies to our two named systems, and what&apos;s included is defined in the proposal. Hosting and third-party services are identified separately, and optional support is extra.
             </p>
@@ -236,83 +218,89 @@ export default function Home() {
           </div>
 
           <div className="mt-12 grid gap-8 lg:grid-cols-3">
-            <div className="flex flex-col rounded-xl border border-border bg-background/80 p-6 shadow-sm sm:p-8">
-              <div className="font-mono text-[9px] uppercase tracking-wider text-primary">01 // Operational Fit</div>
-              <h3 className="mt-3 text-xl font-semibold tracking-tight">Software suited to your actual operation</h3>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                We build tools around the way your jobs, materials, and people actually move. No forcing your shop, warehouse, or service team into a generic mold.
-              </p>
-              <ul className="mt-6 space-y-2.5 border-t border-border pt-6 text-xs leading-5 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Fewer duplicate entries across sales, operations, and billing</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Clearer inventory and material visibility without spreadsheet drift</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Reliable handoffs between office, floor, and field teams</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Less time chasing updates, more time running your business</span>
-                </li>
-              </ul>
-            </div>
+            <Reveal className="flex">
+              <div className="flex h-full flex-col rounded-xl border border-border bg-background/80 p-6 shadow-sm sm:p-8">
+                <div className="font-mono text-[9px] uppercase tracking-wider text-primary">01 // Operational Fit</div>
+                <h3 className="mt-3 text-xl font-semibold tracking-tight">Software suited to your actual operation</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  We build tools around the way your jobs, materials, and people actually move. No forcing your shop, warehouse, or service team into a generic mold.
+                </p>
+                <ul className="mt-6 space-y-2.5 border-t border-border pt-6 text-xs leading-5 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Fewer duplicate entries across sales, operations, and billing</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Clearer inventory and material visibility without spreadsheet drift</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Reliable handoffs between office, floor, and field teams</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Less time chasing updates, more time running your business</span>
+                  </li>
+                </ul>
+              </div>
+            </Reveal>
 
-            <div className="flex flex-col rounded-xl border border-border bg-background/80 p-6 shadow-sm sm:p-8">
-              <div className="font-mono text-[9px] uppercase tracking-wider text-primary">02 // Real Ownership</div>
-              <h3 className="mt-3 text-xl font-semibold tracking-tight">Clear control over your system and data</h3>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                You get the agreed custom code and documentation after final payment. The proposal defines exactly what is delivered, your usage and modification rights, and any third-party dependencies. Continued use does not require a Yorkstead support subscription, and you can maintain the system internally or appoint another provider.
-              </p>
-              <ul className="mt-6 space-y-2.5 border-t border-border pt-6 text-xs leading-5 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Delivered software and documentation defined explicitly in your proposal</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Continued use of the purchased system does not require a Yorkstead support subscription</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Manage ongoing maintenance in-house or appoint another provider, subject to terms</span>
-                </li>
-              </ul>
-            </div>
+            <Reveal delayMs={60} className="flex">
+              <div className="flex h-full flex-col rounded-xl border border-border bg-background/80 p-6 shadow-sm sm:p-8">
+                <div className="font-mono text-[9px] uppercase tracking-wider text-primary">02 // Real Ownership</div>
+                <h3 className="mt-3 text-xl font-semibold tracking-tight">Clear control over your system and data</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  You get the agreed custom code and documentation after final payment. The proposal defines exactly what is delivered, your usage and modification rights, and any third-party dependencies. Continued use does not require a Yorkstead support subscription, and you can maintain the system internally or appoint another provider.
+                </p>
+                <ul className="mt-6 space-y-2.5 border-t border-border pt-6 text-xs leading-5 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Delivered software and documentation defined explicitly in your proposal</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Continued use of the purchased system does not require a Yorkstead support subscription</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Hosting and third-party services are identified separately. Account ownership, billing, and ongoing responsibilities are agreed before implementation.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Manage ongoing maintenance in-house or appoint another provider, subject to terms</span>
+                  </li>
+                </ul>
+              </div>
+            </Reveal>
 
-            <div className="flex flex-col rounded-xl border border-border bg-background/80 p-6 shadow-sm sm:p-8">
-              <div className="font-mono text-[9px] uppercase tracking-wider text-primary">03 // Optional Support</div>
-              <h3 className="mt-3 text-xl font-semibold tracking-tight">Support when you want it, on your terms</h3>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Software exists in an evolving ecosystem of browser updates, dependencies, and business changes. Continued use does not require an ongoing contract.
-              </p>
-              <ul className="mt-6 space-y-2.5 border-t border-border pt-6 text-xs leading-5 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Optional support retainers for troubleshooting triage and scheduled health checks</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Scope, response expectations, and terms confirmed in your proposal</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Continued system use never depends on maintaining an active support contract</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
-                  <span>Flexibility to handle maintenance internally or engage third-party support</span>
-                </li>
-              </ul>
-            </div>
+            <Reveal delayMs={120} className="flex">
+              <div className="flex h-full flex-col rounded-xl border border-border bg-background/80 p-6 shadow-sm sm:p-8">
+                <div className="font-mono text-[9px] uppercase tracking-wider text-primary">03 // Optional Support</div>
+                <h3 className="mt-3 text-xl font-semibold tracking-tight">Support when you want it, on your terms</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  Software exists in an evolving ecosystem of browser updates, dependencies, and business changes. Continued use does not require an ongoing contract.
+                </p>
+                <ul className="mt-6 space-y-2.5 border-t border-border pt-6 text-xs leading-5 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Optional support retainers for troubleshooting triage and scheduled health checks</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Scope, response expectations, and terms confirmed in your proposal</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Continued system use never depends on maintaining an active support contract</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="size-4 shrink-0 text-primary mt-0.5" />
+                    <span>Flexibility to handle maintenance internally or engage third-party support</span>
+                  </li>
+                </ul>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -612,8 +600,10 @@ export default function Home() {
           <ProjectStatusLegend />
         </div>
         <div className="space-y-4">
-          {caseStudies.map((study) => (
-            <CaseStudyCard key={study.slug} study={study} />
+          {caseStudies.map((study, index) => (
+            <Reveal key={study.slug} delayMs={index * 60}>
+              <CaseStudyCard study={study} />
+            </Reveal>
           ))}
         </div>
       </section>

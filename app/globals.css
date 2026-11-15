@@ -162,6 +162,7 @@ button, a { cursor: pointer; }
 @media print {
   @page { size: letter; margin: 0; }
   .no-print { display: none !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
   .print-page { width: 8.5in !important; min-height: 11in !important; break-after: page; page-break-after: always; }
   .print-page:last-child { break-after: auto; page-break-after: auto; }
 }
