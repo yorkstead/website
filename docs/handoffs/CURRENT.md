@@ -1,22 +1,13 @@
-# Active work — Slice 053: Owner Command Center & Dashboard Micro-Interactions — 2026-11-15
+# Active work — Micro-Interactions & Micro-Animations Program (049–053) — 2026-11-15
 
-- Branch: `feat/053-micro-interactions-dashboard` (branched from `docs/micro-interactions-spec` `f8cccb2`, based on verified `origin/main` `4303b2531dfec60396c10ec0bec86874adf573e3`).
-- Specification: [`specs/053-micro-interactions-dashboard/`](../../specs/053-micro-interactions-dashboard/).
+- Branch: `feat/micro-interactions-program` from verified `origin/main` (`4303b2531dfec60396c10ec0bec86874adf573e3`).
+- Specifications: [`specs/049-micro-interactions-program/`](../../specs/049-micro-interactions-program/) and slices [`050`](../../specs/050-micro-interactions-shared-primitives/), [`051`](../../specs/051-micro-interactions-public-site/), [`052`](../../specs/052-micro-interactions-public-demos/), [`053`](../../specs/053-micro-interactions-dashboard/).
 - Implementation:
-  - `components/dashboard/dashboard-styles.ts`: added `operationalRowMotion` and `operationalControlMotion` (`150ms ease-out`).
-  - `components/dashboard/dashboard-navigation.tsx`: added active left-bar indicator, icon scale nudge, and label opacity transition on sidebar collapse.
-  - `components/dashboard/unified-attention-view.tsx` & `components/dashboard/lead-priority-queue.tsx`: added fast row hover/transition, control tactile press, icon nudges, and `transition-shadow` focus rings.
-- Verification: `node scripts/yorkstead-check.mjs` PASS (55 spec directories); `git diff --check` clean. Skipped in this sandbox because `bun` and `node_modules` are not installed: `bun run db:migrate:check`, `bun run lint`, `bun run typecheck`, `bun test`, `bun run build`, `bun run test:e2e`. No merge or deployment authorized.
-
-# Active work — Micro-Interactions & Micro-Animations specs (049–053) — 2026-11-15
-
-- Branch: `docs/micro-interactions-spec` from verified `origin/main` (`4303b2531dfec60396c10ec0bec86874adf573e3`).
-- Drafted parent program spec [`specs/049-micro-interactions-program/`](../../specs/049-micro-interactions-program/) and four independently shippable slice specs:
-  - [`specs/050-micro-interactions-shared-primitives/`](../../specs/050-micro-interactions-shared-primitives/) (`Button`, `ThemeToggle`, `SiteHeader`)
-  - [`specs/051-micro-interactions-public-site/`](../../specs/051-micro-interactions-public-site/) (`app/page.tsx` reveals + 3-year cost table, `CaseStudyCard`, `ContactForm`)
-  - [`specs/052-micro-interactions-public-demos/`](../../specs/052-micro-interactions-public-demos/) (`DemoControls`, `WhyThisExists`, sandbox reset feedback)
-  - [`specs/053-micro-interactions-dashboard/`](../../specs/053-micro-interactions-dashboard/) (`dashboard-navigation.tsx`, `unified-attention-view.tsx`, `lead-priority-queue.tsx`)
-- Documentation only: no product code, dependency, migration, configuration, or deployment change. Implementation of any slice awaits owner authorization.
+  - **050 (Shared primitives & chrome):** tactile press & SVG timing on `components/ui/button.tsx`, `.dark`-keyed Sun/Moon cross-fade/rotate on `components/theme-toggle.tsx`, active hairline & menu transitions on `components/navigation/navigation-link-styles.ts` and `components/site-header.tsx`.
+  - **051 (Public marketing & lead capture):** `components/ui/reveal.tsx` (`IntersectionObserver` + `prefers-reduced-motion` guard), interactive `components/cost-comparison-table.tsx` and staggered `Reveal` in `app/page.tsx`, hover polish on `components/case-study-card.tsx`, and entrance/submit transitions in `components/contact-form.tsx`.
+  - **052 (Public walkthroughs & sandboxes):** inline `1200ms` reset confirmation in `components/public-demo/demo-controls.tsx`, spotlight ring & smooth `<details>` disclosure in `components/public-demo/demo-shell.module.css`, and step-switch transition in `components/public-demo/scenario-display.tsx`.
+  - **053 (Owner Command Center & Dashboard):** `operationalRowMotion`/`operationalControlMotion` in `components/dashboard/dashboard-styles.ts`, active left bar & label transitions in `components/dashboard/dashboard-navigation.tsx`, and fast row/focus transitions in `unified-attention-view.tsx` & `lead-priority-queue.tsx`.
+- Verification: `node scripts/yorkstead-check.mjs` PASS (55 spec directories); `git diff --check` clean. Skipped in this sandbox because `bun` and `node_modules` are not installed: `bun run db:migrate:check`, `bun run lint`, `bun run typecheck`, `bun test`, `bun run build`, `bun run test:e2e`. Combined into one reviewable PR; no merge or deployment authorized.
 
 # Documentation closeout — legacy task-list reconciliation — 2026-11-11
 
