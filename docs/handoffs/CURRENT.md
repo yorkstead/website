@@ -1,3 +1,13 @@
+# Active work — Micro-Interactions & Micro-Animations specs (049–053) — 2026-11-15
+
+- Branch: `docs/micro-interactions-spec` from verified `origin/main` (`4303b2531dfec60396c10ec0bec86874adf573e3`).
+- Drafted parent program spec [`specs/049-micro-interactions-program/`](../../specs/049-micro-interactions-program/) and four independently shippable slice specs:
+  - [`specs/050-micro-interactions-shared-primitives/`](../../specs/050-micro-interactions-shared-primitives/) (`Button`, `ThemeToggle`, `SiteHeader`)
+  - [`specs/051-micro-interactions-public-site/`](../../specs/051-micro-interactions-public-site/) (`app/page.tsx` reveals + 3-year cost table, `CaseStudyCard`, `ContactForm`)
+  - [`specs/052-micro-interactions-public-demos/`](../../specs/052-micro-interactions-public-demos/) (`DemoControls`, `WhyThisExists`, sandbox reset feedback)
+  - [`specs/053-micro-interactions-dashboard/`](../../specs/053-micro-interactions-dashboard/) (`dashboard-navigation.tsx`, `unified-attention-view.tsx`, `lead-priority-queue.tsx`)
+- Documentation only: no product code, dependency, migration, configuration, or deployment change. Implementation of any slice awaits owner authorization.
+
 # Documentation closeout — legacy task-list reconciliation — 2026-11-11
 
 - Reconciled the only three specs in 001–032 that still showed unchecked work, after checking each against `main`.
