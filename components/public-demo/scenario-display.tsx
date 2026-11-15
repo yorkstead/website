@@ -99,7 +99,7 @@ export function OperationalScenarioDisplay({ demoModule }: OperationalScenarioDi
             </div>
 
             {/* Current Step Description */}
-            <div>
+            <div key={currentStepIndex} className="transition-opacity duration-150 ease-out starting:opacity-0">
               <h2 className="text-lg font-semibold text-white tracking-tight">
                 {currentStep.title}
               </h2>

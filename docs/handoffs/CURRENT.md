@@ -1,12 +1,11 @@
-# Active work — Slice 051: Public Marketing & Lead Capture Micro-Interactions — 2026-11-15
+# Active work — Slice 052: Public Walkthroughs & Sandboxes Micro-Interactions — 2026-11-15
 
-- Branch: `feat/051-micro-interactions-public-site` (branched from `docs/micro-interactions-spec` `f8cccb2`, based on verified `origin/main` `4303b2531dfec60396c10ec0bec86874adf573e3`).
-- Specification: [`specs/051-micro-interactions-public-site/`](../../specs/051-micro-interactions-public-site/).
+- Branch: `feat/052-micro-interactions-public-demos` (branched from `docs/micro-interactions-spec` `f8cccb2`, based on verified `origin/main` `4303b2531dfec60396c10ec0bec86874adf573e3`).
+- Specification: [`specs/052-micro-interactions-public-demos/`](../../specs/052-micro-interactions-public-demos/).
 - Implementation:
-  - `components/ui/reveal.tsx`: lightweight `IntersectionObserver` reveal wrapper with `prefers-reduced-motion` guard and SSR-visible fallback.
-  - `components/cost-comparison-table.tsx` & `app/page.tsx`: interactive 3-year cost comparison row hover/focus delta contrast and staggered `Reveal` on Buying Model & Selected Work cards.
-  - `components/case-study-card.tsx`: card border, icon container, and media-frame hover polish.
-  - `components/contact-form.tsx`: `Conversation context` & `role="status"` entrance transitions and `SubmitButton` icon nudge.
+  - `components/public-demo/demo-controls.tsx`: added 1200ms inline `"Sandbox reset ✓"` confirmation micro-state on `Reset sandbox` with unmount timer cleanup.
+  - `components/public-demo/demo-shell.module.css`: added tactile button transitions, `aria-pressed="true"` / `.guide` spotlight ring & reveal, and smooth `details[open]` disclosure animation.
+  - `components/public-demo/scenario-display.tsx`: added subtle opacity transition on step changes.
 - Verification: `node scripts/yorkstead-check.mjs` PASS (55 spec directories); `git diff --check` clean. Skipped in this sandbox because `bun` and `node_modules` are not installed: `bun run db:migrate:check`, `bun run lint`, `bun run typecheck`, `bun test`, `bun run build`, `bun run test:e2e`. No merge or deployment authorized.
 
 # Active work — Micro-Interactions & Micro-Animations specs (049–053) — 2026-11-15
