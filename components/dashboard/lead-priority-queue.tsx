@@ -90,13 +90,13 @@ export async function LeadPriorityQueue() {
     </div>
     {(website.status === "rejected" || crm.status === "rejected") && <p className="mt-3 text-xs text-amber-600">One source is unavailable. This is a partial queue; existing data is unaffected.</p>}
     {items.length ? <div className="mt-4 divide-y divide-border/60">{items.slice(0, 20).map((item) =>
-      <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+      <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg px-2 -mx-2 py-3 transition-[colors,opacity,transform] duration-150 ease-out hover:bg-accent/25">
         <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="rounded bg-secondary px-2 py-0.5 font-mono text-[10px]">{item.source}</span><span className="text-sm font-medium">{item.label}</span><span className="text-xs text-muted-foreground">{item.stage}</span></div><p className="mt-1 text-xs text-muted-foreground">{item.action}</p></div>
-        <div className="flex items-center gap-3"><span className={"text-xs " + (item.due && item.due <= today ? "font-semibold text-amber-600" : "text-muted-foreground")}>{item.due ? item.due < today ? "Overdue · " + item.due : item.due === today ? "Due today" : item.due : "Unscheduled"}</span>{item.source === "CRM" ? <a className="text-xs text-primary" href={item.href}>Open →</a> : <Link className="text-xs text-primary" href={item.href}>Open →</Link>}</div>
+        <div className="flex items-center gap-3"><span className={"text-xs " + (item.due && item.due <= today ? "font-semibold text-amber-600" : "text-muted-foreground")}>{item.due ? item.due < today ? "Overdue · " + item.due : item.due === today ? "Due today" : item.due : "Unscheduled"}</span>{item.source === "CRM" ? <a className="text-xs text-primary transition-colors duration-150 hover:underline" href={item.href}>Open →</a> : <Link className="text-xs text-primary transition-colors duration-150 hover:underline" href={item.href}>Open →</Link>}</div>
         {item.opportunityId && <form action={updateCrmOpportunity} className="grid w-full gap-2 rounded-lg bg-secondary/30 p-3 sm:grid-cols-[160px_1fr_170px_auto]">
           <input type="hidden" name="opportunityId" value={item.opportunityId}/>
           <label className="text-[11px] text-muted-foreground">Stage
-            <select name="stage" defaultValue={item.stage} className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm">
+            <select name="stage" defaultValue={item.stage} className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm transition-shadow duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               {["prospect","qualified","demo","proposal","won","lost"].map(stage=><option key={stage} value={stage}>{stage}</option>)}
             </select>
           </label>

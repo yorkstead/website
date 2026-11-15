@@ -1,11 +1,11 @@
-# Active work — Slice 052: Public Walkthroughs & Sandboxes Micro-Interactions — 2026-11-15
+# Active work — Slice 053: Owner Command Center & Dashboard Micro-Interactions — 2026-11-15
 
-- Branch: `feat/052-micro-interactions-public-demos` (branched from `docs/micro-interactions-spec` `f8cccb2`, based on verified `origin/main` `4303b2531dfec60396c10ec0bec86874adf573e3`).
-- Specification: [`specs/052-micro-interactions-public-demos/`](../../specs/052-micro-interactions-public-demos/).
+- Branch: `feat/053-micro-interactions-dashboard` (branched from `docs/micro-interactions-spec` `f8cccb2`, based on verified `origin/main` `4303b2531dfec60396c10ec0bec86874adf573e3`).
+- Specification: [`specs/053-micro-interactions-dashboard/`](../../specs/053-micro-interactions-dashboard/).
 - Implementation:
-  - `components/public-demo/demo-controls.tsx`: added 1200ms inline `"Sandbox reset ✓"` confirmation micro-state on `Reset sandbox` with unmount timer cleanup.
-  - `components/public-demo/demo-shell.module.css`: added tactile button transitions, `aria-pressed="true"` / `.guide` spotlight ring & reveal, and smooth `details[open]` disclosure animation.
-  - `components/public-demo/scenario-display.tsx`: added subtle opacity transition on step changes.
+  - `components/dashboard/dashboard-styles.ts`: added `operationalRowMotion` and `operationalControlMotion` (`150ms ease-out`).
+  - `components/dashboard/dashboard-navigation.tsx`: added active left-bar indicator, icon scale nudge, and label opacity transition on sidebar collapse.
+  - `components/dashboard/unified-attention-view.tsx` & `components/dashboard/lead-priority-queue.tsx`: added fast row hover/transition, control tactile press, icon nudges, and `transition-shadow` focus rings.
 - Verification: `node scripts/yorkstead-check.mjs` PASS (55 spec directories); `git diff --check` clean. Skipped in this sandbox because `bun` and `node_modules` are not installed: `bun run db:migrate:check`, `bun run lint`, `bun run typecheck`, `bun test`, `bun run build`, `bun run test:e2e`. No merge or deployment authorized.
 
 # Active work — Micro-Interactions & Micro-Animations specs (049–053) — 2026-11-15

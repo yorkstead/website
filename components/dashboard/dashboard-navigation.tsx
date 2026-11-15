@@ -123,9 +123,14 @@ function LinkItem({
   const className = navigationLinkStyles(
     "sidebar",
     active,
-    cn(nested && "min-h-9 text-xs", collapsed && "justify-center px-0"),
+    cn(
+      "relative",
+      active && "before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5 before:rounded-full before:bg-primary",
+      nested && "min-h-9 text-xs",
+      collapsed && "justify-center px-0",
+    ),
   );
-  const content = <><Icon aria-hidden="true" className="size-[18px] shrink-0" /><span className={cn("min-w-0 truncate", collapsed && "sr-only")}>{item.label}</span>{item.external && !collapsed ? <ExternalLink aria-hidden="true" className="ml-auto size-3.5" /> : null}</>;
+  const content = <><Icon aria-hidden="true" className="size-[18px] shrink-0 transition-transform duration-150 ease-out group-hover:scale-105" /><span className={cn("min-w-0 truncate transition-opacity duration-150 ease-out", collapsed ? "sr-only opacity-0" : "opacity-100")}>{item.label}</span>{item.external && !collapsed ? <ExternalLink aria-hidden="true" className="ml-auto size-3.5 transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /> : null}</>;
   const shared = {
     className,
     title: collapsed ? item.label : undefined,

@@ -13,3 +13,9 @@ export const accentStyles = {
   violet: "from-violet-400/75 to-fuchsia-500/10",
   lime: "from-lime-400/75 to-emerald-500/10",
 };
+
+export const operationalRowMotion =
+  "transition-[colors,opacity,transform,box-shadow] duration-150 ease-out";
+
+export const operationalControlMotion =
+  "transition-[colors,transform,box-shadow] duration-150 ease-out active:scale-[0.985]";
