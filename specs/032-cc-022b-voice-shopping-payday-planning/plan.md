@@ -9,3 +9,4 @@
 7. Add responsive owner planner under existing Automations navigation; cover filtering, review/edit/split, state actions, history/audit, payday summary, unavailable/partial states and optional Sunday surface.
 8. Add unit, disposable PostgreSQL, provider mock, BFF and desktop/mobile browser tests. Run task checks then each repository's full verification commands.
 9. Deliver Hub PR first with migrations and backend contract; Website PR second cross-linked to Hub. Record exact CI and screenshots where browser tooling supports them. No merge/deploy/production operation.
+10. For Website review follow-up, bind shopping editor saves/splits to the revision captured at edit start and make refreshed revision changes require explicit latest-value review. Keep payday recovery in the stable Automation Hub records owner and test same-key reconciliation across storage failure, unavailable/degraded refresh, and planner remount.

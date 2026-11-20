@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"projectColorizer.workspaceColor": "#e03ec7",
+		"workbench.colorCustomizations": {
+			"activityBar.background": "#e03ec7",
+			"activityBar.foreground": "#FFFFFF",
+			"activityBarBadge.background": "#FFFFFF",
+			"activityBarBadge.foreground": "#e03ec7",
+			"statusBar.background": "#e03ec7",
+			"statusBar.foreground": "#FFFFFF",
+			"statusBarItem.hoverBackground": "#e457ce",
+			"titleBar.activeBackground": "#e03ec7",
+			"titleBar.activeForeground": "#FFFFFF",
+			"titleBar.inactiveBackground": "#b430a0",
+			"titleBar.inactiveForeground": "#FFFFFFb3"
+		}
+	}
+}
