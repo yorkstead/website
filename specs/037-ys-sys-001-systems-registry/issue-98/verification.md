@@ -23,3 +23,5 @@ Local database-test skips are covered by the successful disposable PostgreSQL CI
 ## Safety
 
 Migration 0024 is not applied to Production. No Production records/configuration, database URL, recovery artifact, or feature flag was accessed or changed. `YS_SYS_001_ENABLED` remains off. Production migration and activation require separate authorization.
+
+**Superseded 2026-11-11:** both migrations are applied to Production after explicit owner authorization. Verified before/after: ledger `22`/`0022` → `24`/`0024`, five new registry columns present, five new `system_directory_*` tables created, and the existing directory row preserved with `entity_class=provider_service`, `verification_state=unknown`, `verification_status=unknown`, `legacy=true`. A second `db:migrate` pass skipped everything. The feature flag remains off; this changed schema state only.

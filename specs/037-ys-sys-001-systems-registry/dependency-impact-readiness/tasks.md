@@ -9,5 +9,6 @@
 - [ ] Add synthetic unit, controller, PostgreSQL and browser regression coverage.
 - [ ] Confirm legacy `/api/systems-directory` DTO and page remain unchanged.
 - [ ] Add a current 0023/0024 migration, backup, activation, smoke-test and rollback runbook.
+  - 2026-11-11: migration applied to Production (ledger `22`→`24`). Activation, a Production smoke test of the registry, and the rollback runbook remain outstanding.
 - [ ] Run repository checks and inspect exact diff/security boundaries.
 - [ ] Open draft PR; do not merge, deploy, run Production migrations, or enable the flag.

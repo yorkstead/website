@@ -9,6 +9,14 @@
   - **053 (Owner Command Center & Dashboard):** `operationalRowMotion`/`operationalControlMotion` in `components/dashboard/dashboard-styles.ts`, active left bar & label transitions in `components/dashboard/dashboard-navigation.tsx`, and fast row/focus transitions in `unified-attention-view.tsx` & `lead-priority-queue.tsx`.
 - Verification: `node scripts/yorkstead-check.mjs` PASS (55 spec directories); `git diff --check` clean. Skipped in this sandbox because `bun` and `node_modules` are not installed: `bun run db:migrate:check`, `bun run lint`, `bun run typecheck`, `bun test`, `bun run build`, `bun run test:e2e`. Combined into one reviewable PR; no merge or deployment authorized.
 
+# Production migration — registry 0023/0024 applied — 2026-11-11
+
+- Owner authorized the production migration. `0023_systems-registry-foundation` and `0024_registry-evidence-billing-monitoring` were applied to the Production Neon database; the ledger moved from `22`/`0022` to `24`/`0024`.
+- Before applying, the upgrade path was rehearsed locally: migrations through `0022`, an existing `system_directory_entries` row inserted under the audit context, then `0023`/`0024`. The row survived with `entity_class=provider_service`, `verification_state=unknown`, `verification_status=unknown`, `legacy=true`.
+- Production verification: five new registry columns present, five new `system_directory_*` tables created, the single existing directory row preserved with the same defaults, and a second `db:migrate` pass skipped every migration.
+- This closed a live schema/code mismatch: `main`'s registry service selects the new columns while Production was at `0022`, so the Systems Directory page could not load. No redeploy was required.
+- Scope: schema only. `YS_SYS_001_ENABLED` remains off, registry activation is still separately gated, and the full Production-derived 60-minute RTO remains **NOT RUN / NOT DEMONSTRATED**.
+
 # Documentation closeout — legacy task-list reconciliation — 2026-11-11
 
 - Reconciled the only three specs in 001–032 that still showed unchecked work, after checking each against `main`.
