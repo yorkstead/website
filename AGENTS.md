@@ -4,7 +4,7 @@
 - Session initialization is read-only. Require explicit user authorization for implementation, production operations, merges, or deployment; authorize each only within its stated scope. A startup report, passing checks, or a merged PR does not authorize further work.
 - Use Bun and preserve the existing Next.js App Router architecture.
 - Read `.specify/memory/constitution.md` before material product changes.
-- Material features require a spec, plan, and tasks under `specs/`.
+- Material features require a spec, plan, and tasks under `specs/`. Development follows `docs/dev-workflow.md` (Spec Kit, Claude as project manager, OpenCode `developer` and `reviewer` agents in `.opencode/agents/`, commands in `.opencode/commands/`); house templates in `.specify/templates/overrides/` win over Spec Kit defaults. Take the next spec number from `specs/INDEX.md`.
 - Preserve the privacy-first lead pipeline: no advertising identifiers, no client-side database access, and no sensitive operational records in public intake forms.
 - Database changes require ordered migrations and `bun run db:migrate:check`.
 - Before completion, use the relevant repository skills and run the checks in `docs/verification.md`.

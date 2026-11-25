@@ -1,16 +1,16 @@
-# Agent roles and routing
+# Agent roles
 
-| Role | Preferred fit | Output |
+The full loop is in [`dev-workflow.md`](dev-workflow.md). Updated 2026-11-25; this replaces the earlier Codex/Gemini/Copilot routing.
+
+| Role | Who | Output |
 |---|---|---|
-| Architect/spec owner | ChatGPT/Codex | clarified spec, plan, task graph, decisions |
-| Implementer | Codex, Claude Code, or Gemini CLI | focused change and tests |
-| Independent reviewer | different provider | risks and missing cases |
-| GitHub/CI operator | Copilot or any GitHub-capable agent | issue, branch, PR, checks, release evidence |
+| Owner | Brandon | Approves specs; merges; approves production, migrations, credentials, scope changes |
+| Project manager and spec owner | Claude | Spec, plan, tasks, handoff packets, PR review against acceptance criteria, INDEX and handoff upkeep |
+| Implementer | OpenCode `developer` agent (`.opencode/agents/developer.md`) | Focused commits, ticked tasks, `verification.md`, draft PR |
+| Independent reviewer | OpenCode `reviewer` agent on a different model from the implementer | APPROVE / REQUEST CHANGES with file:line findings |
 
 ## Rules
-
-- Route by capability and risk, not brand or subscription.
-- Use a second provider for independent review of security, migrations, or release risk.
-- Only one implementer edits a task at a time.
+- Only one implementer edits a task at a time; reviewers do not edit.
+- Use the reviewer for anything touching security, auth, money, migrations, or release.
 - Human approval is required for production changes, destructive data operations, credentials, and scope changes.
-- The durable record is the spec, task list, commit, checks, and review—not the model conversation.
+- The durable record is the spec, task list, commits, checks, and review, not the model conversation.

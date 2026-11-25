@@ -1,6 +1,6 @@
 # Yorkstead Engineering Constitution
 
-**Version:** 1.0.0 | **Ratified:** 2026-10-06
+**Version:** 1.1.0 | **Ratified:** 2026-10-06 | **Amended:** 2026-11-25 (spec 054: principle VI roles)
 
 ## Principles
 
@@ -19,8 +19,8 @@ Tasks must be independently verifiable and safely pausable. Repository artifacts
 ### V. Least privilege and safe data handling
 Secrets stay out of source control. Database and production operations require explicit checks, recovery awareness, and authorization.
 
-### VI. Provider-neutral collaboration
-ChatGPT/Codex, Claude Code, Gemini CLI, and GitHub Copilot are interchangeable workers. The repository is the shared control plane.
+### VI. Defined roles, one record
+Claude is project manager and spec owner; OpenCode agents implement (`.opencode/agents/developer.md`) and review (`.opencode/agents/reviewer.md`, on a different model from the implementer); Brandon owns every merge, deploy, and production gate. Any worker can stand in for a role, but the repository is the shared control plane and no artifact depends on a hidden conversation. See `docs/dev-workflow.md`.
 
 ## Governance
 
