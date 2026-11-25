@@ -45,16 +45,16 @@ export function SiteHeader() {
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <a
             href="/demos"
-            className="hidden h-9 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary transition hover:border-primary/50 hover:bg-primary/15 md:inline-flex xl:hidden"
+            className="group hidden h-9 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary transition-[colors,transform] duration-150 ease-out hover:border-primary/50 hover:bg-primary/15 active:scale-[0.985] md:inline-flex xl:hidden"
           >
             Walkthroughs
-            <MoveUpRight className="size-3.5" aria-hidden="true" />
+            <MoveUpRight className="size-3.5 transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
           </a>
           <ThemeToggle />
 
           <DropdownMenu.Root key={pathname} modal={false}>
             <DropdownMenu.Trigger
-              className="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden"
+              className="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-[colors,transform] duration-150 ease-out hover:border-primary/40 hover:text-foreground active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden"
               aria-label="Open site navigation"
               aria-controls="public-site-navigation"
             >
@@ -66,7 +66,7 @@ export function SiteHeader() {
                 align="end"
                 sideOffset={8}
                 collisionPadding={12}
-                className="z-50 w-[min(20rem,calc(100vw-1.5rem))] rounded-xl border border-border bg-card p-2 shadow-2xl"
+                className="z-50 w-[min(20rem,calc(100vw-1.5rem))] origin-top-right rounded-xl border border-border bg-card p-2 shadow-2xl transition-[opacity,transform] duration-150 ease-out data-[state=open]:scale-100 data-[state=open]:opacity-100 data-[state=closed]:scale-95 data-[state=closed]:opacity-0"
               >
                 <DropdownMenu.Label className="px-3 pb-2 pt-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
                   Yorkstead Systems
@@ -78,11 +78,11 @@ export function SiteHeader() {
                       aria-current={isActive(item.href) ? "page" : undefined}
                       className={cn(
                         navigationLinkStyles("menu", isActive(item.href)),
-                        "data-[highlighted]:bg-accent data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ring",
+                        "group data-[highlighted]:bg-accent data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ring",
                       )}
                     >
                       {item.label}
-                      <ChevronRight className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                      <ChevronRight className="size-3.5 text-muted-foreground transition-transform duration-150 ease-out group-data-[highlighted]:translate-x-0.5" aria-hidden="true" />
                     </Link>
                   </DropdownMenu.Item>
                 ))}
