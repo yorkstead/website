@@ -21,7 +21,8 @@
     "auth:migrate": "bun x --package @better-auth/cli@1.4.22 better-auth migrate --yes",
     "db:migrate": "bun scripts/migrate.ts",
     "db:migrate:check": "bun scripts/migrate.ts --check",
-    "yorkstead:check": "node scripts/yorkstead-check.mjs"
+    "yorkstead:check": "node scripts/yorkstead-check.mjs",
+    "verify": "bun run yorkstead:check && bun run db:migrate:check && bun run lint && bun run typecheck && bun test && bun run build"
   },
   "dependencies": {
     "@better-auth/passkey": "^1.7.7",

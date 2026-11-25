@@ -1,5 +1,7 @@
 # Verification commands
 
+`bun run verify` runs the list below in order (added in spec 054).
+
 ```bash
 bun run yorkstead:check
 bun run db:migrate:check

@@ -1,5 +1,7 @@
 # Spec-driven workflow
 
+Roles, gates, and the OpenCode handoff packet are in [`dev-workflow.md`](dev-workflow.md). Spec Kit commands (`/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`) map to steps 1–5.
+
 1. Intake: create or update a spec under `specs/`.
 2. Clarify: resolve ambiguity, non-goals, and decisions.
 3. Plan: map the smallest safe file-level approach.

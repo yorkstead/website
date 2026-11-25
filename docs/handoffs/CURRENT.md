@@ -1,3 +1,10 @@
+# Process — Spec Kit and OpenCode development workflow (Spec 054) — 2026-11-25
+
+- Owner-approved setup (project thread, 2026-11-25) on branch `claude/project-thread-xi265f` targeting `main`. Docs and agent configuration only: zero app, test, dependency, or migration changes.
+- **Added:** Spec Kit v1.4.4 with the OpenCode integration (`.specify/`, `.opencode/commands/speckit.*.md`), Yorkstead override templates in `.specify/templates/overrides/`, OpenCode `developer` and `reviewer` agents in `.opencode/agents/`, `docs/dev-workflow.md`, `.github/pull_request_template.md`.
+- **Changed:** constitution v1.1.0 (principle VI now names the roles); new `specs/INDEX.md` (next free number 055; 021 and 036 reused); `bun run verify` script; `docs/agent-roles.md` and `docs/model-routing.md` rewritten for Claude PM + OpenCode; `AGENTS.md`, `docs/workflow.md`, `docs/verification.md`, `SESSION-START.md` point to `docs/dev-workflow.md`. Open PR #136 would add another 049/050 collision.
+- **Verification:** see `specs/054-spec-kit-opencode-workflow/verification.md`. **Not verified:** `bun run verify` (docs only, no bun in the cloud session), OpenCode loading the agents on the ThinkPad (T007).
+
 # Active work — Micro-Interactions & Micro-Animations Program (049–053) — 2026-11-15
 
 - Branch: `feat/micro-interactions-program` from verified `origin/main` (`4303b2531dfec60396c10ec0bec86874adf573e3`).
