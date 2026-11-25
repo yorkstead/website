@@ -2,10 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { hasStrongSecret, resolveAuthConfiguration } from "@/lib/auth-config";
 
 const productionEnvironment = {
-  BETTER_AUTH_URL: "https://www.4twenty.dev",
+  BETTER_AUTH_URL: "https://www.yorkstead.com",
   DATABASE_URL: "postgresql://user:password@ep-example.us-east-2.aws.neon.tech/work_ctrl?sslmode=require",
-  OWNER_EMAIL: "Owner@4twenty.dev",
-  PASSKEY_RP_ID: "4twenty.dev",
+  OWNER_EMAIL: "Owner@yorkstead.com",
+  PASSKEY_RP_ID: "yorkstead.com",
   BETTER_AUTH_SECRET: "8f44d0c0f3dc40f9b587a9c47a9e35d77a66be9c518242de",
   OWNER_BOOTSTRAP_TOKEN: "d18bf69e0ab44f3ba77b4ce5e661c959db87b43cc69a4d1f",
 };
@@ -13,10 +13,10 @@ const productionEnvironment = {
 describe("authentication configuration", () => {
   test("normalizes a complete production configuration", () => {
     expect(resolveAuthConfiguration(productionEnvironment, "production")).toEqual({
-      baseURL: "https://www.4twenty.dev",
+      baseURL: "https://www.yorkstead.com",
       databaseURL: productionEnvironment.DATABASE_URL,
-      ownerEmail: "owner@4twenty.dev",
-      relyingPartyId: "4twenty.dev",
+      ownerEmail: "owner@yorkstead.com",
+      relyingPartyId: "yorkstead.com",
       secret: productionEnvironment.BETTER_AUTH_SECRET,
       bootstrapToken: productionEnvironment.OWNER_BOOTSTRAP_TOKEN,
     });
@@ -40,15 +40,15 @@ describe("authentication configuration", () => {
   });
 
   test("requires an HTTPS production origin without URL decorations", () => {
-    for (const baseURL of ["http://www.4twenty.dev", "https://user:pass@www.4twenty.dev", "https://www.4twenty.dev/auth", "https://www.4twenty.dev:8443"]) {
+    for (const baseURL of ["http://www.yorkstead.com", "https://user:pass@www.yorkstead.com", "https://www.yorkstead.com/auth", "https://www.yorkstead.com:8443"]) {
       expect(() => resolveAuthConfiguration({ ...productionEnvironment, BETTER_AUTH_URL: baseURL }, "production")).toThrow("BETTER_AUTH_URL");
     }
   });
 
   test("requires the passkey relying party to match the authentication domain", () => {
     expect(() => resolveAuthConfiguration({ ...productionEnvironment, PASSKEY_RP_ID: "example.com" }, "production")).toThrow("PASSKEY_RP_ID");
-    expect(() => resolveAuthConfiguration({ ...productionEnvironment, PASSKEY_RP_ID: "dev" }, "production")).toThrow("registrable domain");
-    expect(resolveAuthConfiguration({ ...productionEnvironment, PASSKEY_RP_ID: "www.4twenty.dev" }, "production").relyingPartyId).toBe("www.4twenty.dev");
+    expect(() => resolveAuthConfiguration({ ...productionEnvironment, PASSKEY_RP_ID: "com" }, "production")).toThrow("registrable domain");
+    expect(resolveAuthConfiguration({ ...productionEnvironment, PASSKEY_RP_ID: "www.yorkstead.com" }, "production").relyingPartyId).toBe("www.yorkstead.com");
   });
 
   test("validates owner identity and PostgreSQL configuration", () => {

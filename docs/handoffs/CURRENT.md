@@ -1,3 +1,11 @@
+# Active work — Retire remaining `4twentydev` references — 2026-11-25
+
+- Branch: `claude/project-thread-wgqi4o` from verified `origin/main` (`6a68894b405e862610b39f70d0cf874b77ccc732`).
+- Owner decision (2026-11-25): everything is Yorkstead; the owner approved a PR removing the leftover `4twentydev` links. This resolves the open item from spec 047 (`specs/047-cc028-phase6a-quick-launch-targets/verification.md`): `yorkstead/sic-pizza` exists, so the case-study link now points there.
+- Changes: sic-pizza case-study link and its test (`lib/case-studies.ts`, `lib/case-studies.test.ts`); JWLD screenshot manifest source repository (`public/media/jwld/asset-manifest.json`); auth test fixtures move from `4twenty.dev` to `yorkstead.com` (`lib/auth-config.test.ts`, `lib/owner-bootstrap.test.ts`; the bare-TLD rejection case is now `com`). No application logic, schema, migration, or configuration change.
+- Still owner-side: saved Quick Launch workspace settings that literally contain `4twentydev` (Settings edit). Historical specs and handoffs keep their `4twentydev` wording as history.
+- Verification: focused tests 24/24; `yorkstead:check` PASS (55 spec directories); `db:migrate:check` 24 migrations; lint 0 errors (pre-existing `login-panel.tsx:62` warning); typecheck pass; `bun test` 531 pass / 123 skip / 0 fail (no local database, so DB-backed tests skipped). `bun run build` compiled and generated 89/89 pages, then Next.js stopped with a security-version notice recommending a Next.js upgrade; this is pre-existing on `main` and not caused by this change. E2E not run (no navigation or flow change). No merge or deployment authorized.
+
 # Active work — Micro-Interactions & Micro-Animations Program (049–053) — 2026-11-15
 
 - Branch: `feat/micro-interactions-program` from verified `origin/main` (`4303b2531dfec60396c10ec0bec86874adf573e3`).
