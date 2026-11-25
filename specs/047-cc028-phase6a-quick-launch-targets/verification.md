@@ -14,7 +14,7 @@
 
 ## Remaining `4twentydev` references
 
-- `lib/case-studies.ts` links the sic-pizza case study to `https://github.com/4twentydev/sic-pizza`. That is published content, not a default, so it was **not** changed here. If that account no longer hosts the repository, the public link is broken and needs an owner decision about the replacement source.
+- `lib/case-studies.ts` links the sic-pizza case study to `https://github.com/4twentydev/sic-pizza`. That is published content, not a default, so it was **not** changed here. If that account no longer hosts the repository, the public link is broken and needs an owner decision about the replacement source. **Resolved 2026-11-25:** the owner confirmed everything is Yorkstead and the link now points to `https://github.com/yorkstead/sic-pizza`.
 - `components/dashboard/quick-launch.test.ts` still uses `4twentydev` nowhere; the remaining test values are `yorkstead` or explicit overrides.
 
 ## Limits

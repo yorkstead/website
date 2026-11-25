@@ -423,7 +423,7 @@ export const caseStudies: CaseStudy[] = [
       { label: "Open the interactive prototype", description: "Use the current browser-runnable vertical slice to explore employee access, floor, ordering, kitchen, guest, payment, and history views.", href: "https://pos.yorkstead.com", external: true },
       { label: "Packages, process & pricing", description: "See what an audit, focused restaurant workflow, or connected system could include and cost.", href: "/packages#restaurant" },
       { label: "Workflow automation", description: "Explore how ordering, approvals, kitchen transitions, notifications, and exception handling can become one controlled operating flow.", href: "/services/workflow-automation" },
-      { label: "Review the source and architecture", description: "Inspect the public repository, domain rules, persistence schema, implementation boundaries, and phased production backlog.", href: "https://github.com/4twentydev/sic-pizza", external: true },
+      { label: "Review the source and architecture", description: "Inspect the public repository, domain rules, persistence schema, implementation boundaries, and phased production backlog.", href: "https://github.com/yorkstead/sic-pizza", external: true },
     ],
     intendedFor: "Independent restaurants, pizza shops, bars, food halls, pop-up operators, and growing hospitality concepts that want an owned ordering experience shaped around their service model rather than a generic terminal workflow.",
     problem: "Restaurant orders cross staff access, tables, diners, modifiers, pricing, guest requests, kitchen production, payment, and support history. When those states drift, the team must reconcile what was requested, approved, fired, served, and paid during active service.",

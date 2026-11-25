@@ -13,7 +13,7 @@ describe("owner bootstrap token", () => {
 
   test("refuses bootstrap after any auth user exists", () => {
     const token = "d18bf69e0ab44f3ba77b4ce5e661c959db87b43cc69a4d1f";
-    const request = { ownerEmail: "owner@4twenty.dev", requestedEmail: "owner@4twenty.dev", expectedToken: token, providedToken: token };
+    const request = { ownerEmail: "owner@yorkstead.com", requestedEmail: "owner@yorkstead.com", expectedToken: token, providedToken: token };
     expect(ownerBootstrapAllowed({ ...request, ownerExists: false })).toBeTrue();
     expect(ownerBootstrapAllowed({ ...request, ownerExists: true })).toBeFalse();
     expect(ownerBootstrapAllowed({ ...request, requestedEmail: "attacker@example.com", ownerExists: false })).toBeFalse();

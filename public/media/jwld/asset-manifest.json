@@ -1,7 +1,7 @@
 {
   "captured": "2026-08-31",
   "source_commit": "d502851",
-  "source_repository": "4twentydev/jeweled-store",
+  "source_repository": "yorkstead/jeweled-store",
   "verification": "Public UI inspected. No checkout, payment, commission submission, or authenticated admin transaction performed.",
   "screenshots": [
     {

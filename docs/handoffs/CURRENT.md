@@ -1,9 +1,18 @@
+# Active work — Retire remaining `4twentydev` references — 2026-11-25
+
+- Branch: `claude/project-thread-wgqi4o` from verified `origin/main` (`6a68894b405e862610b39f70d0cf874b77ccc732`).
+- Owner decision (2026-11-25): everything is Yorkstead; the owner approved a PR removing the leftover `4twentydev` links. This resolves the open item from spec 047 (`specs/047-cc028-phase6a-quick-launch-targets/verification.md`): `yorkstead/sic-pizza` exists, so the case-study link now points there.
+- Changes: sic-pizza case-study link and its test (`lib/case-studies.ts`, `lib/case-studies.test.ts`); JWLD screenshot manifest source repository (`public/media/jwld/asset-manifest.json`); auth test fixtures move from `4twenty.dev` to `yorkstead.com` (`lib/auth-config.test.ts`, `lib/owner-bootstrap.test.ts`; the bare-TLD rejection case is now `com`). No application logic, schema, migration, or configuration change.
+- Still owner-side: saved Quick Launch workspace settings that literally contain `4twentydev` (Settings edit). Historical specs and handoffs keep their `4twentydev` wording as history.
+- Verification: focused tests 24/24; `yorkstead:check` PASS (55 spec directories); `db:migrate:check` 24 migrations; lint 0 errors (pre-existing `login-panel.tsx:62` warning); typecheck pass; `bun test` 531 pass / 123 skip / 0 fail (no local database, so DB-backed tests skipped). `bun run build` compiled and generated 89/89 pages, then Next.js stopped with a security-version notice recommending a Next.js upgrade; this is pre-existing on `main` and not caused by this change. E2E not run (no navigation or flow change). No merge or deployment authorized.
+
 # Process — Spec Kit and OpenCode development workflow (Spec 054) — 2026-11-25
 
 - Owner-approved setup (project thread, 2026-11-25) on branch `claude/project-thread-xi265f` targeting `main`. Docs and agent configuration only: zero app, test, dependency, or migration changes.
 - **Added:** Spec Kit v1.4.4 with the OpenCode integration (`.specify/`, `.opencode/commands/speckit.*.md`), Yorkstead override templates in `.specify/templates/overrides/`, OpenCode `developer` and `reviewer` agents in `.opencode/agents/`, `docs/dev-workflow.md`, `.github/pull_request_template.md`.
 - **Changed:** constitution v1.1.0 (principle VI now names the roles); new `specs/INDEX.md` (next free number 055; 021 and 036 reused); `bun run verify` script; `docs/agent-roles.md` and `docs/model-routing.md` rewritten for Claude PM + OpenCode; `AGENTS.md`, `docs/workflow.md`, `docs/verification.md`, `SESSION-START.md` point to `docs/dev-workflow.md`. Open PR #136 would add another 049/050 collision.
 - **Verification:** see `specs/054-spec-kit-opencode-workflow/verification.md`. **Not verified:** `bun run verify` (docs only, no bun in the cloud session), OpenCode loading the agents on the ThinkPad (T007).
+
 
 # Active work — Micro-Interactions & Micro-Animations Program (049–053) — 2026-11-15
 
@@ -15,6 +24,14 @@
   - **052 (Public walkthroughs & sandboxes):** inline `1200ms` reset confirmation in `components/public-demo/demo-controls.tsx`, spotlight ring & smooth `<details>` disclosure in `components/public-demo/demo-shell.module.css`, and step-switch transition in `components/public-demo/scenario-display.tsx`.
   - **053 (Owner Command Center & Dashboard):** `operationalRowMotion`/`operationalControlMotion` in `components/dashboard/dashboard-styles.ts`, active left bar & label transitions in `components/dashboard/dashboard-navigation.tsx`, and fast row/focus transitions in `unified-attention-view.tsx` & `lead-priority-queue.tsx`.
 - Verification: `node scripts/yorkstead-check.mjs` PASS (55 spec directories); `git diff --check` clean. Skipped in this sandbox because `bun` and `node_modules` are not installed: `bun run db:migrate:check`, `bun run lint`, `bun run typecheck`, `bun test`, `bun run build`, `bun run test:e2e`. Combined into one reviewable PR; no merge or deployment authorized.
+
+# Production migration — registry 0023/0024 applied — 2026-11-11
+
+- Owner authorized the production migration. `0023_systems-registry-foundation` and `0024_registry-evidence-billing-monitoring` were applied to the Production Neon database; the ledger moved from `22`/`0022` to `24`/`0024`.
+- Before applying, the upgrade path was rehearsed locally: migrations through `0022`, an existing `system_directory_entries` row inserted under the audit context, then `0023`/`0024`. The row survived with `entity_class=provider_service`, `verification_state=unknown`, `verification_status=unknown`, `legacy=true`.
+- Production verification: five new registry columns present, five new `system_directory_*` tables created, the single existing directory row preserved with the same defaults, and a second `db:migrate` pass skipped every migration.
+- This closed a live schema/code mismatch: `main`'s registry service selects the new columns while Production was at `0022`, so the Systems Directory page could not load. No redeploy was required.
+- Scope: schema only. `YS_SYS_001_ENABLED` remains off, registry activation is still separately gated, and the full Production-derived 60-minute RTO remains **NOT RUN / NOT DEMONSTRATED**.
 
 # Documentation closeout — legacy task-list reconciliation — 2026-11-11
 
