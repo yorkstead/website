@@ -15,7 +15,7 @@ describe("business card contact", () => {
   });
 
   test("text link opens a message to the card number", () => {
-    expect(cardTextHref.startsWith("sms:+17203314865?body=")).toBe(true);
+    expect(cardTextHref.startsWith("sms:+17204609281?body=")).toBe(true);
   });
 
   test("scan source accepts simple tags and falls back to card", () => {

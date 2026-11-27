@@ -18,6 +18,6 @@ export default function NonprofitPage() {
       <p className="mt-3 text-sm text-muted-foreground">Your answers help prepare the paperwork. This form does not submit a filing or sign a sponsorship agreement.</p>
     </header>
     <NonprofitForm />
-    <footer className="mt-10 text-sm text-muted-foreground">Need a hand? <a className="underline" href="tel:+17203314865">Call Brandon at 720-331-4865</a>. <Link className="ml-2 underline" href="/privacy">Privacy policy</Link></footer>
+    <footer className="mt-10 text-sm text-muted-foreground">Need a hand? <a className="underline" href="tel:+17204609281">Call Brandon at 720-460-9281</a>. <Link className="ml-2 underline" href="/privacy">Privacy policy</Link></footer>
   </main>;
 }
