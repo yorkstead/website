@@ -8,8 +8,8 @@ export const cardContact = {
   title: "Founder",
   organization: brand.name,
   city: "Denver, Colorado",
-  phoneDisplay: "720.331.4865",
-  phoneE164: "+17203314865",
+  phoneDisplay: "720.460.9281",
+  phoneE164: "+17204609281",
   email: "brandon@yorkstead.com",
   siteURL: brand.siteURL,
 } as const;
